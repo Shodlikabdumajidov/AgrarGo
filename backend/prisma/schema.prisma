@@ -1,0 +1,75 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  FARMER
+  DRIVER
+  MARKET
+  ADMIN
+}
+
+model User {
+  id           String   @id @default(uuid())
+  phone        String   @unique
+  email        String?  @unique
+  passwordHash String
+  role         Role     @default(FARMER)
+  fullName     String
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  farmer Farmer?
+}
+
+model Farmer {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  farmName   String
+  region     String
+  district   String
+  address    String?
+  latitude   Float?
+  longitude  Float?
+  stir       String?  @unique
+  isVerified Boolean  @default(false)
+
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+enum ProductStatus {
+  ACTIVE
+  BOOKED
+  SOLD
+  ARCHIVED
+}
+
+model Product {
+  id       String @id @default(uuid())
+  farmerId String
+  farmer   Farmer @relation(fields: [farmerId], references: [id], onDelete: Cascade)
+
+  name        String
+  category    String
+  quantityKg  Decimal       @db.Decimal(12, 2)
+  pricePerKg  Decimal       @db.Decimal(12, 2)
+  harvestDate DateTime?
+  description String?
+  status      ProductStatus @default(ACTIVE)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([farmerId])
+  @@index([status, category])
+}
