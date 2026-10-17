@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="uz" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgrarGo — Smart Agro-Logistics Ecosystem</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- AOS Animation Library CSS -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        agroGreen: '#10B981',
+                        darkGreen: '#064E3B',
+                        earthBrown: '#78350F',
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(16px);
+        }
+        /* MacOS style smooth spring animation for Sidebar */
+        #sidebar {
+            transform: translateX(-100%) scale(0.95);
+            opacity: 0;
+            visibility: hidden;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease, visibility 0.4s ease;
+        }
+        #sidebar.open {
+            transform: translateX(0) scale(1);
+            opacity: 1;
+            visibility: visible;
+        }
+        #sidebar-overlay {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        #sidebar-overlay.open {
+            opacity: 1;
+            visibility: visible;
+        }
+        /* Custom Animated Dropdown Menu Styles */
+        #custom-dropdown-menu {
+            opacity: 0;
+            transform: translateY(-10px) scale(0.98);
+            visibility: hidden;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        #custom-dropdown-menu.open {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            visibility: visible;
+        }
+        .hover-glow {
+            transition: all 0.3s ease;
+        }
+        .hover-glow:hover {
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.35);
+            transform: translateY(-5px) scale(1.01);
+        }
+        .nav-link-hover {
+            position: relative;
+        }
+        .nav-link-hover::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background-color: #10B981;
+            transition: width 0.3s ease;
+        }
+        .nav-link-hover:hover::after {
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans antialiased overflow-x-hidden selection:bg-emerald-500 selection:text-slate-950">
+
+    <!-- SIDEBAR BACKDROP OVERLAY -->
+    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"></div>
+
+    <!-- TOP UTILITY BAR -->
+    <div class="bg-slate-900 border-b border-white/10 text-sm text-slate-200 px-6 sm:px-10 py-3 flex flex-wrap justify-between items-center gap-4">
+        <div class="flex items-center gap-6 font-semibold overflow-x-auto py-1">
+            <span class="nav-link-hover cursor-pointer transition whitespace-nowrap">AgrarGo B2B Hub</span>
+            <span class="nav-link-hover cursor-pointer transition whitespace-nowrap">Hamkorlik / Aloqa</span>
+            <span class="nav-link-hover cursor-pointer transition whitespace-nowrap">Logistika Tariflari</span>
+            <span class="nav-link-hover cursor-pointer transition whitespace-nowrap">Market.uz Zanjiri</span>
+        </div>
+        <div class="flex items-center gap-6 ml-auto">
+            <a href="https://t.me/agrargobot" target="_blank" class="hidden sm:flex items-center gap-2 hover:text-emerald-400 transition whitespace-nowrap font-medium">
+                <i class="fa-brands fa-telegram text-emerald-400 text-base"></i> @agrargobot
+            </a>
+            <span class="hidden md:flex items-center gap-2 whitespace-nowrap font-medium">
+                <i class="fa-solid fa-phone text-emerald-400 text-base"></i> +998 78 140 09 09
+            </span>
+            <button class="bg-emerald-500/10 text-emerald-400 px-4 py-1.5 rounded-full border border-emerald-500/30 font-bold hover:bg-emerald-500/20 hover:scale-105 transition whitespace-nowrap text-sm shadow-sm">
+                <i class="fa-solid fa-plus mr-1.5"></i> E'lon Joylash
+            </button>
+            <div class="flex items-center gap-1.5 cursor-pointer hover:text-emerald-400 font-bold whitespace-nowrap transition">
+                <i class="fa-solid fa-globe"></i> UZ <i class="fa-solid fa-chevron-down text-xs"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN NAVIGATION & SEARCH BAR -->
+    <nav class="sticky top-0 left-0 w-full z-30 glass border-b border-white/15 px-6 sm:px-10 py-5 shadow-2xl">
+        <div class="max-w-7xl mx-auto flex flex-col xl:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-6 w-full xl:w-auto justify-between xl:justify-start">
+                <div class="flex items-center gap-5">
+                    <button onclick="toggleSidebar()" class="text-slate-200 hover:text-emerald-400 hover:scale-110 text-3xl transition focus:outline-none p-1.5 bg-slate-900/85 rounded-xl border border-white/10 shadow">
+                        <i class="fa-solid fa-bars-staggered"></i>
+                    </button>
+                    <img src="logo.png" alt="AgrarGo Logo" class="h-16 sm:h-20 w-auto rounded-2xl shadow-xl object-contain bg-slate-900 p-1.5 border border-white/15 hover:scale-105 transition duration-300">
+                </div>
+            </div>
+
+            <!-- CUSTOM ANIMATED SEARCH BAR WITH DROPDOWN -->
+            <div class="flex-1 max-w-3xl w-full">
+                <div class="flex items-center bg-slate-900 border-2 border-white/20 rounded-2xl overflow-visible shadow-2xl hover:border-emerald-500/50 transition duration-300 relative">
+                    <div class="relative">
+                        <button onclick="toggleDropdown(event)" id="dropdown-btn" class="bg-slate-950 text-emerald-400 text-sm sm:text-base px-5 py-4 outline-none border-r border-white/15 cursor-pointer font-bold flex items-center gap-3 hover:bg-slate-900 transition rounded-l-2xl">
+                            <span id="selected-text">Barcha yo'nalishlar</span>
+                            <i class="fa-solid fa-chevron-down text-xs transition-transform duration-300" id="dropdown-icon"></i>
+                        </button>
+                        <div id="custom-dropdown-menu" class="absolute left-0 top-full mt-2 w-64 bg-slate-900/95 backdrop-blur-2xl border border-white/15 rounded-2xl shadow-2xl z-50 overflow-hidden divide-y divide-white/5">
+                            <div onclick="selectOption('Barcha yo\'nalishlar')" class="px-5 py-3.5 text-sm font-semibold text-slate-200 hover:bg-emerald-500/20 hover:text-emerald-400 cursor-pointer transition flex items-center">
+                                <i class="fa-solid fa-globe mr-2.5 text-emerald-400"></i> Barcha yo'nalishlar
+                            </div>
+                            <div onclick="selectOption('Fermer xo\'jaliklari')" class="px-5 py-3.5 text-sm font-semibold text-slate-200 hover:bg-emerald-500/20 hover:text-emerald-400 cursor-pointer transition flex items-center">
+                                <i class="fa-solid fa-seedling mr-2.5 text-emerald-400"></i> Fermer xo'jaliklari
+                            </div>
+                            <div onclick="selectOption('Yuk tashish & ELD')" class="px-5 py-3.5 text-sm font-semibold text-slate-200 hover:bg-emerald-500/20 hover:text-emerald-400 cursor-pointer transition flex items-center">
+                                <i class="fa-solid fa-truck-fast mr-2.5 text-blue-400"></i> Yuk tashish & ELD
+                            </div>
+                            <div onclick="selectOption('B2B Omborlar')" class="px-5 py-3.5 text-sm font-semibold text-slate-200 hover:bg-emerald-500/20 hover:text-emerald-400 cursor-pointer transition flex items-center">
+                                <i class="fa-solid fa-warehouse mr-2.5 text-amber-400"></i> B2B Omborlar
+                            </div>
+                        </div>
+                    </div>
+                    <input type="text" placeholder="mahsulot, fermer, haydovchi yoki ombor raqami..." class="flex-1 bg-transparent px-5 py-4 text-base sm:text-lg text-white placeholder-slate-400 outline-none font-medium">
+                    <button class="bg-amber-400 hover:bg-amber-300 active:scale-95 text-slate-950 px-8 py-4 transition duration-200 flex items-center justify-center font-black text-xl shadow-lg rounded-r-2xl">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4 w-full xl:w-auto justify-end">
+                <button class="hidden sm:flex items-center gap-2.5 bg-slate-900 hover:bg-slate-800 text-slate-100 px-5 py-4 rounded-2xl text-base font-semibold border border-white/20 hover:border-emerald-500 transition duration-300 shadow">
+                    <i class="fa-solid fa-sliders text-sm text-emerald-400"></i> Filtrlar
+                </button>
+                <button class="bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-extrabold px-8 py-4 rounded-2xl text-base transition duration-200 shadow-xl shadow-emerald-500/30 flex items-center gap-2.5">
+                    <i class="fa-solid fa-user text-sm"></i> Kabinetga Kirish
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- LEFT SIDEBAR (MacOS Spring Animation Style) -->
+    <div id="sidebar" class="fixed inset-y-0 left-0 w-80 bg-slate-900/95 backdrop-blur-2xl border-r border-white/10 z-50 flex flex-col shadow-2xl">
+        <div class="p-6 border-b border-white/10 flex justify-between items-center bg-slate-950/50">
+            <span class="font-extrabold text-emerald-400 tracking-wider text-base uppercase"><i class="fa-solid fa-list mr-2"></i> Ekotizim Menusi</span>
+            <button onclick="toggleSidebar()" class="text-slate-400 hover:text-white text-xl focus:outline-none p-1 transition hover:rotate-90 duration-300">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="flex-1 overflow-y-auto divide-y divide-white/5">
+            <a href="#" class="flex justify-between items-center p-5 hover:bg-white/10 transition group">
+                <span class="text-base font-semibold text-slate-200 group-hover:text-emerald-400">AgrarGo Farm (Fermer)</span>
+                <span class="text-xs bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full font-bold">Faol</span>
+            </a>
+            <a href="#" class="flex justify-between items-center p-5 hover:bg-white/10 transition group">
+                <span class="text-base font-semibold text-slate-200 group-hover:text-emerald-400">AgrarGo Driver (Haydovchi)</span>
+                <span class="text-xs bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full font-bold">GPS</span>
+            </a>
+            <a href="#" class="flex justify-between items-center p-5 hover:bg-white/10 transition group">
+                <span class="text-base font-semibold text-slate-200 group-hover:text-emerald-400">AgrarGo Market (B2B Do'kon)</span>
+                <span class="text-xs bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full font-bold">Market</span>
+            </a>
+            <a href="#" class="flex justify-between items-center p-5 hover:bg-white/10 transition group">
+                <span class="text-base font-semibold text-slate-200 group-hover:text-emerald-400">AgrarGo Hub (Dispetcher)</span>
+                <span class="text-xs bg-amber-500/20 text-amber-400 px-3 py-1 rounded-full font-bold">Markaz</span>
+            </a>
+            <a href="#" class="flex justify-between items-center p-5 hover:bg-white/10 transition group">
+                <span class="text-base font-semibold text-slate-200 group-hover:text-emerald-400">ELD Tracking & Maps</span>
+                <span class="text-xs bg-purple-500/20 text-purple-400 px-3 py-1 rounded-full font-bold">Onlayn</span>
+            </a>
+            <a href="#" class="flex justify-between items-center p-5 hover:bg-white/10 transition group">
+                <span class="text-base font-semibold text-slate-200 group-hover:text-emerald-400">Warehouse Storage (Ombor)</span>
+                <span class="text-xs bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full font-bold">Zaxira</span>
+            </a>
+        </div>
+        <div class="p-5 border-t border-white/10 bg-slate-950 text-center text-xs text-slate-400 font-semibold">
+            AgrarGo Enterprise Platform v2.0
+        </div>
+    </div>
+
+    <!-- HERO SECTION (Updated with Left Rotating Logo Space & Right Text) -->
+    <header class="relative min-h-[80vh] flex items-center justify-center pt-16 pb-20 px-6 sm:px-12 overflow-hidden">
+        <div class="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            
+            <!-- LEFT SIDE: Rotating 3D Logo / Shape Space -->
+            <div class="lg:col-span-5 flex flex-col items-center justify-center space-y-6" data-aos="fade-right" data-aos-duration="1000">
+                <div class="relative w-56 h-56 sm:w-64 sm:h-64 flex items-center justify-center">
+                    <!-- Glowing Background Circle Effect -->
+                    <div class="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-500/20 via-teal-500/10 to-blue-500/25 blur-2xl animate-pulse"></div>
+                    
+                    <!-- Rotating Geometric Shape / Logo Placeholder -->
+                    <div class="relative w-44 h-44 sm:w-52 sm:h-52 rounded-3xl border-2 border-emerald-500/40 bg-slate-900/80 backdrop-blur-xl shadow-2xl flex items-center justify-center animate-[spin_12s_linear_infinite] hover:border-emerald-400 transition duration-500 group">
+                        <div class="absolute inset-2 rounded-2xl border border-dashed border-emerald-400/30 animate-[spin_8s_linear_infinite_reverse]"></div>
+                        <i class="fa-solid fa-cube text-emerald-400 text-5xl sm:text-6xl drop-shadow-[0_0_15px_rgba(16,185,129,0.5)]"></i>
+                    </div>
+                </div>
+                <!-- Site Brand Name Under Shape -->
+                <div class="text-center space-y-1">
+                    <h3 class="text-2xl sm:text-3xl font-extrabold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">AgrarGo</h3>
+                    <p class="text-xs uppercase tracking-widest text-slate-400 font-semibold">Smart Agro-Logistics</p>
+                </div>
+            </div>
+
+            <!-- RIGHT SIDE: Text Content Aligned to Right/Center -->
+            <div class="lg:col-span-7 text-center lg:text-left space-y-6" data-aos="fade-left" data-aos-duration="1000">
+                <div class="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm font-bold uppercase tracking-widest shadow-xl">
+                    <i class="fa-solid fa-seedling"></i> O'zbekistondagi Birinchi Raqamli Agro-Logistika Zanjiri
+                </div>
+                <h1 class="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight">
+                    Dehqondan Do'konga — <br class="hidden sm:inline"><span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-blue-400">Vositachilarsiz Kelajak</span>
+                </h1>
+                <p class="text-slate-300 text-base sm:text-xl max-w-2xl leading-relaxed font-medium">
+                    Fermerlarning og'ir mehnatini qadrlash, narx monopoliyasiga barham berish va mahsulotni to'g'ridan-to'g'ri bozor hamda supermarketlarga yetkazishning ishonchli ekotizimi.
+                </p>
+            </div>
+
+        </div>
+    </header>
+
+    <!-- ECOSYSTEM CARDS SECTION -->
+    <section class="py-24 px-6 max-w-7xl mx-auto relative">
+        <div class="text-center mb-16 space-y-4" data-aos="fade-up">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-widest">
+                <i class="fa-solid fa-cubes"></i> Kompleks Yechimlar
+            </div>
+            <h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight">AgrarGo Ekotizim Modullari</h2>
+            <p class="text-slate-400 text-lg max-w-2xl mx-auto">Dehqon, haydovchi, do'kon va dispetcherlar uchun mukammal avtomatlashtirilgan raqamli infratuzilma.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div class="glass p-8 rounded-3xl border border-white/10 hover:border-emerald-500/50 hover-glow transition duration-300 space-y-4 group" data-aos="fade-up" data-aos-delay="100">
+                <div class="w-14 h-14 bg-emerald-500/20 text-emerald-400 rounded-2xl flex items-center justify-center text-2xl font-bold group-hover:scale-110 transition">
+                    <i class="fa-solid fa-seedling"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-white group-hover:text-emerald-400 transition">AgrarGo Farm</h3>
+                <p class="text-slate-300 text-sm leading-relaxed">Fermerlar o'z hosilini yerdan turib bozor narxida bevosita do'konlarga taqdim etadi. Daromad to'g'ridan-to'g'ri dehqon hamyoniga tushadi.</p>
+            </div>
+
+            <div class="glass p-8 rounded-3xl border border-white/10 hover:border-blue-500/50 hover-glow transition duration-300 space-y-4 group" data-aos="fade-up" data-aos-delay="200">
+                <div class="w-14 h-14 bg-blue-500/20 text-blue-400 rounded-2xl flex items-center justify-center text-2xl font-bold group-hover:scale-110 transition">
+                    <i class="fa-solid fa-truck-fast"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-white group-hover:text-blue-400 transition">AgrarGo Driver</h3>
+                <p class="text-slate-300 text-sm leading-relaxed">Yuk tashuvchilar uchun maxsus ilova. Bo'sh reyslarni topish, ELD GPS xarita orqali masofaviy kuzatuv va xavfsiz marshrut.</p>
+            </div>
+
+            <div class="glass p-8 rounded-3xl border border-white/10 hover:border-amber-500/50 hover-glow transition duration-300 space-y-4 group" data-aos="fade-up" data-aos-delay="300">
+                <div class="w-14 h-14 bg-amber-500/20 text-amber-400 rounded-2xl flex items-center justify-center text-2xl font-bold group-hover:scale-110 transition">
+                    <i class="fa-solid fa-store"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-white group-hover:text-amber-400 transition">AgrarGo Market</h3>
+                <p class="text-slate-300 text-sm leading-relaxed">Supermarket va chakana savdo tarmoqlari uchun B2B buyurtma portali. Sifat nazorati va qat'iy kafolat mexanizmlari bilan ta'minlangan.</p>
+            </div>
+
+            <div class="glass p-8 rounded-3xl border border-white/10 hover:border-purple-500/50 hover-glow transition duration-300 space-y-4 group" data-aos="fade-up" data-aos-delay="100">
+                <div class="w-14 h-14 bg-purple-500/20 text-purple-400 rounded-2xl flex items-center justify-center text-2xl font-bold group-hover:scale-110 transition">
+                    <i class="fa-solid fa-headset"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-white group-hover:text-purple-400 transition">AgrarGo Hub</h3>
+                <p class="text-slate-300 text-sm leading-relaxed">Markaziy dispetcherlik xizmati. Logistika zanjiridagi barcha jarayonlarni 24/7 rejimida muvofiqlashtiradi va tezkor hal etadi.</p>
+            </div>
+
+            <div class="glass p-8 rounded-3xl border border-white/10 hover:border-teal-500/50 hover-glow transition duration-300 space-y-4 group" data-aos="fade-up" data-aos-delay="200">
+                <div class="w-14 h-14 bg-teal-500/20 text-teal-400 rounded-2xl flex items-center justify-center text-2xl font-bold group-hover:scale-110 transition">
+                    <i class="fa-solid fa-map-location-dot"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-white group-hover:text-teal-400 transition">ELD GPS & Maps</h3>
+                <p class="text-slate-300 text-sm leading-relaxed">Yuk mashinalari uchun zamonaviy GPS qurilmalari va interaktiv xarita. Harakat tezligi, vaqt va joylashuvni aniq ko'rsatadi.</p>
+            </div>
+
+            <div class="glass p-8 rounded-3xl border border-white/10 hover:border-rose-500/50 hover-glow transition duration-300 space-y-4 group" data-aos="fade-up" data-aos-delay="300">
+                <div class="w-14 h-14 bg-rose-500/20 text-rose-400 rounded-2xl flex items-center justify-center text-2xl font-bold group-hover:scale-110 transition">
+                    <i class="fa-solid fa-warehouse"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-white group-hover:text-rose-400 transition">Warehouse Storage</h3>
+                <p class="text-slate-300 text-sm leading-relaxed">Mavsumiy narx tushib ketganda hosilni yo'qotmaslik uchun zamonaviy omborxonalarda saqlash va qulay vaqtda sotish imkoniyati.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- PROBLEM & SOLUTION SECTION -->
+    <section class="py-24 px-6 max-w-7xl mx-auto relative border-t border-white/10">
+        <div class="text-center mb-16 space-y-4" data-aos="fade-up">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-semibold uppercase tracking-widest">
+                <i class="fa-solid fa-triangle-exclamation"></i> Muammo va Yechim
+            </div>
+            <h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight">Nega AgrarGo Sektoruchun Inqilobiy?</h2>
+            <p class="text-slate-400 text-lg max-w-2xl mx-auto">Eski tizim keltiradigan zararlar va biz joriy etayotgan zamonaviy raqamli afzalliklar.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+            <div class="glass p-8 sm:p-10 rounded-3xl border border-rose-500/20 space-y-6 bg-gradient-to-b from-rose-950/10 to-transparent hover-glow" data-aos="fade-right">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-rose-500/20 text-rose-400 rounded-2xl flex items-center justify-center text-2xl font-bold">
+                        <i class="fa-solid fa-xmark"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-rose-400">An'anaviy Bozor Muammolari</h3>
+                </div>
+                <ul class="space-y-4 text-slate-300 text-base">
+                    <li class="flex items-start gap-3"><i class="fa-solid fa-circle-xmark text-rose-400 mt-1.5"></i> <span><strong>Monopolvositalar:</strong> Dehqon yerida yetishtirgan hosilini olib-sotarlarga arzon berishga majbur.</span></li>
+                    <li class="flex items-start gap-3"><i class="fa-solid fa-circle-xmark text-rose-400 mt-1.5"></i> <span><strong>Shaffof bo'lmagan narxlar:</strong> Real talab va narxlardan dehqonning vaqtida xabari bo'lmaydi.</span></li>
+                    <li class="flex items-start gap-3"><i class="fa-solid fa-circle-xmark text-rose-400 mt-1.5"></i> <span><strong>Ombor yo'qligi:</strong> Narx past paytda mahsulotni saqlolmay arzon sotish yoki buzib qo'yish.</span></li>
+                </ul>
+            </div>
+
+            <div class="glass p-8 sm:p-10 rounded-3xl border border-emerald-500/20 space-y-6 bg-gradient-to-b from-emerald-950/10 to-transparent hover-glow" data-aos="fade-left">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-emerald-500/20 text-emerald-400 rounded-2xl flex items-center justify-center text-2xl font-bold">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-emerald-400">AgrarGo Raqamli Yechimi</h3>
+                </div>
+                <ul class="space-y-4 text-slate-300 text-base">
+                    <li class="flex items-start gap-3"><i class="fa-solid fa-circle-check text-emerald-400 mt-1.5"></i> <span><strong>To'g'ridan-to'g'ri B2B savdo:</strong> Vositachilarsiz adolatli narxdagi savdo zanjiri.</span></li>
+                    <li class="flex items-start gap-3"><i class="fa-solid fa-circle-check text-emerald-400 mt-1.5"></i> <span><strong>Real vaqt ma'lumotlari:</strong> Bozor narxlari va talab dinamikasini onlayn kuzatish.</span></li>
+                    <li class="flex items-start gap-3"><i class="fa-solid fa-circle-check text-emerald-400 mt-1.5"></i> <span><strong>Ombor xavfsizligi:</strong> Hosilni omborga joylab, yuqori narxda sotish orqali yuqori daromad.</span></li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- HOW IT WORKS SECTION (Restored) -->
+    <section class="py-24 px-6 max-w-7xl mx-auto relative border-t border-white/10">
+        <div class="text-center mb-16 space-y-4" data-aos="fade-up">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold uppercase tracking-widest">
+                <i class="fa-solid fa-route"></i> Qadamlar
+            </div>
+            <h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight">AgrarGo Qanday Ishlaydi?</h2>
+            <p class="text-slate-400 text-lg max-w-2xl mx-auto">Hosildan to oxirgi xaridorga yetib borguncha 4 ta sodda qadam.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div class="glass p-8 rounded-3xl border border-white/10 hover:border-emerald-500/50 hover-glow transition duration-300 space-y-4 relative group" data-aos="fade-up" data-aos-delay="100">
+                <div class="absolute -top-4 -left-4 w-10 h-10 bg-emerald-500 text-slate-950 font-black rounded-2xl flex items-center justify-center text-lg shadow-lg">01</div>
+                <div class="w-14 h-14 bg-emerald-500/20 text-emerald-400 rounded-2xl flex items-center justify-center text-2xl font-bold group-hover:scale-110 transition"><i class="fa-solid fa-seedling"></i></div>
+                <h3 class="text-xl font-bold text-white">E'lon Berish</h3>
+                <p class="text-slate-400 text-sm leading-relaxed">Fermer mahsulot turi va narxini platformaga joylashtiradi.</p>
+            </div>
+
+            <div class="glass p-8 rounded-3xl border border-white/10 hover:border-amber-500/50 hover-glow transition duration-300 space-y-4 relative group" data-aos="fade-up" data-aos-delay="200">
+                <div class="absolute -top-4 -left-4 w-10 h-10 bg-amber-400 text-slate-950 font-black rounded-2xl flex items-center justify-center text-lg shadow-lg">02</div>
+                <div class="w-14 h-14 bg-amber-500/20 text-amber-400 rounded-2xl flex items-center justify-center text-2xl font-bold group-hover:scale-110 transition"><i class="fa-solid fa-store"></i></div>
+                <h3 class="text-xl font-bold text-white">B2B Bron Qilish</h3>
+                <p class="text-slate-400 text-sm leading-relaxed">Supermarketlar kerakli hajmdagi mahsulotni band qiladi.</p>
+            </div>
+
+            <div class="glass p-8 rounded-3xl border border-white/10 hover:border-blue-500/50 hover-glow transition duration-300 space-y-4 relative group" data-aos="fade-up" data-aos-delay="300">
+                <div class="absolute -top-4 -left-4 w-10 h-10 bg-blue-500 text-slate-950 font-black rounded-2xl flex items-center justify-center text-lg shadow-lg">03</div>
+                <div class="w-14 h-14 bg-blue-500/20 text-blue-400 rounded-2xl flex items-center justify-center text-2xl font-bold group-hover:scale-110 transition"><i class="fa-solid fa-truck-fast"></i></div>
+                <h3 class="text-xl font-bold text-white">Smart Logistika</h3>
+                <p class="text-slate-400 text-sm leading-relaxed">ELD GPS orqali harakat dispetcher tomonidan kuzatiladi.</p>
+            </div>
+
+            <div class="glass p-8 rounded-3xl border border-white/10 hover:border-purple-500/50 hover-glow transition duration-300 space-y-4 relative group" data-aos="fade-up" data-aos-delay="400">
+                <div class="absolute -top-4 -left-4 w-10 h-10 bg-purple-500 text-slate-950 font-black rounded-2xl flex items-center justify-center text-lg shadow-lg">04</div>
+                <div class="w-14 h-14 bg-purple-500/20 text-purple-400 rounded-2xl flex items-center justify-center text-2xl font-bold group-hover:scale-110 transition"><i class="fa-solid fa-handshake"></i></div>
+                <h3 class="text-xl font-bold text-white">Kafolatlangan To'lov</h3>
+                <p class="text-slate-400 text-sm leading-relaxed">Mahsulot yetib borgach, mablag' dehqon balansiga o'tadi.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- STATS & IMPACT SECTION -->
+    <section class="py-20 px-6 max-w-7xl mx-auto relative border-t border-white/10" data-aos="zoom-in">
+        <div class="glass p-10 sm:p-14 rounded-3xl border border-emerald-500/25 shadow-2xl relative overflow-hidden bg-gradient-to-r from-slate-900 via-slate-900 to-emerald-950/30">
+            <div class="text-center max-w-3xl mx-auto mb-14 space-y-4">
+                <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold uppercase tracking-widest">
+                    <i class="fa-solid fa-chart-line"></i> Natijalar
+                </div>
+                <h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight">Raqamlarda AgrarGo Ta'siri</h2>
+                <p class="text-slate-300 text-base sm:text-lg">Hududiy agrar logistikani raqamlashtirish ko'rsatkichlari.</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 text-center">
+                <div class="space-y-2 p-6 rounded-2xl bg-slate-950/40 border border-white/5 hover:border-emerald-500/40 hover-glow transition" data-aos="fade-up" data-aos-delay="100">
+                    <div class="text-4xl sm:text-5xl font-black text-emerald-400">150+</div>
+                    <div class="text-sm font-semibold text-slate-300 uppercase tracking-wider">Faol Fermerlar</div>
+                </div>
+                <div class="space-y-2 p-6 rounded-2xl bg-slate-950/40 border border-white/5 hover:border-blue-500/40 hover-glow transition" data-aos="fade-up" data-aos-delay="200">
+                    <div class="text-4xl sm:text-5xl font-black text-blue-400">45+</div>
+                    <div class="text-sm font-semibold text-slate-300 uppercase tracking-wider">ELD Transporterlar</div>
+                </div>
+                <div class="space-y-2 p-6 rounded-2xl bg-slate-950/40 border border-white/5 hover:border-amber-500/40 hover-glow transition" data-aos="fade-up" data-aos-delay="300">
+                    <div class="text-4xl sm:text-5xl font-black text-amber-400">30%</div>
+                    <div class="text-sm font-semibold text-slate-300 uppercase tracking-wider">Tejalgan Xarajatlar</div>
+                </div>
+                <div class="space-y-2 p-6 rounded-2xl bg-slate-950/40 border border-white/5 hover:border-purple-500/40 hover-glow transition" data-aos="fade-up" data-aos-delay="400">
+                    <div class="text-4xl sm:text-5xl font-black text-purple-400">12 Tonna</div>
+                    <div class="text-sm font-semibold text-slate-300 uppercase tracking-wider">Kunlik Yetkazish</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TESTIMONIALS SECTION -->
+    <section class="py-24 px-6 max-w-7xl mx-auto relative border-t border-white/10">
+        <div class="text-center mb-16 space-y-4" data-aos="fade-up">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-semibold uppercase tracking-widest">
+                <i class="fa-solid fa-comments"></i> Taqrizlar
+            </div>
+            <h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight">Fermer va Hamkorlarimiz Fikrlari</h2>
+            <p class="text-slate-400 text-lg max-w-2xl mx-auto">AgrarGo ekotizimidan amalda foydalanayotganlar taassurotlari.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="glass p-8 rounded-3xl border border-white/10 hover:border-purple-500/40 hover-glow transition duration-300 space-y-6 flex flex-col justify-between" data-aos="fade-up" data-aos-delay="100">
+                <p class="text-slate-300 text-sm leading-relaxed italic">"AgrarGo Farm tufayli to'g'ridan-to'g'ri do'konlarga chiqib, daromadimizni sezilarli oshirdik."</p>
+                <div class="flex items-center gap-4 pt-4 border-t border-white/10">
+                    <div class="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center text-lg">SH</div>
+                    <div><h4 class="font-bold text-white text-base">Shavkat aka</h4><p class="text-xs text-slate-400">Samarqandlik Fermer</p></div>
+                </div>
+            </div>
+
+            <div class="glass p-8 rounded-3xl border border-white/10 hover:border-purple-500/40 hover-glow transition duration-300 space-y-6 flex flex-col justify-between" data-aos="fade-up" data-aos-delay="200">
+                <p class="text-slate-300 text-sm leading-relaxed italic">"ELD GPS tracking va bo'sh yuklarni topish moduli ishlarimizni tartibga soldi. Reyslarimiz aniq."</p>
+                <div class="flex items-center gap-4 pt-4 border-t border-white/10">
+                    <div class="w-12 h-12 rounded-full bg-blue-500/20 text-blue-400 font-bold flex items-center justify-center text-lg">JB</div>
+                    <div><h4 class="font-bold text-white text-base">Jasur Bekmurodov</h4><p class="text-xs text-slate-400">Logistika Haydovchisi</p></div>
+                </div>
+            </div>
+
+            <div class="glass p-8 rounded-3xl border border-white/10 hover:border-purple-500/40 hover-glow transition duration-300 space-y-6 flex flex-col justify-between" data-aos="fade-up" data-aos-delay="300">
+                <p class="text-slate-300 text-sm leading-relaxed italic">"Supermarketimiz uchun dehqondan bevosita yangi mahsulot olishimizda AgrarGo Market qo'l keldi."</p>
+                <div class="flex items-center gap-4 pt-4 border-t border-white/10">
+                    <div class="w-12 h-12 rounded-full bg-amber-500/20 text-amber-400 font-bold flex items-center justify-center text-lg">UT</div>
+                    <div><h4 class="font-bold text-white text-base">Umid Tursunov</h4><p class="text-xs text-slate-400">B2B Market Rahbari</p></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ SECTION (Restored Fully) -->
+    <section class="py-24 px-6 max-w-5xl mx-auto relative border-t border-white/10" data-aos="fade-up">
+        <div class="text-center mb-16 space-y-4">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-400 text-xs font-semibold uppercase tracking-widest">
+                <i class="fa-solid fa-circle-question"></i> FAQ
+            </div>
+            <h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight">Ko'p Beriladigan Savollar</h2>
+            <p class="text-slate-400 text-lg max-w-2xl mx-auto">Platformaning ishlash tartibi bo'yicha batafsil javoblar.</p>
+        </div>
+
+        <div class="space-y-4">
+            <div class="glass p-6 rounded-2xl border border-white/10 hover-glow transition space-y-2" data-aos="fade-up" data-aos-delay="100">
+                <h3 class="text-lg font-bold text-white flex items-center gap-3"><i class="fa-solid fa-chevron-right text-emerald-400 text-xs"></i> Dehqonlar uchun ro'yxatdan o'tish bepulmi?</h3>
+                <p class="text-slate-300 text-sm pl-6 leading-relaxed">Ha, fermerlar va dehqonlar uchun ro'yxatdan o'tish hamda e'lon joylashtirish mutlaqo bepul.</p>
+            </div>
+
+            <div class="glass p-6 rounded-2xl border border-white/10 hover-glow transition space-y-2" data-aos="fade-up" data-aos-delay="200">
+                <h3 class="text-lg font-bold text-white flex items-center gap-3"><i class="fa-solid fa-chevron-right text-emerald-400 text-xs"></i> Sifat kafolati qanday nazorat qilinadi?</h3>
+                <p class="text-slate-300 text-sm pl-6 leading-relaxed">Sifat mezonlari, jarima tizimi va ELD GPS tracking orqali dispetcherlik nazorat qiladi.</p>
+            </div>
+
+            <div class="glass p-6 rounded-2xl border border-white/10 hover-glow transition space-y-2" data-aos="fade-up" data-aos-delay="300">
+                <h3 class="text-lg font-bold text-white flex items-center gap-3"><i class="fa-solid fa-chevron-right text-emerald-400 text-xs"></i> Bozorda narx tushganda hosilni saqlash mumkinmi?</h3>
+                <p class="text-slate-300 text-sm pl-6 leading-relaxed">Ha, Warehouse Storage orqali mahsulotni omborda saqlab, narx ko'tarilganda sotishingiz mumkin.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER SECTION (Restored Fully) -->
+    <footer class="bg-slate-900 border-t border-white/10 pt-16 pb-12 px-6 mt-20" data-aos="fade-up">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
+            <div class="space-y-4">
+                <div class="flex items-center gap-3">
+                    <img src="logo.png" alt="AgrarGo Logo" class="h-12 w-auto rounded-xl object-contain bg-slate-950 p-1 border border-white/10">
+                    <span class="font-extrabold text-xl tracking-wider text-white">AgrarGo</span>
+                </div>
+                <p class="text-slate-400 text-sm leading-relaxed">O'zbekiston agrar sektori uchun zamonaviy raqamli logistika va ta'minot ekotizimi.</p>
+            </div>
+            <div class="space-y-4">
+                <h4 class="font-bold text-white text-base">Modullar</h4>
+                <ul class="space-y-2.5 text-slate-400 text-sm font-medium">
+                    <li><a href="#" class="hover:text-emerald-400 transition">AgrarGo Farm</a></li>
+                    <li><a href="#" class="hover:text-emerald-400 transition">AgrarGo Driver</a></li>
+                    <li><a href="#" class="hover:text-emerald-400 transition">AgrarGo Market</a></li>
+                </ul>
+            </div>
+            <div class="space-y-4">
+                <h4 class="font-bold text-white text-base">Texnologiyalar</h4>
+                <ul class="space-y-2.5 text-slate-400 text-sm font-medium">
+                    <li><a href="#" class="hover:text-emerald-400 transition">ELD GPS Tracking</a></li>
+                    <li><a href="#" class="hover:text-emerald-400 transition">Warehouse Storage</a></li>
+                </ul>
+            </div>
+            <div class="space-y-4">
+                <h4 class="font-bold text-white text-base">Bog'lanish</h4>
+                <ul class="space-y-3 text-slate-400 text-sm">
+                    <li class="flex items-center gap-3"><i class="fa-solid fa-location-dot text-emerald-400"></i> Samarqand, O'zbekiston</li>
+                    <li class="flex items-center gap-3"><i class="fa-solid fa-phone text-emerald-400"></i> +998 78 140 09 09</li>
+                </ul>
+            </div>
+        </div>
+        <div class="max-w-7xl mx-auto border-t border-white/10 pt-8 text-center text-xs text-slate-500 font-medium">
+            <p>&copy; 2026 AgrarGo. Barcha huquqlar himoyalangan.</p>
+        </div>
+    </footer>
+
+    <!-- AOS & Custom Dropdown/Sidebar JS -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 800,
+            once: false,
+            mirror: true,
+            offset: 80
+        });
+
+        // Sidebar logic
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('open');
+        }
+
+        // Custom Dropdown logic with animation
+        const dropdownMenu = document.getElementById('custom-dropdown-menu');
+        const dropdownIcon = document.getElementById('dropdown-icon');
+
+        function toggleDropdown(event) {
+            event.stopPropagation();
+            dropdownMenu.classList.toggle('open');
+            dropdownIcon.classList.toggle('rotate-180');
+        }
+
+        function selectOption(value) {
+            document.getElementById('selected-text').innerText = value;
+            dropdownMenu.classList.remove('open');
+            dropdownIcon.classList.remove('rotate-180');
+        }
+
+        // Close dropdown when clicking outside
+        window.addEventListener('click', function() {
+            if (dropdownMenu.classList.contains('open')) {
+                dropdownMenu.classList.remove('open');
+                dropdownIcon.classList.remove('rotate-180');
+            }
+        });
+    </script>
+</body>
+</html>
