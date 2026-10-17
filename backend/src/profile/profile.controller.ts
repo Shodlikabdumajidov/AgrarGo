@@ -5,6 +5,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/current-user.decorator';
+import { ThrottleProfile } from '../security/throttle-profile';
 import { MAX_AVATAR_BYTES, ProfileService } from './profile.service';
 
 // Har qanday tizimga kirgan foydalanuvchi (rolidan qat'i nazar) o'z profilini boshqaradi.
@@ -25,6 +26,7 @@ export class ProfileController {
   }
 
   @Post('avatar')
+  @ThrottleProfile('upload')
   @UseInterceptors(FileInterceptor('file', { storage: memoryStorage(), limits: { fileSize: MAX_AVATAR_BYTES, files: 1 } }))
   setAvatar(@CurrentUser() user: { id: string }, @UploadedFile() file?: Express.Multer.File) {
     return this.profile.setAvatar(user.id, file);

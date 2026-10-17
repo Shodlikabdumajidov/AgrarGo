@@ -1338,6 +1338,7 @@
                 if (res.status === 400) messages = Array.isArray(raw) ? raw : [raw || "Ma'lumotlar noto'g'ri kiritilgan."];
                 else if (res.status === 401) messages = [raw || "Telefon raqam yoki parol noto'g'ri."];
                 else if (res.status === 403) messages = ["Bu amal faqat fermerlar uchun."];
+                else if (res.status === 429) messages = [raw || "Juda ko'p urinish. Birozdan keyin qayta urinib ko'ring."];
                 else if (res.status === 404) messages = ["E'lon topilmadi. U allaqachon o'chirilgan bo'lishi mumkin."];
                 else if (res.status === 409) messages = [raw || "Bu telefon raqam allaqachon ro'yxatdan o'tgan."];
                 else messages = ["Kutilmagan xatolik yuz berdi. Keyinroq qayta urinib ko'ring."];

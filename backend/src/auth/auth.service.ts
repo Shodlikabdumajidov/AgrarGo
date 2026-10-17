@@ -10,6 +10,9 @@ import { RegisterDriverDto } from './dto/register-driver.dto';
 import { RegisterFarmerDto } from './dto/register-farmer.dto';
 import { RegisterMarketDto } from './dto/register-market.dto';
 
+// Foydalanuvchi topilmaganda ham bcrypt solishtirilishi uchun: javob vaqti orqali raqam mavjudligi bilinmasin
+const TIMING_DUMMY_HASH = bcrypt.hashSync('timing-protection-dummy', 10);
+
 export const USER_WITH_PROFILES = { farmer: true, driver: true, market: true } as const;
 
 type RoleProfile = Pick<Prisma.UserCreateInput, 'farmer' | 'driver' | 'market'>;
@@ -40,9 +43,9 @@ export class AuthService {
       where: { phone: dto.phone },
       include: USER_WITH_PROFILES,
     });
-    // Telefon yoki parol xato bo'lsa bir xil xabar (foydalanuvchi mavjudligini oshkor qilmaslik uchun)
-    const ok = user && user.isActive && (await bcrypt.compare(dto.password, user.passwordHash));
-    if (!user || !ok) throw new UnauthorizedException("Telefon raqam yoki parol noto'g'ri");
+    // Telefon yoki parol xato bo'lsa bir xil xabar va bir xil sarflangan vaqt (foydalanuvchi mavjudligini oshkor qilmaslik uchun)
+    const passwordMatches = await bcrypt.compare(dto.password, user?.passwordHash ?? TIMING_DUMMY_HASH);
+    if (!user || !user.isActive || !passwordMatches) throw new UnauthorizedException("Telefon raqam yoki parol noto'g'ri");
 
     // Parol to'g'ri, lekin raqam boshqa rolda: bitta raqam — bitta rol
     if (dto.role && user.role !== dto.role) {

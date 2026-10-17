@@ -7,6 +7,33 @@ npx prisma migrate dev
 npm run start:dev
 ```
 
+## Testlar
+```bash
+npm test            # unit testlar (bazasiz, ~6 s)
+npm run test:e2e    # e2e: haqiqiy PostgreSQL (agrargo_test), to'liq HTTP stack, ~20 s
+npm run test:all
+```
+E2E testlar `TEST_DATABASE_URL` (standart: `postgresql://postgres:parol@localhost:5432/agrargo_test`) bazasida ishlaydi, migratsiyalarni o'zi qo'llaydi va **faqat nomi `_test` bilan tugaydigan bazada** ishga tushadi (jadvallarni tozalaydi). Qamrov: autentifikatsiya va JWT himoyasi, bitta raqam — bitta rol, bron (qisman miqdor, poyga holatlari, telefon ochilishi), yuk tashish oqimi, rate-limit, CORS, xavfsizlik sarlavhalari va sozlamalarni tekshirish. GitHub Actions: `.github/workflows/backend-ci.yml`.
+
+## Production'ga chiqarish
+1. `.env` (yoki platforma sozlamalari) ni to'ldiring. Ilova noto'g'ri sozlama bilan **ishga tushmaydi** va sabablarini ko'rsatadi:
+   - `NODE_ENV=production`
+   - `JWT_SECRET`: kamida 32 belgi, tasodifiy (`openssl rand -base64 48`); namuna va zaif qiymatlar rad etiladi
+   - `CORS_ORIGINS=https://agrargo.uz,https://www.agrargo.uz`: faqat shu manzillarga ruxsat; `*` va `http://` mumkin emas
+   - `TRUST_PROXY=1`: Nginx/balancer ortida bo'lsangiz (aks holda barcha mijozlar bitta IP bo'lib ko'rinadi va rate-limit hamma uchun bir vaqtda ishlaydi). Proksisiz `0` qoldiring.
+2. `npx prisma migrate deploy && npm run build && npm run start:prod`
+3. `GET /health` — balancer/monitoring uchun (bazani tekshiradi, hech narsa oshkor qilmaydi).
+4. Frontend (`index.html`) dagi `API_URL` ni backend manziliga almashtiring.
+
+### Himoya choralari
+- **Rate-limit** (`@nestjs/throttler`, javob `429` + `Retry-After`): umumiy 120 so'rov/daq/IP; login: telefon raqam bo'yicha 5 urinish/15 daq (keyin 30 daq blok) va IP bo'yicha 20 urinish/15 daq; ro'yxatdan o'tish: 10/soat/IP (uch rol uchun umumiy); avatar yuklash 10/daq; bron 30/daq. Chegaralar `THROTTLE_*` orqali sozlanadi. Hisoblagichlar xotirada saqlanadi: bir nechta nusxada (instance) ishlatilsa, Redis storage ulang.
+- **CORS**: production'da faqat `CORS_ORIGINS`; cookie ishlatilmaydi (JWT `Authorization` sarlavhasida).
+- **Helmet**: CSP, HSTS, `nosniff`, `X-Frame-Options`; `X-Powered-By` o'chirilgan.
+- **JWT**: faqat HS256, muddati `JWT_EXPIRES_IN`; foydalanuvchining roli token ichidan emas, bazadan olinadi; faolsizlantirilgan akkauntlar tokeni ham rad etiladi.
+- **Login**: noto'g'ri parol va mavjud bo'lmagan raqam bir xil xabar va bir xil vaqt sarflanadi (akkaunt mavjudligi oshkor bo'lmaydi).
+- **Yuklash**: fayl turi baytlar bo'yicha tekshiriladi, hajm ≤ 2 MB, papka ro'yxati ko'rsatilmaydi.
+
+
 ## API
 - `POST /auth/farmer/register` — fermer ro'yxatdan o'tishi (telefon `+998XXXXXXXXX`, parol, fullName, farmName, region, district; ixtiyoriy: address, latitude, longitude, stir)
 - `POST /auth/login` — `{ phone, password }` → `{ accessToken, user }`

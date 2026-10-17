@@ -4,6 +4,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/current-user.decorator';
 import { Roles } from '../common/roles.decorator';
 import { RolesGuard } from '../common/roles.guard';
+import { ThrottleProfile } from '../security/throttle-profile';
 import { BookingService } from './booking.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { ListBookingsQuery } from './dto/list-bookings.query';
@@ -15,6 +16,7 @@ export class BookingController {
 
   // --- Supermarket (MARKET) ---
   @Post()
+  @ThrottleProfile('booking')
   @Roles(Role.MARKET)
   create(@CurrentUser() user: any, @Body() dto: CreateBookingDto) {
     return this.bookings.create(this.marketId(user), dto);
