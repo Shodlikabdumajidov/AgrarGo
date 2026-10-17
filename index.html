@@ -89,6 +89,45 @@
         .nav-link-hover:hover::after {
             width: 100%;
         }
+        /* Auth modal (Login / Register) */
+        #auth-modal {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        #auth-modal.open {
+            opacity: 1;
+            visibility: visible;
+        }
+        #auth-modal .auth-card {
+            transform: translateY(20px) scale(0.96);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        #auth-modal.open .auth-card {
+            transform: translateY(0) scale(1);
+        }
+        .auth-input {
+            width: 100%;
+            background: rgba(2, 6, 23, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 0.875rem;
+            padding: 0.75rem 1rem;
+            color: #fff;
+            font-weight: 500;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .auth-input::placeholder { color: #64748b; }
+        .auth-input:focus {
+            border-color: #10B981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+        }
+        select.auth-input option { background: #0f172a; color: #fff; }
+        .auth-tab.active {
+            background: #10B981;
+            color: #020617;
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+        }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans antialiased overflow-x-hidden selection:bg-emerald-500 selection:text-slate-950">
@@ -166,8 +205,8 @@
                 <button class="hidden sm:flex items-center gap-2.5 bg-slate-900 hover:bg-slate-800 text-slate-100 px-5 py-4 rounded-2xl text-base font-semibold border border-white/20 hover:border-emerald-500 transition duration-300 shadow">
                     <i class="fa-solid fa-sliders text-sm text-emerald-400"></i> Filtrlar
                 </button>
-                <button class="bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-extrabold px-8 py-4 rounded-2xl text-base transition duration-200 shadow-xl shadow-emerald-500/30 flex items-center gap-2.5">
-                    <i class="fa-solid fa-user text-sm"></i> Kabinetga Kirish
+                <button id="auth-nav-btn" onclick="onAuthButtonClick()" class="bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-extrabold px-8 py-4 rounded-2xl text-base transition duration-200 shadow-xl shadow-emerald-500/30 flex items-center gap-2.5">
+                    <i class="fa-solid fa-user text-sm"></i> <span id="auth-nav-label">Kabinetga Kirish</span>
                 </button>
             </div>
         </div>
@@ -529,6 +568,108 @@
         </div>
     </footer>
 
+    <!-- AUTH MODAL (Login / Register) -->
+    <div id="auth-modal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="auth-title" onclick="if (event.target === this) closeAuthModal()">
+        <div class="auth-card glass relative w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-3xl border border-emerald-500/25 shadow-2xl shadow-emerald-500/10 bg-gradient-to-b from-slate-900 to-emerald-950/30 p-6 sm:p-8">
+            <button type="button" onclick="closeAuthModal()" aria-label="Yopish" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl p-1 transition hover:rotate-90 duration-300">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="text-center space-y-2 mb-6">
+                <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold uppercase tracking-widest">
+                    <i class="fa-solid fa-seedling"></i> AgrarGo Farm
+                </div>
+                <h2 id="auth-title" class="text-2xl sm:text-3xl font-extrabold tracking-tight">Kabinetga Kirish</h2>
+                <p id="auth-subtitle" class="text-slate-400 text-sm">Telefon raqamingiz va parolingiz bilan kiring.</p>
+            </div>
+
+            <!-- Tabs -->
+            <div class="grid grid-cols-2 gap-1.5 p-1.5 mb-6 rounded-2xl bg-slate-950/60 border border-white/10" role="tablist">
+                <button type="button" id="tab-login" data-tab="login" onclick="switchAuthTab('login')" role="tab" class="auth-tab active py-2.5 rounded-xl text-sm font-bold text-slate-300 transition">Kirish</button>
+                <button type="button" id="tab-register" data-tab="register" onclick="switchAuthTab('register')" role="tab" class="auth-tab py-2.5 rounded-xl text-sm font-bold text-slate-300 transition">Ro'yxatdan o'tish</button>
+            </div>
+
+            <!-- Error / success box -->
+            <div id="auth-alert" class="hidden mb-5 rounded-2xl px-4 py-3 text-sm font-medium" role="alert"></div>
+
+            <!-- LOGIN FORM -->
+            <form id="login-form" class="space-y-4" novalidate>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="login-phone">Telefon raqam</label>
+                    <div class="flex items-stretch gap-2">
+                        <span class="flex items-center px-3 rounded-[0.875rem] bg-slate-950/60 border border-white/15 text-emerald-400 font-bold text-sm">+998</span>
+                        <input id="login-phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="90 123 45 67" class="auth-input">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="login-password">Parol</label>
+                    <input id="login-password" name="password" type="password" autocomplete="current-password" placeholder="••••••••" class="auth-input">
+                </div>
+                <button type="submit" class="auth-submit w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed text-slate-950 font-extrabold py-3.5 rounded-2xl transition duration-200 shadow-xl shadow-emerald-500/30 flex items-center justify-center gap-2.5">
+                    <i class="fa-solid fa-right-to-bracket"></i> <span>Kirish</span>
+                </button>
+                <p class="text-center text-sm text-slate-400">Hisobingiz yo'qmi? <button type="button" onclick="switchAuthTab('register')" class="text-emerald-400 font-bold hover:underline">Ro'yxatdan o'ting</button></p>
+            </form>
+
+            <!-- REGISTER FORM -->
+            <form id="register-form" class="space-y-4 hidden" novalidate>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="reg-fullName">Ism va familiya</label>
+                    <input id="reg-fullName" name="fullName" type="text" autocomplete="name" placeholder="Ali Valiyev" class="auth-input">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="reg-phone">Telefon raqam</label>
+                    <div class="flex items-stretch gap-2">
+                        <span class="flex items-center px-3 rounded-[0.875rem] bg-slate-950/60 border border-white/15 text-emerald-400 font-bold text-sm">+998</span>
+                        <input id="reg-phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="90 123 45 67" class="auth-input">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="reg-farmName">Xo'jalik nomi</label>
+                    <input id="reg-farmName" name="farmName" type="text" placeholder="Ali Agro" class="auth-input">
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="reg-region">Viloyat</label>
+                        <select id="reg-region" name="region" class="auth-input">
+                            <option value="">Tanlang...</option>
+                            <option>Toshkent shahri</option>
+                            <option>Toshkent viloyati</option>
+                            <option>Andijon</option>
+                            <option>Buxoro</option>
+                            <option>Farg'ona</option>
+                            <option>Jizzax</option>
+                            <option>Namangan</option>
+                            <option>Navoiy</option>
+                            <option>Qashqadaryo</option>
+                            <option>Qoraqalpog'iston</option>
+                            <option>Samarqand</option>
+                            <option>Sirdaryo</option>
+                            <option>Surxondaryo</option>
+                            <option>Xorazm</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="reg-district">Tuman</label>
+                        <input id="reg-district" name="district" type="text" placeholder="Urgut" class="auth-input">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="reg-stir">STIR <span class="text-slate-500 normal-case font-medium">(ixtiyoriy)</span></label>
+                    <input id="reg-stir" name="stir" type="text" inputmode="numeric" maxlength="9" placeholder="9 ta raqam" class="auth-input">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="reg-password">Parol</label>
+                    <input id="reg-password" name="password" type="password" autocomplete="new-password" placeholder="Kamida 8 ta belgi" class="auth-input">
+                </div>
+                <button type="submit" class="auth-submit w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed text-slate-950 font-extrabold py-3.5 rounded-2xl transition duration-200 shadow-xl shadow-emerald-500/30 flex items-center justify-center gap-2.5">
+                    <i class="fa-solid fa-user-plus"></i> <span>Ro'yxatdan o'tish</span>
+                </button>
+                <p class="text-center text-sm text-slate-400">Hisobingiz bormi? <button type="button" onclick="switchAuthTab('login')" class="text-emerald-400 font-bold hover:underline">Kirish</button></p>
+            </form>
+        </div>
+    </div>
+
     <!-- AOS & Custom Dropdown/Sidebar JS -->
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
@@ -571,6 +712,215 @@
                 dropdownIcon.classList.remove('rotate-180');
             }
         });
+
+        // ===== AUTH (Login / Register) =====
+        const API_URL = 'http://localhost:3000'; // production'da backend manziliga almashtiring
+        const TOKEN_KEY = 'agrargo_token';
+        const USER_KEY = 'agrargo_user';
+
+        const authModal = document.getElementById('auth-modal');
+        const authAlert = document.getElementById('auth-alert');
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+
+        function storageGet(key) {
+            try { return localStorage.getItem(key); } catch (e) { return null; }
+        }
+        function storageSet(key, value) {
+            try { localStorage.setItem(key, value); } catch (e) {}
+        }
+        function storageRemove(key) {
+            try { localStorage.removeItem(key); } catch (e) {}
+        }
+
+        function openAuthModal(tab) {
+            switchAuthTab(tab || 'login');
+            authModal.classList.add('open');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function closeAuthModal() {
+            authModal.classList.remove('open');
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        function switchAuthTab(tab) {
+            const isLogin = tab === 'login';
+            loginForm.classList.toggle('hidden', !isLogin);
+            registerForm.classList.toggle('hidden', isLogin);
+            document.getElementById('tab-login').classList.toggle('active', isLogin);
+            document.getElementById('tab-register').classList.toggle('active', !isLogin);
+            document.getElementById('auth-title').innerText = isLogin ? 'Kabinetga Kirish' : "Fermer sifatida ro'yxatdan o'tish";
+            document.getElementById('auth-subtitle').innerText = isLogin
+                ? 'Telefon raqamingiz va parolingiz bilan kiring.'
+                : "Bepul ro'yxatdan o'ting va mahsulotingizni vositachisiz soting.";
+            hideAuthAlert();
+        }
+
+        function showAuthAlert(messages, type) {
+            const list = Array.isArray(messages) ? messages : [messages];
+            const isError = type !== 'success';
+            authAlert.className = 'mb-5 rounded-2xl px-4 py-3 text-sm font-medium border ' + (isError
+                ? 'bg-rose-500/10 border-rose-500/30 text-rose-300'
+                : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300');
+            authAlert.innerHTML = list.map(function (m) {
+                const div = document.createElement('div');
+                div.className = 'flex items-start gap-2';
+                const icon = document.createElement('i');
+                icon.className = 'fa-solid mt-0.5 ' + (isError ? 'fa-circle-exclamation' : 'fa-circle-check');
+                const span = document.createElement('span');
+                span.textContent = m; // textContent: server xabari HTML sifatida talqin qilinmaydi
+                div.appendChild(icon);
+                div.appendChild(span);
+                return div.outerHTML;
+            }).join('');
+        }
+
+        function hideAuthAlert() {
+            authAlert.className = 'hidden';
+            authAlert.innerHTML = '';
+        }
+
+        // "90 123 45 67" / "+998901234567" / "998901234567" -> "+998901234567"
+        function normalizePhone(raw) {
+            let digits = String(raw).replace(/\D/g, '');
+            if (digits.startsWith('998')) digits = digits.slice(3);
+            return '+998' + digits;
+        }
+
+        function setLoading(form, loading) {
+            const btn = form.querySelector('.auth-submit');
+            btn.disabled = loading;
+            btn.querySelector('span').innerText = loading
+                ? 'Yuborilmoqda...'
+                : (form === loginForm ? 'Kirish' : "Ro'yxatdan o'tish");
+        }
+
+        async function authRequest(path, payload) {
+            let res;
+            try {
+                res = await fetch(API_URL + path, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            } catch (e) {
+                throw { status: 0, messages: ["Serverga ulanib bo'lmadi. Internetni tekshirib, qayta urinib ko'ring."] };
+            }
+            let data = null;
+            try { data = await res.json(); } catch (e) {}
+            if (!res.ok) {
+                const raw = data && data.message ? data.message : null;
+                let messages;
+                if (res.status === 400) messages = Array.isArray(raw) ? raw : [raw || "Ma'lumotlar noto'g'ri kiritilgan."];
+                else if (res.status === 401) messages = [raw || "Telefon raqam yoki parol noto'g'ri."];
+                else if (res.status === 409) messages = [raw || "Bu telefon raqam allaqachon ro'yxatdan o'tgan."];
+                else messages = ["Kutilmagan xatolik yuz berdi. Keyinroq qayta urinib ko'ring."];
+                throw { status: res.status, messages: messages };
+            }
+            return data;
+        }
+
+        function saveSession(data) {
+            storageSet(TOKEN_KEY, data.accessToken);
+            storageSet(USER_KEY, JSON.stringify(data.user));
+            updateAuthButton();
+        }
+
+        function getStoredUser() {
+            try { return JSON.parse(storageGet(USER_KEY)); } catch (e) { return null; }
+        }
+
+        function updateAuthButton() {
+            const user = storageGet(TOKEN_KEY) ? getStoredUser() : null;
+            document.getElementById('auth-nav-label').innerText = user ? user.fullName : 'Kabinetga Kirish';
+        }
+
+        function onAuthButtonClick() {
+            if (storageGet(TOKEN_KEY)) {
+                if (confirm('Tizimdan chiqmoqchimisiz?')) {
+                    storageRemove(TOKEN_KEY);
+                    storageRemove(USER_KEY);
+                    updateAuthButton();
+                }
+            } else {
+                openAuthModal('login');
+            }
+        }
+
+        function onAuthSuccess(data, message) {
+            saveSession(data);
+            showAuthAlert(message, 'success');
+            setTimeout(function () {
+                closeAuthModal();
+                loginForm.reset();
+                registerForm.reset();
+                hideAuthAlert();
+            }, 1200);
+        }
+
+        loginForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            hideAuthAlert();
+            const phone = normalizePhone(loginForm.phone.value);
+            const password = loginForm.password.value;
+            const errors = [];
+            if (!/^\+998\d{9}$/.test(phone)) errors.push("Telefon raqamni to'liq kiriting (9 ta raqam).");
+            if (!password) errors.push('Parolni kiriting.');
+            if (errors.length) return showAuthAlert(errors);
+
+            setLoading(loginForm, true);
+            try {
+                const data = await authRequest('/auth/login', { phone: phone, password: password });
+                onAuthSuccess(data, 'Xush kelibsiz, ' + data.user.fullName + '!');
+            } catch (err) {
+                showAuthAlert(err.messages);
+            } finally {
+                setLoading(loginForm, false);
+            }
+        });
+
+        registerForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            hideAuthAlert();
+            const f = registerForm;
+            const payload = {
+                fullName: f.fullName.value.trim(),
+                phone: normalizePhone(f.phone.value),
+                farmName: f.farmName.value.trim(),
+                region: f.region.value,
+                district: f.district.value.trim(),
+                password: f.password.value
+            };
+            const stir = f.stir.value.trim();
+            if (stir) payload.stir = stir; // STIR ixtiyoriy
+
+            const errors = [];
+            if (payload.fullName.length < 2) errors.push('Ism va familiyani kiriting.');
+            if (!/^\+998\d{9}$/.test(payload.phone)) errors.push("Telefon raqamni to'liq kiriting (9 ta raqam).");
+            if (payload.farmName.length < 2) errors.push("Xo'jalik nomini kiriting.");
+            if (!payload.region) errors.push('Viloyatni tanlang.');
+            if (!payload.district) errors.push('Tumanni kiriting.');
+            if (stir && !/^\d{9}$/.test(stir)) errors.push("STIR 9 ta raqamdan iborat bo'lishi kerak.");
+            if (payload.password.length < 8) errors.push("Parol kamida 8 ta belgidan iborat bo'lishi kerak.");
+            if (errors.length) return showAuthAlert(errors);
+
+            setLoading(registerForm, true);
+            try {
+                const data = await authRequest('/auth/farmer/register', payload);
+                onAuthSuccess(data, "Muvaffaqiyatli ro'yxatdan o'tdingiz!");
+            } catch (err) {
+                showAuthAlert(err.messages);
+            } finally {
+                setLoading(registerForm, false);
+            }
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && authModal.classList.contains('open')) closeAuthModal();
+        });
+
+        updateAuthButton();
     </script>
 </body>
 </html>
