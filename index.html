@@ -2179,10 +2179,13 @@
         const dashContent = document.getElementById('dash-content');
         const DASH_TABS = {
             FARMER: [['overview', 'fa-gauge', 'Umumiy'], ['bookings', 'fa-inbox', 'Kelgan bronlar'],
+                     ['shipments', 'fa-truck-ramp-box', 'Yuk tashish'],
                      ['products', 'fa-boxes-stacked', "E'lonlarim"], ['profile', 'fa-id-card', 'Profil']],
             MARKET: [['overview', 'fa-gauge', 'Umumiy'], ['bookings', 'fa-clipboard-list', 'Mening bronlarim'],
+                     ['shipments', 'fa-truck-ramp-box', 'Yuk tashish'],
                      ['catalog', 'fa-store', 'Katalog'], ['profile', 'fa-id-card', 'Profil']],
-            DRIVER: [['overview', 'fa-gauge', 'Umumiy'], ['profile', 'fa-id-card', 'Profil']]
+            DRIVER: [['overview', 'fa-gauge', 'Umumiy'], ['loads', 'fa-boxes-packing', 'Mavjud yuklar'],
+                     ['myloads', 'fa-truck-fast', 'Mening yuklarim'], ['profile', 'fa-id-card', 'Profil']]
         };
         const BOOKING_STATUS = {
             PENDING:   { label: 'Kutilmoqda',      cls: 'bg-amber-500/15 text-amber-400 border-amber-500/30' },
@@ -2214,7 +2217,9 @@
             }
             if (!DASH_TABS[user.role]) return showToast("Bu rol uchun kabinet mavjud emas.");
             closeAccountMenu();
-            dashBookingFilter = 'ALL'; // oldingi foydalanuvchining filtri qolib ketmasin
+            dashBookingFilter = 'ALL'; // oldingi foydalanuvchining filtrlari qolib ketmasin
+            dashShipFilter = 'ALL';
+            dashLoadsRegion = '';
             renderDashHeader();
             const nav = document.getElementById('dash-tabs');
             nav.replaceChildren.apply(nav, DASH_TABS[user.role].map(function (t) {
@@ -2223,12 +2228,12 @@
                 b.dataset.tab = t[0];
                 b.appendChild(el('i', 'fa-solid w-4 text-center ' + t[1]));
                 b.appendChild(el('span', '', t[2]));
-                if (t[0] === 'bookings') {
+                if (t[0] === 'bookings' || t[0] === 'loads') {
                     const badge = el('span', 'hidden ml-auto min-w-[1.25rem] h-5 px-1.5 rounded-full bg-amber-400 text-slate-950 text-[11px] font-black items-center justify-center');
-                    badge.id = 'dash-badge-bookings';
+                    badge.id = 'dash-badge-' + t[0];
                     b.appendChild(badge);
                 }
-                b.addEventListener('click', function () { dashBookingFilter = 'ALL'; selectDashTab(t[0]); });
+                b.addEventListener('click', function () { dashBookingFilter = 'ALL'; dashShipFilter = 'ALL'; selectDashTab(t[0]); });
                 return b;
             }));
             dashboardView.classList.add('open');
@@ -2249,9 +2254,15 @@
             const user = currentUser();
             if (!user) return;
             dashTab = tab;
-            document.querySelectorAll('.dash-tab').forEach(function (b) { b.classList.toggle('active', b.dataset.tab === tab); });
+            document.querySelectorAll('.dash-tab').forEach(function (b) {
+                const on = b.dataset.tab === tab;
+                b.classList.toggle('active', on);
+                if (on) b.scrollIntoView({ inline: 'center', block: 'nearest' }); // mobilda gorizontal tab satrida ko'rinib turadi
+            });
             dashboardView.scrollTo({ top: 0 });
             if (tab === 'bookings') renderDashBookings(user);
+            else if (tab === 'shipments' || tab === 'myloads') renderDashShipments(user);
+            else if (tab === 'loads') renderDashLoads(user);
             else if (tab === 'profile') renderDashProfile();
             else renderDashOverview(user);
         }
@@ -2283,8 +2294,8 @@
             return box;
         }
 
-        function setDashBadge(count) {
-            const badge = document.getElementById('dash-badge-bookings');
+        function setTabBadge(tab, count) {
+            const badge = document.getElementById('dash-badge-' + tab);
             if (!badge) return;
             badge.innerText = count;
             badge.classList.toggle('hidden', !count);
@@ -2335,7 +2346,7 @@
                     const pending = bookings.filter(function (b) { return b.status === 'PENDING'; });
                     const approved = bookings.filter(function (b) { return b.status === 'APPROVED'; });
                     const stock = active.reduce(function (sum, p) { return sum + Number(p.quantityKg); }, 0);
-                    setDashBadge(pending.length);
+                    setTabBadge('bookings', pending.length);
                     const stats = el('div', 'grid grid-cols-2 lg:grid-cols-4 gap-4');
                     stats.appendChild(statCard('fa-boxes-stacked', "Faol e'lonlar", String(active.length), 'text-emerald-400'));
                     stats.appendChild(statCard('fa-weight-hanging', 'Mavjud qoldiq', formatNumber(stock) + ' kg', 'text-blue-400'));
@@ -2345,6 +2356,7 @@
                     const actions = el('div', 'flex flex-wrap gap-3');
                     actions.appendChild(actionBtn('fa-plus', "Yangi e'lon qo'shish", true, function () { openProductModal(); }));
                     actions.appendChild(actionBtn('fa-boxes-stacked', "Mening e'lonlarim", false, openMyProducts));
+                    actions.appendChild(actionBtn('fa-truck-ramp-box', 'Yuk tashish', false, function () { selectDashTab('shipments'); }));
                     nodes.push(actions);
                     nodes.push(sectionTitle('Tasdiqlashni kutayotgan bronlar', "Tasdiqlagandan keyin xaridorning telefon raqami ochiladi."));
                     if (pending.length) pending.slice(0, 5).forEach(function (b) { nodes.push(buildBookingCard(b, 'farmer')); });
@@ -2364,25 +2376,34 @@
                     const actions = el('div', 'flex flex-wrap gap-3');
                     actions.appendChild(actionBtn('fa-store', "Katalogga o'tish", true, function () { closeDashboard(); scrollToMarket(); }));
                     actions.appendChild(actionBtn('fa-clipboard-list', 'Barcha bronlarim', false, function () { selectDashTab('bookings'); }));
+                    actions.appendChild(actionBtn('fa-truck-ramp-box', 'Yuk tashish', false, function () { selectDashTab('shipments'); }));
                     nodes.push(actions);
                     nodes.push(sectionTitle("So'nggi bronlar"));
                     if (bookings.length) bookings.slice(0, 5).forEach(function (b) { nodes.push(buildBookingCard(b, 'market')); });
                     else nodes.push(dashMessage('fa-store', "Hali bron qilmagansiz. Katalogdan mahsulot tanlang."));
                 } else {
-                    const u = await authed('GET', '/profile');
+                    const res = await Promise.all([authed('GET', '/profile'), authed('GET', '/shipments/mine'), authed('GET', '/shipments/available')]);
                     if (rid !== dashRenderId) return;
+                    const u = res[0], mine = res[1], open = res[2];
                     saveUser(u);
                     const d = u.driver || {};
+                    const active = mine.filter(function (x) { return x.status === 'LOADING' || x.status === 'IN_TRANSIT'; });
+                    const delivered = mine.filter(function (x) { return x.status === 'DELIVERED'; });
+                    setTabBadge('loads', open.length);
+                    hello.appendChild(el('p', 'text-xs text-slate-500', [d.vehicleType, d.plateNumber, d.region].filter(Boolean).join(' · ')));
                     const stats = el('div', 'grid grid-cols-2 lg:grid-cols-4 gap-4');
-                    stats.appendChild(statCard('fa-truck', 'Transport', d.vehicleType || '—', 'text-blue-400'));
-                    stats.appendChild(statCard('fa-id-badge', 'Davlat raqami', d.plateNumber || '—', 'text-emerald-400'));
-                    stats.appendChild(statCard('fa-weight-hanging', "Yuk sig'imi", d.capacityKg ? formatNumber(d.capacityKg) + ' kg' : '—', 'text-amber-400'));
-                    stats.appendChild(statCard('fa-location-dot', 'Hudud', d.region || '—', 'text-rose-400'));
+                    stats.appendChild(statCard('fa-truck-fast', 'Faol yuk', String(active.length), 'text-blue-400'));
+                    stats.appendChild(statCard('fa-circle-check', 'Yetkazilgan', String(delivered.length), 'text-emerald-400'));
+                    stats.appendChild(statCard('fa-boxes-packing', "Mavjud yuklar", String(open.length), 'text-amber-400'));
+                    stats.appendChild(statCard('fa-weight-hanging', "Yuk sig'imi", d.capacityKg ? formatNumber(d.capacityKg) + ' kg' : '—', 'text-rose-400'));
                     nodes.push(stats);
-                    nodes.push(dashMessage('fa-route', "Yuk buyurtmalari va marshrutlar moduli keyingi bosqichda ishga tushadi. Hozircha profilingizni to'liq va dolzarb saqlang."));
                     const actions = el('div', 'flex flex-wrap gap-3');
-                    actions.appendChild(actionBtn('fa-id-card', "Profilni tahrirlash", true, function () { selectDashTab('profile'); }));
+                    actions.appendChild(actionBtn('fa-boxes-packing', "Mavjud yuklarni ko'rish", true, function () { selectDashTab('loads'); }));
+                    actions.appendChild(actionBtn('fa-id-card', 'Profilni tahrirlash', false, function () { selectDashTab('profile'); }));
                     nodes.push(actions);
+                    nodes.push(sectionTitle('Faol yuk'));
+                    if (active.length) active.forEach(function (x) { nodes.push(buildShipmentCard(x, 'driver-own')); });
+                    else nodes.push(dashMessage('fa-truck', "Hozir faol yuk yo'q. \"Mavjud yuklar\" bo'limidan yuk tanlang."));
                 }
                 dashContent.replaceChildren.apply(dashContent, nodes);
             } catch (err) {
@@ -2476,7 +2497,7 @@
         }
 
         const BOOKING_DONE_MSG = {
-            approve: "Bron tasdiqlandi. Xaridorning telefon raqami ochildi.",
+            approve: "Bron tasdiqlandi. Xaridorning telefon raqami ochildi va yuk tashish buyurtmasi yaratildi.",
             reject: "Bron rad etildi. Miqdor e'longa qaytarildi.",
             cancel: "Bron bekor qilindi. Miqdor e'longa qaytarildi."
         };
@@ -2506,7 +2527,7 @@
                 return dashContent.replaceChildren(dashMessage('fa-triangle-exclamation text-rose-400', err.messages[0], function () { renderDashBookings(user); }));
             }
             if (rid !== dashRenderId) return;
-            if (side === 'farmer') setDashBadge(list.filter(function (b) { return b.status === 'PENDING'; }).length);
+            if (side === 'farmer') setTabBadge('bookings', list.filter(function (b) { return b.status === 'PENDING'; }).length);
 
             const head = el('div', 'space-y-3');
             head.appendChild(el('h2', 'text-2xl font-extrabold text-white', side === 'farmer' ? 'Kelgan bronlar' : 'Mening bronlarim'));
@@ -2524,6 +2545,282 @@
             const nodes = [head];
             if (items.length) items.forEach(function (b) { nodes.push(buildBookingCard(b, side)); });
             else nodes.push(dashMessage('fa-inbox', list.length ? "Bu holatdagi bronlar yo'q." : (side === 'farmer' ? "Hali bron so'rovlari kelmagan." : "Hali bron qilmagansiz. Katalogdan mahsulot tanlang.")));
+            dashContent.replaceChildren.apply(dashContent, nodes);
+        }
+
+        // ----- Yuk tashish (Shipments) -----
+        const SHIPMENT_STEPS = [
+            { key: 'OPEN',       label: 'Haydovchi kutilmoqda', icon: 'fa-hourglass-half' },
+            { key: 'LOADING',    label: 'Yuklanmoqda',          icon: 'fa-boxes-packing' },
+            { key: 'IN_TRANSIT', label: "Yo'lda",               icon: 'fa-truck-fast' },
+            { key: 'DELIVERED',  label: 'Yetkazib berildi',     icon: 'fa-circle-check' }
+        ];
+        const SHIPMENT_STATUS = {
+            OPEN:       { label: 'Haydovchi kutilmoqda', cls: 'bg-amber-500/15 text-amber-400 border-amber-500/30' },
+            LOADING:    { label: 'Yuklanmoqda',          cls: 'bg-blue-500/15 text-blue-400 border-blue-500/30' },
+            IN_TRANSIT: { label: "Yo'lda",               cls: 'bg-purple-500/15 text-purple-300 border-purple-500/30' },
+            DELIVERED:  { label: 'Yetkazib berildi',     cls: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' }
+        };
+        // Yuk belgisi marshrut chizig'ida shu foizda turadi
+        const SHIPMENT_PROGRESS = { OPEN: 0, LOADING: 12, IN_TRANSIT: 58, DELIVERED: 100 };
+        let dashShipFilter = 'ALL';
+
+        function routeEnd(icon, title, place, align) {
+            const box = el('div', 'min-w-0 flex-1 ' + align);
+            const head = el('div', 'text-[10px] uppercase tracking-wider text-slate-500 font-bold flex items-center gap-1.5 ' + (align === 'text-right' ? 'justify-end' : ''));
+            head.appendChild(el('i', 'fa-solid text-emerald-400 ' + icon));
+            head.appendChild(el('span', '', title));
+            box.appendChild(head);
+            box.appendChild(el('div', 'font-extrabold text-white text-sm sm:text-base break-words', place.region));
+            box.appendChild(el('div', 'text-xs text-slate-400 break-words', place.district + (place.address ? ' · ' + place.address : '')));
+            return box;
+        }
+
+        function shipmentRoute(s) {
+            const pct = SHIPMENT_PROGRESS[s.status] / 100;
+            const box = el('div', 'space-y-2');
+            const ends = el('div', 'flex items-start justify-between gap-4');
+            ends.appendChild(routeEnd('fa-location-dot', 'Yuk olinadi', s.origin, 'text-left'));
+            ends.appendChild(routeEnd('fa-flag-checkered', 'Yetkaziladi', s.destination, 'text-right'));
+            box.appendChild(ends);
+
+            const track = el('div', 'relative h-9 mx-1');
+            track.appendChild(el('div', 'absolute left-3 right-3 top-1/2 -translate-y-1/2 h-1 rounded-full bg-white/10'));
+            const fill = el('div', 'absolute left-3 top-1/2 -translate-y-1/2 h-1 rounded-full bg-gradient-to-r from-emerald-500 to-teal-300 transition-all duration-1000');
+            fill.style.width = 'calc((100% - 1.5rem) * ' + pct + ')';
+            track.appendChild(fill);
+            track.appendChild(el('div', 'absolute left-0 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-emerald-400 ring-4 ring-emerald-500/20'));
+            track.appendChild(el('div', 'absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2 ' + (s.status === 'DELIVERED' ? 'bg-emerald-400 border-emerald-400' : 'border-white/30 bg-slate-900')));
+            const truck = el('div', 'absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-9 h-9 rounded-full bg-slate-900 border border-emerald-400 text-emerald-300 flex items-center justify-center text-sm shadow-lg shadow-emerald-500/30 transition-all duration-1000');
+            truck.style.left = 'calc(0.75rem + (100% - 1.5rem) * ' + pct + ')';
+            truck.appendChild(el('i', 'fa-solid fa-truck'));
+            track.appendChild(truck);
+            box.appendChild(track);
+            return box;
+        }
+
+        function shipmentStepper(s) {
+            const idx = SHIPMENT_STEPS.findIndex(function (x) { return x.key === s.status; });
+            const wrap = el('div', 'relative grid grid-cols-4 gap-1');
+            wrap.appendChild(el('div', 'absolute top-[18px] left-[12.5%] right-[12.5%] h-0.5 bg-white/10'));
+            const bar = el('div', 'absolute top-[18px] left-[12.5%] h-0.5 bg-emerald-400 transition-all duration-1000');
+            bar.style.width = 'calc(75% * ' + (idx / 3) + ')';
+            wrap.appendChild(bar);
+            SHIPMENT_STEPS.forEach(function (st, i) {
+                const reached = i <= idx;
+                const current = i === idx && s.status !== 'DELIVERED';
+                const done = reached && !current;
+                const col = el('div', 'relative flex flex-col items-center text-center gap-1');
+                const circle = el('div', 'w-9 h-9 rounded-full flex items-center justify-center text-sm border-2 z-10 ' + (done
+                    ? 'bg-emerald-500 border-emerald-500 text-slate-950'
+                    : current ? 'bg-slate-900 border-emerald-400 text-emerald-300 ring-4 ring-emerald-500/20 animate-pulse'
+                    : 'bg-slate-900 border-white/15 text-slate-500'));
+                circle.appendChild(el('i', 'fa-solid ' + (done ? 'fa-check' : st.icon)));
+                col.appendChild(circle);
+                col.appendChild(el('div', 'text-[10px] sm:text-xs font-bold leading-tight ' + (reached ? 'text-white' : 'text-slate-500'), st.label));
+                if (reached) {
+                    const evs = s.events.filter(function (e) { return e.status === st.key; });
+                    if (evs.length) col.appendChild(el('div', 'text-[10px] text-slate-400', formatDateTime(evs[evs.length - 1].createdAt)));
+                }
+                wrap.appendChild(col);
+            });
+            return wrap;
+        }
+
+        function partyBox(title, name, sub, phone, address) {
+            const box = el('div', 'rounded-xl bg-slate-950/50 border border-white/10 px-4 py-3 flex items-center justify-between gap-3');
+            const who = el('div', 'min-w-0');
+            who.appendChild(el('div', 'text-[10px] uppercase tracking-wider text-emerald-400 font-bold', title));
+            who.appendChild(el('div', 'text-sm font-bold text-white truncate', name));
+            if (sub) who.appendChild(el('div', 'text-xs text-slate-400 truncate', sub));
+            if (address) who.appendChild(el('div', 'text-xs text-slate-400 break-words', address));
+            box.appendChild(who);
+            if (phone) {
+                const call = el('a', 'shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-500 text-slate-950 text-xs sm:text-sm font-extrabold hover:bg-emerald-400 transition');
+                call.href = 'tel:' + phone;
+                call.appendChild(el('i', 'fa-solid fa-phone'));
+                call.appendChild(el('span', '', phone));
+                box.appendChild(call);
+            }
+            return box;
+        }
+
+        const SHIPMENT_DONE_MSG = {
+            accept: "Yuk sizga biriktirildi. Manzil va aloqa ma'lumotlari ochildi.",
+            release: "Yuk qaytarildi va boshqa haydovchilar uchun ochiq.",
+            LOADING: "Yo'lga chiqdingiz. Holat: Yo'lda.",
+            IN_TRANSIT: "Yuk yetkazib berildi. Rahmat!"
+        };
+
+        async function shipmentAction(s, kind, button) {
+            button.disabled = true;
+            try {
+                if (kind === 'advance') await authed('PATCH', '/shipments/' + s.id + '/advance');
+                else await authed('POST', '/shipments/' + s.id + '/' + kind);
+                showToast(SHIPMENT_DONE_MSG[kind === 'advance' ? s.status : kind], 3500);
+                if (kind === 'accept') { dashShipFilter = 'ALL'; return selectDashTab('myloads'); }
+            } catch (err) {
+                if (err.status === 401) return;
+                showToast(err.messages[0], 5000);
+            }
+            selectDashTab(dashTab);
+        }
+
+        // viewer: 'driver-open' | 'driver-own' | 'farmer' | 'market'
+        function buildShipmentCard(s, viewer) {
+            const meta = SHIPMENT_STATUS[s.status];
+            const card = el('div', 'glass rounded-2xl border border-white/10 hover:border-emerald-500/40 transition p-5 space-y-5');
+
+            const top = el('div', 'flex items-start justify-between gap-3');
+            const title = el('div', 'min-w-0');
+            title.appendChild(el('h4', 'font-extrabold text-white text-lg truncate', s.cargoName));
+            const sub = el('p', 'text-xs text-slate-400 font-semibold uppercase tracking-wider');
+            sub.appendChild(document.createTextNode(s.category + ' · '));
+            sub.appendChild(el('span', 'text-emerald-300', formatNumber(s.weightKg) + ' kg'));
+            title.appendChild(sub);
+            top.appendChild(title);
+            top.appendChild(el('span', 'shrink-0 text-xs font-bold px-3 py-1 rounded-full border ' + meta.cls, meta.label));
+            card.appendChild(top);
+
+            card.appendChild(shipmentRoute(s));
+            if (viewer !== 'driver-open') card.appendChild(shipmentStepper(s));
+
+            // Kontaktlar: faqat backend ruxsat bergan bo'lsa to'ldiriladi
+            const people = el('div', 'space-y-2');
+            if (viewer === 'driver-own') {
+                if (s.farmer) people.appendChild(partyBox('Yuk olinadigan joy', s.farmer.farmName, s.farmer.fullName, s.farmer.phone, s.origin.address));
+                if (s.market) people.appendChild(partyBox('Yetkaziladigan joy', s.market.companyName, s.market.fullName, s.market.phone, s.destination.address));
+            } else if (viewer === 'farmer' || viewer === 'market') {
+                if (viewer === 'farmer' && s.market) people.appendChild(partyBox('Xaridor', s.market.companyName, s.market.fullName, s.market.phone));
+                if (viewer === 'market' && s.farmer) people.appendChild(partyBox('Fermer', s.farmer.farmName, s.farmer.fullName, s.farmer.phone));
+                if (s.driver) people.appendChild(partyBox('Haydovchi', s.driver.fullName, s.driver.vehicleType + ' · ' + s.driver.plateNumber, s.driver.phone));
+                else {
+                    const wait = el('p', 'text-xs text-slate-400 flex items-center gap-2');
+                    wait.appendChild(el('i', 'fa-solid fa-hourglass-half text-amber-400'));
+                    wait.appendChild(document.createTextNode('Haydovchi hali biriktirilmagan. Biriktirilganda ma\'lumotlari shu yerda ko\'rinadi.'));
+                    people.appendChild(wait);
+                }
+            } else {
+                const lock = el('p', 'text-[11px] text-slate-500 flex items-center gap-1.5');
+                lock.appendChild(el('i', 'fa-solid fa-lock'));
+                lock.appendChild(document.createTextNode("Aniq manzil va aloqa ma'lumotlari yukni biriktirgandan keyin ochiladi."));
+                people.appendChild(lock);
+                if (s.fitsCapacity === false) {
+                    const warn = el('p', 'text-xs font-semibold text-amber-300 flex items-center gap-2');
+                    warn.appendChild(el('i', 'fa-solid fa-triangle-exclamation'));
+                    warn.appendChild(document.createTextNode("Yuk transportingiz sig'imidan og'ir."));
+                    people.appendChild(warn);
+                }
+            }
+            if (people.childNodes.length) card.appendChild(people);
+            if (s.deliveredAt) card.appendChild(el('p', 'text-xs text-emerald-400 font-semibold', 'Yetkazib berilgan: ' + formatDateTime(s.deliveredAt)));
+
+            const btn = function (icon, label, cls, kind) {
+                const b = el('button', 'flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-extrabold border transition disabled:opacity-50 disabled:cursor-not-allowed ' + cls);
+                b.type = 'button';
+                b.appendChild(el('i', 'fa-solid ' + icon));
+                b.appendChild(el('span', '', label));
+                b.addEventListener('click', function () { shipmentAction(s, kind, b); });
+                return b;
+            };
+            const actions = el('div', 'flex flex-wrap gap-2');
+            if (viewer === 'driver-open') {
+                const take = btn('fa-hand', 'Yukni olish', 'bg-emerald-500 border-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-lg shadow-emerald-500/25', 'accept');
+                if (s.fitsCapacity === false) take.disabled = true;
+                actions.appendChild(take);
+            } else if (viewer === 'driver-own' && s.status === 'LOADING') {
+                actions.appendChild(btn('fa-truck-fast', "Yo'lga chiqdim", 'bg-emerald-500 border-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-lg shadow-emerald-500/25', 'advance'));
+                actions.appendChild(btn('fa-rotate-left', 'Qaytarish', 'border-white/15 text-slate-300 hover:bg-white/10', 'release'));
+            } else if (viewer === 'driver-own' && s.status === 'IN_TRANSIT') {
+                actions.appendChild(btn('fa-circle-check', 'Yetkazib berdim', 'bg-emerald-500 border-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-lg shadow-emerald-500/25', 'advance'));
+            }
+            if (actions.childNodes.length) card.appendChild(actions);
+            return card;
+        }
+
+        function refreshButton(onClick) {
+            const b = el('button', 'flex items-center gap-2 px-4 py-2 rounded-xl border border-white/15 text-slate-300 text-sm font-bold hover:border-emerald-500/50 hover:text-emerald-400 transition');
+            b.type = 'button';
+            b.appendChild(el('i', 'fa-solid fa-rotate'));
+            b.appendChild(el('span', '', 'Yangilash'));
+            b.addEventListener('click', onClick);
+            return b;
+        }
+
+        // Mening yuklarim (haydovchi) / Yuk tashish (fermer, market)
+        async function renderDashShipments(user) {
+            const rid = ++dashRenderId;
+            const driver = user.role === 'DRIVER';
+            const viewer = driver ? 'driver-own' : user.role === 'FARMER' ? 'farmer' : 'market';
+            dashContent.replaceChildren(dashMessage('fa-spinner fa-spin', 'Yuklar yuklanmoqda...'));
+            let list;
+            try {
+                list = await authed('GET', '/shipments/mine');
+            } catch (err) {
+                if (err.status === 401 || rid !== dashRenderId) return;
+                return dashContent.replaceChildren(dashMessage('fa-triangle-exclamation text-rose-400', err.messages[0], function () { renderDashShipments(user); }));
+            }
+            if (rid !== dashRenderId) return;
+
+            const head = el('div', 'space-y-3');
+            const row = el('div', 'flex items-center justify-between gap-3 flex-wrap');
+            row.appendChild(el('h2', 'text-2xl font-extrabold text-white', driver ? 'Mening yuklarim' : 'Yuk tashish'));
+            row.appendChild(refreshButton(function () { renderDashShipments(user); }));
+            head.appendChild(row);
+            if (!driver) head.appendChild(el('p', 'text-sm text-slate-400', "Tasdiqlangan bronlar uchun yuk tashish buyurtmalari va ularning holati."));
+            const chips = el('div', 'flex flex-wrap gap-2');
+            const isActive = function (s) { return s.status !== 'DELIVERED'; };
+            [['ALL', 'Hammasi', list.length], ['ACTIVE', 'Faol', list.filter(isActive).length], ['DELIVERED', 'Yetkazilgan', list.filter(function (s) { return !isActive(s); }).length]].forEach(function (f) {
+                const c = el('button', 'mp-chip px-4 py-1.5 rounded-full border border-white/15 text-xs font-bold text-slate-300 transition hover:border-emerald-500/50' + (dashShipFilter === f[0] ? ' active' : ''), f[1] + ' (' + f[2] + ')');
+                c.type = 'button';
+                c.addEventListener('click', function () { dashShipFilter = f[0]; renderDashShipments(user); });
+                chips.appendChild(c);
+            });
+            head.appendChild(chips);
+
+            const items = list.filter(function (s) {
+                return dashShipFilter === 'ALL' || (dashShipFilter === 'ACTIVE' ? isActive(s) : !isActive(s));
+            });
+            const nodes = [head];
+            if (items.length) items.forEach(function (s) { nodes.push(buildShipmentCard(s, viewer)); });
+            else nodes.push(dashMessage(driver ? 'fa-truck' : 'fa-truck-ramp-box', list.length
+                ? "Bu holatdagi yuklar yo'q."
+                : (driver ? "Hali yuk biriktirmagansiz. \"Mavjud yuklar\" bo'limidan tanlang." : "Hali yuk tashish buyurtmalari yo'q. Bron tasdiqlanganda avtomatik yaratiladi.")));
+            dashContent.replaceChildren.apply(dashContent, nodes);
+        }
+
+        // Mavjud yuklar (haydovchi): bo'sh yuklarni ko'rish va biriktirish
+        let dashLoadsRegion = '';
+        async function renderDashLoads(user) {
+            const rid = ++dashRenderId;
+            dashContent.replaceChildren(dashMessage('fa-spinner fa-spin', "Bo'sh yuklar yuklanmoqda..."));
+            let list;
+            try {
+                list = await authed('GET', '/shipments/available' + (dashLoadsRegion ? '?originRegion=' + encodeURIComponent(dashLoadsRegion) : ''));
+            } catch (err) {
+                if (err.status === 401 || rid !== dashRenderId) return;
+                return dashContent.replaceChildren(dashMessage('fa-triangle-exclamation text-rose-400', err.messages[0], function () { renderDashLoads(user); }));
+            }
+            if (rid !== dashRenderId) return;
+            setTabBadge('loads', list.length);
+
+            const head = el('div', 'space-y-3');
+            const row = el('div', 'flex items-center justify-between gap-3 flex-wrap');
+            row.appendChild(el('h2', 'text-2xl font-extrabold text-white', 'Mavjud yuklar'));
+            row.appendChild(refreshButton(function () { renderDashLoads(user); }));
+            head.appendChild(row);
+            head.appendChild(el('p', 'text-sm text-slate-400', "Yukni biriktirganingizdan keyin manzil va aloqa ma'lumotlari ochiladi. Bir vaqtda bitta yuk olib yura olasiz."));
+            const select = el('select', 'auth-input !w-auto min-w-[14rem]');
+            select.setAttribute('aria-label', 'Yuk olinadigan viloyat');
+            select.appendChild(new Option('Barcha hududlardan', ''));
+            REGIONS.forEach(function (r) { select.appendChild(new Option(r + ' dan', r)); });
+            select.value = dashLoadsRegion;
+            select.addEventListener('change', function () { dashLoadsRegion = select.value; renderDashLoads(user); });
+            head.appendChild(select);
+
+            const nodes = [head];
+            if (list.length) list.forEach(function (s) { nodes.push(buildShipmentCard(s, 'driver-open')); });
+            else nodes.push(dashMessage('fa-boxes-packing', dashLoadsRegion ? "Bu hududdan bo'sh yuk yo'q. Boshqa hududni tanlab ko'ring." : "Hozircha bo'sh yuklar yo'q. Fermer bronni tasdiqlaganda yangi yuk paydo bo'ladi."));
             dashContent.replaceChildren.apply(dashContent, nodes);
         }
 
