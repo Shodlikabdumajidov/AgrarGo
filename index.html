@@ -287,33 +287,39 @@
                 <div class="flex items-center bg-slate-900 border-2 border-white/20 rounded-2xl overflow-visible shadow-2xl hover:border-emerald-500/50 transition duration-300 relative">
                     <div class="relative">
                         <button onclick="toggleDropdown(event)" id="dropdown-btn" class="bg-slate-950 text-emerald-400 text-sm sm:text-base px-5 py-4 outline-none border-r border-white/15 cursor-pointer font-bold flex items-center gap-3 hover:bg-slate-900 transition rounded-l-2xl">
-                            <span id="selected-text">Barcha yo'nalishlar</span>
+                            <span id="selected-text" class="max-w-[6.5rem] sm:max-w-none truncate">Barcha yo'nalishlar</span>
                             <i class="fa-solid fa-chevron-down text-xs transition-transform duration-300" id="dropdown-icon"></i>
                         </button>
                         <div id="custom-dropdown-menu" class="absolute left-0 top-full mt-2 w-64 bg-slate-900/95 backdrop-blur-2xl border border-white/15 rounded-2xl shadow-2xl z-50 overflow-hidden divide-y divide-white/5">
                             <div onclick="selectOption('Barcha yo\'nalishlar')" class="px-5 py-3.5 text-sm font-semibold text-slate-200 hover:bg-emerald-500/20 hover:text-emerald-400 cursor-pointer transition flex items-center">
                                 <i class="fa-solid fa-globe mr-2.5 text-emerald-400"></i> Barcha yo'nalishlar
                             </div>
-                            <div onclick="selectOption('Fermer xo\'jaliklari')" class="px-5 py-3.5 text-sm font-semibold text-slate-200 hover:bg-emerald-500/20 hover:text-emerald-400 cursor-pointer transition flex items-center">
-                                <i class="fa-solid fa-seedling mr-2.5 text-emerald-400"></i> Fermer xo'jaliklari
+                            <div onclick="selectOption('Sabzavot')" class="px-5 py-3.5 text-sm font-semibold text-slate-200 hover:bg-emerald-500/20 hover:text-emerald-400 cursor-pointer transition flex items-center">
+                                <i class="fa-solid fa-carrot mr-2.5 text-amber-400"></i> Sabzavot
                             </div>
-                            <div onclick="selectOption('Yuk tashish & ELD')" class="px-5 py-3.5 text-sm font-semibold text-slate-200 hover:bg-emerald-500/20 hover:text-emerald-400 cursor-pointer transition flex items-center">
-                                <i class="fa-solid fa-truck-fast mr-2.5 text-blue-400"></i> Yuk tashish & ELD
+                            <div onclick="selectOption('Meva')" class="px-5 py-3.5 text-sm font-semibold text-slate-200 hover:bg-emerald-500/20 hover:text-emerald-400 cursor-pointer transition flex items-center">
+                                <i class="fa-solid fa-apple-whole mr-2.5 text-rose-400"></i> Meva
                             </div>
-                            <div onclick="selectOption('B2B Omborlar')" class="px-5 py-3.5 text-sm font-semibold text-slate-200 hover:bg-emerald-500/20 hover:text-emerald-400 cursor-pointer transition flex items-center">
-                                <i class="fa-solid fa-warehouse mr-2.5 text-amber-400"></i> B2B Omborlar
+                            <div onclick="selectOption('Poliz')" class="px-5 py-3.5 text-sm font-semibold text-slate-200 hover:bg-emerald-500/20 hover:text-emerald-400 cursor-pointer transition flex items-center">
+                                <i class="fa-solid fa-leaf mr-2.5 text-emerald-400"></i> Poliz
+                            </div>
+                            <div onclick="selectOption('Don')" class="px-5 py-3.5 text-sm font-semibold text-slate-200 hover:bg-emerald-500/20 hover:text-emerald-400 cursor-pointer transition flex items-center">
+                                <i class="fa-solid fa-wheat-awn mr-2.5 text-amber-300"></i> Don
+                            </div>
+                            <div onclick="selectOption('Boshqa')" class="px-5 py-3.5 text-sm font-semibold text-slate-200 hover:bg-emerald-500/20 hover:text-emerald-400 cursor-pointer transition flex items-center">
+                                <i class="fa-solid fa-box mr-2.5 text-blue-400"></i> Boshqa
                             </div>
                         </div>
                     </div>
-                    <input type="text" placeholder="mahsulot, fermer, haydovchi yoki ombor raqami..." class="flex-1 bg-transparent px-5 py-4 text-base sm:text-lg text-white placeholder-slate-400 outline-none font-medium">
-                    <button class="bg-amber-400 hover:bg-amber-300 active:scale-95 text-slate-950 px-8 py-4 transition duration-200 flex items-center justify-center font-black text-xl shadow-lg rounded-r-2xl">
+                    <input id="market-search" type="search" autocomplete="off" placeholder="mahsulot, kategoriya yoki fermer nomi..." class="flex-1 min-w-0 bg-transparent px-5 py-4 text-base sm:text-lg text-white placeholder-slate-400 outline-none font-medium">
+                    <button type="button" id="market-search-btn" aria-label="Qidirish" class="bg-amber-400 hover:bg-amber-300 active:scale-95 text-slate-950 px-8 py-4 transition duration-200 flex items-center justify-center font-black text-xl shadow-lg rounded-r-2xl">
                         <i class="fa-solid fa-magnifying-glass"></i>
                     </button>
                 </div>
             </div>
 
             <div class="flex items-center gap-4 w-full xl:w-auto justify-end">
-                <button class="hidden sm:flex items-center gap-2.5 bg-slate-900 hover:bg-slate-800 text-slate-100 px-5 py-4 rounded-2xl text-base font-semibold border border-white/20 hover:border-emerald-500 transition duration-300 shadow">
+                <button type="button" onclick="scrollToMarket(true)" class="hidden sm:flex items-center gap-2.5 bg-slate-900 hover:bg-slate-800 text-slate-100 px-5 py-4 rounded-2xl text-base font-semibold border border-white/20 hover:border-emerald-500 transition duration-300 shadow">
                     <i class="fa-solid fa-sliders text-sm text-emerald-400"></i> Filtrlar
                 </button>
                 <div class="relative">
@@ -425,6 +431,49 @@
 
         </div>
     </header>
+
+    <!-- MARKET (OCHIQ E'LONLAR BOZORI) -->
+    <section id="market" class="py-20 px-6 max-w-7xl mx-auto scroll-mt-40">
+        <div class="text-center mb-10 space-y-4">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold uppercase tracking-widest">
+                <i class="fa-solid fa-store"></i> AgrarGo Market
+            </div>
+            <h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight">Fermerlardan To'g'ridan-to'g'ri E'lonlar</h2>
+            <p class="text-slate-300 text-base sm:text-lg max-w-2xl mx-auto">Faol e'lonlarni ko'ring, filtrlang va B2B bron qiling. Vositachilarsiz, fermer narxida.</p>
+        </div>
+
+        <div class="glass rounded-3xl border border-white/10 p-4 sm:p-5 mb-6 flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between">
+            <div class="flex flex-wrap items-center gap-2" id="market-chips"></div>
+            <div class="flex flex-col sm:flex-row gap-3">
+                <select id="market-region" aria-label="Viloyat" class="auth-input !w-auto min-w-[12rem]">
+                    <option value="">Barcha viloyatlar</option>
+                    <option>Toshkent shahri</option>
+                    <option>Toshkent viloyati</option>
+                    <option>Andijon</option>
+                    <option>Buxoro</option>
+                    <option>Farg'ona</option>
+                    <option>Jizzax</option>
+                    <option>Namangan</option>
+                    <option>Navoiy</option>
+                    <option>Qashqadaryo</option>
+                    <option>Qoraqalpog'iston</option>
+                    <option>Samarqand</option>
+                    <option>Sirdaryo</option>
+                    <option>Surxondaryo</option>
+                    <option>Xorazm</option>
+                </select>
+                <select id="market-sort" aria-label="Saralash" class="auth-input !w-auto min-w-[12rem]">
+                    <option value="newest">Eng yangilari</option>
+                    <option value="price_asc">Narx: arzonidan</option>
+                    <option value="price_desc">Narx: qimmatidan</option>
+                </select>
+            </div>
+        </div>
+        <p id="market-count" class="text-sm text-slate-400 font-medium mb-5 min-h-[1.25rem]"></p>
+
+        <div id="market-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+        <nav id="market-pagination" class="flex flex-wrap items-center justify-center gap-2 mt-10" aria-label="Sahifalash"></nav>
+    </section>
 
     <!-- ECOSYSTEM CARDS SECTION -->
     <section class="py-24 px-6 max-w-7xl mx-auto relative">
@@ -917,6 +966,7 @@
 
         function selectOption(value) {
             document.getElementById('selected-text').innerText = value;
+            if (typeof setMarketCategory === 'function') setMarketCategory(value === "Barcha yo'nalishlar" ? '' : value);
             dropdownMenu.classList.remove('open');
             dropdownIcon.classList.remove('rotate-180');
         }
@@ -1498,6 +1548,266 @@
             else closeAccountMenu();
         });
 
+        // ===== MARKET (ochiq e'lonlar katalogi) =====
+        const marketGrid = document.getElementById('market-grid');
+        const marketState = { q: '', category: '', region: '', sort: 'newest', page: 1 };
+        const MARKET_LIMIT = 12;
+        let marketRequestId = 0;
+
+        const CATEGORY_ICONS = {
+            'Sabzavot': 'fa-carrot', 'Meva': 'fa-apple-whole', 'Poliz': 'fa-leaf', 'Don': 'fa-wheat-awn', 'Boshqa': 'fa-box'
+        };
+
+        function scrollToMarket(focusFilters) {
+            document.getElementById('market').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function setMarketCategory(category) {
+            marketState.category = category;
+            marketState.page = 1;
+            // Dropdown matni bilan sinxron (chip'dan olib tashlanganda ham)
+            document.getElementById('selected-text').innerText = category || "Barcha yo'nalishlar";
+            loadMarket();
+            scrollToMarket();
+        }
+
+        function runMarketSearch(scroll) {
+            marketState.q = document.getElementById('market-search').value.trim();
+            marketState.page = 1;
+            loadMarket();
+            if (scroll) scrollToMarket();
+        }
+
+        let marketSearchTimer = null;
+        document.getElementById('market-search').addEventListener('input', function () {
+            clearTimeout(marketSearchTimer);
+            marketSearchTimer = setTimeout(function () { runMarketSearch(false); }, 350);
+        });
+        document.getElementById('market-search').addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') { clearTimeout(marketSearchTimer); runMarketSearch(true); }
+        });
+        document.getElementById('market-search-btn').addEventListener('click', function () {
+            clearTimeout(marketSearchTimer);
+            runMarketSearch(true);
+        });
+        document.getElementById('market-region').addEventListener('change', function (e) {
+            marketState.region = e.target.value;
+            marketState.page = 1;
+            loadMarket();
+        });
+        document.getElementById('market-sort').addEventListener('change', function (e) {
+            marketState.sort = e.target.value;
+            marketState.page = 1;
+            loadMarket();
+        });
+
+        function clearMarketFilters() {
+            marketState.q = ''; marketState.category = ''; marketState.region = ''; marketState.page = 1;
+            document.getElementById('market-search').value = '';
+            document.getElementById('market-region').value = '';
+            document.getElementById('selected-text').innerText = "Barcha yo'nalishlar";
+            loadMarket();
+        }
+
+        function renderMarketChips() {
+            const box = document.getElementById('market-chips');
+            box.replaceChildren();
+            const chips = [];
+            if (marketState.q) chips.push(['fa-magnifying-glass', '"' + marketState.q + '"', function () {
+                marketState.q = ''; document.getElementById('market-search').value = ''; marketState.page = 1; loadMarket();
+            }]);
+            if (marketState.category) chips.push(['fa-tag', marketState.category, function () { setMarketCategory(''); }]);
+            if (marketState.region) chips.push(['fa-location-dot', marketState.region, function () {
+                marketState.region = ''; document.getElementById('market-region').value = ''; marketState.page = 1; loadMarket();
+            }]);
+            if (!chips.length) {
+                box.appendChild(el('span', 'text-sm text-slate-400 font-semibold', 'Barcha faol e\'lonlar'));
+                return;
+            }
+            chips.forEach(function (c) {
+                const b = el('button', 'flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-xs font-bold hover:bg-emerald-500/25 transition');
+                b.type = 'button';
+                b.title = "Filtrni olib tashlash";
+                b.appendChild(el('i', 'fa-solid ' + c[0]));
+                b.appendChild(el('span', 'max-w-[12rem] truncate', c[1]));
+                b.appendChild(el('i', 'fa-solid fa-xmark text-[10px]'));
+                b.addEventListener('click', c[2]);
+                box.appendChild(b);
+            });
+            const clear = el('button', 'text-xs font-bold text-slate-400 hover:text-white underline underline-offset-2 ml-1', 'Hammasini tozalash');
+            clear.type = 'button';
+            clear.addEventListener('click', clearMarketFilters);
+            box.appendChild(clear);
+        }
+
+        function renderMarketSkeleton() {
+            marketGrid.replaceChildren();
+            for (let i = 0; i < 8; i++) {
+                const c = el('div', 'glass rounded-3xl border border-white/10 p-6 space-y-4 animate-pulse');
+                c.appendChild(el('div', 'h-5 w-24 rounded-full bg-white/10'));
+                c.appendChild(el('div', 'h-7 w-3/4 rounded-lg bg-white/10'));
+                c.appendChild(el('div', 'h-10 w-1/2 rounded-lg bg-white/10'));
+                c.appendChild(el('div', 'h-16 rounded-xl bg-white/5'));
+                c.appendChild(el('div', 'h-11 rounded-xl bg-white/10'));
+                marketGrid.appendChild(c);
+            }
+        }
+
+        function renderMarketMessage(icon, title, text, actionLabel, action) {
+            marketGrid.replaceChildren();
+            document.getElementById('market-pagination').replaceChildren();
+            const box = el('div', 'col-span-full text-center py-16 space-y-4');
+            box.appendChild(el('i', 'fa-solid text-5xl text-emerald-400 ' + icon));
+            box.appendChild(el('h3', 'text-xl font-bold text-white', title));
+            box.appendChild(el('p', 'text-slate-400 text-sm max-w-md mx-auto', text));
+            if (actionLabel) {
+                const b = el('button', 'px-6 py-2.5 rounded-xl border border-emerald-500/40 text-emerald-400 text-sm font-bold hover:bg-emerald-500/10 transition', actionLabel);
+                b.type = 'button';
+                b.addEventListener('click', action);
+                box.appendChild(b);
+            }
+            marketGrid.appendChild(box);
+        }
+
+        async function loadMarket() {
+            const reqId = ++marketRequestId; // eski (kechikkan) javoblar yangisini bosib ketmasin
+            renderMarketChips();
+            renderMarketSkeleton();
+            document.getElementById('market-pagination').replaceChildren();
+            const params = new URLSearchParams({ sort: marketState.sort, page: marketState.page, limit: MARKET_LIMIT });
+            if (marketState.q) params.set('q', marketState.q);
+            if (marketState.category) params.set('category', marketState.category);
+            if (marketState.region) params.set('region', marketState.region);
+            try {
+                const data = await apiRequest('GET', '/marketplace?' + params.toString());
+                if (reqId !== marketRequestId) return;
+                renderMarket(data);
+            } catch (err) {
+                if (reqId !== marketRequestId) return;
+                document.getElementById('market-count').innerText = '';
+                renderMarketMessage('fa-triangle-exclamation text-rose-400', "E'lonlarni yuklab bo'lmadi", err.messages[0], 'Qayta urinish', loadMarket);
+            }
+        }
+
+        function renderMarket(data) {
+            const meta = data.meta;
+            document.getElementById('market-count').innerText = meta.total
+                ? 'Topildi: ' + meta.total + " ta e'lon"
+                : '';
+            if (!data.items.length) {
+                const filtered = marketState.q || marketState.category || marketState.region;
+                if (meta.total > 0 && marketState.page > meta.totalPages) { marketState.page = meta.totalPages; return loadMarket(); }
+                return renderMarketMessage('fa-magnifying-glass', filtered ? 'Hech narsa topilmadi' : "Hozircha e'lonlar yo'q",
+                    filtered ? "So'rovingiz bo'yicha faol e'lon yo'q. Filtrlarni o'zgartirib ko'ring." : "Fermerlar e'lon joylashi bilan bu yerda ko'rinadi.",
+                    filtered ? 'Filtrlarni tozalash' : null, clearMarketFilters);
+            }
+            marketGrid.replaceChildren.apply(marketGrid, data.items.map(buildMarketCard));
+            renderMarketPagination(meta);
+        }
+
+        function buildMarketCard(p) {
+            const card = el('article', 'glass hover-glow rounded-3xl border border-white/10 hover:border-emerald-500/50 p-6 flex flex-col gap-4');
+
+            const top = el('div', 'flex items-center justify-between gap-2');
+            const cat = el('span', 'inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider');
+            cat.appendChild(el('i', 'fa-solid ' + (CATEGORY_ICONS[p.category] || 'fa-box')));
+            cat.appendChild(el('span', '', p.category));
+            top.appendChild(cat);
+            if (p.farmer.isVerified) {
+                const v = el('span', 'text-xs font-bold text-blue-400 flex items-center gap-1', 'Tasdiqlangan');
+                v.insertBefore(el('i', 'fa-solid fa-circle-check'), v.firstChild);
+                top.appendChild(v);
+            }
+            card.appendChild(top);
+
+            card.appendChild(el('h3', 'text-xl font-extrabold text-white leading-snug break-words', p.name));
+
+            const price = el('div', 'flex items-baseline gap-1.5');
+            price.appendChild(el('span', 'text-3xl font-black text-emerald-400', formatNumber(p.pricePerKg)));
+            price.appendChild(el('span', 'text-sm font-semibold text-slate-400', "so'm / kg"));
+            card.appendChild(price);
+
+            const facts = el('div', 'grid grid-cols-2 gap-2 text-center');
+            [['Mavjud', formatNumber(p.quantityKg) + ' kg'],
+             ['Jami', formatNumber(Number(p.quantityKg) * Number(p.pricePerKg)) + " so'm"]].forEach(function (f) {
+                const cell = el('div', 'rounded-xl bg-slate-950/50 border border-white/5 px-2 py-2');
+                cell.appendChild(el('div', 'text-[10px] uppercase tracking-wider text-slate-500 font-bold', f[0]));
+                cell.appendChild(el('div', 'text-xs font-bold text-slate-200 break-words', f[1]));
+                facts.appendChild(cell);
+            });
+            card.appendChild(facts);
+
+            const info = el('div', 'space-y-1.5 text-sm text-slate-300');
+            const line = function (icon, text) {
+                const row = el('div', 'flex items-start gap-2.5');
+                row.appendChild(el('i', 'fa-solid ' + icon + ' text-emerald-400 mt-1 w-4 text-center text-xs'));
+                row.appendChild(el('span', 'min-w-0 break-words', text));
+                info.appendChild(row);
+            };
+            line('fa-tractor', p.farmer.farmName + ' · ' + p.farmer.fullName);
+            line('fa-location-dot', p.farmer.region + ', ' + p.farmer.district);
+            const harvest = formatDate(p.harvestDate);
+            if (harvest) line('fa-calendar-day', "O'rim-yig'im: " + harvest);
+            card.appendChild(info);
+
+            const spacer = el('div', 'flex-1');
+            card.appendChild(spacer);
+
+            const lock = el('p', 'text-[11px] text-slate-500 flex items-center gap-1.5');
+            lock.appendChild(el('i', 'fa-solid fa-lock'));
+            lock.appendChild(document.createTextNode("Fermer kontakti bron qilingandan keyin ochiladi"));
+            card.appendChild(lock);
+
+            const btn = el('button', 'w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-extrabold py-3 rounded-2xl transition duration-200 shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2.5');
+            btn.type = 'button';
+            btn.appendChild(el('i', 'fa-solid fa-handshake'));
+            btn.appendChild(el('span', '', 'Bron qilish'));
+            btn.addEventListener('click', function () { onBookClick(p); });
+            card.appendChild(btn);
+            return card;
+        }
+
+        // B2B bron keyingi bosqichda (Booking modeli va Market roli bilan) ishga tushadi
+        function onBookClick(p) {
+            showToast('B2B bron moduli tez orada ishga tushadi: ' + p.name);
+        }
+
+        function renderMarketPagination(meta) {
+            const nav = document.getElementById('market-pagination');
+            nav.replaceChildren();
+            if (meta.totalPages <= 1) return;
+            const go = function (page) {
+                marketState.page = page;
+                loadMarket();
+                scrollToMarket();
+            };
+            const btn = function (label, page, opts) {
+                opts = opts || {};
+                const b = el('button', 'min-w-[2.5rem] h-10 px-3 rounded-xl border text-sm font-bold transition ' + (opts.active
+                    ? 'bg-emerald-500 border-emerald-500 text-slate-950'
+                    : 'border-white/15 text-slate-300 hover:border-emerald-500/50 hover:text-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-white/15 disabled:hover:text-slate-300'));
+                b.type = 'button';
+                b.textContent = label;
+                if (opts.aria) b.setAttribute('aria-label', opts.aria);
+                if (opts.active) b.setAttribute('aria-current', 'page');
+                b.disabled = !!opts.disabled;
+                if (!opts.disabled && !opts.active) b.addEventListener('click', function () { go(page); });
+                return b;
+            };
+            nav.appendChild(btn('‹', meta.page - 1, { disabled: meta.page <= 1, aria: 'Oldingi sahifa' }));
+            const pages = [];
+            for (let i = 1; i <= meta.totalPages; i++) {
+                if (i === 1 || i === meta.totalPages || Math.abs(i - meta.page) <= 1) pages.push(i);
+                else if (pages[pages.length - 1] !== '...') pages.push('...');
+            }
+            pages.forEach(function (i) {
+                if (i === '...') nav.appendChild(el('span', 'px-1 text-slate-500', '…'));
+                else nav.appendChild(btn(String(i), i, { active: i === meta.page }));
+            });
+            nav.appendChild(btn('›', meta.page + 1, { disabled: meta.page >= meta.totalPages, aria: 'Keyingi sahifa' }));
+        }
+
+        loadMarket();
         updateAuthButton();
     </script>
 </body>
