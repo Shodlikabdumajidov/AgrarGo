@@ -20,3 +20,9 @@ npm run start:dev
 - `DELETE /products/:id`
 
 Boshqa fermerning e'loni `404` qaytaradi. FARMER bo'lmagan rol `403`, tokensiz `401`.
+
+## Marketplace (ochiq, tokensiz)
+`GET /marketplace?q=&category=&region=&sort=newest|price_asc|price_desc&page=1&limit=12`
+- Faqat `ACTIVE` e'lonlar. `q` — mahsulot, kategoriya, xo'jalik yoki fermer ismi bo'yicha (katta-kichik harf farqsiz).
+- `limit` ≤ 50. Javob: `{ items: [...], meta: { page, limit, total, totalPages } }`.
+- Fermer haqida faqat `fullName`, `farmName`, `region`, `district`, `isVerified` qaytadi. Telefon, email, manzil, koordinata va STIR hech qachon qaytmaydi (`select` orqali whitelist).
