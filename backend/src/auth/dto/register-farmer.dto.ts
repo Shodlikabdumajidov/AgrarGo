@@ -1,20 +1,9 @@
-import { IsOptional, IsString, Matches, MinLength, MaxLength, IsNumber } from 'class-validator';
+import { IsNumber, IsOptional, IsString, Matches, MinLength } from 'class-validator';
+import { RegisterBaseDto } from './register-base.dto';
 
-export const UZ_PHONE_REGEX = /^\+998\d{9}$/;
+export { UZ_PHONE_REGEX } from './register-base.dto';
 
-export class RegisterFarmerDto {
-  @Matches(UZ_PHONE_REGEX, { message: "Telefon raqam +998XXXXXXXXX formatida bo'lishi kerak" })
-  phone: string;
-
-  @IsString()
-  @MinLength(8, { message: "Parol kamida 8 ta belgidan iborat bo'lishi kerak" })
-  @MaxLength(72)
-  password: string;
-
-  @IsString()
-  @MinLength(2)
-  fullName: string;
-
+export class RegisterFarmerDto extends RegisterBaseDto {
   @IsString()
   @MinLength(2)
   farmName: string;

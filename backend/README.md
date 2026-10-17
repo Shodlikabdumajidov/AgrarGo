@@ -26,3 +26,20 @@ Boshqa fermerning e'loni `404` qaytaradi. FARMER bo'lmagan rol `403`, tokensiz `
 - Faqat `ACTIVE` e'lonlar. `q` — mahsulot, kategoriya, xo'jalik yoki fermer ismi bo'yicha (katta-kichik harf farqsiz).
 - `limit` ≤ 50. Javob: `{ items: [...], meta: { page, limit, total, totalPages } }`.
 - Fermer haqida faqat `fullName`, `farmName`, `region`, `district`, `isVerified` qaytadi. Telefon, email, manzil, koordinata va STIR hech qachon qaytmaydi (`select` orqali whitelist).
+
+## Rollar (bitta telefon — bitta rol)
+- `POST /auth/farmer/register`, `POST /auth/driver/register`, `POST /auth/market/register`
+- Raqam allaqachon bor bo'lsa: `409 "Ushbu raqam allaqachon Fermer sifatida ro'yxatdan o'tgan"` (rol nomi mavjud rolga qarab).
+- `POST /auth/login` ixtiyoriy `role` qabul qiladi (`FARMER|DRIVER|MARKET`); raqam boshqa rolda bo'lsa `409`.
+
+## Profil (`Authorization: Bearer <token>`, har qanday rol)
+- `GET /profile`, `PATCH /profile` (rolga mos maydonlar; telefon va rol o'zgarmaydi)
+- `POST /profile/avatar` (multipart, maydon nomi `file`; JPG/PNG/WEBP, ≤ 2 MB, tur baytlar bo'yicha tekshiriladi), `DELETE /profile/avatar`
+- Rasmlar `uploads/avatars/` papkasida saqlanadi va `/uploads/avatars/<fayl>` orqali beriladi (production'da doimiy disk yoki S3 kerak).
+
+## Bronlar (qisman miqdor)
+- `POST /bookings` (MARKET): `{ productId, quantityKg, message? }`. E'lon qoldig'i darhol kamayadi; qoldiq 0 bo'lsa e'lon `BOOKED` bo'ladi va bozordan chiqadi.
+- `GET /bookings/mine` (MARKET), `PATCH /bookings/:id/cancel` (faqat `PENDING`)
+- `GET /bookings/incoming` (FARMER), `PATCH /bookings/:id/approve`, `PATCH /bookings/:id/reject`
+- Rad etilgan/bekor qilingan bronning miqdori e'longa qaytadi. Narx bron paytida qotiriladi.
+- Telefon raqamlar faqat `APPROVED` bronda ikkala tomonga ochiladi.

@@ -1,7 +1,10 @@
-import { Body, Controller, Get, HttpCode, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Post, UseGuards } from '@nestjs/common';
+import { CurrentUser } from '../common/current-user.decorator';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
+import { RegisterDriverDto } from './dto/register-driver.dto';
 import { RegisterFarmerDto } from './dto/register-farmer.dto';
+import { RegisterMarketDto } from './dto/register-market.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @Controller('auth')
@@ -13,6 +16,16 @@ export class AuthController {
     return this.auth.registerFarmer(dto);
   }
 
+  @Post('driver/register')
+  registerDriver(@Body() dto: RegisterDriverDto) {
+    return this.auth.registerDriver(dto);
+  }
+
+  @Post('market/register')
+  registerMarket(@Body() dto: RegisterMarketDto) {
+    return this.auth.registerMarket(dto);
+  }
+
   @Post('login')
   @HttpCode(200)
   login(@Body() dto: LoginDto) {
@@ -21,7 +34,7 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  me(@Req() req: { user: unknown }) {
-    return req.user;
+  me(@CurrentUser() user: unknown) {
+    return user;
   }
 }

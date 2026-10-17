@@ -21,11 +21,14 @@ model User {
   passwordHash String
   role         Role     @default(FARMER)
   fullName     String
+  avatarUrl    String?
   isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
   farmer Farmer?
+  driver Driver?
+  market Market?
 }
 
 model Farmer {
@@ -47,6 +50,63 @@ model Farmer {
   updatedAt DateTime  @updatedAt
 }
 
+model Driver {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  vehicleType   String
+  plateNumber   String   @unique
+  capacityKg    Decimal  @db.Decimal(12, 2)
+  region        String
+  licenseNumber String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Market {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  companyName String
+  stir        String? @unique
+  region      String
+  district    String
+  address     String?
+
+  bookings  Booking[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+enum BookingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+model Booking {
+  id        String  @id @default(uuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+  marketId  String
+  market    Market  @relation(fields: [marketId], references: [id], onDelete: Cascade)
+
+  quantityKg Decimal       @db.Decimal(12, 2)
+  pricePerKg Decimal       @db.Decimal(12, 2) // bron paytidagi narx
+  status     BookingStatus @default(PENDING)
+  message    String?
+  decidedAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId, status])
+  @@index([marketId, status])
+}
+
 enum ProductStatus {
   ACTIVE
   BOOKED
@@ -66,6 +126,8 @@ model Product {
   harvestDate DateTime?
   description String?
   status      ProductStatus @default(ACTIVE)
+
+  bookings Booking[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

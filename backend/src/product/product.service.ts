@@ -1,4 +1,5 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BookingStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { ListProductsQuery } from './dto/list-products.query';
@@ -33,7 +34,17 @@ export class ProductService {
 
   async remove(farmerId: string, id: string) {
     await this.findOneByFarmer(farmerId, id);
-    await this.prisma.product.delete({ where: { id } });
+    const open = await this.prisma.booking.count({
+      where: { productId: id, status: { in: [BookingStatus.PENDING, BookingStatus.APPROVED] } },
+    });
+    if (open > 0) {
+      throw new ConflictException("Bu e'londa faol bronlar bor. Avval ularni rad eting yoki arxivlang");
+    }
+    // Tugallangan (rad etilgan/bekor qilingan) bronlar tarixi e'lon bilan birga o'chiriladi
+    await this.prisma.$transaction([
+      this.prisma.booking.deleteMany({ where: { productId: id } }),
+      this.prisma.product.delete({ where: { id } }),
+    ]);
     return { deleted: true };
   }
 
