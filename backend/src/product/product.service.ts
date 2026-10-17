@@ -38,8 +38,10 @@ export class ProductService {
   }
 
   // Prisma DateTime uchun "YYYY-MM-DD" ni Date'ga o'giramiz
-  private toData<T extends { harvestDate?: string }>(dto: T) {
+  // PUT'da harvestDate: null yuborilsa sana tozalanadi
+  private toData<T extends { harvestDate?: string | null }>(dto: T) {
     const { harvestDate, ...rest } = dto;
+    if (harvestDate === null) return { ...rest, harvestDate: null };
     return harvestDate ? { ...rest, harvestDate: new Date(harvestDate) } : rest;
   }
 }

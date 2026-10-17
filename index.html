@@ -129,6 +129,52 @@
             color: #020617;
             box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
         }
+        /* Account dropdown */
+        #account-menu {
+            opacity: 0;
+            transform: translateY(-10px) scale(0.98);
+            visibility: hidden;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        #account-menu.open {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            visibility: visible;
+        }
+        /* My products offcanvas (o'ng tomondan) */
+        #my-products-panel {
+            transform: translateX(100%);
+            visibility: hidden;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.4s ease;
+        }
+        #my-products-panel.open {
+            transform: translateX(0);
+            visibility: visible;
+        }
+        #mp-overlay {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        #mp-overlay.open {
+            opacity: 1;
+            visibility: visible;
+        }
+        .mp-chip.active {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: rgba(16, 185, 129, 0.6);
+            color: #34d399;
+        }
+        #toast {
+            opacity: 0;
+            transform: translate(-50%, 20px);
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+        #toast.show {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
         /* 3D rotating logo */
         .logo-glow {
             filter: drop-shadow(0 0 18px rgba(16, 185, 129, 0.55)) drop-shadow(0 18px 22px rgba(0, 0, 0, 0.6));
@@ -270,9 +316,24 @@
                 <button class="hidden sm:flex items-center gap-2.5 bg-slate-900 hover:bg-slate-800 text-slate-100 px-5 py-4 rounded-2xl text-base font-semibold border border-white/20 hover:border-emerald-500 transition duration-300 shadow">
                     <i class="fa-solid fa-sliders text-sm text-emerald-400"></i> Filtrlar
                 </button>
-                <button id="auth-nav-btn" onclick="onAuthButtonClick()" class="bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-extrabold px-8 py-4 rounded-2xl text-base transition duration-200 shadow-xl shadow-emerald-500/30 flex items-center gap-2.5">
-                    <i class="fa-solid fa-user text-sm"></i> <span id="auth-nav-label">Kabinetga Kirish</span>
-                </button>
+                <div class="relative">
+                    <button id="auth-nav-btn" onclick="onAuthButtonClick(event)" aria-haspopup="menu" class="bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-extrabold px-8 py-4 rounded-2xl text-base transition duration-200 shadow-xl shadow-emerald-500/30 flex items-center gap-2.5">
+                        <i class="fa-solid fa-user text-sm"></i> <span id="auth-nav-label" class="max-w-[10rem] truncate">Kabinetga Kirish</span>
+                        <i id="auth-nav-caret" class="fa-solid fa-chevron-down text-xs hidden transition-transform duration-300"></i>
+                    </button>
+                    <div id="account-menu" role="menu" class="absolute right-0 top-full mt-3 w-72 bg-slate-900/95 backdrop-blur-2xl border border-emerald-500/25 rounded-2xl shadow-2xl shadow-emerald-500/10 z-50 overflow-hidden" onclick="event.stopPropagation()">
+                        <div class="p-4 border-b border-white/10 bg-slate-950/50">
+                            <div id="account-name" class="font-extrabold text-white truncate"></div>
+                            <div id="account-sub" class="text-xs text-slate-400 mt-0.5 truncate"></div>
+                        </div>
+                        <button type="button" role="menuitem" onclick="openMyProducts()" class="w-full flex items-center gap-3 px-4 py-3.5 text-left text-slate-200 hover:bg-white/10 hover:text-emerald-400 font-semibold transition">
+                            <i class="fa-solid fa-boxes-stacked w-5 text-emerald-400"></i> Mening e'lonlarim
+                        </button>
+                        <button type="button" role="menuitem" onclick="logout()" class="w-full flex items-center gap-3 px-4 py-3.5 text-left text-slate-200 hover:bg-rose-500/10 hover:text-rose-400 font-semibold border-t border-white/5 transition">
+                            <i class="fa-solid fa-right-from-bracket w-5 text-rose-400"></i> Chiqish
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </nav>
@@ -753,10 +814,10 @@
             </button>
             <div class="text-center space-y-2 mb-6">
                 <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold uppercase tracking-widest">
-                    <i class="fa-solid fa-plus"></i> E'lon Joylash
+                    <i id="product-badge-icon" class="fa-solid fa-plus"></i> <span id="product-badge">E'lon Joylash</span>
                 </div>
                 <h2 id="product-title" class="text-2xl sm:text-3xl font-extrabold tracking-tight">Yangi e'lon qo'shish</h2>
-                <p class="text-slate-400 text-sm">Mahsulotingiz haqida ma'lumot kiriting.</p>
+                <p id="product-subtitle" class="text-slate-400 text-sm">Mahsulotingiz haqida ma'lumot kiriting.</p>
             </div>
 
             <div id="product-alert" class="hidden mb-5 rounded-2xl px-4 py-3 text-sm font-medium" role="alert"></div>
@@ -797,6 +858,33 @@
             </form>
         </div>
     </div>
+
+    <!-- MY PRODUCTS OFFCANVAS -->
+    <div id="mp-overlay" onclick="closeMyProducts()" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[55]"></div>
+    <aside id="my-products-panel" role="dialog" aria-modal="true" aria-labelledby="mp-title" class="glass fixed inset-y-0 right-0 w-full max-w-md z-[56] flex flex-col border-l border-emerald-500/25 bg-gradient-to-b from-slate-900 to-emerald-950/30 shadow-2xl">
+        <div class="p-5 border-b border-white/10 bg-slate-950/50 flex items-center justify-between gap-3">
+            <div>
+                <h2 id="mp-title" class="font-extrabold text-xl text-white flex items-center gap-2.5"><i class="fa-solid fa-boxes-stacked text-emerald-400"></i> Mening e'lonlarim</h2>
+                <p id="mp-count" class="text-xs text-slate-400 mt-0.5"></p>
+            </div>
+            <button type="button" onclick="closeMyProducts()" aria-label="Yopish" class="text-slate-400 hover:text-white text-xl p-1 transition hover:rotate-90 duration-300">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="px-5 pt-4 flex gap-2 flex-wrap" id="mp-chips">
+            <button type="button" data-filter="ALL" class="mp-chip active px-4 py-1.5 rounded-full border border-white/15 text-xs font-bold text-slate-300 transition hover:border-emerald-500/50">Hammasi</button>
+            <button type="button" data-filter="ACTIVE" class="mp-chip px-4 py-1.5 rounded-full border border-white/15 text-xs font-bold text-slate-300 transition hover:border-emerald-500/50">Faol</button>
+            <button type="button" data-filter="ARCHIVED" class="mp-chip px-4 py-1.5 rounded-full border border-white/15 text-xs font-bold text-slate-300 transition hover:border-emerald-500/50">Arxivda</button>
+        </div>
+        <div id="mp-list" class="flex-1 overflow-y-auto p-5 space-y-4"></div>
+        <div class="p-5 border-t border-white/10 bg-slate-950/50">
+            <button type="button" onclick="addProductFromPanel()" class="w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-extrabold py-3.5 rounded-2xl transition duration-200 shadow-xl shadow-emerald-500/30 flex items-center justify-center gap-2.5">
+                <i class="fa-solid fa-plus"></i> Yangi e'lon qo'shish
+            </button>
+        </div>
+    </aside>
+
+    <div id="toast" role="status" class="fixed bottom-6 left-1/2 z-[70] px-5 py-3 rounded-2xl glass border border-emerald-500/30 text-sm font-semibold text-emerald-300 shadow-2xl"></div>
 
     <!-- AOS & Custom Dropdown/Sidebar JS -->
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
@@ -861,7 +949,7 @@
             try { localStorage.removeItem(key); } catch (e) {}
         }
 
-        let openProductAfterLogin = false;
+        let afterLoginAction = null; // kirgandan keyin bajariladigan amal
 
         function openAuthModal(tab) {
             switchAuthTab(tab || 'login');
@@ -922,21 +1010,30 @@
 
         function setLoading(form, loading) {
             const btn = form.querySelector('.auth-submit');
+            const label = btn.querySelector('span');
             btn.disabled = loading;
-            btn.querySelector('span').innerText = loading
-                ? 'Yuborilmoqda...'
-                : (form === loginForm ? 'Kirish' : form === productForm ? "E'lonni joylash" : "Ro'yxatdan o'tish");
+            if (loading) {
+                btn.dataset.label = label.innerText;
+                label.innerText = 'Yuborilmoqda...';
+            } else if (btn.dataset.label) {
+                label.innerText = btn.dataset.label;
+            }
         }
 
-        async function authRequest(path, payload, token) {
+        function authRequest(path, payload, token) {
+            return apiRequest('POST', path, payload, token);
+        }
+
+        async function apiRequest(method, path, payload, token) {
             let res;
             try {
-                const headers = { 'Content-Type': 'application/json' };
+                const headers = {};
+                if (payload !== undefined) headers['Content-Type'] = 'application/json';
                 if (token) headers['Authorization'] = 'Bearer ' + token;
                 res = await fetch(API_URL + path, {
-                    method: 'POST',
+                    method: method,
                     headers: headers,
-                    body: JSON.stringify(payload)
+                    body: payload !== undefined ? JSON.stringify(payload) : undefined
                 });
             } catch (e) {
                 throw { status: 0, messages: ["Serverga ulanib bo'lmadi. Internetni tekshirib, qayta urinib ko'ring."] };
@@ -949,6 +1046,7 @@
                 if (res.status === 400) messages = Array.isArray(raw) ? raw : [raw || "Ma'lumotlar noto'g'ri kiritilgan."];
                 else if (res.status === 401) messages = [raw || "Telefon raqam yoki parol noto'g'ri."];
                 else if (res.status === 403) messages = ["Bu amal faqat fermerlar uchun."];
+                else if (res.status === 404) messages = ["E'lon topilmadi. U allaqachon o'chirilgan bo'lishi mumkin."];
                 else if (res.status === 409) messages = [raw || "Bu telefon raqam allaqachon ro'yxatdan o'tgan."];
                 else messages = ["Kutilmagan xatolik yuz berdi. Keyinroq qayta urinib ko'ring."];
                 throw { status: res.status, messages: messages };
@@ -969,18 +1067,52 @@
         function updateAuthButton() {
             const user = storageGet(TOKEN_KEY) ? getStoredUser() : null;
             document.getElementById('auth-nav-label').innerText = user ? user.fullName : 'Kabinetga Kirish';
+            document.getElementById('auth-nav-caret').classList.toggle('hidden', !user);
+            if (user) {
+                document.getElementById('account-name').innerText = user.fullName;
+                document.getElementById('account-sub').innerText =
+                    (user.farmer && user.farmer.farmName ? user.farmer.farmName + ' · ' : '') + user.phone;
+            } else {
+                closeAccountMenu();
+            }
         }
 
-        function onAuthButtonClick() {
+        // ===== Account dropdown =====
+        const accountMenu = document.getElementById('account-menu');
+
+        function closeAccountMenu() {
+            accountMenu.classList.remove('open');
+            document.getElementById('auth-nav-caret').classList.remove('rotate-180');
+        }
+
+        function onAuthButtonClick(event) {
+            event.stopPropagation();
             if (storageGet(TOKEN_KEY)) {
-                if (confirm('Tizimdan chiqmoqchimisiz?')) {
-                    storageRemove(TOKEN_KEY);
-                    storageRemove(USER_KEY);
-                    updateAuthButton();
-                }
+                const open = accountMenu.classList.toggle('open');
+                document.getElementById('auth-nav-caret').classList.toggle('rotate-180', open);
             } else {
                 openAuthModal('login');
             }
+        }
+
+        function logout() {
+            storageRemove(TOKEN_KEY);
+            storageRemove(USER_KEY);
+            closeAccountMenu();
+            closeMyProducts();
+            updateAuthButton();
+            showToast('Tizimdan chiqdingiz.');
+        }
+
+        window.addEventListener('click', closeAccountMenu);
+
+        let toastTimer = null;
+        function showToast(message) {
+            const t = document.getElementById('toast');
+            t.textContent = message;
+            t.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(function () { t.classList.remove('show'); }, 2600);
         }
 
         function onAuthSuccess(data, message) {
@@ -991,9 +1123,10 @@
                 loginForm.reset();
                 registerForm.reset();
                 hideAuthAlert();
-                if (openProductAfterLogin) {
-                    openProductAfterLogin = false;
-                    openProductModal();
+                if (afterLoginAction) {
+                    const action = afterLoginAction;
+                    afterLoginAction = null;
+                    action();
                 }
             }, 1200);
         }
@@ -1055,39 +1188,63 @@
             }
         });
 
-        // ===== E'LON JOYLASH =====
+        // ===== E'LON JOYLASH / TAHRIRLASH =====
         const productModal = document.getElementById('product-modal');
         const productAlert = document.getElementById('product-alert');
         const productForm = document.getElementById('product-form');
+        let editingProduct = null; // null = yangi e'lon, aks holda tahrirlanayotgan e'lon
 
         function onPostAdClick() {
             if (storageGet(TOKEN_KEY)) {
                 openProductModal();
             } else {
-                openProductAfterLogin = true;
+                afterLoginAction = function () { openProductModal(); };
                 openAuthModal('login');
                 showAuthAlert("E'lon joylash uchun avval tizimga kiring.", 'info');
             }
         }
 
-        function openProductModal() {
+        function openProductModal(product) {
+            editingProduct = product || null;
             hideAuthAlert(productAlert);
+            productForm.reset();
+            const f = productForm;
+            if (product) {
+                f.elements['name'].value = product.name;
+                f.category.value = product.category;
+                // Ro'yxatda yo'q kategoriya (eski ma'lumot) bo'lsa "Boshqa" tanlanadi
+                if (f.category.value !== product.category) f.category.value = 'Boshqa';
+                f.quantityKg.value = Number(product.quantityKg);
+                f.pricePerKg.value = Number(product.pricePerKg);
+                f.harvestDate.value = product.harvestDate ? product.harvestDate.slice(0, 10) : '';
+            }
+            document.getElementById('product-title').innerText = product ? "E'lonni tahrirlash" : "Yangi e'lon qo'shish";
+            document.getElementById('product-subtitle').innerText = product
+                ? "Ma'lumotlarni o'zgartirib, saqlang."
+                : "Mahsulotingiz haqida ma'lumot kiriting.";
+            document.getElementById('product-badge').innerText = product ? 'Tahrirlash' : "E'lon Joylash";
+            document.getElementById('product-badge-icon').className = 'fa-solid ' + (product ? 'fa-pen' : 'fa-plus');
+            const submitLabel = f.querySelector('.auth-submit span');
+            submitLabel.innerText = product ? 'Saqlash' : "E'lonni joylash";
+            delete f.querySelector('.auth-submit').dataset.label;
             productModal.classList.add('open');
             document.body.classList.add('overflow-hidden');
         }
 
         function closeProductModal() {
             productModal.classList.remove('open');
-            document.body.classList.remove('overflow-hidden');
+            // Panel ochiq bo'lsa, sahifa skrolli baribir bloklanib turadi
+            if (!panel.classList.contains('open')) document.body.classList.remove('overflow-hidden');
         }
 
         // Token eskirgan/yaroqsiz: sessiyani tozalab, qayta kirishga yo'naltiramiz
-        function handleSessionExpired() {
+        function handleSessionExpired(nextAction) {
             storageRemove(TOKEN_KEY);
             storageRemove(USER_KEY);
             updateAuthButton();
             closeProductModal();
-            openProductAfterLogin = true; // kirgach forma qayta ochiladi (kiritilgan ma'lumotlar saqlanib turadi)
+            closeMyProducts();
+            afterLoginAction = nextAction || null; // kirgach shu amal qayta bajariladi
             openAuthModal('login');
             showAuthAlert('Sessiya tugagan. Iltimos, qayta kiring.', 'info');
         }
@@ -1102,7 +1259,9 @@
                 quantityKg: Number(f.quantityKg.value),
                 pricePerKg: Number(f.pricePerKg.value)
             };
+            // Tahrirlashda sana tozalansa null yuboriladi (server sanani o'chiradi)
             if (f.harvestDate.value) payload.harvestDate = f.harvestDate.value;
+            else if (editingProduct) payload.harvestDate = null;
 
             const errors = [];
             if (payload.name.length < 2) errors.push('Mahsulot nomini kiriting.');
@@ -1112,29 +1271,231 @@
             if (errors.length) return showAuthAlert(errors, 'error', productAlert);
 
             const token = storageGet(TOKEN_KEY);
-            if (!token) return handleSessionExpired();
+            const editing = editingProduct;
+            const retry = function () { openProductModal(editing); };
+            if (!token) return handleSessionExpired(retry);
 
             setLoading(productForm, true);
             try {
-                await authRequest('/products', payload, token);
-                showAuthAlert("E'lon muvaffaqiyatli joylandi!", 'success', productAlert);
-                productForm.reset();
+                if (editing) await apiRequest('PUT', '/products/' + editing.id, payload, token);
+                else await apiRequest('POST', '/products', payload, token);
+                showAuthAlert(editing ? "E'lon yangilandi!" : "E'lon muvaffaqiyatli joylandi!", 'success', productAlert);
                 setTimeout(function () {
                     closeProductModal();
                     hideAuthAlert(productAlert);
-                }, 1400);
+                }, 1000);
+                if (panel.classList.contains('open')) loadMyProducts();
             } catch (err) {
-                if (err.status === 401) return handleSessionExpired();
+                if (err.status === 401) {
+                    // Tahrirlashda kiritilgan qiymatlar yo'qolmasligi uchun forma qayta ochilganda eski holatga qaytadi
+                    return handleSessionExpired(retry);
+                }
                 showAuthAlert(err.messages, 'error', productAlert);
             } finally {
                 setLoading(productForm, false);
             }
         });
 
+        // ===== MENING E'LONLARIM (offcanvas) =====
+        const panel = document.getElementById('my-products-panel');
+        const panelOverlay = document.getElementById('mp-overlay');
+        const mpList = document.getElementById('mp-list');
+        let myProducts = [];
+        let mpFilter = 'ALL';
+        let mpConfirmId = null; // o'chirish tasdig'i kutilayotgan e'lon
+
+        const STATUS_META = {
+            ACTIVE:   { label: 'Faol',      cls: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' },
+            ARCHIVED: { label: 'Arxivda',   cls: 'bg-slate-500/20 text-slate-300 border-slate-500/30' },
+            BOOKED:   { label: 'Bron qilingan', cls: 'bg-amber-500/15 text-amber-400 border-amber-500/30' },
+            SOLD:     { label: 'Sotilgan',  cls: 'bg-blue-500/15 text-blue-400 border-blue-500/30' }
+        };
+
+        function formatNumber(n) {
+            return Number(n).toLocaleString('ru-RU', { maximumFractionDigits: 2 });
+        }
+
+        function formatDate(iso) {
+            if (!iso) return null;
+            const d = new Date(iso);
+            return String(d.getUTCDate()).padStart(2, '0') + '.' + String(d.getUTCMonth() + 1).padStart(2, '0') + '.' + d.getUTCFullYear();
+        }
+
+        function el(tag, cls, text) {
+            const node = document.createElement(tag);
+            if (cls) node.className = cls;
+            if (text !== undefined) node.textContent = text; // textContent: XSS'dan himoya
+            return node;
+        }
+
+        function iconBtn(iconCls, label, cls, onClick) {
+            const b = el('button', 'flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-bold border transition ' + cls);
+            b.type = 'button';
+            const i = el('i', 'fa-solid ' + iconCls);
+            b.appendChild(i);
+            b.appendChild(el('span', '', label));
+            b.addEventListener('click', onClick);
+            return b;
+        }
+
+        function openMyProducts() {
+            closeAccountMenu();
+            panel.classList.add('open');
+            panelOverlay.classList.add('open');
+            document.body.classList.add('overflow-hidden');
+            loadMyProducts();
+        }
+
+        function closeMyProducts() {
+            panel.classList.remove('open');
+            panelOverlay.classList.remove('open');
+            mpConfirmId = null;
+            if (!productModal.classList.contains('open')) document.body.classList.remove('overflow-hidden');
+        }
+
+        function addProductFromPanel() {
+            openProductModal();
+        }
+
+        async function loadMyProducts() {
+            const token = storageGet(TOKEN_KEY);
+            if (!token) return handleSessionExpired(openMyProducts);
+            if (!myProducts.length) renderMpMessage('fa-spinner fa-spin', "E'lonlar yuklanmoqda...");
+            try {
+                myProducts = await apiRequest('GET', '/products', undefined, token);
+                renderMyProducts();
+            } catch (err) {
+                if (err.status === 401) return handleSessionExpired(openMyProducts);
+                renderMpMessage('fa-triangle-exclamation text-rose-400', err.messages[0], true);
+            }
+        }
+
+        function renderMpMessage(icon, text, withRetry) {
+            mpList.replaceChildren();
+            const box = el('div', 'text-center py-16 space-y-4 text-slate-300');
+            box.appendChild(el('i', 'fa-solid text-4xl text-emerald-400 ' + icon));
+            box.appendChild(el('p', 'text-sm font-medium', text));
+            if (withRetry) {
+                const b = el('button', 'px-5 py-2 rounded-xl border border-emerald-500/40 text-emerald-400 text-sm font-bold hover:bg-emerald-500/10 transition', 'Qayta urinish');
+                b.type = 'button';
+                b.addEventListener('click', loadMyProducts);
+                box.appendChild(b);
+            }
+            mpList.appendChild(box);
+        }
+
+        function renderMyProducts() {
+            const total = myProducts.length;
+            document.getElementById('mp-count').innerText = total ? 'Jami: ' + total + " ta e'lon" : '';
+            const items = mpFilter === 'ALL' ? myProducts : myProducts.filter(function (p) { return p.status === mpFilter; });
+
+            if (!items.length) {
+                if (!total) {
+                    renderMpMessage('fa-seedling', "Hali e'lon qo'shmagansiz. Birinchi e'loningizni joylang!");
+                } else {
+                    renderMpMessage('fa-filter', "Bu holatdagi e'lonlar yo'q.");
+                }
+                return;
+            }
+            mpList.replaceChildren.apply(mpList, items.map(buildProductCard));
+        }
+
+        function buildProductCard(p) {
+            const meta = STATUS_META[p.status] || STATUS_META.ACTIVE;
+            const card = el('div', 'glass rounded-2xl border border-white/10 hover:border-emerald-500/40 transition p-4 space-y-3');
+
+            const top = el('div', 'flex items-start justify-between gap-3');
+            const titleBox = el('div', 'min-w-0');
+            titleBox.appendChild(el('h3', 'font-extrabold text-white text-lg truncate', p.name));
+            titleBox.appendChild(el('p', 'text-xs text-slate-400 font-semibold uppercase tracking-wider', p.category));
+            top.appendChild(titleBox);
+            top.appendChild(el('span', 'shrink-0 text-xs font-bold px-3 py-1 rounded-full border ' + meta.cls, meta.label));
+            card.appendChild(top);
+
+            const grid = el('div', 'grid grid-cols-3 gap-2 text-center');
+            [['Vazni', formatNumber(p.quantityKg) + ' kg'],
+             ['Narxi', formatNumber(p.pricePerKg) + " so'm/kg"],
+             ['Jami', formatNumber(Number(p.quantityKg) * Number(p.pricePerKg)) + " so'm"]].forEach(function (row) {
+                const cell = el('div', 'rounded-xl bg-slate-950/50 border border-white/5 px-2 py-2');
+                cell.appendChild(el('div', 'text-[10px] uppercase tracking-wider text-slate-500 font-bold', row[0]));
+                cell.appendChild(el('div', 'text-xs font-bold text-emerald-300 break-words', row[1]));
+                grid.appendChild(cell);
+            });
+            card.appendChild(grid);
+
+            const harvest = formatDate(p.harvestDate);
+            if (harvest) {
+                const line = el('p', 'text-xs text-slate-400');
+                line.appendChild(el('i', 'fa-solid fa-calendar-day text-emerald-400 mr-1.5'));
+                line.appendChild(document.createTextNode("O'rim-yig'im: " + harvest));
+                card.appendChild(line);
+            }
+
+            const actions = el('div', 'flex gap-2 pt-1');
+            if (mpConfirmId === p.id) {
+                const q = el('span', 'flex-1 self-center text-xs font-semibold text-rose-300', "O'chirishni tasdiqlaysizmi?");
+                actions.appendChild(q);
+                actions.appendChild(iconBtn('fa-check', 'Ha', 'border-rose-500/40 bg-rose-500/15 text-rose-300 hover:bg-rose-500/25', function () { deleteProduct(p.id); }));
+                actions.appendChild(iconBtn('fa-xmark', "Yo'q", 'border-white/15 text-slate-300 hover:bg-white/10', function () { mpConfirmId = null; renderMyProducts(); }));
+            } else {
+                actions.appendChild(iconBtn('fa-pen', 'Tahrirlash', 'border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10', function () { openProductModal(p); }));
+                if (p.status === 'ACTIVE' || p.status === 'ARCHIVED') {
+                    const archived = p.status === 'ARCHIVED';
+                    actions.appendChild(iconBtn(archived ? 'fa-box-open' : 'fa-box-archive', archived ? 'Faollashtirish' : 'Arxivlash',
+                        'border-white/15 text-slate-300 hover:bg-white/10', function () { toggleArchive(p); }));
+                }
+                actions.appendChild(iconBtn('fa-trash', "O'chirish", 'border-rose-500/30 text-rose-400 hover:bg-rose-500/10', function () { mpConfirmId = p.id; renderMyProducts(); }));
+            }
+            card.appendChild(actions);
+            return card;
+        }
+
+        async function toggleArchive(p) {
+            const token = storageGet(TOKEN_KEY);
+            if (!token) return handleSessionExpired(openMyProducts);
+            const next = p.status === 'ARCHIVED' ? 'ACTIVE' : 'ARCHIVED';
+            try {
+                await apiRequest('PUT', '/products/' + p.id, { status: next }, token);
+                showToast(next === 'ARCHIVED' ? "E'lon arxivlandi." : "E'lon qayta faollashtirildi.");
+                loadMyProducts();
+            } catch (err) {
+                if (err.status === 401) return handleSessionExpired(openMyProducts);
+                showToast(err.messages[0]);
+                if (err.status === 404) loadMyProducts();
+            }
+        }
+
+        async function deleteProduct(id) {
+            const token = storageGet(TOKEN_KEY);
+            if (!token) return handleSessionExpired(openMyProducts);
+            try {
+                await apiRequest('DELETE', '/products/' + id, undefined, token);
+                mpConfirmId = null;
+                showToast("E'lon o'chirildi.");
+                loadMyProducts();
+            } catch (err) {
+                if (err.status === 401) return handleSessionExpired(openMyProducts);
+                mpConfirmId = null;
+                showToast(err.messages[0]);
+                loadMyProducts();
+            }
+        }
+
+        document.getElementById('mp-chips').addEventListener('click', function (e) {
+            const chip = e.target.closest('.mp-chip');
+            if (!chip) return;
+            mpFilter = chip.dataset.filter;
+            document.querySelectorAll('.mp-chip').forEach(function (c) { c.classList.toggle('active', c === chip); });
+            mpConfirmId = null;
+            renderMyProducts();
+        });
+
         document.addEventListener('keydown', function (e) {
             if (e.key !== 'Escape') return;
             if (productModal.classList.contains('open')) closeProductModal();
             else if (authModal.classList.contains('open')) closeAuthModal();
+            else if (panel.classList.contains('open')) closeMyProducts();
+            else closeAccountMenu();
         });
 
         updateAuthButton();
