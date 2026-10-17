@@ -4,10 +4,11 @@ import { AuthModule } from './auth/auth.module';
 import { BookingModule } from './booking/booking.module';
 import { MarketplaceModule } from './marketplace/marketplace.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { ShipmentModule } from './shipment/shipment.module';
 import { ProfileModule } from './profile/profile.module';
 import { ProductModule } from './product/product.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), PrismaModule, AuthModule, ProductModule, MarketplaceModule, ProfileModule, BookingModule],
+  imports: [ConfigModule.forRoot({ isGlobal: true }), PrismaModule, AuthModule, ProductModule, MarketplaceModule, ProfileModule, BookingModule, ShipmentModule],
 })
 export class AppModule {}

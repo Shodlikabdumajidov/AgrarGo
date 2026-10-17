@@ -60,6 +60,7 @@ model Driver {
   capacityKg    Decimal  @db.Decimal(12, 2)
   region        String
   licenseNumber String?
+  shipments     Shipment[]
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }
@@ -99,6 +100,7 @@ model Booking {
   status     BookingStatus @default(PENDING)
   message    String?
   decidedAt  DateTime?
+  shipment   Shipment?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -134,4 +136,53 @@ model Product {
 
   @@index([farmerId])
   @@index([status, category])
+}
+
+// Yuk tashish: fermer bronni tasdiqlaganda avtomatik yaratiladi
+enum ShipmentStatus {
+  OPEN       // haydovchi kutilmoqda
+  LOADING    // yuklanmoqda (haydovchi biriktirilgan)
+  IN_TRANSIT // yo'lda
+  DELIVERED  // yetkazib berildi
+}
+
+model Shipment {
+  id        String  @id @default(uuid())
+  bookingId String  @unique
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+  driverId  String?
+  driver    Driver? @relation(fields: [driverId], references: [id], onDelete: SetNull)
+
+  status ShipmentStatus @default(OPEN)
+
+  // Bron paytidagi ma'lumotlar nusxasi: keyin profil o'zgarsa ham marshrut o'zgarmaydi
+  cargoName       String
+  category        String
+  weightKg        Decimal @db.Decimal(12, 2)
+  originRegion    String
+  originDistrict  String
+  originAddress   String?
+  destRegion      String
+  destDistrict    String
+  destAddress     String?
+
+  assignedAt  DateTime?
+  deliveredAt DateTime?
+  events      ShipmentEvent[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, createdAt])
+  @@index([driverId, status])
+}
+
+model ShipmentEvent {
+  id         String         @id @default(uuid())
+  shipmentId String
+  shipment   Shipment       @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  status     ShipmentStatus
+  createdAt  DateTime       @default(now())
+
+  @@index([shipmentId, createdAt])
 }

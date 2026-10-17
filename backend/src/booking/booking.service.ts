@@ -1,6 +1,7 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { BookingStatus, Prisma, ProductStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { createShipmentForBooking } from '../shipment/shipment.factory';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { ListBookingsQuery } from './dto/list-bookings.query';
 
@@ -88,7 +89,8 @@ export class BookingService {
   }
 
   async approve(farmerId: string, id: string) {
-    await this.decide(id, { product: { farmerId } }, BookingStatus.APPROVED, false);
+    // Tasdiqlangach shu tranzaksiyada yuk tashish buyurtmasi ham yaratiladi
+    await this.decide(id, { product: { farmerId } }, BookingStatus.APPROVED, false, (tx) => createShipmentForBooking(tx, id));
     return this.reload(id, 'farmer');
   }
 
@@ -103,7 +105,13 @@ export class BookingService {
   }
 
   /** Faqat PENDING holatdagi bronni o'zgartiradi; rad/bekor qilinsa miqdor e'longa qaytadi. */
-  private async decide(id: string, owner: Prisma.BookingWhereInput, next: BookingStatus, restore: boolean) {
+  private async decide(
+    id: string,
+    owner: Prisma.BookingWhereInput,
+    next: BookingStatus,
+    restore: boolean,
+    afterUpdate?: (tx: Prisma.TransactionClient) => Promise<unknown>,
+  ) {
     await this.prisma.$transaction(async (tx) => {
       const changed = await tx.booking.updateMany({
         where: { id, status: BookingStatus.PENDING, ...owner },
@@ -114,6 +122,7 @@ export class BookingService {
         if (!exists) throw new NotFoundException('Bron topilmadi');
         throw new ConflictException("Bu bron allaqachon ko'rib chiqilgan");
       }
+      if (afterUpdate) await afterUpdate(tx);
       if (restore) {
         const booking = await tx.booking.findUniqueOrThrow({ where: { id }, select: { productId: true, quantityKg: true } });
         await tx.product.update({

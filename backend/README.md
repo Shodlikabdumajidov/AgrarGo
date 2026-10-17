@@ -43,3 +43,14 @@ Boshqa fermerning e'loni `404` qaytaradi. FARMER bo'lmagan rol `403`, tokensiz `
 - `GET /bookings/incoming` (FARMER), `PATCH /bookings/:id/approve`, `PATCH /bookings/:id/reject`
 - Rad etilgan/bekor qilingan bronning miqdori e'longa qaytadi. Narx bron paytida qotiriladi.
 - Telefon raqamlar faqat `APPROVED` bronda ikkala tomonga ochiladi.
+
+## Yuk tashish (Shipments)
+Fermer bronni tasdiqlaganda shu tranzaksiyada `OPEN` holatdagi yuk yaratiladi (marshrut: fermer manzili → market manzili, og'irlik = bron miqdori; ma'lumotlar bron paytida nusxalanadi).
+
+Holatlar: `OPEN` (haydovchi kutilmoqda) → `LOADING` (yuklanmoqda) → `IN_TRANSIT` (yo'lda) → `DELIVERED` (yetkazib berildi). Har o'zgarish `events` ro'yxatiga yoziladi (tarix).
+
+- `GET /shipments/available?originRegion=` (DRIVER): bo'sh yuklar. Faqat viloyat/tuman, og'irlik va `fitsCapacity` ko'rinadi; aniq manzil va telefonlar yashirin.
+- `POST /shipments/:id/accept` (DRIVER): yukni biriktirish (`OPEN → LOADING`). Transport sig'imidan og'ir yuk va ikkinchi faol yuk (`MAX_ACTIVE_SHIPMENTS = 1`) rad etiladi; bir yukka bir vaqtda faqat bitta haydovchi yetadi.
+- `POST /shipments/:id/release` (DRIVER): yo'lga chiqishdan oldin qaytarish (`LOADING → OPEN`).
+- `PATCH /shipments/:id/advance` (DRIVER): `LOADING → IN_TRANSIT → DELIVERED`.
+- `GET /shipments/mine?status=` (DRIVER | FARMER | MARKET): o'ziga tegishli yuklar. Haydovchi ikkala tomonning manzili va telefonini, fermer/market esa biriktirilgan haydovchi ma'lumotini ko'radi.
