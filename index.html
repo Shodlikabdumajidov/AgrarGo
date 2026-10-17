@@ -90,20 +90,20 @@
             width: 100%;
         }
         /* Auth modal (Login / Register) */
-        #auth-modal, #product-modal {
+        #auth-modal, #product-modal, #booking-modal {
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.3s ease, visibility 0.3s ease;
         }
-        #auth-modal.open, #product-modal.open {
+        #auth-modal.open, #product-modal.open, #booking-modal.open {
             opacity: 1;
             visibility: visible;
         }
-        #auth-modal .auth-card, #product-modal .auth-card {
+        #auth-modal .auth-card, #product-modal .auth-card, #booking-modal .auth-card {
             transform: translateY(20px) scale(0.96);
             transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        #auth-modal.open .auth-card, #product-modal.open .auth-card {
+        #auth-modal.open .auth-card, #product-modal.open .auth-card, #booking-modal.open .auth-card {
             transform: translateY(0) scale(1);
         }
         .auth-input {
@@ -128,6 +128,28 @@
             background: #10B981;
             color: #020617;
             box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+        }
+        /* Dashboard (rolga mos boshqaruv sahifasi) */
+        #dashboard-view {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(14px);
+            transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s ease;
+        }
+        #dashboard-view.open {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .dash-tab.active {
+            background: rgba(16, 185, 129, 0.18);
+            border-color: rgba(16, 185, 129, 0.55);
+            color: #34d399;
+        }
+        .role-pill.active {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: rgba(16, 185, 129, 0.6);
+            color: #34d399;
         }
         /* Account dropdown */
         #account-menu {
@@ -324,16 +346,25 @@
                 </button>
                 <div class="relative">
                     <button id="auth-nav-btn" onclick="onAuthButtonClick(event)" aria-haspopup="menu" class="bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-extrabold px-8 py-4 rounded-2xl text-base transition duration-200 shadow-xl shadow-emerald-500/30 flex items-center gap-2.5">
-                        <i class="fa-solid fa-user text-sm"></i> <span id="auth-nav-label" class="max-w-[10rem] truncate">Kabinetga Kirish</span>
+                        <span id="auth-nav-avatar" class="w-7 h-7 rounded-full overflow-hidden bg-slate-950/15 flex items-center justify-center text-xs font-black shrink-0"><i class="fa-solid fa-user text-sm"></i></span> <span id="auth-nav-label" class="max-w-[10rem] truncate">Kabinetga Kirish</span>
                         <i id="auth-nav-caret" class="fa-solid fa-chevron-down text-xs hidden transition-transform duration-300"></i>
                     </button>
                     <div id="account-menu" role="menu" class="absolute right-0 top-full mt-3 w-72 bg-slate-900/95 backdrop-blur-2xl border border-emerald-500/25 rounded-2xl shadow-2xl shadow-emerald-500/10 z-50 overflow-hidden" onclick="event.stopPropagation()">
-                        <div class="p-4 border-b border-white/10 bg-slate-950/50">
-                            <div id="account-name" class="font-extrabold text-white truncate"></div>
-                            <div id="account-sub" class="text-xs text-slate-400 mt-0.5 truncate"></div>
+                        <div class="p-4 border-b border-white/10 bg-slate-950/50 flex items-center gap-3">
+                            <span id="account-avatar" class="w-11 h-11 rounded-full overflow-hidden bg-emerald-500/20 text-emerald-300 flex items-center justify-center font-black shrink-0"></span>
+                            <div class="min-w-0">
+                                <div id="account-name" class="font-extrabold text-white truncate"></div>
+                                <div id="account-sub" class="text-xs text-slate-400 mt-0.5 truncate"></div>
+                            </div>
                         </div>
-                        <button type="button" role="menuitem" onclick="openMyProducts()" class="w-full flex items-center gap-3 px-4 py-3.5 text-left text-slate-200 hover:bg-white/10 hover:text-emerald-400 font-semibold transition">
+                        <button type="button" role="menuitem" onclick="closeAccountMenu(); openDashboard()" class="w-full flex items-center gap-3 px-4 py-3.5 text-left text-slate-200 hover:bg-white/10 hover:text-emerald-400 font-semibold transition">
+                            <i class="fa-solid fa-gauge w-5 text-emerald-400"></i> Mening kabinetim
+                        </button>
+                        <button type="button" id="account-products-item" role="menuitem" onclick="openMyProducts()" class="hidden w-full flex items-center gap-3 px-4 py-3.5 text-left text-slate-200 hover:bg-white/10 hover:text-emerald-400 font-semibold border-t border-white/5 transition">
                             <i class="fa-solid fa-boxes-stacked w-5 text-emerald-400"></i> Mening e'lonlarim
+                        </button>
+                        <button type="button" role="menuitem" onclick="closeAccountMenu(); openDashboard('profile')" class="w-full flex items-center gap-3 px-4 py-3.5 text-left text-slate-200 hover:bg-white/10 hover:text-emerald-400 font-semibold border-t border-white/5 transition">
+                            <i class="fa-solid fa-id-card w-5 text-emerald-400"></i> Profil sozlamalari
                         </button>
                         <button type="button" role="menuitem" onclick="logout()" class="w-full flex items-center gap-3 px-4 py-3.5 text-left text-slate-200 hover:bg-rose-500/10 hover:text-rose-400 font-semibold border-t border-white/5 transition">
                             <i class="fa-solid fa-right-from-bracket w-5 text-rose-400"></i> Chiqish
@@ -353,15 +384,16 @@
             </button>
         </div>
         <div class="flex-1 overflow-y-auto divide-y divide-white/5">
-            <a href="#" class="flex justify-between items-center p-5 hover:bg-white/10 transition group">
+            <p class="px-5 py-3 text-xs text-slate-400 font-semibold leading-relaxed bg-slate-950/30">Rolingizni tanlang. Bitta telefon raqam faqat bitta rolda ro'yxatdan o'ta oladi.</p>
+            <a href="#" onclick="chooseRole('FARMER'); return false;" class="flex justify-between items-center p-5 hover:bg-white/10 transition group">
                 <span class="text-base font-semibold text-slate-200 group-hover:text-emerald-400">AgrarGo Farm (Fermer)</span>
                 <span class="text-xs bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full font-bold">Faol</span>
             </a>
-            <a href="#" class="flex justify-between items-center p-5 hover:bg-white/10 transition group">
+            <a href="#" onclick="chooseRole('DRIVER'); return false;" class="flex justify-between items-center p-5 hover:bg-white/10 transition group">
                 <span class="text-base font-semibold text-slate-200 group-hover:text-emerald-400">AgrarGo Driver (Haydovchi)</span>
                 <span class="text-xs bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full font-bold">GPS</span>
             </a>
-            <a href="#" class="flex justify-between items-center p-5 hover:bg-white/10 transition group">
+            <a href="#" onclick="chooseRole('MARKET'); return false;" class="flex justify-between items-center p-5 hover:bg-white/10 transition group">
                 <span class="text-base font-semibold text-slate-200 group-hover:text-emerald-400">AgrarGo Market (B2B Do'kon)</span>
                 <span class="text-xs bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full font-bold">Market</span>
             </a>
@@ -762,7 +794,7 @@
 
             <div class="text-center space-y-2 mb-6">
                 <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold uppercase tracking-widest">
-                    <i class="fa-solid fa-seedling"></i> AgrarGo Farm
+                    <i id="auth-role-icon" class="fa-solid fa-user"></i> <span id="auth-role-badge">AgrarGo</span>
                 </div>
                 <h2 id="auth-title" class="text-2xl sm:text-3xl font-extrabold tracking-tight">Kabinetga Kirish</h2>
                 <p id="auth-subtitle" class="text-slate-400 text-sm">Telefon raqamingiz va parolingiz bilan kiring.</p>
@@ -772,6 +804,13 @@
             <div class="grid grid-cols-2 gap-1.5 p-1.5 mb-6 rounded-2xl bg-slate-950/60 border border-white/10" role="tablist">
                 <button type="button" id="tab-login" data-tab="login" onclick="switchAuthTab('login')" role="tab" class="auth-tab active py-2.5 rounded-xl text-sm font-bold text-slate-300 transition">Kirish</button>
                 <button type="button" id="tab-register" data-tab="register" onclick="switchAuthTab('register')" role="tab" class="auth-tab py-2.5 rounded-xl text-sm font-bold text-slate-300 transition">Ro'yxatdan o'tish</button>
+            </div>
+
+            <!-- Rol tanlash (faqat ro'yxatdan o'tishda) -->
+            <div id="role-pills" class="hidden grid grid-cols-3 gap-2 mb-5">
+                <button type="button" data-role="FARMER" onclick="setAuthRole('FARMER')" class="role-pill px-2 py-2 rounded-xl border border-white/15 text-xs font-bold text-slate-300 transition hover:border-emerald-500/50"><i class="fa-solid fa-seedling mr-1.5"></i>Fermer</button>
+                <button type="button" data-role="DRIVER" onclick="setAuthRole('DRIVER')" class="role-pill px-2 py-2 rounded-xl border border-white/15 text-xs font-bold text-slate-300 transition hover:border-emerald-500/50"><i class="fa-solid fa-truck-fast mr-1.5"></i>Haydovchi</button>
+                <button type="button" data-role="MARKET" onclick="setAuthRole('MARKET')" class="role-pill px-2 py-2 rounded-xl border border-white/15 text-xs font-bold text-slate-300 transition hover:border-emerald-500/50"><i class="fa-solid fa-store mr-1.5"></i>Market</button>
             </div>
 
             <!-- Error / success box -->
@@ -852,6 +891,101 @@
                 </button>
                 <p class="text-center text-sm text-slate-400">Hisobingiz bormi? <button type="button" onclick="switchAuthTab('login')" class="text-emerald-400 font-bold hover:underline">Kirish</button></p>
             </form>
+            <form id="register-driver-form" class="space-y-4 hidden" novalidate>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="drv-fullName">Ism va familiya</label>
+                    <input id="drv-fullName" name="fullName" type="text" autocomplete="name" placeholder="Hasan Karimov" class="auth-input">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="drv-phone">Telefon raqam</label>
+                    <div class="flex items-stretch gap-2">
+                        <span class="flex items-center px-3 rounded-[0.875rem] bg-slate-950/60 border border-white/15 text-emerald-400 font-bold text-sm">+998</span>
+                        <input id="drv-phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="90 123 45 67" class="auth-input">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="drv-vehicleType">Transport turi</label>
+                    <select id="drv-vehicleType" name="vehicleType" class="auth-input">
+                        <option value="">Tanlang...</option>
+                        <option>Labo / Damas</option>
+                        <option>Isuzu (kichik yuk)</option>
+                        <option>Furgon</option>
+                        <option>Fura (katta)</option>
+                        <option>Sovutgichli (Ref)</option>
+                        <option>Boshqa</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="drv-plateNumber">Davlat raqami</label>
+                    <input id="drv-plateNumber" name="plateNumber" type="text" maxlength="12" placeholder="01 A 123 BC" class="auth-input">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="drv-capacityKg">Yuk sig'imi (kg)</label>
+                    <input id="drv-capacityKg" name="capacityKg" type="number" min="0" step="1" inputmode="decimal" placeholder="3000" class="auth-input">
+                </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="drv-region">Faoliyat viloyati</label>
+                    <select id="drv-region" name="region" data-regions class="auth-input"><option value="">Tanlang...</option></select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="drv-licenseNumber">Haydovchilik guvohnomasi <span class="text-slate-500 normal-case font-medium">(ixtiyoriy)</span></label>
+                    <input id="drv-licenseNumber" name="licenseNumber" type="text"  placeholder="AB 1234567" class="auth-input">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="drv-password">Parol</label>
+                    <input id="drv-password" name="password" type="password" autocomplete="new-password" placeholder="Kamida 8 ta belgi" class="auth-input">
+                </div>
+                <button type="submit" class="auth-submit w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed text-slate-950 font-extrabold py-3.5 rounded-2xl transition duration-200 shadow-xl shadow-emerald-500/30 flex items-center justify-center gap-2.5">
+                    <i class="fa-solid fa-user-plus"></i> <span>Ro'yxatdan o'tish</span>
+                </button>
+                <p class="text-center text-sm text-slate-400">Hisobingiz bormi? <button type="button" onclick="switchAuthTab('login')" class="text-emerald-400 font-bold hover:underline">Kirish</button></p>
+            </form>
+
+            <form id="register-market-form" class="space-y-4 hidden" novalidate>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="mkt-fullName">Mas'ul shaxs (ism va familiya)</label>
+                    <input id="mkt-fullName" name="fullName" type="text" autocomplete="name" placeholder="Sardor Aliyev" class="auth-input">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="mkt-phone">Telefon raqam</label>
+                    <div class="flex items-stretch gap-2">
+                        <span class="flex items-center px-3 rounded-[0.875rem] bg-slate-950/60 border border-white/15 text-emerald-400 font-bold text-sm">+998</span>
+                        <input id="mkt-phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="90 123 45 67" class="auth-input">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="mkt-companyName">Kompaniya / do'kon nomi</label>
+                    <input id="mkt-companyName" name="companyName" type="text"  placeholder="Masalan: Fresh Market" class="auth-input">
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="mkt-region">Viloyat</label>
+                    <select id="mkt-region" name="region" data-regions class="auth-input"><option value="">Tanlang...</option></select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="mkt-district">Tuman</label>
+                    <input id="mkt-district" name="district" type="text"  placeholder="Chilonzor" class="auth-input">
+                </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="mkt-address">Manzil <span class="text-slate-500 normal-case font-medium">(ixtiyoriy)</span></label>
+                    <input id="mkt-address" name="address" type="text"  placeholder="Ko'cha, uy" class="auth-input">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="mkt-stir">STIR <span class="text-slate-500 normal-case font-medium">(ixtiyoriy)</span></label>
+                    <input id="mkt-stir" name="stir" type="text" inputmode="numeric" maxlength="9" placeholder="9 ta raqam" class="auth-input">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="mkt-password">Parol</label>
+                    <input id="mkt-password" name="password" type="password" autocomplete="new-password" placeholder="Kamida 8 ta belgi" class="auth-input">
+                </div>
+                <button type="submit" class="auth-submit w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed text-slate-950 font-extrabold py-3.5 rounded-2xl transition duration-200 shadow-xl shadow-emerald-500/30 flex items-center justify-center gap-2.5">
+                    <i class="fa-solid fa-user-plus"></i> <span>Ro'yxatdan o'tish</span>
+                </button>
+                <p class="text-center text-sm text-slate-400">Hisobingiz bormi? <button type="button" onclick="switchAuthTab('login')" class="text-emerald-400 font-bold hover:underline">Kirish</button></p>
+            </form>
         </div>
     </div>
 
@@ -903,6 +1037,65 @@
                 </div>
                 <button type="submit" class="auth-submit w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed text-slate-950 font-extrabold py-3.5 rounded-2xl transition duration-200 shadow-xl shadow-emerald-500/30 flex items-center justify-center gap-2.5">
                     <i class="fa-solid fa-check"></i> <span>E'lonni joylash</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- DASHBOARD (rolga mos boshqaruv sahifasi) -->
+    <div id="dashboard-view" class="fixed inset-0 z-[45] bg-slate-950 overflow-y-auto" aria-hidden="true">
+        <div class="sticky top-0 z-10 glass border-b border-white/15">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-3">
+                <button type="button" onclick="closeDashboard()" class="flex items-center gap-2 text-slate-300 hover:text-emerald-400 font-bold text-sm transition">
+                    <i class="fa-solid fa-arrow-left"></i> <span class="hidden sm:inline">Saytga qaytish</span>
+                </button>
+                <div class="flex items-center gap-2 text-emerald-400 font-extrabold uppercase tracking-widest text-xs sm:text-sm">
+                    <i id="dash-role-icon" class="fa-solid fa-gauge"></i> <span id="dash-role-title">Kabinet</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span id="dash-user-chip" class="flex items-center gap-2 text-sm font-bold text-slate-200 max-w-[9rem] sm:max-w-[14rem]"></span>
+                    <button type="button" onclick="logout()" title="Chiqish" aria-label="Chiqish" class="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-rose-400 hover:bg-white/5 transition text-lg"><i class="fa-solid fa-right-from-bracket"></i></button>
+                </div>
+            </div>
+        </div>
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8 grid lg:grid-cols-[15rem_minmax(0,1fr)] gap-6">
+            <nav id="dash-tabs" class="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-1 lg:pb-0 lg:sticky lg:top-24 self-start" aria-label="Kabinet bo'limlari"></nav>
+            <main id="dash-content" class="min-w-0 space-y-6"></main>
+        </div>
+    </div>
+
+    <!-- BOOKING MODAL (B2B bron) -->
+    <div id="booking-modal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="booking-title" onclick="if (event.target === this) closeBookingModal()">
+        <div class="auth-card glass relative w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-3xl border border-emerald-500/25 shadow-2xl shadow-emerald-500/10 bg-gradient-to-b from-slate-900 to-emerald-950/30 p-6 sm:p-8">
+            <button type="button" onclick="closeBookingModal()" aria-label="Yopish" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl p-1 transition hover:rotate-90 duration-300">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="text-center space-y-2 mb-5">
+                <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold uppercase tracking-widest">
+                    <i class="fa-solid fa-handshake"></i> B2B Bron
+                </div>
+                <h2 id="booking-title" class="text-2xl sm:text-3xl font-extrabold tracking-tight">Bron qilish</h2>
+                <p class="text-slate-400 text-sm">Kerakli miqdorni kiriting. Qolgan miqdor boshqa xaridorlar uchun qoladi.</p>
+            </div>
+            <div id="booking-summary" class="rounded-2xl bg-slate-950/50 border border-white/10 p-4 mb-5 space-y-1"></div>
+            <div id="booking-alert" class="hidden mb-5 rounded-2xl px-4 py-3 text-sm font-medium" role="alert"></div>
+            <form id="booking-form" class="space-y-4" novalidate>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="booking-qty">Miqdor (kg)</label>
+                    <input id="booking-qty" name="quantityKg" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Masalan: 100" class="auth-input">
+                    <p id="booking-hint" class="text-xs text-slate-500 mt-1.5"></p>
+                </div>
+                <div class="flex items-center justify-between rounded-2xl bg-emerald-500/10 border border-emerald-500/30 px-4 py-3">
+                    <span class="text-sm font-semibold text-slate-300">Jami summa</span>
+                    <span id="booking-total" class="text-lg font-black text-emerald-400">0 so'm</span>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="booking-message">Izoh <span class="text-slate-500 normal-case font-medium">(ixtiyoriy)</span></label>
+                    <textarea id="booking-message" name="message" rows="3" maxlength="500" placeholder="Yetkazib berish vaqti, talablar..." class="auth-input resize-none"></textarea>
+                </div>
+                <p class="text-[11px] text-slate-500 flex items-start gap-1.5"><i class="fa-solid fa-lock mt-0.5"></i> Fermer so'rovni tasdiqlagandan keyingina telefon raqamlar ikkala tomonga ochiladi.</p>
+                <button type="submit" class="auth-submit w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed text-slate-950 font-extrabold py-3.5 rounded-2xl transition duration-200 shadow-xl shadow-emerald-500/30 flex items-center justify-center gap-2.5">
+                    <i class="fa-solid fa-paper-plane"></i> <span>Bron so'rovini yuborish</span>
                 </button>
             </form>
         </div>
@@ -1001,42 +1194,91 @@
 
         let afterLoginAction = null; // kirgandan keyin bajariladigan amal
 
-        function openAuthModal(tab) {
+        // Sahifa skrolli: biror modal/panel/kabinet ochiq bo'lsa qulflanadi
+        function syncScrollLock() {
+            const open = ['auth-modal', 'product-modal', 'booking-modal', 'my-products-panel', 'dashboard-view'].some(function (id) {
+                const node = document.getElementById(id);
+                return node && node.classList.contains('open');
+            });
+            document.body.classList.toggle('overflow-hidden', open);
+        }
+
+        const REGIONS = ['Toshkent shahri', 'Toshkent viloyati', 'Andijon', 'Buxoro', "Farg'ona", 'Jizzax', 'Namangan', 'Navoiy',
+            'Qashqadaryo', "Qoraqalpog'iston", 'Samarqand', 'Sirdaryo', 'Surxondaryo', 'Xorazm'];
+
+        const ROLE_META = {
+            FARMER: { label: 'Fermer', badge: 'AgrarGo Farm', icon: 'fa-seedling',
+                regTitle: "Fermer sifatida ro'yxatdan o'tish", regSub: "Bepul ro'yxatdan o'ting va mahsulotingizni vositachisiz soting." },
+            DRIVER: { label: 'Haydovchi', badge: 'AgrarGo Driver', icon: 'fa-truck-fast',
+                regTitle: "Haydovchi sifatida ro'yxatdan o'tish", regSub: "Transport ma'lumotlaringizni kiriting va yuk buyurtmalarini oling." },
+            MARKET: { label: 'Market', badge: 'AgrarGo Market', icon: 'fa-store',
+                regTitle: "Market sifatida ro'yxatdan o'tish", regSub: "Kompaniyangiz nomidan fermerlardan bevosita xarid qiling." }
+        };
+        const REGISTER_FORM_IDS = { FARMER: 'register-form', DRIVER: 'register-driver-form', MARKET: 'register-market-form' };
+        let authRole = 'FARMER';  // ro'yxatdan o'tish formasi uchun tanlangan rol
+        let loginRole = null;     // sidebar orqali tanlangan bo'lsa, kirish shu rol bilan cheklanadi
+
+        // Viloyat ro'yxatlari (yangi formalar uchun) bir joydan to'ldiriladi
+        document.querySelectorAll('select[data-regions]').forEach(function (sel) {
+            REGIONS.forEach(function (r) { sel.appendChild(new Option(r, r)); });
+        });
+
+        function openAuthModal(tab, role) {
+            loginRole = role || null;
+            if (role) authRole = role;
             switchAuthTab(tab || 'login');
             authModal.classList.add('open');
-            document.body.classList.add('overflow-hidden');
+            syncScrollLock();
+        }
+
+        function setAuthRole(role) {
+            authRole = role;
+            switchAuthTab('register');
         }
 
         function closeAuthModal() {
             authModal.classList.remove('open');
-            document.body.classList.remove('overflow-hidden');
+            syncScrollLock();
         }
 
         function switchAuthTab(tab) {
             const isLogin = tab === 'login';
+            const meta = ROLE_META[authRole];
             loginForm.classList.toggle('hidden', !isLogin);
-            registerForm.classList.toggle('hidden', isLogin);
+            Object.keys(REGISTER_FORM_IDS).forEach(function (r) {
+                document.getElementById(REGISTER_FORM_IDS[r]).classList.toggle('hidden', isLogin || r !== authRole);
+            });
             document.getElementById('tab-login').classList.toggle('active', isLogin);
             document.getElementById('tab-register').classList.toggle('active', !isLogin);
-            document.getElementById('auth-title').innerText = isLogin ? 'Kabinetga Kirish' : "Fermer sifatida ro'yxatdan o'tish";
+            document.getElementById('role-pills').classList.toggle('hidden', isLogin);
+            document.querySelectorAll('.role-pill').forEach(function (b) { b.classList.toggle('active', b.dataset.role === authRole); });
+
+            const showRole = !isLogin || loginRole;
+            document.getElementById('auth-role-badge').innerText = showRole ? meta.badge : 'AgrarGo';
+            document.getElementById('auth-role-icon').className = 'fa-solid ' + (showRole ? meta.icon : 'fa-user');
+            document.getElementById('auth-title').innerText = isLogin
+                ? (loginRole ? meta.label + ' sifatida kirish' : 'Kabinetga Kirish')
+                : meta.regTitle;
             document.getElementById('auth-subtitle').innerText = isLogin
                 ? 'Telefon raqamingiz va parolingiz bilan kiring.'
-                : "Bepul ro'yxatdan o'ting va mahsulotingizni vositachisiz soting.";
+                : meta.regSub;
             hideAuthAlert();
         }
 
         function showAuthAlert(messages, type, target) {
             const box = target || authAlert;
             const list = Array.isArray(messages) ? messages : [messages];
-            const isError = type !== 'success';
-            box.className = 'mb-5 rounded-2xl px-4 py-3 text-sm font-medium border ' + (isError
+            const isError = type !== 'success' && type !== 'info';
+            box.className = 'mb-5 rounded-2xl px-4 py-3 text-sm font-medium border ' + (type === 'info'
+                ? 'bg-blue-500/10 border-blue-500/30 text-blue-300'
+                : isError
                 ? 'bg-rose-500/10 border-rose-500/30 text-rose-300'
                 : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300');
             box.innerHTML = list.map(function (m) {
                 const div = document.createElement('div');
                 div.className = 'flex items-start gap-2';
                 const icon = document.createElement('i');
-                icon.className = 'fa-solid mt-0.5 ' + (isError ? 'fa-circle-exclamation' : 'fa-circle-check');
+                icon.className = 'fa-solid mt-0.5 ' + (type === 'info' ? 'fa-circle-info' : isError ? 'fa-circle-exclamation' : 'fa-circle-check');
                 const span = document.createElement('span');
                 span.textContent = m; // textContent: server xabari HTML sifatida talqin qilinmaydi
                 div.appendChild(icon);
@@ -1106,7 +1348,12 @@
 
         function saveSession(data) {
             storageSet(TOKEN_KEY, data.accessToken);
-            storageSet(USER_KEY, JSON.stringify(data.user));
+            rememberRole(data.user.role);
+            saveUser(data.user);
+        }
+
+        function saveUser(user) {
+            storageSet(USER_KEY, JSON.stringify(user));
             updateAuthButton();
         }
 
@@ -1114,16 +1361,59 @@
             try { return JSON.parse(storageGet(USER_KEY)); } catch (e) { return null; }
         }
 
+        function currentUser() {
+            return storageGet(TOKEN_KEY) ? getStoredUser() : null;
+        }
+
+        // Qaysi rollarda ro'yxatdan o'tilgani eslab qolinadi: sidebar'dan rol tanlanganda kirish yoki ro'yxatdan o'tish oynasini aniqlaydi
+        function rememberRole(role) {
+            let roles = [];
+            try { roles = JSON.parse(storageGet('agrargo_roles')) || []; } catch (e) {}
+            if (roles.indexOf(role) === -1) roles.push(role);
+            storageSet('agrargo_roles', JSON.stringify(roles));
+        }
+
+        function isRoleKnown(role) {
+            try { return (JSON.parse(storageGet('agrargo_roles')) || []).indexOf(role) !== -1; } catch (e) { return false; }
+        }
+
+        function avatarNode(user, extraCls) {
+            if (user.avatarUrl) {
+                const img = el('img', 'w-full h-full object-cover ' + (extraCls || ''));
+                img.src = API_URL + user.avatarUrl;
+                img.alt = user.fullName;
+                return img;
+            }
+            const initials = user.fullName.split(/\s+/).filter(Boolean).slice(0, 2).map(function (w) { return w[0]; }).join('').toUpperCase();
+            return el('span', extraCls || '', initials || '?');
+        }
+
         function updateAuthButton() {
-            const user = storageGet(TOKEN_KEY) ? getStoredUser() : null;
+            const user = currentUser();
+            const avatarBox = document.getElementById('auth-nav-avatar');
             document.getElementById('auth-nav-label').innerText = user ? user.fullName : 'Kabinetga Kirish';
             document.getElementById('auth-nav-caret').classList.toggle('hidden', !user);
             if (user) {
+                avatarBox.replaceChildren(avatarNode(user));
+                document.getElementById('account-avatar').replaceChildren(avatarNode(user));
                 document.getElementById('account-name').innerText = user.fullName;
-                document.getElementById('account-sub').innerText =
-                    (user.farmer && user.farmer.farmName ? user.farmer.farmName + ' · ' : '') + user.phone;
+                document.getElementById('account-sub').innerText = ROLE_META[user.role] ? ROLE_META[user.role].label + ' · ' + user.phone : user.phone;
+                document.getElementById('account-products-item').classList.toggle('hidden', user.role !== 'FARMER');
             } else {
+                avatarBox.replaceChildren(el('i', 'fa-solid fa-user text-sm'));
                 closeAccountMenu();
+            }
+            if (typeof renderDashHeader === 'function') renderDashHeader();
+        }
+
+        // Sahifa ochilganda sessiya yangilanadi (rasm, rol ma'lumotlari); token yaroqsiz bo'lsa jimgina tozalanadi
+        async function refreshSession() {
+            const token = storageGet(TOKEN_KEY);
+            if (!token) return;
+            try {
+                saveUser(await apiRequest('GET', '/profile', undefined, token));
+            } catch (err) {
+                if (err.status === 401) { storageRemove(TOKEN_KEY); storageRemove(USER_KEY); updateAuthButton(); }
             }
         }
 
@@ -1150,6 +1440,7 @@
             storageRemove(USER_KEY);
             closeAccountMenu();
             closeMyProducts();
+            closeDashboard();
             updateAuthButton();
             showToast('Tizimdan chiqdingiz.');
         }
@@ -1157,12 +1448,12 @@
         window.addEventListener('click', closeAccountMenu);
 
         let toastTimer = null;
-        function showToast(message) {
+        function showToast(message, duration) {
             const t = document.getElementById('toast');
             t.textContent = message;
             t.classList.add('show');
             clearTimeout(toastTimer);
-            toastTimer = setTimeout(function () { t.classList.remove('show'); }, 2600);
+            toastTimer = setTimeout(function () { t.classList.remove('show'); }, duration || 2600);
         }
 
         function onAuthSuccess(data, message) {
@@ -1171,7 +1462,7 @@
             setTimeout(function () {
                 closeAuthModal();
                 loginForm.reset();
-                registerForm.reset();
+                Object.keys(REGISTER_FORM_IDS).forEach(function (r) { document.getElementById(REGISTER_FORM_IDS[r]).reset(); });
                 hideAuthAlert();
                 if (afterLoginAction) {
                     const action = afterLoginAction;
@@ -1193,7 +1484,7 @@
 
             setLoading(loginForm, true);
             try {
-                const data = await authRequest('/auth/login', { phone: phone, password: password });
+                const data = await authRequest('/auth/login', loginRole ? { phone: phone, password: password, role: loginRole } : { phone: phone, password: password });
                 onAuthSuccess(data, 'Xush kelibsiz, ' + data.user.fullName + '!');
             } catch (err) {
                 showAuthAlert(err.messages);
@@ -1202,40 +1493,96 @@
             }
         });
 
-        registerForm.addEventListener('submit', async function (e) {
-            e.preventDefault();
-            hideAuthAlert();
-            const f = registerForm;
-            const payload = {
-                fullName: f.fullName.value.trim(),
-                phone: normalizePhone(f.phone.value),
-                farmName: f.farmName.value.trim(),
-                region: f.region.value,
-                district: f.district.value.trim(),
-                password: f.password.value
-            };
-            const stir = f.stir.value.trim();
-            if (stir) payload.stir = stir; // STIR ixtiyoriy
+        const PHONE_ERR = "Telefon raqamni to'liq kiriting (9 ta raqam).";
+        const PASSWORD_ERR = "Parol kamida 8 ta belgidan iborat bo'lishi kerak.";
 
-            const errors = [];
-            if (payload.fullName.length < 2) errors.push('Ism va familiyani kiriting.');
-            if (!/^\+998\d{9}$/.test(payload.phone)) errors.push("Telefon raqamni to'liq kiriting (9 ta raqam).");
-            if (payload.farmName.length < 2) errors.push("Xo'jalik nomini kiriting.");
-            if (!payload.region) errors.push('Viloyatni tanlang.');
-            if (!payload.district) errors.push('Tumanni kiriting.');
-            if (stir && !/^\d{9}$/.test(stir)) errors.push("STIR 9 ta raqamdan iborat bo'lishi kerak.");
-            if (payload.password.length < 8) errors.push("Parol kamida 8 ta belgidan iborat bo'lishi kerak.");
-            if (errors.length) return showAuthAlert(errors);
-
-            setLoading(registerForm, true);
-            try {
-                const data = await authRequest('/auth/farmer/register', payload);
-                onAuthSuccess(data, "Muvaffaqiyatli ro'yxatdan o'tdingiz!");
-            } catch (err) {
-                showAuthAlert(err.messages);
-            } finally {
-                setLoading(registerForm, false);
+        // Har bir rol uchun: forma elementidan payload yig'adi va mijoz tomonida tekshiradi
+        const REGISTER_CONFIG = {
+            FARMER: {
+                path: '/auth/farmer/register',
+                collect: function (f) {
+                    const payload = {
+                        fullName: f.fullName.value.trim(), phone: normalizePhone(f.phone.value),
+                        farmName: f.farmName.value.trim(), region: f.region.value,
+                        district: f.district.value.trim(), password: f.password.value
+                    };
+                    const stir = f.stir.value.trim();
+                    if (stir) payload.stir = stir; // STIR ixtiyoriy
+                    const errors = [];
+                    if (payload.fullName.length < 2) errors.push('Ism va familiyani kiriting.');
+                    if (!/^\+998\d{9}$/.test(payload.phone)) errors.push(PHONE_ERR);
+                    if (payload.farmName.length < 2) errors.push("Xo'jalik nomini kiriting.");
+                    if (!payload.region) errors.push('Viloyatni tanlang.');
+                    if (!payload.district) errors.push('Tumanni kiriting.');
+                    if (stir && !/^\d{9}$/.test(stir)) errors.push("STIR 9 ta raqamdan iborat bo'lishi kerak.");
+                    if (payload.password.length < 8) errors.push(PASSWORD_ERR);
+                    return { payload: payload, errors: errors };
+                }
+            },
+            DRIVER: {
+                path: '/auth/driver/register',
+                collect: function (f) {
+                    const payload = {
+                        fullName: f.fullName.value.trim(), phone: normalizePhone(f.phone.value),
+                        vehicleType: f.vehicleType.value, plateNumber: f.plateNumber.value.trim(),
+                        capacityKg: Number(f.capacityKg.value), region: f.region.value, password: f.password.value
+                    };
+                    const license = f.licenseNumber.value.trim();
+                    if (license) payload.licenseNumber = license;
+                    const errors = [];
+                    if (payload.fullName.length < 2) errors.push('Ism va familiyani kiriting.');
+                    if (!/^\+998\d{9}$/.test(payload.phone)) errors.push(PHONE_ERR);
+                    if (!payload.vehicleType) errors.push('Transport turini tanlang.');
+                    if (!/^[A-Za-z0-9 -]{5,12}$/.test(payload.plateNumber)) errors.push("Davlat raqamini to'g'ri kiriting (masalan, 01A123BC).");
+                    if (!(payload.capacityKg > 0)) errors.push("Yuk sig'imini kiriting (kg).");
+                    if (!payload.region) errors.push('Viloyatni tanlang.');
+                    if (payload.password.length < 8) errors.push(PASSWORD_ERR);
+                    return { payload: payload, errors: errors };
+                }
+            },
+            MARKET: {
+                path: '/auth/market/register',
+                collect: function (f) {
+                    const payload = {
+                        fullName: f.fullName.value.trim(), phone: normalizePhone(f.phone.value),
+                        companyName: f.companyName.value.trim(), region: f.region.value,
+                        district: f.district.value.trim(), password: f.password.value
+                    };
+                    const address = f.address.value.trim();
+                    const stir = f.stir.value.trim();
+                    if (address) payload.address = address;
+                    if (stir) payload.stir = stir;
+                    const errors = [];
+                    if (payload.fullName.length < 2) errors.push('Mas\'ul shaxs ismini kiriting.');
+                    if (!/^\+998\d{9}$/.test(payload.phone)) errors.push(PHONE_ERR);
+                    if (payload.companyName.length < 2) errors.push("Kompaniya nomini kiriting.");
+                    if (!payload.region) errors.push('Viloyatni tanlang.');
+                    if (!payload.district) errors.push('Tumanni kiriting.');
+                    if (stir && !/^\d{9}$/.test(stir)) errors.push("STIR 9 ta raqamdan iborat bo'lishi kerak.");
+                    if (payload.password.length < 8) errors.push(PASSWORD_ERR);
+                    return { payload: payload, errors: errors };
+                }
             }
+        };
+
+        Object.keys(REGISTER_CONFIG).forEach(function (role) {
+            const form = document.getElementById(REGISTER_FORM_IDS[role]);
+            const cfg = REGISTER_CONFIG[role];
+            form.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                hideAuthAlert();
+                const result = cfg.collect(form);
+                if (result.errors.length) return showAuthAlert(result.errors);
+                setLoading(form, true);
+                try {
+                    const data = await authRequest(cfg.path, result.payload);
+                    onAuthSuccess(data, "Muvaffaqiyatli ro'yxatdan o'tdingiz!");
+                } catch (err) {
+                    showAuthAlert(err.messages);
+                } finally {
+                    setLoading(form, false);
+                }
+            });
         });
 
         // ===== E'LON JOYLASH / TAHRIRLASH =====
@@ -1278,13 +1625,13 @@
             submitLabel.innerText = product ? 'Saqlash' : "E'lonni joylash";
             delete f.querySelector('.auth-submit').dataset.label;
             productModal.classList.add('open');
-            document.body.classList.add('overflow-hidden');
+            syncScrollLock();
         }
 
         function closeProductModal() {
             productModal.classList.remove('open');
             // Panel ochiq bo'lsa, sahifa skrolli baribir bloklanib turadi
-            if (!panel.classList.contains('open')) document.body.classList.remove('overflow-hidden');
+            syncScrollLock();
         }
 
         // Token eskirgan/yaroqsiz: sessiyani tozalab, qayta kirishga yo'naltiramiz
@@ -1294,6 +1641,8 @@
             updateAuthButton();
             closeProductModal();
             closeMyProducts();
+            closeDashboard();
+            closeBookingModal();
             afterLoginAction = nextAction || null; // kirgach shu amal qayta bajariladi
             openAuthModal('login');
             showAuthAlert('Sessiya tugagan. Iltimos, qayta kiring.', 'info');
@@ -1392,7 +1741,7 @@
             closeAccountMenu();
             panel.classList.add('open');
             panelOverlay.classList.add('open');
-            document.body.classList.add('overflow-hidden');
+            syncScrollLock();
             loadMyProducts();
         }
 
@@ -1400,7 +1749,7 @@
             panel.classList.remove('open');
             panelOverlay.classList.remove('open');
             mpConfirmId = null;
-            if (!productModal.classList.contains('open')) document.body.classList.remove('overflow-hidden');
+            syncScrollLock();
         }
 
         function addProductFromPanel() {
@@ -1542,9 +1891,11 @@
 
         document.addEventListener('keydown', function (e) {
             if (e.key !== 'Escape') return;
-            if (productModal.classList.contains('open')) closeProductModal();
+            if (bookingModal.classList.contains('open')) closeBookingModal();
+            else if (productModal.classList.contains('open')) closeProductModal();
             else if (authModal.classList.contains('open')) closeAuthModal();
             else if (panel.classList.contains('open')) closeMyProducts();
+            else if (dashboardView.classList.contains('open')) closeDashboard();
             else closeAccountMenu();
         });
 
@@ -1767,11 +2118,6 @@
             return card;
         }
 
-        // B2B bron keyingi bosqichda (Booking modeli va Market roli bilan) ishga tushadi
-        function onBookClick(p) {
-            showToast('B2B bron moduli tez orada ishga tushadi: ' + p.name);
-        }
-
         function renderMarketPagination(meta) {
             const nav = document.getElementById('market-pagination');
             nav.replaceChildren();
@@ -1807,8 +2153,635 @@
             nav.appendChild(btn('›', meta.page + 1, { disabled: meta.page >= meta.totalPages, aria: 'Keyingi sahifa' }));
         }
 
+        // ===== ROL BO'YICHA NAVIGATSIYA (sidebar) =====
+        function chooseRole(role) {
+            if (sidebar.classList.contains('open')) toggleSidebar();
+            const user = currentUser();
+            const meta = ROLE_META[role];
+            if (user) {
+                if (user.role === role) return openDashboard();
+                const mine = (ROLE_META[user.role] || { label: user.role }).label;
+                showToast("Ushbu raqam allaqachon " + mine + " sifatida ro'yxatdan o'tgan. " + meta.label +
+                    " sifatida foydalanish uchun tizimdan chiqib, boshqa raqam bilan ro'yxatdan o'ting.", 6500);
+                return;
+            }
+            // Oldin shu rolda kirilgan bo'lsa — kirish oynasi, aks holda ro'yxatdan o'tish formasi
+            const known = isRoleKnown(role);
+            afterLoginAction = function () { openDashboard(); };
+            openAuthModal(known ? 'login' : 'register', role);
+            showAuthAlert(known
+                ? meta.badge + " kabinetiga kirish uchun telefon raqam va parolingizni kiriting."
+                : meta.badge + " uchun ma'lumotlarni to'ldirib, ro'yxatdan o'ting.", 'info');
+        }
+
+        // ===== KABINET (rolga mos boshqaruv sahifasi) =====
+        const dashboardView = document.getElementById('dashboard-view');
+        const dashContent = document.getElementById('dash-content');
+        const DASH_TABS = {
+            FARMER: [['overview', 'fa-gauge', 'Umumiy'], ['bookings', 'fa-inbox', 'Kelgan bronlar'],
+                     ['products', 'fa-boxes-stacked', "E'lonlarim"], ['profile', 'fa-id-card', 'Profil']],
+            MARKET: [['overview', 'fa-gauge', 'Umumiy'], ['bookings', 'fa-clipboard-list', 'Mening bronlarim'],
+                     ['catalog', 'fa-store', 'Katalog'], ['profile', 'fa-id-card', 'Profil']],
+            DRIVER: [['overview', 'fa-gauge', 'Umumiy'], ['profile', 'fa-id-card', 'Profil']]
+        };
+        const BOOKING_STATUS = {
+            PENDING:   { label: 'Kutilmoqda',      cls: 'bg-amber-500/15 text-amber-400 border-amber-500/30' },
+            APPROVED:  { label: 'Tasdiqlangan',    cls: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' },
+            REJECTED:  { label: 'Rad etilgan',     cls: 'bg-rose-500/15 text-rose-400 border-rose-500/30' },
+            CANCELLED: { label: 'Bekor qilingan',  cls: 'bg-slate-500/20 text-slate-300 border-slate-500/30' }
+        };
+        const VEHICLE_TYPES = ['Labo / Damas', 'Isuzu (kichik yuk)', 'Furgon', 'Fura (katta)', 'Sovutgichli (Ref)', 'Boshqa'];
+        let dashTab = 'overview';
+        let dashRenderId = 0;     // eski (kechikkan) javoblar yangi sahifani bosib ketmasin
+        let dashBookingFilter = 'ALL';
+
+        function renderDashHeader() {
+            const user = currentUser();
+            if (!user) return;
+            const meta = ROLE_META[user.role] || { badge: 'AgrarGo', icon: 'fa-gauge' };
+            document.getElementById('dash-role-icon').className = 'fa-solid ' + meta.icon;
+            document.getElementById('dash-role-title').innerText = meta.badge;
+            const av = el('span', 'w-8 h-8 rounded-full overflow-hidden bg-emerald-500/20 text-emerald-300 text-xs font-black flex items-center justify-center shrink-0');
+            av.appendChild(avatarNode(user));
+            document.getElementById('dash-user-chip').replaceChildren(av, el('span', 'truncate hidden sm:inline', user.fullName));
+        }
+
+        function openDashboard(tab) {
+            const user = currentUser();
+            if (!user) {
+                afterLoginAction = function () { openDashboard(tab); };
+                return openAuthModal('login');
+            }
+            if (!DASH_TABS[user.role]) return showToast("Bu rol uchun kabinet mavjud emas.");
+            closeAccountMenu();
+            dashBookingFilter = 'ALL'; // oldingi foydalanuvchining filtri qolib ketmasin
+            renderDashHeader();
+            const nav = document.getElementById('dash-tabs');
+            nav.replaceChildren.apply(nav, DASH_TABS[user.role].map(function (t) {
+                const b = el('button', 'dash-tab flex items-center gap-2.5 px-4 py-3 rounded-xl border border-white/10 text-sm font-bold text-slate-300 hover:border-emerald-500/40 transition whitespace-nowrap');
+                b.type = 'button';
+                b.dataset.tab = t[0];
+                b.appendChild(el('i', 'fa-solid w-4 text-center ' + t[1]));
+                b.appendChild(el('span', '', t[2]));
+                if (t[0] === 'bookings') {
+                    const badge = el('span', 'hidden ml-auto min-w-[1.25rem] h-5 px-1.5 rounded-full bg-amber-400 text-slate-950 text-[11px] font-black items-center justify-center');
+                    badge.id = 'dash-badge-bookings';
+                    b.appendChild(badge);
+                }
+                b.addEventListener('click', function () { dashBookingFilter = 'ALL'; selectDashTab(t[0]); });
+                return b;
+            }));
+            dashboardView.classList.add('open');
+            dashboardView.setAttribute('aria-hidden', 'false');
+            syncScrollLock();
+            selectDashTab(tab || 'overview');
+        }
+
+        function closeDashboard() {
+            dashboardView.classList.remove('open');
+            dashboardView.setAttribute('aria-hidden', 'true');
+            syncScrollLock();
+        }
+
+        function selectDashTab(tab) {
+            if (tab === 'products') return openMyProducts();
+            if (tab === 'catalog') { closeDashboard(); return scrollToMarket(); }
+            const user = currentUser();
+            if (!user) return;
+            dashTab = tab;
+            document.querySelectorAll('.dash-tab').forEach(function (b) { b.classList.toggle('active', b.dataset.tab === tab); });
+            dashboardView.scrollTo({ top: 0 });
+            if (tab === 'bookings') renderDashBookings(user);
+            else if (tab === 'profile') renderDashProfile();
+            else renderDashOverview(user);
+        }
+
+        function reopenDash() { openDashboard(dashTab); }
+
+        // Tokenli so'rov: 401 kelsa sessiya tozalanib, qayta kirgach kabinet o'sha bo'limda ochiladi
+        async function authed(method, path, payload) {
+            const token = storageGet(TOKEN_KEY);
+            if (!token) { handleSessionExpired(reopenDash); throw { status: 401, messages: [] }; }
+            try {
+                return await apiRequest(method, path, payload, token);
+            } catch (err) {
+                if (err.status === 401) handleSessionExpired(reopenDash);
+                throw err;
+            }
+        }
+
+        function dashMessage(icon, text, retry) {
+            const box = el('div', 'glass rounded-3xl border border-white/10 text-center py-14 px-6 space-y-4');
+            box.appendChild(el('i', 'fa-solid text-4xl text-emerald-400 ' + icon));
+            box.appendChild(el('p', 'text-sm font-medium text-slate-300', text));
+            if (retry) {
+                const b = el('button', 'px-5 py-2 rounded-xl border border-emerald-500/40 text-emerald-400 text-sm font-bold hover:bg-emerald-500/10 transition', 'Qayta urinish');
+                b.type = 'button';
+                b.addEventListener('click', retry);
+                box.appendChild(b);
+            }
+            return box;
+        }
+
+        function setDashBadge(count) {
+            const badge = document.getElementById('dash-badge-bookings');
+            if (!badge) return;
+            badge.innerText = count;
+            badge.classList.toggle('hidden', !count);
+            badge.classList.toggle('flex', !!count);
+        }
+
+        function statCard(icon, label, value, tone) {
+            const c = el('div', 'glass rounded-2xl border border-white/10 p-4 space-y-2');
+            c.appendChild(el('i', 'fa-solid ' + icon + ' text-lg ' + tone));
+            c.appendChild(el('div', 'text-2xl font-black text-white break-words', value));
+            c.appendChild(el('div', 'text-xs font-bold uppercase tracking-wider text-slate-400', label));
+            return c;
+        }
+
+        function actionBtn(icon, label, primary, onClick) {
+            const b = el('button', 'flex items-center justify-center gap-2.5 px-5 py-3 rounded-2xl text-sm font-extrabold transition active:scale-95 ' + (primary
+                ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/25'
+                : 'border border-white/15 text-slate-200 hover:border-emerald-500/50 hover:text-emerald-400'));
+            b.type = 'button';
+            b.appendChild(el('i', 'fa-solid ' + icon));
+            b.appendChild(el('span', '', label));
+            b.addEventListener('click', onClick);
+            return b;
+        }
+
+        function sectionTitle(text, sub) {
+            const box = el('div', 'space-y-1');
+            box.appendChild(el('h3', 'text-lg font-extrabold text-white', text));
+            if (sub) box.appendChild(el('p', 'text-sm text-slate-400', sub));
+            return box;
+        }
+
+        async function renderDashOverview(user) {
+            const rid = ++dashRenderId;
+            dashContent.replaceChildren(dashMessage('fa-spinner fa-spin', "Ma'lumotlar yuklanmoqda..."));
+            try {
+                const nodes = [];
+                const hello = el('div', 'space-y-1');
+                hello.appendChild(el('h2', 'text-2xl sm:text-3xl font-extrabold text-white', 'Salom, ' + user.fullName + '!'));
+                hello.appendChild(el('p', 'text-slate-400 text-sm', (ROLE_META[user.role] || {}).badge + ' boshqaruv paneli'));
+                nodes.push(hello);
+
+                if (user.role === 'FARMER') {
+                    const res = await Promise.all([authed('GET', '/products'), authed('GET', '/bookings/incoming')]);
+                    if (rid !== dashRenderId) return;
+                    const products = res[0], bookings = res[1];
+                    const active = products.filter(function (p) { return p.status === 'ACTIVE'; });
+                    const pending = bookings.filter(function (b) { return b.status === 'PENDING'; });
+                    const approved = bookings.filter(function (b) { return b.status === 'APPROVED'; });
+                    const stock = active.reduce(function (sum, p) { return sum + Number(p.quantityKg); }, 0);
+                    setDashBadge(pending.length);
+                    const stats = el('div', 'grid grid-cols-2 lg:grid-cols-4 gap-4');
+                    stats.appendChild(statCard('fa-boxes-stacked', "Faol e'lonlar", String(active.length), 'text-emerald-400'));
+                    stats.appendChild(statCard('fa-weight-hanging', 'Mavjud qoldiq', formatNumber(stock) + ' kg', 'text-blue-400'));
+                    stats.appendChild(statCard('fa-hourglass-half', 'Kutilayotgan bronlar', String(pending.length), 'text-amber-400'));
+                    stats.appendChild(statCard('fa-circle-check', 'Tasdiqlangan', String(approved.length), 'text-emerald-400'));
+                    nodes.push(stats);
+                    const actions = el('div', 'flex flex-wrap gap-3');
+                    actions.appendChild(actionBtn('fa-plus', "Yangi e'lon qo'shish", true, function () { openProductModal(); }));
+                    actions.appendChild(actionBtn('fa-boxes-stacked', "Mening e'lonlarim", false, openMyProducts));
+                    nodes.push(actions);
+                    nodes.push(sectionTitle('Tasdiqlashni kutayotgan bronlar', "Tasdiqlagandan keyin xaridorning telefon raqami ochiladi."));
+                    if (pending.length) pending.slice(0, 5).forEach(function (b) { nodes.push(buildBookingCard(b, 'farmer')); });
+                    else nodes.push(dashMessage('fa-inbox', "Hozircha yangi bron so'rovlari yo'q."));
+                } else if (user.role === 'MARKET') {
+                    const bookings = await authed('GET', '/bookings/mine');
+                    if (rid !== dashRenderId) return;
+                    const count = function (st) { return bookings.filter(function (b) { return b.status === st; }).length; };
+                    const approvedSum = bookings.filter(function (b) { return b.status === 'APPROVED'; })
+                        .reduce(function (sum, b) { return sum + Number(b.totalPrice); }, 0);
+                    const stats = el('div', 'grid grid-cols-2 lg:grid-cols-4 gap-4');
+                    stats.appendChild(statCard('fa-hourglass-half', 'Kutilmoqda', String(count('PENDING')), 'text-amber-400'));
+                    stats.appendChild(statCard('fa-circle-check', 'Tasdiqlangan', String(count('APPROVED')), 'text-emerald-400'));
+                    stats.appendChild(statCard('fa-money-bill-wave', 'Tasdiqlangan summa', formatNumber(approvedSum) + " so'm", 'text-blue-400'));
+                    stats.appendChild(statCard('fa-ban', 'Rad / bekor', String(count('REJECTED') + count('CANCELLED')), 'text-rose-400'));
+                    nodes.push(stats);
+                    const actions = el('div', 'flex flex-wrap gap-3');
+                    actions.appendChild(actionBtn('fa-store', "Katalogga o'tish", true, function () { closeDashboard(); scrollToMarket(); }));
+                    actions.appendChild(actionBtn('fa-clipboard-list', 'Barcha bronlarim', false, function () { selectDashTab('bookings'); }));
+                    nodes.push(actions);
+                    nodes.push(sectionTitle("So'nggi bronlar"));
+                    if (bookings.length) bookings.slice(0, 5).forEach(function (b) { nodes.push(buildBookingCard(b, 'market')); });
+                    else nodes.push(dashMessage('fa-store', "Hali bron qilmagansiz. Katalogdan mahsulot tanlang."));
+                } else {
+                    const u = await authed('GET', '/profile');
+                    if (rid !== dashRenderId) return;
+                    saveUser(u);
+                    const d = u.driver || {};
+                    const stats = el('div', 'grid grid-cols-2 lg:grid-cols-4 gap-4');
+                    stats.appendChild(statCard('fa-truck', 'Transport', d.vehicleType || '—', 'text-blue-400'));
+                    stats.appendChild(statCard('fa-id-badge', 'Davlat raqami', d.plateNumber || '—', 'text-emerald-400'));
+                    stats.appendChild(statCard('fa-weight-hanging', "Yuk sig'imi", d.capacityKg ? formatNumber(d.capacityKg) + ' kg' : '—', 'text-amber-400'));
+                    stats.appendChild(statCard('fa-location-dot', 'Hudud', d.region || '—', 'text-rose-400'));
+                    nodes.push(stats);
+                    nodes.push(dashMessage('fa-route', "Yuk buyurtmalari va marshrutlar moduli keyingi bosqichda ishga tushadi. Hozircha profilingizni to'liq va dolzarb saqlang."));
+                    const actions = el('div', 'flex flex-wrap gap-3');
+                    actions.appendChild(actionBtn('fa-id-card', "Profilni tahrirlash", true, function () { selectDashTab('profile'); }));
+                    nodes.push(actions);
+                }
+                dashContent.replaceChildren.apply(dashContent, nodes);
+            } catch (err) {
+                if (err.status === 401 || rid !== dashRenderId) return;
+                dashContent.replaceChildren(dashMessage('fa-triangle-exclamation text-rose-400', err.messages[0], function () { renderDashOverview(user); }));
+            }
+        }
+
+        // ----- Bronlar ro'yxati (fermer: kelgan, market: o'zi bergan) -----
+        function formatDateTime(iso) {
+            const d = new Date(iso);
+            const p = function (n) { return String(n).padStart(2, '0'); };
+            return p(d.getDate()) + '.' + p(d.getMonth() + 1) + '.' + d.getFullYear() + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+        }
+
+        function buildBookingCard(b, side) {
+            const meta = BOOKING_STATUS[b.status];
+            const party = side === 'farmer' ? b.market : b.farmer;
+            const partyName = side === 'farmer' ? party.companyName : party.farmName;
+            const card = el('div', 'glass rounded-2xl border border-white/10 hover:border-emerald-500/40 transition p-5 space-y-4');
+
+            const top = el('div', 'flex items-start justify-between gap-3');
+            const title = el('div', 'min-w-0');
+            title.appendChild(el('h4', 'font-extrabold text-white text-lg truncate', b.product.name));
+            title.appendChild(el('p', 'text-xs text-slate-400 font-semibold uppercase tracking-wider', b.product.category));
+            top.appendChild(title);
+            top.appendChild(el('span', 'shrink-0 text-xs font-bold px-3 py-1 rounded-full border ' + meta.cls, meta.label));
+            card.appendChild(top);
+
+            const grid = el('div', 'grid grid-cols-3 gap-2 text-center');
+            [['Miqdor', formatNumber(b.quantityKg) + ' kg'], ['Narx', formatNumber(b.pricePerKg) + " so'm/kg"], ['Jami', formatNumber(b.totalPrice) + " so'm"]].forEach(function (r) {
+                const cell = el('div', 'rounded-xl bg-slate-950/50 border border-white/5 px-2 py-2');
+                cell.appendChild(el('div', 'text-[10px] uppercase tracking-wider text-slate-500 font-bold', r[0]));
+                cell.appendChild(el('div', 'text-xs font-bold text-emerald-300 break-words', r[1]));
+                grid.appendChild(cell);
+            });
+            card.appendChild(grid);
+
+            const info = el('div', 'space-y-1.5 text-sm text-slate-300');
+            const row = function (icon, text) {
+                const r = el('div', 'flex items-start gap-2.5');
+                r.appendChild(el('i', 'fa-solid ' + icon + ' text-emerald-400 mt-1 w-4 text-center text-xs'));
+                r.appendChild(el('span', 'min-w-0 break-words', text));
+                info.appendChild(r);
+            };
+            row(side === 'farmer' ? 'fa-store' : 'fa-tractor', partyName + ' · ' + party.region + ', ' + party.district);
+            row('fa-clock', formatDateTime(b.createdAt));
+            if (b.message) row('fa-comment', b.message);
+            card.appendChild(info);
+
+            if (b.status === 'APPROVED' && party.phone) {
+                const contact = el('div', 'rounded-xl bg-emerald-500/10 border border-emerald-500/30 px-4 py-3 flex items-center justify-between gap-3');
+                const who = el('div', 'min-w-0');
+                who.appendChild(el('div', 'text-[10px] uppercase tracking-wider text-emerald-400 font-bold', 'Aloqa ochildi'));
+                who.appendChild(el('div', 'text-sm font-bold text-white truncate', party.fullName));
+                contact.appendChild(who);
+                const call = el('a', 'shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-500 text-slate-950 text-sm font-extrabold hover:bg-emerald-400 transition');
+                call.href = 'tel:' + party.phone;
+                call.appendChild(el('i', 'fa-solid fa-phone'));
+                call.appendChild(el('span', '', party.phone));
+                contact.appendChild(call);
+                card.appendChild(contact);
+            } else if (b.status === 'PENDING') {
+                const lock = el('p', 'text-[11px] text-slate-500 flex items-center gap-1.5');
+                lock.appendChild(el('i', 'fa-solid fa-lock'));
+                lock.appendChild(document.createTextNode(side === 'farmer'
+                    ? "Tasdiqlaganingizdan keyin xaridorning telefon raqami ochiladi."
+                    : "Fermer tasdiqlagandan keyin telefon raqami ochiladi."));
+                card.appendChild(lock);
+            }
+
+            if (b.status === 'PENDING') {
+                const actions = el('div', 'flex gap-2');
+                const btn = function (icon, label, cls, kind) {
+                    const x = el('button', 'flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold border transition disabled:opacity-50 ' + cls);
+                    x.type = 'button';
+                    x.appendChild(el('i', 'fa-solid ' + icon));
+                    x.appendChild(el('span', '', label));
+                    x.addEventListener('click', function () { bookingAction(b.id, kind, x); });
+                    return x;
+                };
+                if (side === 'farmer') {
+                    actions.appendChild(btn('fa-check', 'Tasdiqlash', 'border-emerald-500/50 bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25', 'approve'));
+                    actions.appendChild(btn('fa-xmark', 'Rad etish', 'border-rose-500/40 text-rose-400 hover:bg-rose-500/10', 'reject'));
+                } else {
+                    actions.appendChild(btn('fa-ban', 'Bekor qilish', 'border-rose-500/40 text-rose-400 hover:bg-rose-500/10', 'cancel'));
+                }
+                card.appendChild(actions);
+            }
+            return card;
+        }
+
+        const BOOKING_DONE_MSG = {
+            approve: "Bron tasdiqlandi. Xaridorning telefon raqami ochildi.",
+            reject: "Bron rad etildi. Miqdor e'longa qaytarildi.",
+            cancel: "Bron bekor qilindi. Miqdor e'longa qaytarildi."
+        };
+
+        async function bookingAction(id, kind, button) {
+            button.disabled = true;
+            try {
+                await authed('PATCH', '/bookings/' + id + '/' + kind);
+                showToast(BOOKING_DONE_MSG[kind], 3500);
+            } catch (err) {
+                if (err.status === 401) return;
+                showToast(err.messages[0], 4000);
+            }
+            selectDashTab(dashTab); // ro'yxat va hisoblagichlarni yangilaydi
+            if (typeof loadMarket === 'function') loadMarket();
+        }
+
+        async function renderDashBookings(user) {
+            const rid = ++dashRenderId;
+            const side = user.role === 'FARMER' ? 'farmer' : 'market';
+            dashContent.replaceChildren(dashMessage('fa-spinner fa-spin', 'Bronlar yuklanmoqda...'));
+            let list;
+            try {
+                list = await authed('GET', side === 'farmer' ? '/bookings/incoming' : '/bookings/mine');
+            } catch (err) {
+                if (err.status === 401 || rid !== dashRenderId) return;
+                return dashContent.replaceChildren(dashMessage('fa-triangle-exclamation text-rose-400', err.messages[0], function () { renderDashBookings(user); }));
+            }
+            if (rid !== dashRenderId) return;
+            if (side === 'farmer') setDashBadge(list.filter(function (b) { return b.status === 'PENDING'; }).length);
+
+            const head = el('div', 'space-y-3');
+            head.appendChild(el('h2', 'text-2xl font-extrabold text-white', side === 'farmer' ? 'Kelgan bronlar' : 'Mening bronlarim'));
+            const chips = el('div', 'flex flex-wrap gap-2');
+            [['ALL', 'Hammasi'], ['PENDING', 'Kutilmoqda'], ['APPROVED', 'Tasdiqlangan'], ['REJECTED', 'Rad etilgan'], ['CANCELLED', 'Bekor qilingan']].forEach(function (f) {
+                const n = f[0] === 'ALL' ? list.length : list.filter(function (b) { return b.status === f[0]; }).length;
+                const c = el('button', 'mp-chip px-4 py-1.5 rounded-full border border-white/15 text-xs font-bold text-slate-300 transition hover:border-emerald-500/50' + (dashBookingFilter === f[0] ? ' active' : ''), f[1] + ' (' + n + ')');
+                c.type = 'button';
+                c.addEventListener('click', function () { dashBookingFilter = f[0]; renderDashBookings(user); });
+                chips.appendChild(c);
+            });
+            head.appendChild(chips);
+
+            const items = dashBookingFilter === 'ALL' ? list : list.filter(function (b) { return b.status === dashBookingFilter; });
+            const nodes = [head];
+            if (items.length) items.forEach(function (b) { nodes.push(buildBookingCard(b, side)); });
+            else nodes.push(dashMessage('fa-inbox', list.length ? "Bu holatdagi bronlar yo'q." : (side === 'farmer' ? "Hali bron so'rovlari kelmagan." : "Hali bron qilmagansiz. Katalogdan mahsulot tanlang.")));
+            dashContent.replaceChildren.apply(dashContent, nodes);
+        }
+
+        // ----- Profil -----
+        const PROFILE_FIELDS = {
+            FARMER: { key: 'farmer', fields: [['farmName', "Xo'jalik nomi", 'text', true], ['region', 'Viloyat', 'region', true], ['district', 'Tuman', 'text', true],
+                ['address', 'Manzil (ixtiyoriy)', 'text', false], ['stir', 'STIR (ixtiyoriy)', 'stir', false]] },
+            DRIVER: { key: 'driver', fields: [['vehicleType', 'Transport turi', 'vehicle', true], ['plateNumber', 'Davlat raqami', 'plate', true],
+                ['capacityKg', "Yuk sig'imi (kg)", 'number', true], ['region', 'Faoliyat viloyati', 'region', true], ['licenseNumber', 'Haydovchilik guvohnomasi (ixtiyoriy)', 'text', false]] },
+            MARKET: { key: 'market', fields: [['companyName', "Kompaniya / do'kon nomi", 'text', true], ['region', 'Viloyat', 'region', true],
+                ['district', 'Tuman', 'text', true], ['address', 'Manzil (ixtiyoriy)', 'text', false], ['stir', 'STIR (ixtiyoriy)', 'stir', false]] }
+        };
+
+        async function renderDashProfile() {
+            const rid = ++dashRenderId;
+            dashContent.replaceChildren(dashMessage('fa-spinner fa-spin', 'Profil yuklanmoqda...'));
+            let u;
+            try {
+                u = await authed('GET', '/profile');
+            } catch (err) {
+                if (err.status === 401 || rid !== dashRenderId) return;
+                return dashContent.replaceChildren(dashMessage('fa-triangle-exclamation text-rose-400', err.messages[0], renderDashProfile));
+            }
+            if (rid !== dashRenderId) return;
+            saveUser(u);
+            dashContent.replaceChildren(buildAvatarCard(u), buildProfileForm(u));
+        }
+
+        function buildAvatarCard(u) {
+            const card = el('div', 'glass rounded-3xl border border-white/10 p-6 flex flex-col sm:flex-row items-center gap-6');
+            const av = el('div', 'w-28 h-28 rounded-3xl overflow-hidden bg-emerald-500/15 border-2 border-emerald-500/40 text-emerald-300 text-3xl font-black flex items-center justify-center shrink-0 shadow-lg shadow-emerald-500/10');
+            av.appendChild(avatarNode(u));
+            card.appendChild(av);
+
+            const info = el('div', 'flex-1 text-center sm:text-left space-y-1.5 min-w-0');
+            info.appendChild(el('h2', 'text-2xl font-extrabold text-white truncate', u.fullName));
+            const role = el('div', 'inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider');
+            role.appendChild(el('i', 'fa-solid ' + (ROLE_META[u.role] || {}).icon));
+            role.appendChild(el('span', '', (ROLE_META[u.role] || {}).label));
+            info.appendChild(role);
+            info.appendChild(el('p', 'text-sm text-slate-400', u.phone));
+            card.appendChild(info);
+
+            const actions = el('div', 'flex flex-col gap-2 w-full sm:w-auto');
+            const input = el('input', 'hidden');
+            input.type = 'file';
+            input.accept = 'image/jpeg,image/png,image/webp';
+            input.addEventListener('change', function () { if (input.files[0]) uploadAvatar(input.files[0]); });
+            actions.appendChild(input);
+            actions.appendChild(actionBtn('fa-camera', u.avatarUrl ? "Rasmni o'zgartirish" : 'Rasm yuklash', true, function () { input.click(); }));
+            if (u.avatarUrl) actions.appendChild(actionBtn('fa-trash', "Rasmni o'chirish", false, removeAvatar));
+            actions.appendChild(el('p', 'text-[11px] text-slate-500 text-center', 'JPG, PNG yoki WEBP, 2 MB gacha'));
+            card.appendChild(actions);
+            return card;
+        }
+
+        async function uploadAvatar(file) {
+            if (!/^image\/(jpeg|png|webp)$/.test(file.type)) return showToast('Faqat JPG, PNG yoki WEBP rasm yuklang.', 4000);
+            if (file.size > 2 * 1024 * 1024) return showToast('Rasm hajmi 2 MB dan oshmasligi kerak.', 4000);
+            const token = storageGet(TOKEN_KEY);
+            if (!token) return handleSessionExpired(reopenDash);
+            const fd = new FormData();
+            fd.append('file', file);
+            let res;
+            try {
+                res = await fetch(API_URL + '/profile/avatar', { method: 'POST', headers: { Authorization: 'Bearer ' + token }, body: fd });
+            } catch (e) {
+                return showToast("Serverga ulanib bo'lmadi. Qayta urinib ko'ring.", 4000);
+            }
+            if (res.status === 401) return handleSessionExpired(reopenDash);
+            let data = null;
+            try { data = await res.json(); } catch (e) {}
+            if (!res.ok) {
+                const msg = data && data.message ? (Array.isArray(data.message) ? data.message[0] : data.message) : "Rasmni yuklab bo'lmadi.";
+                return showToast(res.status === 413 ? 'Rasm hajmi 2 MB dan oshmasligi kerak.' : msg, 4000);
+            }
+            saveUser(data);
+            showToast('Profil rasmi yangilandi.');
+            renderDashProfile();
+        }
+
+        async function removeAvatar() {
+            try {
+                saveUser(await authed('DELETE', '/profile/avatar'));
+                showToast("Profil rasmi o'chirildi.");
+                renderDashProfile();
+            } catch (err) {
+                if (err.status !== 401) showToast(err.messages[0], 4000);
+            }
+        }
+
+        function buildProfileForm(u) {
+            const cfg = PROFILE_FIELDS[u.role];
+            const profile = u[cfg.key] || {};
+            const form = el('form', 'glass rounded-3xl border border-white/10 p-6 space-y-5');
+            form.noValidate = true;
+            form.appendChild(sectionTitle('Shaxsiy va ' + (u.role === 'DRIVER' ? 'transport' : u.role === 'MARKET' ? 'kompaniya' : "xo'jalik") + " ma'lumotlari"));
+            const alertBox = el('div', 'hidden', '');
+            alertBox.setAttribute('role', 'alert');
+            form.appendChild(alertBox);
+
+            const grid = el('div', 'grid grid-cols-1 sm:grid-cols-2 gap-4');
+            const inputs = {};
+            const addField = function (name, label, type, value, readonly) {
+                const wrap = el('div', type === 'text' && name === 'address' ? 'sm:col-span-2' : '');
+                const lab = el('label', 'block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5', label);
+                lab.htmlFor = 'pf-' + name;
+                wrap.appendChild(lab);
+                let input;
+                if (type === 'region' || type === 'vehicle') {
+                    input = el('select', 'auth-input');
+                    const list = type === 'region' ? REGIONS : VEHICLE_TYPES;
+                    const options = list.indexOf(value) === -1 && value ? [value].concat(list) : list;
+                    options.forEach(function (o) { input.appendChild(new Option(o, o)); });
+                    input.value = value || options[0];
+                } else {
+                    input = el('input', 'auth-input' + (readonly ? ' opacity-60 cursor-not-allowed' : ''));
+                    input.type = type === 'number' ? 'number' : 'text';
+                    if (type === 'number') { input.min = '0'; input.step = '1'; }
+                    if (type === 'stir') { input.maxLength = 9; input.inputMode = 'numeric'; }
+                    if (type === 'plate') input.maxLength = 12;
+                    input.value = value === null || value === undefined ? '' : (type === 'number' ? Number(value) : value);
+                    if (readonly) { input.readOnly = true; input.tabIndex = -1; }
+                }
+                input.id = 'pf-' + name;
+                inputs[name] = input;
+                wrap.appendChild(input);
+                if (readonly) wrap.appendChild(el('p', 'text-[11px] text-slate-500 mt-1.5', "Telefon raqam akkaunt identifikatori bo'lgani uchun o'zgartirilmaydi."));
+                grid.appendChild(wrap);
+            };
+            addField('fullName', u.role === 'MARKET' ? "Mas'ul shaxs (ism va familiya)" : 'Ism va familiya', 'text', u.fullName, false);
+            addField('phone', 'Telefon raqam', 'text', u.phone, true);
+            cfg.fields.forEach(function (f) { addField(f[0], f[1], f[2], profile[f[0]], false); });
+            form.appendChild(grid);
+
+            const submit = el('button', 'auth-submit w-full sm:w-auto sm:px-10 bg-emerald-500 hover:bg-emerald-400 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed text-slate-950 font-extrabold py-3.5 rounded-2xl transition duration-200 shadow-xl shadow-emerald-500/30 flex items-center justify-center gap-2.5');
+            submit.type = 'submit';
+            submit.appendChild(el('i', 'fa-solid fa-floppy-disk'));
+            submit.appendChild(el('span', '', "O'zgarishlarni saqlash"));
+            form.appendChild(submit);
+
+            form.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                hideAuthAlert(alertBox);
+                const payload = { fullName: inputs.fullName.value.trim() };
+                const errors = [];
+                if (payload.fullName.length < 2) errors.push('Ism va familiyani kiriting.');
+                cfg.fields.forEach(function (f) {
+                    const raw = inputs[f[0]].value.trim();
+                    if (f[3] && !raw) { errors.push(f[1] + ' bo\'sh bo\'lmasligi kerak.'); return; }
+                    if (f[2] === 'number') { payload[f[0]] = Number(raw); if (!(payload[f[0]] > 0)) errors.push(f[1] + " 0 dan katta bo'lishi kerak."); }
+                    else payload[f[0]] = raw;
+                    if (f[2] === 'stir' && raw && !/^\d{9}$/.test(raw)) errors.push("STIR 9 ta raqamdan iborat bo'lishi kerak.");
+                    if (f[2] === 'plate' && !/^[A-Za-z0-9 -]{5,12}$/.test(raw)) errors.push("Davlat raqamini to'g'ri kiriting (masalan, 01A123BC).");
+                });
+                if (errors.length) return showAuthAlert(errors, 'error', alertBox);
+
+                setLoading(form, true);
+                try {
+                    const updated = await authed('PATCH', '/profile', payload);
+                    saveUser(updated);
+                    showToast('Profil yangilandi.');
+                    renderDashProfile();
+                } catch (err) {
+                    if (err.status !== 401) showAuthAlert(err.messages, 'error', alertBox);
+                } finally {
+                    setLoading(form, false);
+                }
+            });
+            return form;
+        }
+
+        // ===== B2B BRON (supermarket, qisman miqdor) =====
+        const bookingModal = document.getElementById('booking-modal');
+        const bookingForm = document.getElementById('booking-form');
+        const bookingAlert = document.getElementById('booking-alert');
+        let bookingProduct = null;
+
+        function onBookClick(p) {
+            const user = currentUser();
+            if (!user) {
+                afterLoginAction = function () { onBookClick(p); };
+                openAuthModal(isRoleKnown('MARKET') ? 'login' : 'register', 'MARKET');
+                showAuthAlert("Bron qilish uchun Market akkaunti kerak. Kiring yoki ro'yxatdan o'ting.", 'info');
+                return;
+            }
+            if (user.role !== 'MARKET') {
+                const mine = (ROLE_META[user.role] || { label: user.role }).label;
+                showToast("Bron qilish faqat Market akkauntlari uchun. Siz " + mine + " sifatida kirgansiz.", 5000);
+                return;
+            }
+            openBookingModal(p);
+        }
+
+        function updateBookingTotal() {
+            const qty = Number(document.getElementById('booking-qty').value);
+            document.getElementById('booking-total').innerText = formatNumber(qty > 0 && bookingProduct ? qty * Number(bookingProduct.pricePerKg) : 0) + " so'm";
+        }
+
+        function openBookingModal(p) {
+            bookingProduct = p;
+            bookingForm.reset();
+            hideAuthAlert(bookingAlert);
+            const summary = document.getElementById('booking-summary');
+            summary.replaceChildren(
+                el('div', 'font-extrabold text-white text-lg', p.name),
+                el('div', 'text-xs text-slate-400', p.farmer.farmName + ' · ' + p.farmer.region + ', ' + p.farmer.district),
+                el('div', 'text-sm text-emerald-300 font-bold', formatNumber(p.pricePerKg) + " so'm / kg")
+            );
+            const qty = document.getElementById('booking-qty');
+            qty.max = Number(p.quantityKg);
+            document.getElementById('booking-hint').innerText = 'Mavjud: ' + formatNumber(p.quantityKg) + ' kg. Qisman miqdor bron qilishingiz mumkin.';
+            updateBookingTotal();
+            bookingModal.classList.add('open');
+            syncScrollLock();
+        }
+
+        function closeBookingModal() {
+            bookingModal.classList.remove('open');
+            syncScrollLock();
+        }
+
+        document.getElementById('booking-qty').addEventListener('input', updateBookingTotal);
+
+        bookingForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            hideAuthAlert(bookingAlert);
+            const p = bookingProduct;
+            const quantityKg = Number(bookingForm.quantityKg.value);
+            const errors = [];
+            if (!(quantityKg > 0)) errors.push("Miqdorni kiriting (0 dan katta bo'lsin).");
+            else if (quantityKg > Number(p.quantityKg)) errors.push("Mavjud miqdordan (" + formatNumber(p.quantityKg) + " kg) ko'p bron qilib bo'lmaydi.");
+            if (errors.length) return showAuthAlert(errors, 'error', bookingAlert);
+
+            const token = storageGet(TOKEN_KEY);
+            if (!token) return handleSessionExpired(function () { onBookClick(p); });
+            const payload = { productId: p.id, quantityKg: quantityKg };
+            const message = bookingForm.message.value.trim();
+            if (message) payload.message = message;
+
+            setLoading(bookingForm, true);
+            try {
+                await apiRequest('POST', '/bookings', payload, token);
+                closeBookingModal();
+                showToast("Bron so'rovi yuborildi. Fermer tasdiqlagach telefon raqamlar ochiladi.", 4500);
+                loadMarket(); // qoldiq kamaygan holda yangilanadi
+            } catch (err) {
+                if (err.status === 401) return handleSessionExpired(function () { onBookClick(p); });
+                showAuthAlert(err.messages, 'error', bookingAlert);
+                if (err.status === 404 || err.status === 409) loadMarket(); // eskirgan qoldiqni yangilaymiz
+            } finally {
+                setLoading(bookingForm, false);
+            }
+        });
+
         loadMarket();
         updateAuthButton();
+        refreshSession();
     </script>
 </body>
 </html>
