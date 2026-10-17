@@ -34,13 +34,17 @@ export class ProductService {
 
   async remove(farmerId: string, id: string) {
     await this.findOneByFarmer(farmerId, id);
-    const open = await this.prisma.booking.count({
-      where: { productId: id, status: { in: [BookingStatus.PENDING, BookingStatus.APPROVED] } },
+    // To'lov tarixi (moliyaviy yozuv) hech qachon e'lon bilan birga o'chirilmaydi
+    const blocking = await this.prisma.booking.count({
+      where: {
+        productId: id,
+        OR: [{ status: { in: [BookingStatus.PENDING, BookingStatus.APPROVED] } }, { payment: { isNot: null } }],
+      },
     });
-    if (open > 0) {
-      throw new ConflictException("Bu e'londa faol bronlar bor. Avval ularni rad eting yoki arxivlang");
+    if (blocking > 0) {
+      throw new ConflictException("Bu e'londa faol bronlar yoki to'lov tarixi bor. Uni o'chirmasdan arxivlang");
     }
-    // Tugallangan (rad etilgan/bekor qilingan) bronlar tarixi e'lon bilan birga o'chiriladi
+    // To'lovsiz tugallangan (rad etilgan/bekor qilingan) bronlar tarixi e'lon bilan birga o'chiriladi
     await this.prisma.$transaction([
       this.prisma.booking.deleteMany({ where: { productId: id } }),
       this.prisma.product.delete({ where: { id } }),

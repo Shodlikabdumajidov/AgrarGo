@@ -10,10 +10,11 @@ const LIMITS = {
   THROTTLE_REGISTER_LIMIT: 10,
   THROTTLE_UPLOAD_LIMIT: 10,
   THROTTLE_BOOKING_LIMIT: 30,
+  THROTTLE_PAYMENT_LIMIT: 20,
 };
 
 // Haqiqiy dekorator bilan belgilangan "marshrut" va uning ExecutionContext'i
-function contextWith(profile?: 'login' | 'register' | 'upload' | 'booking'): ExecutionContext {
+function contextWith(profile?: 'login' | 'register' | 'upload' | 'booking' | 'payment'): ExecutionContext {
   class Ctrl {
     handler() {}
   }
@@ -24,7 +25,7 @@ function contextWith(profile?: 'login' | 'register' | 'upload' | 'booking'): Exe
 describe('buildThrottlers', () => {
   const throttlers = buildThrottlers(LIMITS);
   const byName = (n: string) => throttlers.find((t) => t.name === n)!;
-  const skipped = (name: string, profile?: 'login' | 'register' | 'upload' | 'booking') =>
+  const skipped = (name: string, profile?: 'login' | 'register' | 'upload' | 'booking' | 'payment') =>
     byName(name).skipIf!(contextWith(profile));
 
   it("umumiy chegara har doim ishlaydi, qattiq chegaralar faqat o'z marshrutida", () => {
@@ -46,6 +47,15 @@ describe('buildThrottlers', () => {
     expect(key('registerFarmer')).toBe(key('registerDriver'));
     expect(key('registerFarmer')).toBe(key('registerMarket'));
     expect(gen({} as ExecutionContext, 'ip:5.6.7.8', 'register')).not.toBe(key('registerFarmer'));
+  });
+
+  it("pul harakatlari (init/release/refund) bitta umumiy hisobda sanaladi", () => {
+    const t = byName('payment');
+    expect(skipped('payment', 'payment')).toBe(false);
+    expect(skipped('payment', 'booking')).toBe(true);
+    const key = (h: string) => t.generateKey!({ getHandler: () => ({ name: h }) } as unknown as ExecutionContext, 'ip:1.1.1.1', 'payment');
+    expect(key('init')).toBe(key('refund'));
+    expect(t.limit).toBe(20);
   });
 
   it('login urinishlari limitdan oshsa vaqtincha bloklanadi', () => {

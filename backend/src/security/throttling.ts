@@ -23,7 +23,7 @@ const sharedKey = (_ctx: ExecutionContext, tracker: string, name: string) => `${
 
 export function buildThrottlers(env: Pick<AppEnv,
   'THROTTLE_DEFAULT_LIMIT' | 'THROTTLE_LOGIN_IP_LIMIT' | 'THROTTLE_LOGIN_PHONE_LIMIT' |
-  'THROTTLE_REGISTER_LIMIT' | 'THROTTLE_UPLOAD_LIMIT' | 'THROTTLE_BOOKING_LIMIT'>): ThrottlerOptions[] {
+  'THROTTLE_REGISTER_LIMIT' | 'THROTTLE_UPLOAD_LIMIT' | 'THROTTLE_BOOKING_LIMIT' | 'THROTTLE_PAYMENT_LIMIT'>): ThrottlerOptions[] {
   return [
     // Hamma marshrutlar: IP bo'yicha umumiy chegara
     { name: 'default', ttl: MINUTE, limit: env.THROTTLE_DEFAULT_LIMIT },
@@ -35,5 +35,7 @@ export function buildThrottlers(env: Pick<AppEnv,
     // Qimmat amallar
     { name: 'upload', ttl: MINUTE, limit: env.THROTTLE_UPLOAD_LIMIT, skipIf: onlyFor('upload') },
     { name: 'booking', ttl: MINUTE, limit: env.THROTTLE_BOOKING_LIMIT, skipIf: onlyFor('booking') },
+    // Pul harakati (to'lash, chiqarish, qaytarish): bitta umumiy hisob
+    { name: 'payment', ttl: MINUTE, limit: env.THROTTLE_PAYMENT_LIMIT, generateKey: sharedKey, skipIf: onlyFor('payment') },
   ];
 }

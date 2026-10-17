@@ -8,6 +8,7 @@ import { APP_ENV, AppEnvModule } from './config/app-env.module';
 import { AppEnv } from './config/env.validation';
 import { HealthController } from './health/health.controller';
 import { MarketplaceModule } from './marketplace/marketplace.module';
+import { PaymentModule } from './payment/payment.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProductModule } from './product/product.module';
 import { ProfileModule } from './profile/profile.module';
@@ -32,6 +33,7 @@ import { ShipmentModule } from './shipment/shipment.module';
     ProfileModule,
     BookingModule,
     ShipmentModule,
+    PaymentModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_GUARD, useClass: AppThrottlerGuard }],

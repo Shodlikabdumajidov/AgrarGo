@@ -19,6 +19,7 @@ const RELAXED_LIMITS = {
   THROTTLE_REGISTER_LIMIT: '100000',
   THROTTLE_UPLOAD_LIMIT: '100000',
   THROTTLE_BOOKING_LIMIT: '100000',
+  THROTTLE_PAYMENT_LIMIT: '100000',
 };
 
 export interface TestApp {
@@ -36,6 +37,7 @@ export async function bootApp(env: Record<string, string | undefined> = {}): Pro
     JWT_SECRET: STRONG_SECRET,
     JWT_EXPIRES_IN: '1h',
     CORS_ORIGINS: '',
+    PAYMENT_ALLOW_SIMULATION: 'true', // testlarda pul harakati simulyatsiya qilinadi
     ...RELAXED_LIMITS,
     ...env,
   };
@@ -138,5 +140,21 @@ export async function book(http: Http, market: Account, productId: string, quant
 
 export const approve = (http: Http, farmer: Account, bookingId: string) =>
   http().patch(`/bookings/${bookingId}/approve`).set('Authorization', bearer(farmer));
+
+/** Xaridor to'laydi: PENDING -> HELD */
+export const pay = (http: Http, market: Account, bookingId: string) =>
+  http().post('/payments/init').set('Authorization', bearer(market)).send({ bookingId });
+
+/** Administrator API orqali ro'yxatdan o'tmaydi: bazada yaratiladi va oddiy login bilan kiradi */
+export async function createAdmin(t: TestApp): Promise<Account> {
+  const bcrypt = await import('bcrypt');
+  const phone = nextPhone();
+  const user = await t.prisma.user.create({
+    data: { phone, fullName: 'Admin', role: 'ADMIN', passwordHash: await bcrypt.hash(PASSWORD, 4) },
+  });
+  const res = await t.http().post('/auth/login').send({ phone, password: PASSWORD });
+  if (res.status !== 200) throw new Error(`createAdmin login ${res.status}`);
+  return { token: res.body.accessToken, user, phone };
+}
 
 export type { INestApplication };

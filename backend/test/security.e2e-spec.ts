@@ -211,6 +211,12 @@ describe('Ishga tushishda sozlamalarni tekshirish (e2e)', () => {
     await expect(bootApp({ NODE_ENV: 'production', CORS_ORIGINS: '', JWT_SECRET: STRONG_SECRET })).rejects.toThrow(/CORS_ORIGINS/);
   });
 
+  it("production'da simulyatsiya qilingan to'lov ochiq ruxsatsiz ko'tarilmaydi (haqiqiy pulsiz 'to'lov' bo'lib qolmasligi uchun)", async () => {
+    await expect(
+      bootApp({ NODE_ENV: 'production', CORS_ORIGINS: 'https://agrargo.uz', JWT_SECRET: STRONG_SECRET, PAYMENT_ALLOW_SIMULATION: 'false' }),
+    ).rejects.toThrow(/simulyatsiya/);
+  });
+
   it("DATABASE_URL bo'lmasa ko'tarilmaydi", async () => {
     await expect(bootApp({ DATABASE_URL: 'mysql://x' })).rejects.toThrow(/DATABASE_URL/);
   });

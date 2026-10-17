@@ -1,5 +1,5 @@
 import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma, Role, ShipmentStatus } from '@prisma/client';
+import { PaymentStatus, Prisma, Role, ShipmentStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { AvailableShipmentsQuery, ListShipmentsQuery } from './dto/list-shipments.query';
 
@@ -16,6 +16,7 @@ const SHIPMENT_INCLUDE = {
   booking: {
     select: {
       id: true,
+      payment: { select: { status: true } },
       product: { select: { farmer: { select: { farmName: true, user: { select: { fullName: true, phone: true } } } } } },
       market: { select: { companyName: true, user: { select: { fullName: true, phone: true } } } },
     },
@@ -61,6 +62,11 @@ export class ShipmentService {
       if (shipment.status !== ShipmentStatus.OPEN || shipment.driverId) {
         throw new ConflictException('Bu yuk allaqachon boshqa haydovchiga biriktirilgan');
       }
+      // Kafolatlangan to'lov: yuk faqat xaridor mablag'ni escrow'ga o'tkazgandan keyin olinadi
+      const payment = await tx.payment.findUnique({ where: { bookingId: shipment.bookingId }, select: { status: true } });
+      if (payment?.status !== PaymentStatus.HELD) {
+        throw new ConflictException("Xaridor to'lovi hali kafolatlanmagan. To'lov escrow'ga o'tgandan keyin yukni olish mumkin");
+      }
       if (shipment.weightKg.gt(driver.capacityKg)) {
         throw new ConflictException(
           `Yuk og'irligi (${shipment.weightKg} kg) transportingiz sig'imidan (${driver.capacityKg} kg) ko'p`,
@@ -100,7 +106,9 @@ export class ShipmentService {
         current.status === ShipmentStatus.LOADING ? ShipmentStatus.IN_TRANSIT
         : current.status === ShipmentStatus.IN_TRANSIT ? ShipmentStatus.DELIVERED
         : null;
-      if (!next) throw new ConflictException('Bu yuk allaqachon yetkazib berilgan');
+      if (!next) {
+        throw new ConflictException(current.status === ShipmentStatus.CANCELLED ? 'Bu yuk bekor qilingan' : 'Bu yuk allaqachon yetkazib berilgan');
+      }
 
       // Holat hali o'zgarmagan bo'lsagina o'tkazamiz (ikki marta bosish himoyasi)
       const moved = await tx.shipment.updateMany({
@@ -181,6 +189,7 @@ export class ShipmentService {
       assignedAt: s.assignedAt,
       deliveredAt: s.deliveredAt,
       events: s.events.map((e) => ({ status: e.status, createdAt: e.createdAt })),
+      paymentStatus: s.booking.payment?.status ?? null, // haydovchi uchun: to'lov kafolatlanganmi
       ...(viewer === 'driver-open' && capacityKg ? { fitsCapacity: s.weightKg.lte(capacityKg) } : {}),
       farmer: viewer === 'driver-own' || viewer === 'market'
         ? { farmName: farmer.farmName, fullName: farmer.user.fullName, phone: farmer.user.phone }

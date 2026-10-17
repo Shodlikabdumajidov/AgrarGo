@@ -16,6 +16,10 @@ export interface AppEnv {
   THROTTLE_REGISTER_LIMIT: number;
   THROTTLE_UPLOAD_LIMIT: number;
   THROTTLE_BOOKING_LIMIT: number;
+  THROTTLE_PAYMENT_LIMIT: number;
+  PAYMENT_PROVIDER: 'simulated';
+  PAYMENT_ALLOW_SIMULATION: boolean;
+  PAYMENT_RELEASE_GRACE_HOURS: number;
 }
 
 // Namuna (.env.example) va keng tarqalgan zaif qiymatlar production'da qabul qilinmaydi
@@ -100,6 +104,18 @@ export function validateEnv(raw: Record<string, unknown>): AppEnv & Record<strin
     errors.push("Production'da CORS_ORIGINS faqat https:// bo'lishi kerak");
   }
 
+  const paymentProvider = String(raw.PAYMENT_PROVIDER ?? 'simulated');
+  if (paymentProvider !== 'simulated') {
+    errors.push(`PAYMENT_PROVIDER "${paymentProvider}" qo'llab-quvvatlanmaydi (hozircha faqat "simulated")`);
+  }
+  const allowSimulationRaw = String(raw.PAYMENT_ALLOW_SIMULATION ?? 'false').toLowerCase();
+  if (!['true', 'false'].includes(allowSimulationRaw)) errors.push('PAYMENT_ALLOW_SIMULATION true yoki false bo\'lishi kerak');
+  const allowSimulation = allowSimulationRaw === 'true';
+  // Simulyatsiya haqiqiy pul olmaydi: productionda tasodifan qolib ketmasligi uchun ochiq tasdiq talab qilinadi
+  if (prod && paymentProvider === 'simulated' && !allowSimulation) {
+    errors.push("Production'da simulyatsiya qilingan to'lov taqiqlangan: haqiqiy to'lov provayderini ulang (faqat demo uchun PAYMENT_ALLOW_SIMULATION=true)");
+  }
+
   const env = {
     NODE_ENV: nodeEnv as NodeEnv,
     PORT: intInRange(raw.PORT, 'PORT', 3000, 1, 65535, errors),
@@ -115,6 +131,11 @@ export function validateEnv(raw: Record<string, unknown>): AppEnv & Record<strin
     THROTTLE_REGISTER_LIMIT: intInRange(raw.THROTTLE_REGISTER_LIMIT, 'THROTTLE_REGISTER_LIMIT', 10, 1, 100000, errors),
     THROTTLE_UPLOAD_LIMIT: intInRange(raw.THROTTLE_UPLOAD_LIMIT, 'THROTTLE_UPLOAD_LIMIT', 10, 1, 100000, errors),
     THROTTLE_BOOKING_LIMIT: intInRange(raw.THROTTLE_BOOKING_LIMIT, 'THROTTLE_BOOKING_LIMIT', 30, 1, 100000, errors),
+    THROTTLE_PAYMENT_LIMIT: intInRange(raw.THROTTLE_PAYMENT_LIMIT, 'THROTTLE_PAYMENT_LIMIT', 20, 1, 100000, errors),
+    PAYMENT_PROVIDER: 'simulated' as const,
+    PAYMENT_ALLOW_SIMULATION: allowSimulation,
+    // Yetkazilgandan keyin xaridor tasdiqlamasa, fermer pulni shu soatdan keyin o'zi chiqarib ola oladi
+    PAYMENT_RELEASE_GRACE_HOURS: intInRange(raw.PAYMENT_RELEASE_GRACE_HOURS, 'PAYMENT_RELEASE_GRACE_HOURS', 72, 0, 720, errors),
   };
 
   if (errors.length) {
@@ -129,6 +150,9 @@ export function envWarnings(env: AppEnv): string[] {
   if (env.NODE_ENV !== 'production') {
     if (WEAK_SECRETS.includes(env.JWT_SECRET.toLowerCase())) out.push("JWT_SECRET namuna qiymatda. Production'da almashtiring");
     if (env.CORS_ORIGINS.length === 0) out.push("CORS_ORIGINS bo'sh: barcha manzillarga ruxsat (faqat development uchun)");
+  }
+  if (env.PAYMENT_PROVIDER === 'simulated') {
+    out.push("To'lovlar simulyatsiya rejimida: haqiqiy pul harakati yo'q");
   }
   return out;
 }

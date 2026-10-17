@@ -1,9 +1,11 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { BookingStatus, Prisma, ProductStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { createPaymentForBooking } from '../payment/payment.factory';
 import { createShipmentForBooking } from '../shipment/shipment.factory';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { ListBookingsQuery } from './dto/list-bookings.query';
+import { restoreStock } from './stock';
 
 const BOOKING_INCLUDE = {
   product: {
@@ -20,6 +22,7 @@ const BOOKING_INCLUDE = {
   market: {
     select: { companyName: true, region: true, district: true, user: { select: { fullName: true, phone: true } } },
   },
+  payment: { select: { id: true, status: true, amount: true, currency: true } },
 } satisfies Prisma.BookingInclude;
 
 type BookingRow = Prisma.BookingGetPayload<{ include: typeof BOOKING_INCLUDE }>;
@@ -90,7 +93,10 @@ export class BookingService {
 
   async approve(farmerId: string, id: string) {
     // Tasdiqlangach shu tranzaksiyada yuk tashish buyurtmasi ham yaratiladi
-    await this.decide(id, { product: { farmerId } }, BookingStatus.APPROVED, false, (tx) => createShipmentForBooking(tx, id));
+    await this.decide(id, { product: { farmerId } }, BookingStatus.APPROVED, false, async (tx) => {
+      await createShipmentForBooking(tx, id);
+      await createPaymentForBooking(tx, id); // kutilayotgan (PENDING) escrow to'lovi
+    });
     return this.reload(id, 'farmer');
   }
 
@@ -125,15 +131,7 @@ export class BookingService {
       if (afterUpdate) await afterUpdate(tx);
       if (restore) {
         const booking = await tx.booking.findUniqueOrThrow({ where: { id }, select: { productId: true, quantityKg: true } });
-        await tx.product.update({
-          where: { id: booking.productId },
-          data: { quantityKg: { increment: booking.quantityKg } },
-        });
-        // Miqdor tugagani uchun BOOKED bo'lgan e'lon qayta faol bo'ladi (arxivlanganiga tegilmaydi)
-        await tx.product.updateMany({
-          where: { id: booking.productId, status: ProductStatus.BOOKED },
-          data: { status: ProductStatus.ACTIVE },
-        });
+        await restoreStock(tx, booking.productId, booking.quantityKg);
       }
     });
   }
@@ -156,6 +154,7 @@ export class BookingService {
       createdAt: b.createdAt,
       decidedAt: b.decidedAt,
       product: { id: b.product.id, name: b.product.name, category: b.product.category, status: b.product.status },
+      payment: b.payment,
     };
   }
 

@@ -101,6 +101,7 @@ model Booking {
   message    String?
   decidedAt  DateTime?
   shipment   Shipment?
+  payment    Payment?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -144,6 +145,7 @@ enum ShipmentStatus {
   LOADING    // yuklanmoqda (haydovchi biriktirilgan)
   IN_TRANSIT // yo'lda
   DELIVERED  // yetkazib berildi
+  CANCELLED  // buyurtma bekor qilingan (to'lov qaytarilgan yoki to'lanmagan)
 }
 
 model Shipment {
@@ -185,4 +187,47 @@ model ShipmentEvent {
   createdAt  DateTime       @default(now())
 
   @@index([shipmentId, createdAt])
+}
+
+// Kafolatlangan to'lov (escrow): bron tasdiqlanganda PENDING holatda yaratiladi.
+// Xaridor to'laydi -> HELD (mablag' platformada muzlatilgan) -> yuk yetkazilgach RELEASED (fermerga) yoki REFUNDED (xaridorga).
+enum PaymentStatus {
+  PENDING   // to'lov kutilmoqda
+  HELD      // mablag' escrow'da ushlab turilibdi
+  RELEASED  // fermerga o'tkazib berilgan
+  REFUNDED  // xaridorga qaytarilgan
+  CANCELLED // to'lanmasdan bekor qilingan (pul harakati bo'lmagan)
+}
+
+model Payment {
+  id          String        @id @default(uuid())
+  bookingId   String        @unique
+  booking     Booking       @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+  amount      Decimal       @db.Decimal(20, 2) // server hisoblaydi: miqdor x bron narxi
+  currency    String        @default("UZS")
+  status      PaymentStatus @default(PENDING)
+  provider    String
+  providerRef String?
+  heldAt      DateTime?
+  releasedAt  DateTime?
+  refundedAt  DateTime?
+  events      PaymentEvent[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, createdAt])
+}
+
+// Tranzaksiyalar tarixi (audit): har bir holat o'zgarishi kim tomonidan va nima uchun qilingani bilan
+model PaymentEvent {
+  id        String        @id @default(uuid())
+  paymentId String
+  payment   Payment       @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  status    PaymentStatus
+  actor     String?       // MARKET | FARMER | ADMIN | SYSTEM
+  note      String?
+  createdAt DateTime      @default(now())
+
+  @@index([paymentId, createdAt])
 }

@@ -1,5 +1,5 @@
 import {
-  approve, book, bearer, bootApp, createProduct, registerDriver, registerFarmer, registerMarket, resetDb, TestApp,
+  approve, book, bearer, bootApp, createProduct, pay, registerDriver, registerFarmer, registerMarket, resetDb, TestApp,
 } from './helpers';
 
 describe('Shipment (e2e)', () => {
@@ -9,13 +9,15 @@ describe('Shipment (e2e)', () => {
   beforeEach(async () => { await resetDb(t.prisma); });
 
   /** Fermer, market, mahsulot va tasdiqlangan bron: yuk tayyor */
-  async function setup(weights: number[] = [800]) {
+  async function setup(weights: number[] = [800], opts: { paid?: boolean } = {}) {
+    const { paid = true } = opts;
     const farmer = await registerFarmer(t.http);
     const market = await registerMarket(t.http);
     const product = await createProduct(t.http, farmer, { quantityKg: 10000 });
     for (const w of weights) {
       const b = (await book(t.http, market, product.id, w)).body;
       await approve(t.http, farmer, b.id);
+      if (paid) expect((await pay(t.http, market, b.id)).status).toBe(200); // yuk faqat to'lov escrow'ga o'tgach olinadi
     }
     return { farmer, market, product };
   }
@@ -195,6 +197,22 @@ describe('Shipment (e2e)', () => {
     const strangerMarket = await registerMarket(t.http, { companyName: 'Makro' });
     expect((await t.http().get('/shipments/mine').set('Authorization', bearer(strangerFarmer))).body).toHaveLength(0);
     expect((await t.http().get('/shipments/mine').set('Authorization', bearer(strangerMarket))).body).toHaveLength(0);
+  });
+
+  it("to'lov kafolatlanmaguncha yukni olib bo'lmaydi; to'langach olish mumkin", async () => {
+    const { market } = await setup([300], { paid: false });
+    const driver = await registerDriver(t.http);
+    const [s] = (await available(driver)).body;
+    expect(s.paymentStatus).toBe('PENDING');
+
+    const blocked = await act('post', driver, s.id, 'accept');
+    expect(blocked.status).toBe(409);
+    expect(blocked.body.message).toMatch(/to'lovi hali kafolatlanmagan/);
+
+    const booking = await t.prisma.booking.findFirstOrThrow();
+    await pay(t.http, market, booking.id);
+    expect((await available(driver)).body[0].paymentStatus).toBe('HELD');
+    expect((await act('post', driver, s.id, 'accept')).status).toBe(201);
   });
 
   it("noto'g'ri status filtri va identifikator 400", async () => {

@@ -5,7 +5,7 @@ const base = {
   DATABASE_URL: 'postgresql://u:p@db:5432/agrargo',
   JWT_SECRET: STRONG,
 };
-const prod = { ...base, NODE_ENV: 'production', CORS_ORIGINS: 'https://agrargo.uz' };
+const prod = { ...base, NODE_ENV: 'production', CORS_ORIGINS: 'https://agrargo.uz', PAYMENT_ALLOW_SIMULATION: 'true' };
 
 describe('validateEnv', () => {
   it('development uchun standart qiymatlarni beradi', () => {
@@ -65,6 +65,26 @@ describe('validateEnv', () => {
     });
   });
 
+  describe("to'lov sozlamalari", () => {
+    it("standart qiymatlar: simulyatsiya, 72 soat, development'da ruxsat", () => {
+      const env = validateEnv({ ...base, JWT_SECRET: 'dev-secret-123' });
+      expect(env).toMatchObject({ PAYMENT_PROVIDER: 'simulated', PAYMENT_ALLOW_SIMULATION: false, PAYMENT_RELEASE_GRACE_HOURS: 72, THROTTLE_PAYMENT_LIMIT: 20 });
+    });
+
+    it("production'da simulyatsiya ochiq ruxsatsiz rad etiladi", () => {
+      expect(() => validateEnv({ ...prod, PAYMENT_ALLOW_SIMULATION: undefined })).toThrow(/simulyatsiya/);
+      expect(() => validateEnv({ ...prod, PAYMENT_ALLOW_SIMULATION: 'false' })).toThrow(/PAYMENT_ALLOW_SIMULATION=true/);
+      expect(validateEnv(prod).PAYMENT_ALLOW_SIMULATION).toBe(true);
+    });
+
+    it("noma'lum provayder, noto'g'ri bayroq va muddatni rad etadi", () => {
+      expect(() => validateEnv({ ...base, JWT_SECRET: 'dev-secret-123', PAYMENT_PROVIDER: 'payme' })).toThrow(/PAYMENT_PROVIDER/);
+      expect(() => validateEnv({ ...base, JWT_SECRET: 'dev-secret-123', PAYMENT_ALLOW_SIMULATION: 'maybe' })).toThrow(/PAYMENT_ALLOW_SIMULATION/);
+      expect(() => validateEnv({ ...base, JWT_SECRET: 'dev-secret-123', PAYMENT_RELEASE_GRACE_HOURS: '-1' })).toThrow(/PAYMENT_RELEASE_GRACE_HOURS/);
+      expect(validateEnv({ ...base, JWT_SECRET: 'dev-secret-123', PAYMENT_RELEASE_GRACE_HOURS: '0' }).PAYMENT_RELEASE_GRACE_HOURS).toBe(0);
+    });
+  });
+
   it("throttle chegaralarini sozlash mumkin va noto'g'ri qiymat rad etiladi", () => {
     expect(validateEnv({ ...base, JWT_SECRET: 'dev-secret-123', THROTTLE_LOGIN_PHONE_LIMIT: '3' }).THROTTLE_LOGIN_PHONE_LIMIT).toBe(3);
     expect(() => validateEnv({ ...base, JWT_SECRET: 'dev-secret-123', THROTTLE_LOGIN_PHONE_LIMIT: '0' })).toThrow(/THROTTLE_LOGIN_PHONE_LIMIT/);
@@ -74,10 +94,12 @@ describe('validateEnv', () => {
 describe('envWarnings', () => {
   it('namuna kalit va bo‘sh CORS uchun development’da ogohlantiradi', () => {
     const env = validateEnv({ ...base, JWT_SECRET: 'uzun-tasodifiy-sir-almashtiring' });
-    expect(envWarnings(env)).toHaveLength(2);
+    expect(envWarnings(env)).toHaveLength(3); // JWT, CORS va to'lov simulyatsiyasi
   });
 
-  it("production'da ogohlantirish yo'q", () => {
-    expect(envWarnings(validateEnv(prod))).toEqual([]);
+  it("production'da faqat to'lov simulyatsiyasi haqida ogohlantiradi", () => {
+    const warnings = envWarnings(validateEnv(prod));
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]).toMatch(/simulyatsiya/);
   });
 });

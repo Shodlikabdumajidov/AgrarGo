@@ -81,3 +81,18 @@ Holatlar: `OPEN` (haydovchi kutilmoqda) → `LOADING` (yuklanmoqda) → `IN_TRAN
 - `POST /shipments/:id/release` (DRIVER): yo'lga chiqishdan oldin qaytarish (`LOADING → OPEN`).
 - `PATCH /shipments/:id/advance` (DRIVER): `LOADING → IN_TRANSIT → DELIVERED`.
 - `GET /shipments/mine?status=` (DRIVER | FARMER | MARKET): o'ziga tegishli yuklar. Haydovchi ikkala tomonning manzili va telefonini, fermer/market esa biriktirilgan haydovchi ma'lumotini ko'radi.
+
+## Kafolatlangan to'lov (Escrow)
+Bron tasdiqlanganda `PENDING` to'lov yaratiladi (summa = miqdor × bron narxi, serverda hisoblanadi, `UZS`). Yuk faqat to'lov `HELD` bo'lgandan keyin olinadi.
+
+Holatlar: `PENDING` (kutilmoqda) → `HELD` (escrow'da) → `RELEASED` (fermerga o'tdi) yoki `REFUNDED` (xaridorga qaytdi); to'lanmagan buyurtma bekor qilinsa `CANCELLED`. Har o'zgarish `events` ro'yxatiga (kim, qachon, nima uchun) yoziladi.
+
+- `POST /payments/init` `{ bookingId }` (MARKET): to'laydi → `HELD`. Takroriy so'rov xavfsiz (idempotent): ikki marta yechilmaydi.
+- `POST /payments/release` `{ bookingId }`: `HELD → RELEASED`. Xaridor: yuk yetkazilgach. Fermer: yetkazilgandan `PAYMENT_RELEASE_GRACE_HOURS` (72) soat o'tib, xaridor e'tiroz bildirmagan bo'lsa. ADMIN: istalgan vaqtda.
+- `POST /payments/refund` `{ bookingId, reason? }`: to'lanmagan bo'lsa `CANCELLED`, escrow'da bo'lsa `REFUNDED`. Xaridor: haydovchi biriktirilgunga qadar; fermer: yuk yo'lga chiqquncha; ADMIN: istalgan paytda. Yuk yo'lga chiqmagan bo'lsa buyurtma ham bekor qilinadi (bron va yuk `CANCELLED`, miqdor e'longa qaytadi); yo'lda/yetkazilgan yukda faqat ADMIN, u pulni qaytaradi, buyurtmaga tegmaydi.
+- `GET /payments?status=` (MARKET | FARMER | ADMIN): o'z to'lovlari va tranzaksiyalar tarixi; javobdagi `actions` (`canPay`, `canRelease`, `canRefund`) UI uchun tayyor ruxsatlar.
+- `GET /payments/booking/:bookingId`
+
+Qoidalar `src/payment/payment.policy.ts` da (sof funksiyalar, unit testlangan). Pul harakati `PaymentProvider` adapteri orqali: hozir `SimulatedPaymentProvider` (haqiqiy pul yo'q). Provayder xatosida tranzaksiya qaytariladi (holat o'zgarmaydi, `502`). E'londa to'lov tarixi bo'lsa u o'chirilmaydi.
+
+**Administrator** API orqali ro'yxatdan o'tmaydi: `ADMIN_PASSWORD='...' npm run admin:create -- +998901234567 "Ism Familiya"` (parol kamida 12 belgi).
