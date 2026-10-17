@@ -22,7 +22,7 @@ const BOOKING_INCLUDE = {
   market: {
     select: { companyName: true, region: true, district: true, user: { select: { fullName: true, phone: true } } },
   },
-  payment: { select: { id: true, status: true, amount: true, currency: true } },
+  payment: { select: { id: true, status: true, amount: true, currency: true, provider: true } },
 } satisfies Prisma.BookingInclude;
 
 type BookingRow = Prisma.BookingGetPayload<{ include: typeof BOOKING_INCLUDE }>;

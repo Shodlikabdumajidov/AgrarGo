@@ -90,20 +90,20 @@
             width: 100%;
         }
         /* Auth modal (Login / Register) */
-        #auth-modal, #product-modal, #booking-modal {
+        #auth-modal, #product-modal, #booking-modal, #payment-modal {
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.3s ease, visibility 0.3s ease;
         }
-        #auth-modal.open, #product-modal.open, #booking-modal.open {
+        #auth-modal.open, #product-modal.open, #booking-modal.open, #payment-modal.open {
             opacity: 1;
             visibility: visible;
         }
-        #auth-modal .auth-card, #product-modal .auth-card, #booking-modal .auth-card {
+        #auth-modal .auth-card, #product-modal .auth-card, #booking-modal .auth-card, #payment-modal .auth-card {
             transform: translateY(20px) scale(0.96);
             transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        #auth-modal.open .auth-card, #product-modal.open .auth-card, #booking-modal.open .auth-card {
+        #auth-modal.open .auth-card, #product-modal.open .auth-card, #booking-modal.open .auth-card, #payment-modal.open .auth-card {
             transform: translateY(0) scale(1);
         }
         .auth-input {
@@ -1042,6 +1042,34 @@
         </div>
     </div>
 
+    <!-- PAYMENT MODAL (xaridor to'laydi, escrow) -->
+    <div id="payment-modal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="payment-title" onclick="if (event.target === this) closePaymentModal()">
+        <div class="auth-card glass relative w-full max-w-md max-h-[92vh] overflow-y-auto rounded-3xl border border-blue-500/25 shadow-2xl shadow-blue-500/10 bg-gradient-to-b from-slate-900 to-blue-950/30 p-6 sm:p-8">
+            <button type="button" onclick="closePaymentModal()" aria-label="Yopish" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl p-1 transition hover:rotate-90 duration-300">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="text-center space-y-2 mb-5">
+                <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-300 text-xs font-semibold uppercase tracking-widest">
+                    <i class="fa-solid fa-shield-halved"></i> Kafolatlangan to'lov
+                </div>
+                <h2 id="payment-title" class="text-2xl sm:text-3xl font-extrabold tracking-tight">To'lovni amalga oshirish</h2>
+            </div>
+            <div id="payment-summary" class="rounded-2xl bg-slate-950/50 border border-white/10 p-4 mb-4 space-y-1 text-center"></div>
+            <ol class="space-y-2.5 mb-4 text-sm text-slate-300">
+                <li class="flex items-start gap-3"><span class="w-6 h-6 rounded-full bg-blue-500/20 text-blue-300 text-xs font-black flex items-center justify-center shrink-0">1</span><span>Siz to'laysiz, mablag' fermerga emas, platformadagi <b class="text-white">escrow</b> hisobida saqlanadi.</span></li>
+                <li class="flex items-start gap-3"><span class="w-6 h-6 rounded-full bg-blue-500/20 text-blue-300 text-xs font-black flex items-center justify-center shrink-0">2</span><span>Haydovchi yukni olib borib, yetkazib beradi.</span></li>
+                <li class="flex items-start gap-3"><span class="w-6 h-6 rounded-full bg-blue-500/20 text-blue-300 text-xs font-black flex items-center justify-center shrink-0">3</span><span>Siz qabul qilganingizni tasdiqlaysiz, pul fermerga o'tadi. Bekor bo'lsa, to'liq qaytariladi.</span></li>
+            </ol>
+            <div id="payment-test-note" class="hidden mb-4 rounded-xl bg-amber-500/10 border border-amber-500/30 px-4 py-2.5 text-xs text-amber-200 flex items-start gap-2">
+                <i class="fa-solid fa-flask mt-0.5"></i> <span><b>Test rejimi:</b> to'lov simulyatsiya qilinadi, haqiqiy pul yechilmaydi.</span>
+            </div>
+            <div id="payment-alert" class="hidden mb-4 rounded-2xl px-4 py-3 text-sm font-medium" role="alert"></div>
+            <button type="button" id="payment-submit" class="w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed text-slate-950 font-extrabold py-3.5 rounded-2xl transition duration-200 shadow-xl shadow-emerald-500/30 flex items-center justify-center gap-2.5">
+                <i class="fa-solid fa-wallet"></i> <span>To'lash</span>
+            </button>
+        </div>
+    </div>
+
     <!-- DASHBOARD (rolga mos boshqaruv sahifasi) -->
     <div id="dashboard-view" class="fixed inset-0 z-[45] bg-slate-950 overflow-y-auto" aria-hidden="true">
         <div class="sticky top-0 z-10 glass border-b border-white/15">
@@ -1092,6 +1120,16 @@
                 <div>
                     <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="booking-message">Izoh <span class="text-slate-500 normal-case font-medium">(ixtiyoriy)</span></label>
                     <textarea id="booking-message" name="message" rows="3" maxlength="500" placeholder="Yetkazib berish vaqti, talablar..." class="auth-input resize-none"></textarea>
+                </div>
+                <div class="rounded-2xl bg-blue-500/10 border border-blue-500/25 p-4 space-y-3">
+                    <div class="flex items-center gap-2 text-blue-200 text-sm font-extrabold"><i class="fa-solid fa-shield-halved text-blue-300"></i> Kafolatlangan to'lov (Escrow)</div>
+                    <ol class="grid grid-cols-4 gap-1 text-center text-[10px] sm:text-[11px] font-bold leading-tight">
+                        <li class="space-y-1"><div class="mx-auto w-7 h-7 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center"><i class="fa-solid fa-paper-plane text-[11px]"></i></div><div class="text-white">Bron so'rovi</div></li>
+                        <li class="space-y-1"><div class="mx-auto w-7 h-7 rounded-full border-2 border-white/20 text-slate-400 flex items-center justify-center"><i class="fa-solid fa-check text-[11px]"></i></div><div class="text-slate-400">Fermer tasdiqlaydi</div></li>
+                        <li class="space-y-1"><div class="mx-auto w-7 h-7 rounded-full border-2 border-blue-400/60 text-blue-300 flex items-center justify-center"><i class="fa-solid fa-shield-halved text-[11px]"></i></div><div class="text-slate-300">To'lov: mablag' escrow'da</div></li>
+                        <li class="space-y-1"><div class="mx-auto w-7 h-7 rounded-full border-2 border-white/20 text-slate-400 flex items-center justify-center"><i class="fa-solid fa-truck-fast text-[11px]"></i></div><div class="text-slate-400">Yetkazilgach fermerga o'tadi</div></li>
+                    </ol>
+                    <p class="text-[11px] text-slate-400 leading-relaxed">To'lov fermer so'rovni tasdiqlagandan keyin amalga oshiriladi (holat: <span class="text-amber-300 font-bold">To'lov kutilmoqda</span>). Mablag' yetkazib berilguncha xavfsiz saqlanadi, bekor bo'lsa to'liq qaytariladi.</p>
                 </div>
                 <p class="text-[11px] text-slate-500 flex items-start gap-1.5"><i class="fa-solid fa-lock mt-0.5"></i> Fermer so'rovni tasdiqlagandan keyingina telefon raqamlar ikkala tomonga ochiladi.</p>
                 <button type="submit" class="auth-submit w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed text-slate-950 font-extrabold py-3.5 rounded-2xl transition duration-200 shadow-xl shadow-emerald-500/30 flex items-center justify-center gap-2.5">
@@ -1196,7 +1234,7 @@
 
         // Sahifa skrolli: biror modal/panel/kabinet ochiq bo'lsa qulflanadi
         function syncScrollLock() {
-            const open = ['auth-modal', 'product-modal', 'booking-modal', 'my-products-panel', 'dashboard-view'].some(function (id) {
+            const open = ['auth-modal', 'product-modal', 'booking-modal', 'payment-modal', 'my-products-panel', 'dashboard-view'].some(function (id) {
                 const node = document.getElementById(id);
                 return node && node.classList.contains('open');
             });
@@ -1644,6 +1682,7 @@
             closeMyProducts();
             closeDashboard();
             closeBookingModal();
+            closePaymentModal();
             afterLoginAction = nextAction || null; // kirgach shu amal qayta bajariladi
             openAuthModal('login');
             showAuthAlert('Sessiya tugagan. Iltimos, qayta kiring.', 'info');
@@ -1892,7 +1931,8 @@
 
         document.addEventListener('keydown', function (e) {
             if (e.key !== 'Escape') return;
-            if (bookingModal.classList.contains('open')) closeBookingModal();
+            if (paymentModal.classList.contains('open')) closePaymentModal();
+            else if (bookingModal.classList.contains('open')) closeBookingModal();
             else if (productModal.classList.contains('open')) closeProductModal();
             else if (authModal.classList.contains('open')) closeAuthModal();
             else if (panel.classList.contains('open')) closeMyProducts();
@@ -2180,10 +2220,10 @@
         const dashContent = document.getElementById('dash-content');
         const DASH_TABS = {
             FARMER: [['overview', 'fa-gauge', 'Umumiy'], ['bookings', 'fa-inbox', 'Kelgan bronlar'],
-                     ['shipments', 'fa-truck-ramp-box', 'Yuk tashish'],
+                     ['shipments', 'fa-truck-ramp-box', 'Yuk tashish'], ['payments', 'fa-wallet', "To'lovlar"],
                      ['products', 'fa-boxes-stacked', "E'lonlarim"], ['profile', 'fa-id-card', 'Profil']],
             MARKET: [['overview', 'fa-gauge', 'Umumiy'], ['bookings', 'fa-clipboard-list', 'Mening bronlarim'],
-                     ['shipments', 'fa-truck-ramp-box', 'Yuk tashish'],
+                     ['shipments', 'fa-truck-ramp-box', 'Yuk tashish'], ['payments', 'fa-wallet', "To'lovlar"],
                      ['catalog', 'fa-store', 'Katalog'], ['profile', 'fa-id-card', 'Profil']],
             DRIVER: [['overview', 'fa-gauge', 'Umumiy'], ['loads', 'fa-boxes-packing', 'Mavjud yuklar'],
                      ['myloads', 'fa-truck-fast', 'Mening yuklarim'], ['profile', 'fa-id-card', 'Profil']]
@@ -2220,6 +2260,8 @@
             closeAccountMenu();
             dashBookingFilter = 'ALL'; // oldingi foydalanuvchining filtrlari qolib ketmasin
             dashShipFilter = 'ALL';
+            dashPayFilter = 'ALL';
+            payConfirm = null;
             dashLoadsRegion = '';
             renderDashHeader();
             const nav = document.getElementById('dash-tabs');
@@ -2229,12 +2271,12 @@
                 b.dataset.tab = t[0];
                 b.appendChild(el('i', 'fa-solid w-4 text-center ' + t[1]));
                 b.appendChild(el('span', '', t[2]));
-                if (t[0] === 'bookings' || t[0] === 'loads') {
+                if (t[0] === 'bookings' || t[0] === 'loads' || t[0] === 'payments') {
                     const badge = el('span', 'hidden ml-auto min-w-[1.25rem] h-5 px-1.5 rounded-full bg-amber-400 text-slate-950 text-[11px] font-black items-center justify-center');
                     badge.id = 'dash-badge-' + t[0];
                     b.appendChild(badge);
                 }
-                b.addEventListener('click', function () { dashBookingFilter = 'ALL'; dashShipFilter = 'ALL'; selectDashTab(t[0]); });
+                b.addEventListener('click', function () { dashBookingFilter = 'ALL'; dashShipFilter = 'ALL'; dashPayFilter = 'ALL'; payConfirm = null; selectDashTab(t[0]); });
                 return b;
             }));
             dashboardView.classList.add('open');
@@ -2264,6 +2306,7 @@
             if (tab === 'bookings') renderDashBookings(user);
             else if (tab === 'shipments' || tab === 'myloads') renderDashShipments(user);
             else if (tab === 'loads') renderDashLoads(user);
+            else if (tab === 'payments') renderDashPayments(user);
             else if (tab === 'profile') renderDashProfile();
             else renderDashOverview(user);
         }
@@ -2358,6 +2401,7 @@
                     actions.appendChild(actionBtn('fa-plus', "Yangi e'lon qo'shish", true, function () { openProductModal(); }));
                     actions.appendChild(actionBtn('fa-boxes-stacked', "Mening e'lonlarim", false, openMyProducts));
                     actions.appendChild(actionBtn('fa-truck-ramp-box', 'Yuk tashish', false, function () { selectDashTab('shipments'); }));
+                    actions.appendChild(actionBtn('fa-wallet', "To'lovlar", false, function () { selectDashTab('payments'); }));
                     nodes.push(actions);
                     nodes.push(sectionTitle('Tasdiqlashni kutayotgan bronlar', "Tasdiqlagandan keyin xaridorning telefon raqami ochiladi."));
                     if (pending.length) pending.slice(0, 5).forEach(function (b) { nodes.push(buildBookingCard(b, 'farmer')); });
@@ -2378,6 +2422,7 @@
                     actions.appendChild(actionBtn('fa-store', "Katalogga o'tish", true, function () { closeDashboard(); scrollToMarket(); }));
                     actions.appendChild(actionBtn('fa-clipboard-list', 'Barcha bronlarim', false, function () { selectDashTab('bookings'); }));
                     actions.appendChild(actionBtn('fa-truck-ramp-box', 'Yuk tashish', false, function () { selectDashTab('shipments'); }));
+                    actions.appendChild(actionBtn('fa-wallet', "To'lovlar", false, function () { selectDashTab('payments'); }));
                     nodes.push(actions);
                     nodes.push(sectionTitle("So'nggi bronlar"));
                     if (bookings.length) bookings.slice(0, 5).forEach(function (b) { nodes.push(buildBookingCard(b, 'market')); });
@@ -2476,6 +2521,8 @@
                 card.appendChild(lock);
             }
 
+            if (b.payment && b.status !== 'REJECTED') card.appendChild(paymentStrip(b, side));
+
             if (b.status === 'PENDING') {
                 const actions = el('div', 'flex gap-2');
                 const btn = function (icon, label, cls, kind) {
@@ -2498,7 +2545,7 @@
         }
 
         const BOOKING_DONE_MSG = {
-            approve: "Bron tasdiqlandi. Xaridorning telefon raqami ochildi va yuk tashish buyurtmasi yaratildi.",
+            approve: "Bron tasdiqlandi. Xaridorning telefon raqami ochildi, yuk tashish buyurtmasi yaratildi va to'lov kutilmoqda.",
             reject: "Bron rad etildi. Miqdor e'longa qaytarildi.",
             cancel: "Bron bekor qilindi. Miqdor e'longa qaytarildi."
         };
@@ -2560,10 +2607,11 @@
             OPEN:       { label: 'Haydovchi kutilmoqda', cls: 'bg-amber-500/15 text-amber-400 border-amber-500/30' },
             LOADING:    { label: 'Yuklanmoqda',          cls: 'bg-blue-500/15 text-blue-400 border-blue-500/30' },
             IN_TRANSIT: { label: "Yo'lda",               cls: 'bg-purple-500/15 text-purple-300 border-purple-500/30' },
-            DELIVERED:  { label: 'Yetkazib berildi',     cls: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' }
+            DELIVERED:  { label: 'Yetkazib berildi',     cls: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' },
+            CANCELLED:  { label: 'Bekor qilingan',       cls: 'bg-slate-500/20 text-slate-300 border-slate-500/30' }
         };
         // Yuk belgisi marshrut chizig'ida shu foizda turadi
-        const SHIPMENT_PROGRESS = { OPEN: 0, LOADING: 12, IN_TRANSIT: 58, DELIVERED: 100 };
+        const SHIPMENT_PROGRESS = { OPEN: 0, LOADING: 12, IN_TRANSIT: 58, DELIVERED: 100, CANCELLED: 0 };
         let dashShipFilter = 'ALL';
 
         function routeEnd(icon, title, place, align) {
@@ -2680,11 +2728,21 @@
             sub.appendChild(el('span', 'text-emerald-300', formatNumber(s.weightKg) + ' kg'));
             title.appendChild(sub);
             top.appendChild(title);
-            top.appendChild(el('span', 'shrink-0 text-xs font-bold px-3 py-1 rounded-full border ' + meta.cls, meta.label));
+            const badges = el('div', 'shrink-0 flex flex-col items-end gap-1.5');
+            badges.appendChild(el('span', 'text-xs font-bold px-3 py-1 rounded-full border ' + meta.cls, meta.label));
+            if (s.paymentStatus && s.status !== 'CANCELLED') badges.appendChild(paymentPill(s.paymentStatus, true));
+            top.appendChild(badges);
             card.appendChild(top);
 
             card.appendChild(shipmentRoute(s));
-            if (viewer !== 'driver-open') card.appendChild(shipmentStepper(s));
+            if (s.status === 'CANCELLED') {
+                const banner = el('div', 'rounded-xl border border-slate-500/30 bg-slate-500/10 px-4 py-3 text-sm text-slate-300 flex items-center gap-3');
+                banner.appendChild(el('i', 'fa-solid fa-ban text-slate-400'));
+                banner.appendChild(el('span', '', "Buyurtma bekor qilingan, yuk tashish to'xtatilgan."));
+                card.appendChild(banner);
+            } else if (viewer !== 'driver-open') {
+                card.appendChild(shipmentStepper(s));
+            }
 
             // Kontaktlar: faqat backend ruxsat bergan bo'lsa to'ldiriladi
             const people = el('div', 'space-y-2');
@@ -2706,6 +2764,17 @@
                 lock.appendChild(el('i', 'fa-solid fa-lock'));
                 lock.appendChild(document.createTextNode("Aniq manzil va aloqa ma'lumotlari yukni biriktirgandan keyin ochiladi."));
                 people.appendChild(lock);
+                if (s.paymentStatus !== 'HELD') {
+                    const unpaid = el('p', 'text-xs font-semibold text-amber-300 flex items-center gap-2');
+                    unpaid.appendChild(el('i', 'fa-solid fa-hourglass-half'));
+                    unpaid.appendChild(document.createTextNode("Xaridor to'lovi kutilmoqda. To'lov escrow'ga o'tgach yukni olish mumkin."));
+                    people.appendChild(unpaid);
+                } else {
+                    const safe = el('p', 'text-xs font-semibold text-blue-300 flex items-center gap-2');
+                    safe.appendChild(el('i', 'fa-solid fa-shield-halved'));
+                    safe.appendChild(document.createTextNode("To'lov kafolatlangan: yetkazganingizdan keyin pul fermerga o'tadi."));
+                    people.appendChild(safe);
+                }
                 if (s.fitsCapacity === false) {
                     const warn = el('p', 'text-xs font-semibold text-amber-300 flex items-center gap-2');
                     warn.appendChild(el('i', 'fa-solid fa-triangle-exclamation'));
@@ -2727,7 +2796,7 @@
             const actions = el('div', 'flex flex-wrap gap-2');
             if (viewer === 'driver-open') {
                 const take = btn('fa-hand', 'Yukni olish', 'bg-emerald-500 border-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-lg shadow-emerald-500/25', 'accept');
-                if (s.fitsCapacity === false) take.disabled = true;
+                if (s.fitsCapacity === false || s.paymentStatus !== 'HELD') take.disabled = true;
                 actions.appendChild(take);
             } else if (viewer === 'driver-own' && s.status === 'LOADING') {
                 actions.appendChild(btn('fa-truck-fast', "Yo'lga chiqdim", 'bg-emerald-500 border-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-lg shadow-emerald-500/25', 'advance'));
@@ -2770,8 +2839,8 @@
             head.appendChild(row);
             if (!driver) head.appendChild(el('p', 'text-sm text-slate-400', "Tasdiqlangan bronlar uchun yuk tashish buyurtmalari va ularning holati."));
             const chips = el('div', 'flex flex-wrap gap-2');
-            const isActive = function (s) { return s.status !== 'DELIVERED'; };
-            [['ALL', 'Hammasi', list.length], ['ACTIVE', 'Faol', list.filter(isActive).length], ['DELIVERED', 'Yetkazilgan', list.filter(function (s) { return !isActive(s); }).length]].forEach(function (f) {
+            const isActive = function (s) { return s.status !== 'DELIVERED' && s.status !== 'CANCELLED'; };
+            [['ALL', 'Hammasi', list.length], ['ACTIVE', 'Faol', list.filter(isActive).length], ['DELIVERED', 'Yakunlangan', list.filter(function (s) { return !isActive(s); }).length]].forEach(function (f) {
                 const c = el('button', 'mp-chip px-4 py-1.5 rounded-full border border-white/15 text-xs font-bold text-slate-300 transition hover:border-emerald-500/50' + (dashShipFilter === f[0] ? ' active' : ''), f[1] + ' (' + f[2] + ')');
                 c.type = 'button';
                 c.addEventListener('click', function () { dashShipFilter = f[0]; renderDashShipments(user); });
@@ -2822,6 +2891,316 @@
             const nodes = [head];
             if (list.length) list.forEach(function (s) { nodes.push(buildShipmentCard(s, 'driver-open')); });
             else nodes.push(dashMessage('fa-boxes-packing', dashLoadsRegion ? "Bu hududdan bo'sh yuk yo'q. Boshqa hududni tanlab ko'ring." : "Hozircha bo'sh yuklar yo'q. Fermer bronni tasdiqlaganda yangi yuk paydo bo'ladi."));
+            dashContent.replaceChildren.apply(dashContent, nodes);
+        }
+
+        // ----- To'lovlar (kafolatlangan to'lov / escrow) -----
+        const PAYMENT_STATUS = {
+            PENDING:   { label: "To'lov kutilmoqda",                    short: 'Kutilmoqda', icon: 'fa-hourglass-half', cls: 'bg-amber-500/15 text-amber-400 border-amber-500/30' },
+            HELD:      { label: "Mablag' xavfsiz saqlanmoqda (Escrow)", short: 'Escrow',     icon: 'fa-shield-halved',  cls: 'bg-blue-500/15 text-blue-300 border-blue-500/30' },
+            RELEASED:  { label: "To'landi",                             short: "To'landi",   icon: 'fa-circle-check',   cls: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' },
+            REFUNDED:  { label: 'Xaridorga qaytarilgan',                short: 'Qaytarilgan', icon: 'fa-rotate-left',   cls: 'bg-rose-500/15 text-rose-300 border-rose-500/30' },
+            CANCELLED: { label: 'Bekor qilingan',                       short: 'Bekor',      icon: 'fa-ban',            cls: 'bg-slate-500/20 text-slate-300 border-slate-500/30' }
+        };
+        const PAYMENT_EVENT_LABEL = {
+            PENDING: "To'lov kutilmoqda", HELD: "Mablag' escrow'ga o'tkazildi", RELEASED: "Mablag' fermerga o'tkazildi",
+            REFUNDED: "Mablag' xaridorga qaytarildi", CANCELLED: "To'lanmagan buyurtma bekor qilindi"
+        };
+        const PAYMENT_ACTOR = { MARKET: 'Xaridor', FARMER: 'Fermer', ADMIN: 'Administrator', SYSTEM: 'Tizim' };
+        const PAYMENT_STEPS = [
+            { key: 'PENDING',  label: "To'lov kutilmoqda",    icon: 'fa-hourglass-half' },
+            { key: 'HELD',     label: "Escrow'da saqlanmoqda", icon: 'fa-shield-halved' },
+            { key: 'RELEASED', label: "To'landi",              icon: 'fa-circle-check' }
+        ];
+        let dashPayFilter = 'ALL';
+        let dashPayList = [];
+        let payConfirm = null; // inline tasdiq kutilayotgan amal: { bookingId, kind }
+
+        function paymentPill(status, compact) {
+            const m = PAYMENT_STATUS[status];
+            const pill = el('span', 'inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full border ' + m.cls);
+            pill.appendChild(el('i', 'fa-solid ' + m.icon));
+            pill.appendChild(el('span', '', compact ? "To'lov: " + m.short : m.label));
+            return pill;
+        }
+
+        function paymentStepper(p) {
+            const idx = PAYMENT_STEPS.findIndex(function (x) { return x.key === p.status; });
+            const wrap = el('div', 'relative grid grid-cols-3 gap-1');
+            wrap.appendChild(el('div', 'absolute top-[18px] left-[16.6%] right-[16.6%] h-0.5 bg-white/10'));
+            const bar = el('div', 'absolute top-[18px] left-[16.6%] h-0.5 bg-emerald-400 transition-all duration-1000');
+            bar.style.width = 'calc(66.8% * ' + (idx / 2) + ')';
+            wrap.appendChild(bar);
+            PAYMENT_STEPS.forEach(function (st, i) {
+                const reached = i <= idx;
+                const current = i === idx && p.status !== 'RELEASED';
+                const done = reached && !current;
+                const col = el('div', 'relative flex flex-col items-center text-center gap-1');
+                const circle = el('div', 'w-9 h-9 rounded-full flex items-center justify-center text-sm border-2 z-10 ' + (done
+                    ? 'bg-emerald-500 border-emerald-500 text-slate-950'
+                    : current ? 'bg-slate-900 border-blue-400 text-blue-300 ring-4 ring-blue-500/20' + (p.status === 'HELD' ? '' : ' animate-pulse')
+                    : 'bg-slate-900 border-white/15 text-slate-500'));
+                circle.appendChild(el('i', 'fa-solid ' + (done ? 'fa-check' : st.icon)));
+                col.appendChild(circle);
+                col.appendChild(el('div', 'text-[10px] sm:text-xs font-bold leading-tight ' + (reached ? 'text-white' : 'text-slate-500'), st.label));
+                const when = st.key === 'HELD' ? p.heldAt : st.key === 'RELEASED' ? p.releasedAt : p.createdAt;
+                if (reached && when) col.appendChild(el('div', 'text-[10px] text-slate-400', formatDateTime(when)));
+                wrap.appendChild(col);
+            });
+            return wrap;
+        }
+
+        // Bron kartalaridagi qisqa to'lov holati va (xaridor uchun) "To'lash" tugmasi
+        function paymentStrip(b, side) {
+            const pay = b.payment;
+            const strip = el('div', 'rounded-xl bg-slate-950/50 border border-white/10 px-4 py-3 flex flex-wrap items-center justify-between gap-3');
+            const left = el('div', 'space-y-1.5 min-w-0');
+            left.appendChild(paymentPill(pay.status, false));
+            if (pay.status === 'PENDING') {
+                left.appendChild(el('p', 'text-[11px] text-slate-400', side === 'market'
+                    ? "Yuk faqat to'lov escrow'ga o'tgandan keyin yo'lga chiqadi."
+                    : "Xaridor to'lovini kutmoqda. To'lov kafolatlangach yuk haydovchiga ochiladi."));
+            } else if (pay.status === 'HELD') {
+                left.appendChild(el('p', 'text-[11px] text-slate-400', side === 'farmer'
+                    ? "Pul kafolatlangan: yukni xotirjam yuklashingiz mumkin. Yetkazilgach hisobingizga o'tadi."
+                    : "Mablag' yetkazib berilguncha xavfsiz saqlanadi."));
+            }
+            strip.appendChild(left);
+            if (side === 'market' && pay.status === 'PENDING' && b.status === 'APPROVED') {
+                const payBtn = el('button', 'shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-sm font-extrabold transition active:scale-95 shadow-lg shadow-emerald-500/25');
+                payBtn.type = 'button';
+                payBtn.appendChild(el('i', 'fa-solid fa-wallet'));
+                payBtn.appendChild(el('span', '', "To'lash"));
+                payBtn.addEventListener('click', function () {
+                    openPaymentModal({ bookingId: b.id, amount: pay.amount, currency: pay.currency, provider: pay.provider, productName: b.product.name });
+                });
+                strip.appendChild(payBtn);
+            }
+            return strip;
+        }
+
+        // ----- To'lov oynasi (xaridor) -----
+        const paymentModal = document.getElementById('payment-modal');
+        const paymentAlert = document.getElementById('payment-alert');
+        let paymentInfo = null;
+
+        function openPaymentModal(info) {
+            paymentInfo = info;
+            hideAuthAlert(paymentAlert);
+            document.getElementById('payment-summary').replaceChildren(
+                el('div', 'font-extrabold text-white text-lg', info.productName),
+                el('div', 'text-3xl font-black text-emerald-400', formatNumber(info.amount) + ' ' + (info.currency === 'UZS' ? "so'm" : info.currency))
+            );
+            document.getElementById('payment-test-note').classList.toggle('hidden', info.provider !== 'simulated');
+            document.getElementById('payment-submit').querySelector('span').innerText = "To'lash — " + formatNumber(info.amount) + " so'm";
+            paymentModal.classList.add('open');
+            syncScrollLock();
+        }
+
+        function closePaymentModal() {
+            paymentModal.classList.remove('open');
+            syncScrollLock();
+        }
+
+        document.getElementById('payment-submit').addEventListener('click', async function () {
+            if (!paymentInfo) return;
+            const btn = this;
+            hideAuthAlert(paymentAlert);
+            btn.disabled = true;
+            try {
+                await authed('POST', '/payments/init', { bookingId: paymentInfo.bookingId });
+                closePaymentModal();
+                showToast("Mablag' escrow'ga o'tkazildi va xavfsiz saqlanmoqda. Yuk yetkazilgach fermerga o'tadi.", 5000);
+                if (dashboardView.classList.contains('open')) selectDashTab(dashTab);
+            } catch (err) {
+                if (err.status !== 401) showAuthAlert(err.messages, 'error', paymentAlert);
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        const PAYMENT_DONE_MSG = {
+            release_FARMER: "Mablag' hisobingizga o'tkazildi.",
+            release_MARKET: "Qabul tasdiqlandi. Mablag' fermerga o'tkazildi. Rahmat!",
+            release_ADMIN: "Mablag' fermerga o'tkazildi.",
+            refund_PENDING: "To'lanmagan buyurtma bekor qilindi. Miqdor e'longa qaytarildi.",
+            refund_HELD: "Buyurtma bekor qilindi, mablag' xaridorga qaytarildi."
+        };
+
+        async function paymentAction(kind, p, viewer, button) {
+            button.disabled = true;
+            try {
+                await authed('POST', '/payments/' + kind, { bookingId: p.bookingId });
+                payConfirm = null;
+                showToast(PAYMENT_DONE_MSG[kind === 'release' ? 'release_' + viewer : 'refund_' + p.status], 4500);
+            } catch (err) {
+                if (err.status === 401) return;
+                payConfirm = null;
+                showToast(err.messages[0], 5000);
+            }
+            selectDashTab(dashTab);
+        }
+
+        function buildPaymentCard(p, viewer) {
+            const card = el('div', 'glass rounded-2xl border border-white/10 hover:border-emerald-500/40 transition p-5 space-y-4');
+
+            const top = el('div', 'flex items-start justify-between gap-3');
+            const title = el('div', 'min-w-0');
+            title.appendChild(el('h4', 'font-extrabold text-white text-lg truncate', p.order.productName));
+            title.appendChild(el('p', 'text-xs text-slate-400 font-semibold uppercase tracking-wider', p.order.category + ' · ' + formatNumber(p.order.quantityKg) + ' kg × ' + formatNumber(p.order.pricePerKg) + " so'm"));
+            top.appendChild(title);
+            const money = el('div', 'text-right shrink-0');
+            money.appendChild(el('div', 'text-xl font-black text-emerald-400', formatNumber(p.amount) + ' so\'m'));
+            top.appendChild(money);
+            card.appendChild(top);
+
+            const party = viewer === 'farmer' ? p.market : p.farmer;
+            const line = el('div', 'flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-slate-300');
+            const who = el('span', 'flex items-center gap-2');
+            who.appendChild(el('i', 'fa-solid text-emerald-400 text-xs ' + (viewer === 'farmer' ? 'fa-store' : 'fa-tractor')));
+            who.appendChild(document.createTextNode((viewer === 'farmer' ? 'Xaridor: ' : 'Fermer: ') + party.name + ' · ' + party.region));
+            line.appendChild(who);
+            card.appendChild(line);
+
+            if (p.status === 'REFUNDED' || p.status === 'CANCELLED') {
+                const banner = el('div', 'rounded-xl border px-4 py-3 flex items-center gap-3 ' + PAYMENT_STATUS[p.status].cls);
+                banner.appendChild(el('i', 'fa-solid text-lg ' + PAYMENT_STATUS[p.status].icon));
+                const txt = el('div', 'min-w-0');
+                txt.appendChild(el('div', 'text-sm font-extrabold', PAYMENT_STATUS[p.status].label));
+                txt.appendChild(el('div', 'text-xs opacity-80', p.status === 'REFUNDED'
+                    ? (p.refundedAt ? formatDateTime(p.refundedAt) + " da mablag' xaridorga qaytarilgan" : "Mablag' xaridorga qaytarilgan")
+                    : "Pul harakati bo'lmagan: to'lov amalga oshirilmagan"));
+                banner.appendChild(txt);
+                card.appendChild(banner);
+            } else {
+                card.appendChild(paymentStepper(p));
+            }
+
+            if (p.shipmentStatus) {
+                const ship = el('div', 'flex items-center gap-2 text-xs text-slate-400');
+                ship.appendChild(el('i', 'fa-solid fa-truck-fast text-emerald-400'));
+                ship.appendChild(document.createTextNode('Yuk holati: '));
+                ship.appendChild(el('span', 'font-bold px-2.5 py-0.5 rounded-full border ' + SHIPMENT_STATUS[p.shipmentStatus].cls, SHIPMENT_STATUS[p.shipmentStatus].label));
+                card.appendChild(ship);
+            }
+
+            const a = p.actions;
+            // Nega hozir chiqarib bo'lmaydi: tushuntirish (masalan, xaridor tasdiqlashi uchun kutish muddati)
+            if (p.status === 'HELD' && !a.canRelease && a.releaseBlockedReason) {
+                const hint = el('p', 'text-[11px] text-slate-500 flex items-start gap-1.5');
+                hint.appendChild(el('i', 'fa-solid fa-circle-info mt-0.5'));
+                hint.appendChild(document.createTextNode(a.releaseBlockedReason));
+                card.appendChild(hint);
+            }
+
+            const confirming = payConfirm && payConfirm.bookingId === p.bookingId ? payConfirm.kind : null;
+            const actions = el('div', 'flex flex-wrap gap-2');
+            const btn = function (icon, label, cls, onClick) {
+                const b = el('button', 'flex-1 min-w-[10rem] flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-extrabold border transition disabled:opacity-50 ' + cls);
+                b.type = 'button';
+                b.appendChild(el('i', 'fa-solid ' + icon));
+                b.appendChild(el('span', '', label));
+                b.addEventListener('click', function () { onClick(b); });
+                return b;
+            };
+            if (confirming) {
+                actions.appendChild(el('span', 'w-full text-xs font-semibold text-amber-300', confirming === 'release'
+                    ? "Pulni fermerga o'tkazishni tasdiqlaysizmi? Bu amalni qaytarib bo'lmaydi."
+                    : (p.status === 'HELD' ? "Buyurtmani bekor qilib, pulni qaytarishni tasdiqlaysizmi?" : "To'lanmagan buyurtmani bekor qilishni tasdiqlaysizmi?")));
+                actions.appendChild(btn('fa-check', 'Ha, tasdiqlayman', 'border-emerald-500/50 bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25', function (b) { paymentAction(confirming, p, viewer === 'farmer' ? 'FARMER' : 'MARKET', b); }));
+                actions.appendChild(btn('fa-xmark', "Yo'q", 'border-white/15 text-slate-300 hover:bg-white/10', function () { payConfirm = null; renderPaymentsView(currentUser()); }));
+            } else {
+                if (a.canPay) actions.appendChild(btn('fa-wallet', "To'lash", 'bg-emerald-500 border-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-lg shadow-emerald-500/25', function () {
+                    openPaymentModal({ bookingId: p.bookingId, amount: p.amount, currency: p.currency, provider: p.provider, productName: p.order.productName });
+                }));
+                if (a.canRelease) actions.appendChild(btn('fa-hand-holding-dollar', viewer === 'market' ? "Yuk qabul qilindi: pulni o'tkazish" : 'Pulni olish', 'bg-emerald-500 border-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-lg shadow-emerald-500/25', function () {
+                    payConfirm = { bookingId: p.bookingId, kind: 'release' }; renderPaymentsView(currentUser());
+                }));
+                if (a.canRefund) actions.appendChild(btn('fa-rotate-left', p.status === 'PENDING' ? 'Buyurtmani bekor qilish' : (viewer === 'market' ? 'Bekor qilib pulni qaytarish' : 'Pulni qaytarish'), 'border-rose-500/40 text-rose-400 hover:bg-rose-500/10', function () {
+                    payConfirm = { bookingId: p.bookingId, kind: 'refund' }; renderPaymentsView(currentUser());
+                }));
+            }
+            if (actions.childNodes.length) card.appendChild(actions);
+
+            // Tranzaksiyalar tarixi
+            const details = el('details', 'group rounded-xl bg-slate-950/40 border border-white/5');
+            const summary = el('summary', 'cursor-pointer select-none px-4 py-2.5 text-xs font-bold text-slate-300 flex items-center justify-between');
+            summary.appendChild(el('span', '', 'Tranzaksiyalar tarixi (' + p.events.length + ')'));
+            summary.appendChild(el('i', 'fa-solid fa-chevron-down text-[10px] transition group-open:rotate-180'));
+            details.appendChild(summary);
+            const list = el('ol', 'px-4 pb-3 pt-1 space-y-2.5 border-t border-white/5');
+            p.events.forEach(function (e) {
+                const row = el('li', 'flex items-start gap-3 text-xs');
+                row.appendChild(el('span', 'mt-1 w-2 h-2 rounded-full shrink-0 ' + (e.status === 'RELEASED' ? 'bg-emerald-400' : e.status === 'HELD' ? 'bg-blue-400' : e.status === 'PENDING' ? 'bg-amber-400' : 'bg-rose-400')));
+                const txt = el('div', 'min-w-0');
+                txt.appendChild(el('div', 'font-bold text-slate-200', PAYMENT_EVENT_LABEL[e.status]));
+                txt.appendChild(el('div', 'text-slate-500', formatDateTime(e.createdAt) + ' · ' + (PAYMENT_ACTOR[e.actor] || e.actor || '')));
+                if (e.note) txt.appendChild(el('div', 'text-slate-400 break-words', e.note));
+                row.appendChild(txt);
+                list.appendChild(row);
+            });
+            details.appendChild(list);
+            card.appendChild(details);
+            return card;
+        }
+
+        async function renderDashPayments(user) {
+            const rid = ++dashRenderId;
+            dashContent.replaceChildren(dashMessage('fa-spinner fa-spin', "To'lovlar yuklanmoqda..."));
+            try {
+                dashPayList = await authed('GET', '/payments');
+            } catch (err) {
+                if (err.status === 401 || rid !== dashRenderId) return;
+                return dashContent.replaceChildren(dashMessage('fa-triangle-exclamation text-rose-400', err.messages[0], function () { renderDashPayments(user); }));
+            }
+            if (rid !== dashRenderId) return;
+            payConfirm = null;
+            renderPaymentsView(user);
+        }
+
+        // Ro'yxatni qayta chizadi (so'rovsiz): filtr va inline tasdiq almashganda
+        function renderPaymentsView(user) {
+            if (!user || dashTab !== 'payments') return;
+            const viewer = user.role === 'FARMER' ? 'farmer' : 'market';
+            const list = dashPayList;
+            const sum = function (st) {
+                return list.filter(function (p) { return p.status === st; }).reduce(function (s, p) { return s + Number(p.amount); }, 0);
+            };
+            setTabBadge('payments', viewer === 'market' ? list.filter(function (p) { return p.actions.canPay; }).length : 0);
+
+            const nodes = [];
+            const head = el('div', 'flex items-center justify-between gap-3 flex-wrap');
+            head.appendChild(el('h2', 'text-2xl font-extrabold text-white', "To'lovlar"));
+            head.appendChild(refreshButton(function () { renderDashPayments(user); }));
+            nodes.push(head);
+
+            const info = el('div', 'rounded-2xl bg-blue-500/10 border border-blue-500/25 px-4 py-3 flex items-start gap-3 text-sm text-blue-200');
+            info.appendChild(el('i', 'fa-solid fa-shield-halved mt-0.5 text-blue-300'));
+            info.appendChild(el('span', '', "Kafolatlangan to'lov (Escrow): xaridor to'lagan mablag' yuk yetkazib berilguncha platformada xavfsiz saqlanadi va tasdiqlangach fermerga o'tadi." +
+                (list.some(function (p) { return p.provider === 'simulated'; }) ? " Test rejimi: haqiqiy pul harakati yo'q." : '')));
+            nodes.push(info);
+
+            const stats = el('div', 'grid grid-cols-2 lg:grid-cols-4 gap-4');
+            stats.appendChild(statCard('fa-hourglass-half', viewer === 'market' ? "To'lanishi kerak" : "To'lov kutilmoqda", formatNumber(sum('PENDING')) + " so'm", 'text-amber-400'));
+            stats.appendChild(statCard('fa-shield-halved', viewer === 'market' ? "Escrow'da" : "Escrow'da (kafolatlangan)", formatNumber(sum('HELD')) + " so'm", 'text-blue-400'));
+            stats.appendChild(statCard('fa-circle-check', viewer === 'market' ? "To'langan" : 'Qabul qilingan', formatNumber(sum('RELEASED')) + " so'm", 'text-emerald-400'));
+            stats.appendChild(statCard('fa-rotate-left', 'Qaytarilgan', formatNumber(sum('REFUNDED')) + " so'm", 'text-rose-400'));
+            nodes.push(stats);
+
+            const chips = el('div', 'flex flex-wrap gap-2');
+            const groups = { ALL: null, PENDING: ['PENDING'], HELD: ['HELD'], RELEASED: ['RELEASED'], CLOSED: ['REFUNDED', 'CANCELLED'] };
+            [['ALL', 'Hammasi'], ['PENDING', 'Kutilmoqda'], ['HELD', "Escrow'da"], ['RELEASED', "To'langan"], ['CLOSED', 'Qaytarilgan / bekor']].forEach(function (f) {
+                const n = groups[f[0]] ? list.filter(function (p) { return groups[f[0]].indexOf(p.status) !== -1; }).length : list.length;
+                const c = el('button', 'mp-chip px-4 py-1.5 rounded-full border border-white/15 text-xs font-bold text-slate-300 transition hover:border-emerald-500/50' + (dashPayFilter === f[0] ? ' active' : ''), f[1] + ' (' + n + ')');
+                c.type = 'button';
+                c.addEventListener('click', function () { dashPayFilter = f[0]; payConfirm = null; renderPaymentsView(user); });
+                chips.appendChild(c);
+            });
+            nodes.push(chips);
+
+            const items = groups[dashPayFilter] ? list.filter(function (p) { return groups[dashPayFilter].indexOf(p.status) !== -1; }) : list;
+            if (items.length) items.forEach(function (p) { nodes.push(buildPaymentCard(p, viewer)); });
+            else nodes.push(dashMessage('fa-wallet', list.length ? "Bu holatdagi to'lovlar yo'q." : "Hali to'lovlar yo'q. Bron tasdiqlanganda to'lov avtomatik yaratiladi."));
             dashContent.replaceChildren.apply(dashContent, nodes);
         }
 
