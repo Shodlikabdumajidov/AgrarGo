@@ -117,6 +117,25 @@
         *::-webkit-scrollbar-thumb:hover { background: rgba(16, 185, 129, 0.6); }
         .auth-card { scrollbar-width: none; }
         .auth-card::-webkit-scrollbar { display: none; }
+        /* Hero orqa fon slayderi: chap/o'ng bloklar, xira va markazga qarab so'nadi */
+        .hero-bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+        .hero-pane { position: absolute; top: 0; bottom: 0; width: 46%; }
+        .hero-pane.left { left: 0; -webkit-mask-image: linear-gradient(to right, #000 0%, rgba(0,0,0,.55) 55%, transparent 100%); mask-image: linear-gradient(to right, #000 0%, rgba(0,0,0,.55) 55%, transparent 100%); }
+        .hero-pane.right { right: 0; -webkit-mask-image: linear-gradient(to left, #000 0%, rgba(0,0,0,.55) 55%, transparent 100%); mask-image: linear-gradient(to left, #000 0%, rgba(0,0,0,.55) 55%, transparent 100%); }
+        .hero-layer { position: absolute; inset: -6%; background-size: cover; background-position: center; filter: blur(14px) saturate(1.1); opacity: 0; transition: opacity 1.8s ease-in-out; will-change: opacity; }
+        .hero-layer.on { opacity: .38; }
+        /* Matn joylashgan markazga qarab qorayuvchi qatlam (o'qish qiyinlashmasin) */
+        .hero-bg::after { content: ''; position: absolute; inset: 0; background:
+            radial-gradient(ellipse at center, rgba(2,6,23,.88) 0%, rgba(2,6,23,.55) 45%, rgba(2,6,23,0) 80%),
+            linear-gradient(to bottom, rgba(2,6,23,.55) 0%, rgba(2,6,23,0) 25%, rgba(2,6,23,0) 70%, rgba(2,6,23,1) 100%); }
+        @media (max-width: 1023px) {
+            .hero-pane { width: 100%; }
+            .hero-pane.left { bottom: 50%; -webkit-mask-image: linear-gradient(to bottom, #000 0%, transparent 100%); mask-image: linear-gradient(to bottom, #000 0%, transparent 100%); }
+            .hero-pane.right { top: 50%; -webkit-mask-image: linear-gradient(to top, #000 0%, transparent 100%); mask-image: linear-gradient(to top, #000 0%, transparent 100%); }
+            .hero-layer { filter: blur(10px); }
+            .hero-layer.on { opacity: .3; }
+        }
+        @media (prefers-reduced-motion: reduce) { .hero-layer { transition: none; } }
         /* Xarita (Leaflet) va belgilar */
         .trk-map { isolation: isolate; position: relative; z-index: 0; }
         .trk-map.leaflet-container { background: #0b1220; font-family: inherit; }
@@ -437,7 +456,12 @@
 
     <!-- HERO SECTION (Updated with Left Rotating Logo Space & Right Text) -->
     <header class="relative min-h-[80vh] flex items-center justify-center pt-16 pb-20 px-6 sm:px-12 overflow-hidden">
-        <div class="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        <!-- Orqa fon: chap va o'ng bloklar (kontent ostida) -->
+        <div class="hero-bg" aria-hidden="true">
+            <div class="hero-pane left"><div class="hero-layer"></div><div class="hero-layer"></div></div>
+            <div class="hero-pane right"><div class="hero-layer"></div><div class="hero-layer"></div></div>
+        </div>
+        <div class="relative z-10 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             
             <!-- LEFT SIDE: Rotating 3D Logo / Shape Space -->
             <div class="lg:col-span-5 flex flex-col items-center justify-center space-y-6" data-aos="fade-right" data-aos-duration="1000">
@@ -1864,6 +1888,51 @@
                 setLoading(newpassForm, false);
             }
         });
+
+        // ===== HERO ORQA FON SLAYDERI =====
+        (function () {
+            const IMAGES = ['background.jpg', 'background2.jpg', 'background3.jpg', 'background4.jpg', 'background5.jpg', 'background6.jpg', 'background7.jpg'];
+            const INTERVAL_MS = 10000;
+            const panes = Array.prototype.slice.call(document.querySelectorAll('.hero-pane'));
+            if (!panes.length) return;
+            const ok = {};
+            const shown = [null, null];
+            const preload = function (src) {
+                return new Promise(function (resolve) {
+                    if (ok[src] !== undefined) return resolve(ok[src]);
+                    const img = new Image();
+                    img.onload = function () { ok[src] = true; resolve(true); };
+                    img.onerror = function () { ok[src] = false; resolve(false); };
+                    img.src = src;
+                });
+            };
+            // Navbatdagi tasodifiy rasm: hozirgi va qarama-qarshi tomondagi rasmdan farqli
+            const pick = function (i) {
+                const pool = IMAGES.filter(function (src) { return ok[src] !== false && src !== shown[i] && src !== shown[1 - i]; });
+                return pool.length ? pool[Math.floor(Math.random() * pool.length)] : null;
+            };
+            const swap = async function (i) {
+                const src = pick(i);
+                if (!src || !(await preload(src))) return;
+                const layers = panes[i].querySelectorAll('.hero-layer');
+                const cur = panes[i].querySelector('.hero-layer.on');
+                const next = cur === layers[0] ? layers[1] : layers[0];
+                next.style.backgroundImage = 'url("' + src + '")';
+                next.classList.add('on');
+                if (cur) cur.classList.remove('on');
+                shown[i] = src;
+            };
+            let timers = [];
+            const start = function () {
+                stop();
+                // O'ng tomon 5 soniya kechikib almashadi: ikkala rasm bir vaqtda o'zgarmaydi
+                timers = [setInterval(function () { swap(0); }, INTERVAL_MS)];
+                timers.push(setTimeout(function () { timers.push(setInterval(function () { swap(1); }, INTERVAL_MS)); }, INTERVAL_MS / 2));
+            };
+            const stop = function () { timers.forEach(function (t) { clearInterval(t); clearTimeout(t); }); timers = []; };
+            document.addEventListener('visibilitychange', function () { document.hidden ? stop() : start(); });
+            swap(0).then(function () { return swap(1); }).then(start);
+        })();
 
         const PHONE_ERR = "Telefon raqamni to'liq kiriting (9 ta raqam).";
         const PASSWORD_ERR = "Parol kamida 8 ta belgidan iborat bo'lishi kerak.";
