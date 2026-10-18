@@ -18,6 +18,7 @@ import { AppThrottlerGuard } from './security/app-throttler.guard';
 import { buildThrottlers } from './security/throttling';
 import { ShipmentModule } from './shipment/shipment.module';
 import { SmsModule } from './sms/sms.module';
+import { TelegramModule } from './telegram/telegram.module';
 import { WarehouseModule } from './warehouse/warehouse.module';
 
 @Module({
@@ -27,6 +28,7 @@ import { WarehouseModule } from './warehouse/warehouse.module';
     ConfigModule.forRoot({ isGlobal: true, ignoreEnvFile: process.env.NODE_ENV === 'test' }),
     AppEnvModule,
     SmsModule,
+    TelegramModule,
     ThrottlerModule.forRootAsync({
       inject: [APP_ENV],
       useFactory: (env: AppEnv) => ({ throttlers: buildThrottlers(env) }),

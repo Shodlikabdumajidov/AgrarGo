@@ -184,3 +184,17 @@ Yuklanmoqda... ‖ Загрузка... ‖ Loading...
 {0} kun oldin ‖ {0} дн. назад ‖ {0} days ago
 {0} soniya oldin ‖ {0} сек. назад ‖ {0} seconds ago
 hozirgina ‖ только что ‖ just now
+# --- Telegram bot ---
+Telegram xabarnomalar ‖ Уведомления в Telegram ‖ Telegram notifications
+Bron, to'lov (Escrow) va yuk holati haqidagi xabarlar Telegramga keladi. ‖ Уведомления о бронях, платежах (Escrow) и статусе груза приходят в Telegram. ‖ Booking, payment (Escrow) and shipment status updates are sent to Telegram.
+Telegram ulangan ‖ Telegram подключён ‖ Telegram connected
+Uzish ‖ Отключить ‖ Disconnect
+Telegramni uzasizmi? Xabarnomalar kelmay qoladi. ‖ Отключить Telegram? Уведомления перестанут приходить. ‖ Disconnect Telegram? You will stop receiving notifications.
+Telegram uzildi. ‖ Telegram отключён. ‖ Telegram disconnected.
+Telegram bot hozircha sozlanmagan. Keyinroq urinib ko'ring. ‖ Telegram-бот пока не настроен. Попробуйте позже. ‖ The Telegram bot is not configured yet. Please try again later.
+Botni ulash uchun tugmani bosing, Telegramda ochilgan chatda "Start" tugmasini bosing. ‖ Нажмите кнопку, затем в открывшемся чате Telegram нажмите «Start». ‖ Press the button, then press "Start" in the Telegram chat that opens.
+Telegram botni ulash ‖ Подключить Telegram-бота ‖ Connect Telegram bot
+Telegram ochildi. Botda "Start" tugmasini bosing, ulanish avtomatik aniqlanadi. ‖ Telegram открыт. Нажмите «Start» в боте, подключение определится автоматически. ‖ Telegram opened. Press "Start" in the bot; the connection is detected automatically.
+Telegramni ochish uchun quyidagi havolani bosing: ‖ Чтобы открыть Telegram, нажмите на ссылку ниже: ‖ Click the link below to open Telegram:
+Havola {0} daqiqa amal qiladi va bir marta ishlaydi. ‖ Ссылка действует {0} мин и срабатывает один раз. ‖ The link is valid for {0} minutes and works once.
+Telegram muvaffaqiyatli ulandi! ‖ Telegram успешно подключён! ‖ Telegram connected successfully!

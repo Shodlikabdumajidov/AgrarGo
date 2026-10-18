@@ -5994,7 +5994,7 @@
             }
             if (rid !== dashRenderId) return;
             saveUser(u);
-            dashContent.replaceChildren(buildAvatarCard(u), buildProfileForm(u), buildPasswordForm());
+            dashContent.replaceChildren(buildAvatarCard(u), buildProfileForm(u), buildTelegramCard(), buildPasswordForm());
         }
 
         function buildAvatarCard(u) {
@@ -6146,6 +6146,85 @@
                 }
             });
             return form;
+        }
+
+        // ----- Telegram bot: xabarnomalarni ulash / uzish -----
+        function buildTelegramCard() {
+            const card = el('div', 'glass rounded-3xl border border-white/10 p-6 space-y-4');
+            const head = el('div', 'flex items-center gap-3');
+            head.appendChild(el('i', 'fa-brands fa-telegram text-3xl text-sky-400'));
+            const ht = el('div', 'min-w-0');
+            ht.appendChild(el('h3', 'text-lg font-extrabold text-white', 'Telegram xabarnomalar'));
+            ht.appendChild(el('p', 'text-xs text-slate-400', "Bron, to'lov (Escrow) va yuk holati haqidagi xabarlar Telegramga keladi."));
+            head.appendChild(ht);
+            card.appendChild(head);
+            const body = el('div', 'space-y-3');
+            body.appendChild(el('p', 'text-sm text-slate-400', 'Yuklanmoqda...'));
+            card.appendChild(body);
+            let timer = null;
+            const stopPoll = function () { if (timer) { clearInterval(timer); timer = null; } };
+            const btn = function (icon, label, cls, fn) {
+                const b = el('button', 'flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-extrabold border transition disabled:opacity-60 ' + cls);
+                b.type = 'button';
+                b.appendChild(el('i', 'fa-solid ' + icon));
+                b.appendChild(el('span', '', label));
+                b.addEventListener('click', function () { b.disabled = true; Promise.resolve(fn()).finally(function () { b.disabled = false; }); });
+                return b;
+            };
+            const load = async function () {
+                let st;
+                try { st = await authed('GET', '/profile/telegram'); }
+                catch (err) { if (err.status !== 401) body.replaceChildren(el('p', 'text-sm text-rose-300', err.messages[0])); return; }
+                if (!card.isConnected) return;
+                paint(st);
+            };
+            const paint = function (st) {
+                stopPoll();
+                const nodes = [];
+                if (st.linked) {
+                    const ok = el('div', 'flex flex-wrap items-center gap-3');
+                    const badge = el('span', 'inline-flex items-center gap-2 text-sm font-extrabold px-4 py-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/15 text-emerald-300');
+                    badge.appendChild(el('i', 'fa-solid fa-circle-check'));
+                    badge.appendChild(el('span', '', 'Telegram ulangan'));
+                    ok.appendChild(badge);
+                    if (st.linkedAt) ok.appendChild(el('span', 'text-xs text-slate-500', formatDateTime(st.linkedAt)));
+                    nodes.push(ok);
+                    nodes.push(btn('fa-link-slash', 'Uzish', 'border-rose-500/40 text-rose-300 hover:bg-rose-500/10', async function () {
+                        if (!window.confirm(T('Telegramni uzasizmi? Xabarnomalar kelmay qoladi.'))) return;
+                        try { paint(await authed('DELETE', '/profile/telegram')); showToast('Telegram uzildi.', 3000); }
+                        catch (err) { if (err.status !== 401) showToast(err.messages[0], 5000); }
+                    }));
+                } else if (!st.enabled) {
+                    nodes.push(el('p', 'text-sm text-amber-300', 'Telegram bot hozircha sozlanmagan. Keyinroq urinib ko\'ring.'));
+                } else {
+                    nodes.push(el('p', 'text-sm text-slate-300', "Botni ulash uchun tugmani bosing, Telegramda ochilgan chatda \"Start\" tugmasini bosing."));
+                    nodes.push(btn('fa-paper-plane', 'Telegram botni ulash', 'bg-sky-500 border-sky-500 text-white hover:bg-sky-400 shadow-lg shadow-sky-500/25', async function () {
+                        let link;
+                        try { link = await authed('POST', '/profile/telegram/link'); }
+                        catch (err) { if (err.status !== 401) showToast(err.raw || err.messages[0], 5000); return; }
+                        const opened = window.open(link.url, '_blank', 'noopener');
+                        const info = el('div', 'rounded-xl border border-sky-500/30 bg-sky-500/10 px-4 py-3 text-sm text-sky-100 space-y-1.5');
+                        info.appendChild(el('p', '', opened ? "Telegram ochildi. Botda \"Start\" tugmasini bosing, ulanish avtomatik aniqlanadi." : "Telegramni ochish uchun quyidagi havolani bosing:"));
+                        const a = el('a', 'inline-block font-bold underline break-all', link.url);
+                        a.href = link.url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+                        info.appendChild(a);
+                        info.appendChild(el('p', 'text-xs text-sky-200/70', "Havola " + Math.round((new Date(link.expiresAt) - Date.now()) / 60000) + " daqiqa amal qiladi va bir marta ishlaydi."));
+                        body.appendChild(info);
+                        const until = new Date(link.expiresAt).getTime();
+                        stopPoll();
+                        timer = setInterval(async function () {
+                            if (!card.isConnected || Date.now() > until) return stopPoll();
+                            try {
+                                const cur = await authed('GET', '/profile/telegram');
+                                if (cur.linked && card.isConnected) { paint(cur); showToast('Telegram muvaffaqiyatli ulandi!', 3500); }
+                            } catch (e) {}
+                        }, 3000);
+                    }));
+                }
+                body.replaceChildren.apply(body, nodes);
+            };
+            load();
+            return card;
         }
 
         function buildPasswordForm() {

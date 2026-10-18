@@ -26,6 +26,12 @@ model User {
   // Parol o'zgarganda/tiklanganda oshiriladi: eski JWT tokenlar darhol yaroqsiz bo'ladi
   tokenVersion Int      @default(0)
   isActive     Boolean  @default(true)
+  // Telegram bot: chat ID (bitta chat — bitta akkaunt) va bog'lash uchun vaqtinchalik bir martalik token.
+  // Tokenning faqat SHA-256 xeshi saqlanadi; ochiq ko'rinishi faqat foydalanuvchiga (havolada) beriladi.
+  telegramChatId             String?   @unique
+  telegramAuthToken          String?   @unique
+  telegramAuthTokenExpiresAt DateTime?
+  telegramLinkedAt           DateTime?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

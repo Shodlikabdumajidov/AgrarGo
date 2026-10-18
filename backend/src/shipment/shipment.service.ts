@@ -2,6 +2,7 @@ import { ConflictException, ForbiddenException, Injectable, NotFoundException } 
 import { PaymentStatus, Prisma, Role, ShipmentStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { SettingsService } from '../settings/settings.service';
+import { NotificationService } from '../telegram/notification.service';
 import { AvailableShipmentsQuery, ListShipmentsQuery } from './dto/list-shipments.query';
 
 // Haydovchi bir vaqtda nechta yakunlanmagan yukni olib yura oladi
@@ -25,7 +26,7 @@ type Viewer = 'driver-open' | 'driver-own' | 'farmer' | 'market';
 
 @Injectable()
 export class ShipmentService {
-  constructor(private readonly prisma: PrismaService, private readonly settings: SettingsService) {}
+  constructor(private readonly prisma: PrismaService, private readonly settings: SettingsService, private readonly notify: NotificationService) {}
 
   // ---------- Haydovchi ----------
 
@@ -102,6 +103,7 @@ export class ShipmentService {
 
   /** Keyingi bosqichga o'tkazish: LOADING -> IN_TRANSIT -> DELIVERED */
   async advance(driverId: string, id: string) {
+    let reached = null as ShipmentStatus | null;
     await this.prisma.$transaction(async (tx) => {
       const current = await tx.shipment.findFirst({ where: { id, driverId }, select: { status: true, warehouseOrderId: true } });
       if (!current) throw new NotFoundException('Yuk topilmadi');
@@ -125,6 +127,7 @@ export class ShipmentService {
       });
       if (moved.count === 0) throw new ConflictException("Yuk holati allaqachon o'zgargan. Sahifani yangilang");
       await tx.shipmentEvent.create({ data: { shipmentId: id, status: next } });
+      reached = next;
       if (next === ShipmentStatus.DELIVERED && current.warehouseOrderId) {
         // Ombor buyurtmasi yetkazildi (pul esa xaridor yoki dispetcher tasdiqlagach chiqariladi)
         const done = await tx.warehouseOrder.updateMany({
@@ -133,6 +136,7 @@ export class ShipmentService {
         if (done.count === 0) throw new ConflictException("Buyurtma holati mos kelmaydi. Dispetcherga murojaat qiling");
       }
     });
+    if (reached) this.notify.shipmentStatus(id, reached);
     return this.reload(id, 'driver-own');
   }
 

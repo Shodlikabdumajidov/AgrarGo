@@ -5,6 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { SettingsService } from '../settings/settings.service';
 import { ShipmentService } from '../shipment/shipment.service';
 import { createShipmentForWarehouseOrder } from '../shipment/shipment.factory';
+import { NotificationService } from '../telegram/notification.service';
 import { CreateOrderDto, DispatchDto, OrdersQuery } from './dto/warehouse.dto';
 
 const OPEN: WarehouseOrderStatus[] = ['PENDING', 'PICKING', 'PICKED', 'DISPATCHED'];
@@ -35,6 +36,7 @@ export class WarehouseOrderService {
     private readonly payments: PaymentService,
     private readonly shipments: ShipmentService,
     private readonly settings: SettingsService,
+    private readonly notify: NotificationService,
   ) {}
 
   // ---------- Market: buyurtma berish ----------
@@ -65,6 +67,7 @@ export class WarehouseOrderService {
       await this.payments.holdForWarehouseOrder(tx, order);
       return order.id;
     });
+    this.notify.escrowHeld({ warehouseOrderId: orderId });
     return this.reload(orderId, 'market');
   }
 
@@ -132,6 +135,7 @@ export class WarehouseOrderService {
    * Buning uchun haydovchi yukni qabul qilgan (yoki biriktirilgan) bo'lishi kerak.
    */
   async dispatch(actorId: string, id: string) {
+    let shipmentId: string | null = null;
     await this.prisma.$transaction(async (tx) => {
       const order = await tx.warehouseOrder.findUnique({ where: { id }, include: { shipment: { select: { id: true, status: true, driverId: true } } } });
       if (!order) throw new NotFoundException('Buyurtma topilmadi');
@@ -148,6 +152,7 @@ export class WarehouseOrderService {
       const moved = await tx.shipment.updateMany({ where: { id: sh.id, status: ShipmentStatus.LOADING }, data: { status: ShipmentStatus.IN_TRANSIT } });
       if (moved.count === 0) throw new ConflictException("Yuk holati o'zgargan. Sahifani yangilang");
       await tx.shipmentEvent.create({ data: { shipmentId: sh.id, status: ShipmentStatus.IN_TRANSIT } });
+      shipmentId = sh.id;
 
       // CHECK cheklovlari (qoldiq >= zaxira >= 0) bazada ham himoya qiladi
       await tx.$executeRaw`
@@ -159,6 +164,7 @@ export class WarehouseOrderService {
         data: { itemId: order.itemId, type: StockMovementType.DISPATCH, deltaKg: order.quantityKg.neg(), fromZone: WarehouseZone.OUTBOUND, actorId, note: `Buyurtma ${order.id.slice(0, 8)} haydovchiga yuklandi` },
       });
     });
+    if (shipmentId) this.notify.shipmentStatus(shipmentId, ShipmentStatus.IN_TRANSIT);
     return this.reload(id, 'ops');
   }
 
@@ -199,13 +205,17 @@ export class WarehouseOrderService {
     const ok = order && (this.isStaff(user) || (user.role === Role.MARKET && order.marketId === user.market?.id));
     if (!ok) throw new NotFoundException('Buyurtma topilmadi');
     const actor = this.isStaff(user) ? user.role : 'MARKET';
+    let deliveredShipmentId: string | null = null;
     await this.prisma.$transaction(async (tx) => {
       const delivered = await tx.warehouseOrder.updateMany({ where: { id, status: 'DISPATCHED' }, data: { status: 'DELIVERED', deliveredAt: new Date() } });
       if (delivered.count === 1) {
         const sh = await tx.shipment.findUnique({ where: { warehouseOrderId: id }, select: { id: true } });
         if (sh) {
           const done = await tx.shipment.updateMany({ where: { id: sh.id, status: ShipmentStatus.IN_TRANSIT }, data: { status: ShipmentStatus.DELIVERED, deliveredAt: new Date() } });
-          if (done.count === 1) await tx.shipmentEvent.create({ data: { shipmentId: sh.id, status: ShipmentStatus.DELIVERED } });
+          if (done.count === 1) {
+            await tx.shipmentEvent.create({ data: { shipmentId: sh.id, status: ShipmentStatus.DELIVERED } });
+            deliveredShipmentId = sh.id;
+          }
         }
       } else {
         const cur = await tx.warehouseOrder.findUnique({ where: { id }, select: { status: true } });
@@ -215,6 +225,7 @@ export class WarehouseOrderService {
       if (pay?.status === 'RELEASED') throw new ConflictException('Buyurtma allaqachon yetkazilgan va to\'lov chiqarilgan');
       await this.payments.releaseForWarehouseOrder(tx, id, actor);
     });
+    if (deliveredShipmentId) this.notify.shipmentStatus(deliveredShipmentId, ShipmentStatus.DELIVERED);
     return this.reload(id, this.viewerOf(user));
   }
 

@@ -4,6 +4,7 @@ import { restoreStock } from '../booking/stock';
 import { computeAmount } from './payment.factory';
 import { APP_ENV } from '../config/app-env.module';
 import { AppEnv } from '../config/env.validation';
+import { NotificationService } from '../telegram/notification.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ListPaymentsQuery } from './dto/payment.dto';
 import {
@@ -57,6 +58,7 @@ export class PaymentService {
     private readonly prisma: PrismaService,
     @Inject(PAYMENT_PROVIDER) private readonly provider: PaymentProvider,
     @Inject(APP_ENV) private readonly env: AppEnv,
+    private readonly notify: NotificationService,
   ) {}
 
   // ---------- Ombor buyurtmalari (escrow) ----------
@@ -112,6 +114,7 @@ export class PaymentService {
   /** Xaridor to'laydi: PENDING -> HELD (mablag' escrow'da). Takroriy so'rov xavfsiz: allaqachon HELD bo'lsa o'sha natija qaytadi. */
   async init(user: PaymentUser, bookingId: string) {
     const actor = this.actorOf(user);
+    let newlyHeld = false;
     const id = await this.prisma.$transaction(async (tx) => {
       const row = await this.load(tx, bookingId, user);
       if (row.status === PaymentStatus.HELD) return row.id; // idempotent
@@ -130,8 +133,10 @@ export class PaymentService {
       const res = await this.callProvider("Mablag' yechilmadi", () => this.provider.charge(this.providerRequest(row)));
       await tx.payment.update({ where: { id: row.id }, data: { providerRef: res.ref, provider: this.provider.name } });
       await this.event(tx, row.id, PaymentStatus.HELD, actor, `Mablag' escrow'ga o'tkazildi (${res.ref})`);
+      newlyHeld = true;
       return row.id;
     });
+    if (newlyHeld) this.notify.escrowHeld({ bookingId });
     return this.reload(id, user);
   }
 

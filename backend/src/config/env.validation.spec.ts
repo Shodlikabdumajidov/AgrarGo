@@ -128,12 +128,34 @@ describe('validateEnv', () => {
 describe('envWarnings', () => {
   it('namuna kalit va bo‘sh CORS uchun development’da ogohlantiradi', () => {
     const env = validateEnv({ ...base, JWT_SECRET: 'uzun-tasodifiy-sir-almashtiring' });
-    expect(envWarnings(env)).toHaveLength(4); // JWT, CORS, SMS va to'lov simulyatsiyasi
+    expect(envWarnings(env)).toHaveLength(5); // JWT, CORS, SMS, Telegram va to'lov simulyatsiyasi
   });
 
   it("production'da faqat to'lov va SMS simulyatsiyasi haqida ogohlantiradi", () => {
     const warnings = envWarnings(validateEnv(prod));
-    expect(warnings).toHaveLength(2);
-    expect(warnings.join(' ')).toMatch(/SMS simulyatsiya[\s\S]*To'lovlar simulyatsiya/);
+    expect(warnings).toHaveLength(3);
+    expect(warnings.join(' ')).toMatch(/SMS simulyatsiya[\s\S]*Telegram[\s\S]*To'lovlar simulyatsiya/);
+  });
+});
+
+describe('Telegram sozlamalari', () => {
+  const base = { DATABASE_URL: 'postgresql://u:p@localhost:5432/db', JWT_SECRET: 'dev-secret-12345' };
+  it("token bo'sh bo'lsa bot o'chiq; to'g'ri format qabul qilinadi", () => {
+    expect(validateEnv(base).TELEGRAM_BOT_TOKEN).toBe('');
+    const ok = validateEnv({ ...base, TELEGRAM_BOT_TOKEN: '1234567890:AAFakeTokenFakeTokenFakeTokenFake_12', TELEGRAM_BOT_USERNAME: '@AgrarGoBot' });
+    expect(ok.TELEGRAM_BOT_USERNAME).toBe('AgrarGoBot');
+    expect(ok.TELEGRAM_POLLING).toBe(true);
+  });
+  it("noto'g'ri token xato beradi, lekin qiymatning o'zi xabarda ko'rinmaydi", () => {
+    const secret = 'not-a-valid-token-SECRETVALUE';
+    let msg = '';
+    try { validateEnv({ ...base, TELEGRAM_BOT_TOKEN: secret }); } catch (e: any) { msg = e.message; }
+    expect(msg).toContain('TELEGRAM_BOT_TOKEN');
+    expect(msg).not.toContain('SECRETVALUE');
+  });
+  it('username, polling va TTL tekshiriladi', () => {
+    expect(() => validateEnv({ ...base, TELEGRAM_BOT_USERNAME: 'a b' })).toThrow(/TELEGRAM_BOT_USERNAME/);
+    expect(() => validateEnv({ ...base, TELEGRAM_POLLING: 'maybe' })).toThrow(/TELEGRAM_POLLING/);
+    expect(() => validateEnv({ ...base, TELEGRAM_LINK_TTL_SECONDS: '5' })).toThrow(/TELEGRAM_LINK_TTL_SECONDS/);
   });
 });

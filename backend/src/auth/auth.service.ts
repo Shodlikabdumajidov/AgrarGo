@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Prisma, Role } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { roleTakenMessage, ROLE_LABEL } from '../common/role-labels';
+import { publicUser } from '../common/public-user';
 import { PrismaService } from '../prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterBaseDto } from './dto/register-base.dto';
@@ -88,7 +89,6 @@ export class AuthService {
   }
 
   private buildResponse(user: Prisma.UserGetPayload<{ include: typeof USER_WITH_PROFILES }>) {
-    const { passwordHash, ...safe } = user;
-    return { accessToken: this.signAccessToken(user), user: safe };
+    return { accessToken: this.signAccessToken(user), user: publicUser(user) };
   }
 }

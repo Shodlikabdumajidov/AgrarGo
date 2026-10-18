@@ -45,7 +45,7 @@ export type ThrottleEnv = Pick<AppEnv,
   | 'THROTTLE_DEFAULT_LIMIT' | 'THROTTLE_LOGIN_IP_LIMIT' | 'THROTTLE_LOGIN_PHONE_LIMIT'
   | 'THROTTLE_REGISTER_LIMIT' | 'THROTTLE_UPLOAD_LIMIT' | 'THROTTLE_BOOKING_LIMIT' | 'THROTTLE_PAYMENT_LIMIT'
   | 'THROTTLE_FORGOT_IP_LIMIT' | 'THROTTLE_FORGOT_PHONE_LIMIT' | 'THROTTLE_VERIFY_IP_LIMIT'
-  | 'THROTTLE_VERIFY_PHONE_LIMIT' | 'THROTTLE_RESET_LIMIT' | 'THROTTLE_CHANGE_PASSWORD_LIMIT' | 'THROTTLE_LOCATION_LIMIT'>;
+  | 'THROTTLE_VERIFY_PHONE_LIMIT' | 'THROTTLE_RESET_LIMIT' | 'THROTTLE_CHANGE_PASSWORD_LIMIT' | 'THROTTLE_LOCATION_LIMIT' | 'THROTTLE_TELEGRAM_LIMIT'>;
 
 export function buildThrottlers(env: ThrottleEnv): ThrottlerOptions[] {
   return [
@@ -73,6 +73,8 @@ export function buildThrottlers(env: ThrottleEnv): ThrottlerOptions[] {
     // Joriy parolni terib ko'rishdan himoya: foydalanuvchi bo'yicha (IP almashtirib aylanib o'tib bo'lmaydi)
     // GPS nuqtalari: haydovchi bo'yicha (har 10-15 soniyada bitta; spam va bazani to'ldirishdan himoya)
     { name: 'location', ttl: MINUTE, limit: env.THROTTLE_LOCATION_LIMIT, getTracker: userTracker(env.JWT_SECRET), skipIf: onlyFor('location') },
+    // Telegram bog'lash tokenlari: foydalanuvchi bo'yicha soatiga cheklangan
+    { name: 'telegram', ttl: HOUR, limit: env.THROTTLE_TELEGRAM_LIMIT, getTracker: userTracker(env.JWT_SECRET), skipIf: onlyFor('telegram') },
     { name: 'pwchange', ttl: 15 * MINUTE, limit: env.THROTTLE_CHANGE_PASSWORD_LIMIT, blockDuration: 30 * MINUTE, getTracker: userTracker(env.JWT_SECRET), skipIf: onlyFor('pwchange') },
   ];
 }

@@ -6,6 +6,7 @@ import { randomBytes } from 'crypto';
 import { promises as fs } from 'fs';
 import { join } from 'path';
 import { USER_WITH_PROFILES } from '../auth/auth.service';
+import { publicUser } from '../common/public-user';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateDriverProfileDto, UpdateFarmerProfileDto, UpdateMarketProfileDto } from './dto/update-profile.dto';
 
@@ -37,8 +38,7 @@ export class ProfileService {
   async get(userId: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId }, include: USER_WITH_PROFILES });
     if (!user) throw new NotFoundException('Foydalanuvchi topilmadi');
-    const { passwordHash, ...safe } = user;
-    return safe;
+    return publicUser(user);
   }
 
   async update(userId: string, role: Role, body: unknown) {

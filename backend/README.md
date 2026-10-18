@@ -140,3 +140,12 @@ Qoidalar `src/payment/payment.policy.ts` da (sof funksiyalar, unit testlangan). 
 **Saqlash**: kod HMAC-SHA256 (server kaliti va raqam bilan), token SHA-256 xeshi sifatida; ochiq ko'rinishda hech qachon.
 **Rate-limit** (`429` + `Retry-After`): kod so'rash: qayta yuborish kutishi (60 s) + raqamga soatiga 3 + IP'ga soatiga 5 (mavjud bo'lmagan raqamlar ham xuddi shunday sanaladi); kodni tekshirish: raqamga 15 daqiqada 10 (keyin 30 daqiqa blok) + IP'ga 20; yangi parol: IP'ga 10; parolni o'zgartirish: foydalanuvchiga 15 daqiqada 5 (token imzosi tekshirilib, soxta token bilan boshqa hisobni to'ldirib bo'lmaydi).
 **SMS**: `SmsProvider` adapteri; hozir `SimulatedSmsProvider` (SMS yuborilmaydi). Development/test'da `forgot-password` javobida `devCode` qaytadi (faqat shu rejimlarda); production'da simulyatsiya `SMS_ALLOW_SIMULATION=true`siz ishga tushmaydi va u yoqilganda ham kod jurnalga yozilmaydi.
+
+
+## Telegram bot va xabarnomalar
+
+- `.env`: `TELEGRAM_BOT_TOKEN` (BotFather tokeni, faqat serverda), `TELEGRAM_BOT_USERNAME`, `TELEGRAM_POLLING`, `TELEGRAM_LINK_TTL_SECONDS`. Token bo'sh bo'lsa bot o'chiq, qolgan tizim ishlayveradi.
+- Bog'lash: `POST /profile/telegram/link` → `{ token, url: https://t.me/<bot>?start=<token>, expiresAt }` (bir martalik, 10 daqiqa; bazada faqat SHA-256 xeshi). Foydalanuvchi botda `/start <token>` bossa akkaunt chatga bog'lanadi. `GET /profile/telegram` — holat, `DELETE /profile/telegram` — uzish. Botda: `/unlink`, `/help`.
+- Maxfiylik: API javoblarida `telegramChatId` va token ko'rinmaydi, faqat `telegramLinked`. Bitta chat — bitta akkaunt.
+- Xabarnomalar: bron (fermerga), bron tasdiqlanishi (market va fermerga), escrow muzlatilishi (bron va ombor buyurtmasi; market va fermerga), yuk "Yo'lda" va "Yetkazildi" (fermer, market va ombor yuklari uchun dispetcherlarga). Xabarlar tranzaksiya tasdiqlangandan keyin, asosiy amalni kutdirmasdan yuboriladi; xato bo'lsa amal buziladi emas. Bot bloklangan chat avtomatik uziladi.
+- Cheklov: yuborish navbati xotirada (server qayta ishga tushsa kutayotgan xabarlar yo'qoladi). Long polling bitta nusxada ishlashi kerak.

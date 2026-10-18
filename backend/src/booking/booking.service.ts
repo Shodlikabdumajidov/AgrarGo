@@ -1,5 +1,6 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { BookingStatus, Prisma, ProductStatus } from '@prisma/client';
+import { NotificationService } from '../telegram/notification.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { createPaymentForBooking } from '../payment/payment.factory';
 import { createShipmentForBooking } from '../shipment/shipment.factory';
@@ -29,7 +30,7 @@ type BookingRow = Prisma.BookingGetPayload<{ include: typeof BOOKING_INCLUDE }>;
 
 @Injectable()
 export class BookingService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly notify: NotificationService) {}
 
   /** Supermarket e'londan kerakli miqdorni bron qiladi; e'lon qoldig'i darhol kamayadi. */
   async create(marketId: string, dto: CreateBookingDto) {
@@ -70,6 +71,7 @@ export class BookingService {
       });
     });
 
+    this.notify.bookingCreated(booking.id);
     return this.forMarket(booking);
   }
 
@@ -97,6 +99,7 @@ export class BookingService {
       await createShipmentForBooking(tx, id);
       await createPaymentForBooking(tx, id); // kutilayotgan (PENDING) escrow to'lovi
     });
+    this.notify.bookingApproved(id);
     return this.reload(id, 'farmer');
   }
 

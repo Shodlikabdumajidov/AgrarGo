@@ -35,6 +35,11 @@ export interface AppEnv {
   THROTTLE_CHANGE_PASSWORD_LIMIT: number;
   THROTTLE_LOCATION_LIMIT: number;
   LOCATION_ALLOW_SIMULATION: boolean;
+  TELEGRAM_BOT_TOKEN: string; // bo'sh = bot o'chiq
+  TELEGRAM_BOT_USERNAME: string;
+  TELEGRAM_POLLING: boolean;
+  TELEGRAM_LINK_TTL_SECONDS: number;
+  THROTTLE_TELEGRAM_LIMIT: number;
 }
 
 // Namuna (.env.example) va keng tarqalgan zaif qiymatlar production'da qabul qilinmaydi
@@ -146,8 +151,24 @@ export function validateEnv(raw: Record<string, unknown>): AppEnv & Record<strin
   const locSimRaw = String(raw.LOCATION_ALLOW_SIMULATION ?? (prod ? 'false' : 'true')).toLowerCase();
   if (!['true', 'false'].includes(locSimRaw)) errors.push("LOCATION_ALLOW_SIMULATION true yoki false bo'lishi kerak");
 
+  // Telegram bot (ixtiyoriy). Token qiymati xato xabarlariga yozilmaydi.
+  const tgToken = String(raw.TELEGRAM_BOT_TOKEN ?? '').trim();
+  if (tgToken && !/^\d{5,}:[A-Za-z0-9_-]{30,}$/.test(tgToken)) {
+    errors.push("TELEGRAM_BOT_TOKEN formati noto'g'ri (BotFather bergan '123456:ABC...' ko'rinishida bo'lishi kerak)");
+  }
+  const tgUsername = String(raw.TELEGRAM_BOT_USERNAME ?? 'AgrarGoBot').trim().replace(/^@/, '');
+  if (!/^[A-Za-z0-9_]{5,32}$/.test(tgUsername)) errors.push("TELEGRAM_BOT_USERNAME 5-32 belgidan iborat lotin harf/raqam/_ bo'lishi kerak");
+  const tgPollingRaw = String(raw.TELEGRAM_POLLING ?? (nodeEnv === 'test' ? 'false' : 'true')).toLowerCase();
+  if (!['true', 'false'].includes(tgPollingRaw)) errors.push("TELEGRAM_POLLING true yoki false bo'lishi kerak");
+
   const env = {
     NODE_ENV: nodeEnv as NodeEnv,
+    TELEGRAM_BOT_TOKEN: tgToken,
+    TELEGRAM_BOT_USERNAME: tgUsername,
+    // Long polling: bir nechta nusxa (instance) ishlasa faqat bittasida yoqing (Telegram 409 qaytaradi)
+    TELEGRAM_POLLING: tgPollingRaw === 'true',
+    TELEGRAM_LINK_TTL_SECONDS: intInRange(raw.TELEGRAM_LINK_TTL_SECONDS, 'TELEGRAM_LINK_TTL_SECONDS', 600, 60, 3600, errors),
+    THROTTLE_TELEGRAM_LIMIT: intInRange(raw.THROTTLE_TELEGRAM_LIMIT, 'THROTTLE_TELEGRAM_LIMIT', 10, 1, 100000, errors),
     PORT: intInRange(raw.PORT, 'PORT', 3000, 1, 65535, errors),
     DATABASE_URL: databaseUrl,
     JWT_SECRET: jwtSecret,
@@ -204,6 +225,7 @@ export function envWarnings(env: AppEnv): string[] {
   if (env.LOCATION_ALLOW_SIMULATION && env.NODE_ENV === 'production') {
     out.push("LOCATION_ALLOW_SIMULATION yoqilgan: haydovchilar soxta (demo) joylashuv yubora oladi");
   }
+  if (!env.TELEGRAM_BOT_TOKEN) out.push("TELEGRAM_BOT_TOKEN berilmagan: Telegram bot va xabarnomalar o'chiq");
   if (env.PAYMENT_PROVIDER === 'simulated') {
     out.push("To'lovlar simulyatsiya rejimida: haqiqiy pul harakati yo'q");
   }

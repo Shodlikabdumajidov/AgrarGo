@@ -3,6 +3,7 @@ import { Prisma, Role } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { roleTakenMessage } from '../common/role-labels';
 import { PrismaService } from '../prisma/prisma.service';
+import { publicUser } from '../common/public-user';
 import { ProfileService } from '../profile/profile.service';
 import { Actor, AuditService } from './audit.service';
 import { AuditQuery, CreateStaffDto, ProductsQuery, ShipmentsQuery, UpdateProductDto, UsersQuery } from './dto/admin.dto';
@@ -118,7 +119,7 @@ export class AdminService {
       u.farmer ? this.prisma.warehouseItem.count({ where: { farmerId: u.farmer.id } }) : 0,
       u.market ? this.prisma.warehouseOrder.count({ where: { marketId: u.market.id } }) : u.driver ? this.prisma.warehouseOrder.count({ where: { driverId: u.driver.id } }) : 0,
     ]);
-    const { passwordHash: _h, ...safe } = u;
+    const safe = publicUser(u);
     return { ...safe, counts: { products, bookings, shipments, warehouseItems: whItems, warehouseOrders: whOrders } };
   }
 
