@@ -106,6 +106,15 @@
         #auth-modal.open .auth-card, #product-modal.open .auth-card, #booking-modal.open .auth-card, #payment-modal.open .auth-card {
             transform: translateY(0) scale(1);
         }
+        /* Xarita (Leaflet) va belgilar */
+        .trk-map { isolation: isolate; position: relative; z-index: 0; }
+        .trk-map.leaflet-container { background: #0b1220; font-family: inherit; }
+        .trk-live-dot { width: 9px; height: 9px; border-radius: 9999px; background: #10b981; box-shadow: 0 0 0 0 rgba(16,185,129,.6); animation: trk-pulse 1.8s infinite; }
+        @keyframes trk-pulse { 70% { box-shadow: 0 0 0 9px rgba(16,185,129,0); } 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); } }
+        .trk-truck { width: 40px; height: 40px; border-radius: 9999px; background: #0f172a; border: 2px solid #34d399; color: #6ee7b7; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(16,185,129,.55); }
+        .trk-pin { width: 28px; height: 28px; border-radius: 9999px; color: #fff; font-weight: 800; font-size: 13px; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; box-shadow: 0 2px 8px rgba(0,0,0,.45); }
+        .trk-pin-a { background: #2563eb; } .trk-pin-b { background: #e11d48; }
+        @media (prefers-reduced-motion: reduce) { .trk-live-dot { animation: none; } }
         .auth-input {
             width: 100%;
             background: rgba(2, 6, 23, 0.6);
@@ -1435,7 +1444,7 @@
                 else if (res.status === 404) messages = ["E'lon topilmadi. U allaqachon o'chirilgan bo'lishi mumkin."];
                 else if (res.status === 409) messages = [raw || "Bu telefon raqam allaqachon ro'yxatdan o'tgan."];
                 else messages = ["Kutilmagan xatolik yuz berdi. Keyinroq qayta urinib ko'ring."];
-                throw { status: res.status, messages: messages };
+                throw { status: res.status, messages: messages, raw: typeof raw === 'string' ? raw : null };
             }
             return data;
         }
@@ -1530,6 +1539,7 @@
         }
 
         function logout() {
+            stopTracker('');
             storageRemove(TOKEN_KEY);
             storageRemove(USER_KEY);
             closeAccountMenu();
@@ -1981,6 +1991,7 @@
 
         // Token eskirgan/yaroqsiz: sessiyani tozalab, qayta kirishga yo'naltiramiz
         function handleSessionExpired(nextAction) {
+            stopTracker('');
             storageRemove(TOKEN_KEY);
             storageRemove(USER_KEY);
             updateAuthButton();
@@ -2532,7 +2543,7 @@
                      ['shipments', 'fa-truck-ramp-box', 'Yuk tashish'], ['payments', 'fa-wallet', "To'lovlar"],
                      ['catalog', 'fa-store', 'Katalog'], ['profile', 'fa-id-card', 'Profil']],
             DRIVER: [['overview', 'fa-gauge', 'Umumiy'], ['loads', 'fa-boxes-packing', 'Mavjud yuklar'],
-                     ['myloads', 'fa-truck-fast', 'Mening yuklarim'], ['profile', 'fa-id-card', 'Profil']]
+                     ['myloads', 'fa-truck-fast', 'Mening yuklarim'], ['eld', 'fa-clock-rotate-left', 'Harakat jurnali'], ['profile', 'fa-id-card', 'Profil']]
         };
         const BOOKING_STATUS = {
             PENDING:   { label: 'Kutilmoqda',      cls: 'bg-amber-500/15 text-amber-400 border-amber-500/30' },
@@ -2612,6 +2623,7 @@
             if (tab === 'bookings') renderDashBookings(user);
             else if (tab === 'shipments' || tab === 'myloads') renderDashShipments(user);
             else if (tab === 'loads') renderDashLoads(user);
+            else if (tab === 'eld') renderDashEld(user);
             else if (tab === 'payments') renderDashPayments(user);
             else if (tab === 'profile') renderDashProfile();
             else renderDashOverview(user);
@@ -2734,7 +2746,7 @@
                     if (bookings.length) bookings.slice(0, 5).forEach(function (b) { nodes.push(buildBookingCard(b, 'market')); });
                     else nodes.push(dashMessage('fa-store', "Hali bron qilmagansiz. Katalogdan mahsulot tanlang."));
                 } else {
-                    const res = await Promise.all([authed('GET', '/profile'), authed('GET', '/shipments/mine'), authed('GET', '/shipments/available')]);
+                    const res = await Promise.all([authed('GET', '/profile'), authed('GET', '/shipments/mine'), authed('GET', '/shipments/available'), authed('GET', '/shipments/eld?days=1').catch(function (e) { if (e.status === 401) throw e; return null; })]);
                     if (rid !== dashRenderId) return;
                     const u = res[0], mine = res[1], open = res[2];
                     saveUser(u);
@@ -2753,6 +2765,10 @@
                     actions.appendChild(actionBtn('fa-boxes-packing', "Mavjud yuklarni ko'rish", true, function () { selectDashTab('loads'); }));
                     actions.appendChild(actionBtn('fa-id-card', 'Profilni tahrirlash', false, function () { selectDashTab('profile'); }));
                     nodes.push(actions);
+                    if (res[3]) {
+                        nodes.push(buildEldSummary(res[3], true));
+                        nodes.push(actionBtn('fa-clock-rotate-left', "To'liq harakat jurnali", false, function () { selectDashTab('eld'); }));
+                    }
                     nodes.push(sectionTitle('Faol yuk'));
                     if (active.length) active.forEach(function (x) { nodes.push(buildShipmentCard(x, 'driver-own')); });
                     else nodes.push(dashMessage('fa-truck', "Hozir faol yuk yo'q. \"Mavjud yuklar\" bo'limidan yuk tanlang."));
@@ -2902,6 +2918,496 @@
             dashContent.replaceChildren.apply(dashContent, nodes);
         }
 
+        // ===== GPS KUZATUV: xarita (Leaflet), haydovchi tracker'i va ELD jurnali =====
+        const TRACK_POLL_MS = 10000;   // fermer/market xaritasi yangilanishi
+        const TRACK_SEND_MS = 12000;   // haydovchi koordinata yuborish davri
+        const TRACK_STALE_MS = 90000;  // shundan uzoq signal kelmasa "aloqa yo'q"
+        const SIM_SPEED_KMH = 120;
+        const LEAFLET_JS = { src: 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js', sri: 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=' };
+        const LEAFLET_CSS = { src: 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css', sri: 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=' };
+        const TRUCK_SVG = '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M3 6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2h2.6a2 2 0 0 1 1.6.8l2.1 2.8c.4.5.7 1.2.7 1.8V16a2 2 0 0 1-2 2h-.3a3 3 0 0 1-5.4 0H10.7a3 3 0 0 1-5.4 0H5a2 2 0 0 1-2-2V6zm12 4v3h4.9l-1.5-2a.5.5 0 0 0-.4-.2L15 10zM8 17.2a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4zm10.7 0a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4z"/></svg>';
+
+        let leafletPromise = null;
+        // Xarita kutubxonasi faqat kerak bo'lganda (SRI bilan) yuklanadi
+        function loadLeaflet() {
+            if (window.L && window.L.map) return Promise.resolve(window.L);
+            if (leafletPromise) return leafletPromise;
+            leafletPromise = new Promise(function (resolve, reject) {
+                const css = document.createElement('link');
+                css.rel = 'stylesheet'; css.href = LEAFLET_CSS.src; css.integrity = LEAFLET_CSS.sri; css.crossOrigin = '';
+                document.head.appendChild(css);
+                const js = document.createElement('script');
+                js.src = LEAFLET_JS.src; js.integrity = LEAFLET_JS.sri; js.crossOrigin = '';
+                js.onload = function () { window.L && window.L.map ? resolve(window.L) : reject(new Error('Leaflet')); };
+                js.onerror = function () { reject(new Error('Leaflet')); };
+                document.head.appendChild(js);
+            }).catch(function (e) { leafletPromise = null; throw e; });
+            return leafletPromise;
+        }
+
+        function distanceKm(a, b) {
+            const R = 6371.0088, rad = function (d) { return d * Math.PI / 180; };
+            const dLat = rad(b.lat - a.lat), dLng = rad(b.lng - a.lng);
+            const h = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+            return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
+        }
+
+        function ageText(ms) {
+            const s = Math.max(0, Math.round(ms / 1000));
+            if (s < 5) return 'hozirgina';
+            if (s < 60) return s + ' soniya oldin';
+            if (s < 3600) return Math.floor(s / 60) + ' daqiqa oldin';
+            return Math.floor(s / 3600) + ' soat oldin';
+        }
+
+        function fmtMin(m) {
+            const h = Math.floor(m / 60), r = m % 60;
+            return h ? h + ' soat ' + r + ' daq' : r + ' daq';
+        }
+
+        function fmtClock(iso) {
+            return new Date(iso).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tashkent' });
+        }
+
+        function osmLink(lat, lng) {
+            return 'https://www.openstreetmap.org/?mlat=' + encodeURIComponent(lat) + '&mlon=' + encodeURIComponent(lng) + '#map=14/' + encodeURIComponent(lat) + '/' + encodeURIComponent(lng);
+        }
+
+        // ----- Xarita paneli (fermer, market va haydovchi uchun) -----
+        // opts.onData(data) — har bir muvaffaqiyatli yangilanishda chaqiriladi
+        function buildTrackPanel(s, opts) {
+            opts = opts || {};
+            const box = el('div', 'rounded-2xl border border-white/10 bg-slate-950/40 overflow-hidden');
+            const head = el('div', 'flex flex-wrap items-center justify-between gap-x-4 gap-y-1.5 px-4 py-3');
+            const title = el('div', 'flex items-center gap-2 text-sm font-extrabold text-white');
+            title.appendChild(el('span', 'trk-live-dot'));
+            title.appendChild(el('span', '', 'Jonli kuzatuv'));
+            const demo = el('span', 'hidden text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40', 'Demo (simulyatsiya)');
+            title.appendChild(demo);
+            head.appendChild(title);
+            const meta = el('div', 'text-xs text-slate-400 font-semibold', 'Joylashuv yuklanmoqda...');
+            head.appendChild(meta);
+            box.appendChild(head);
+
+            const banner = el('div', 'hidden mx-4 mb-3 rounded-xl border px-3 py-2 text-xs font-semibold');
+            banner.setAttribute('role', 'status');
+            box.appendChild(banner);
+
+            const mapBox = el('div', 'trk-map h-64 sm:h-80 w-full bg-slate-900');
+            box.appendChild(mapBox);
+            const foot = el('div', 'px-4 py-2.5 text-[11px] text-slate-500 leading-relaxed');
+            box.appendChild(foot);
+
+            let L = null, map = null, truck = null, trail = null, line = null, fitted = false;
+            let data = null, fetchedAt = 0, timer = null, ticker = null, stopped = false, mapFailed = false, inflight = false;
+
+            const alive = function () { return !stopped && box.isConnected; };
+            const showBanner = function (text, tone) {
+                if (!text) { banner.className = 'hidden'; return; }
+                banner.className = 'mx-4 mb-3 rounded-xl border px-3 py-2 text-xs font-semibold ' + (tone === 'warn'
+                    ? 'border-amber-500/30 bg-amber-500/10 text-amber-300'
+                    : tone === 'err' ? 'border-rose-500/30 bg-rose-500/10 text-rose-300'
+                    : 'border-blue-500/30 bg-blue-500/10 text-blue-300');
+                banner.textContent = text;
+            };
+            const stop = function () {
+                stopped = true;
+                clearTimeout(timer);
+                clearInterval(ticker);
+                if (map) { try { map.remove(); } catch (e) {} map = null; }
+            };
+            const age = function () {
+                if (!data || !data.location) return null;
+                return new Date(data.serverTime) - new Date(data.location.recordedAt) + (Date.now() - fetchedAt);
+            };
+
+            const paintMeta = function () {
+                if (!alive()) return stop();
+                const loc = data && data.location;
+                if (!loc) { meta.textContent = data ? "Haydovchi joylashuvi hali kelmadi" : 'Joylashuv yuklanmoqda...'; return; }
+                const a = age();
+                const parts = ['Oxirgi signal: ' + ageText(a)];
+                if (loc.speedKmh !== null && loc.speedKmh !== undefined) parts.push(Math.round(loc.speedKmh) + ' km/soat');
+                const dest = data.route.destination.center;
+                if (dest) parts.push("Manzilgacha ≈ " + formatNumber(Math.round(distanceKm(loc, dest))) + ' km');
+                meta.textContent = parts.join(' · ');
+                demo.classList.toggle('hidden', loc.source !== 'SIMULATED');
+                if (a > TRACK_STALE_MS) {
+                    showBanner("Haydovchidan " + ageText(a) + " signal kelmadi: aloqa uzilgan yoki telefon o'chiq bo'lishi mumkin.", 'warn');
+                    banner.dataset.kind = 'stale';
+                } else if (banner.dataset.kind === 'stale') {
+                    showBanner('');
+                    banner.dataset.kind = '';
+                }
+            };
+
+            const paintMap = function () {
+                if (!data) return;
+                const loc = data.location;
+                const o = data.route.origin.center, d = data.route.destination.center;
+                if (mapFailed || !map) {
+                    if (mapFailed) {
+                        mapBox.className = 'px-4 py-6 text-sm text-slate-300 space-y-2';
+                        mapBox.replaceChildren();
+                        mapBox.appendChild(el('p', '', "Xaritani yuklab bo'lmadi (internetni tekshiring)."));
+                        if (loc) {
+                            const a = el('a', 'text-emerald-400 font-bold underline break-all', loc.lat.toFixed(5) + ', ' + loc.lng.toFixed(5) + " — xaritada ochish");
+                            a.href = osmLink(loc.lat, loc.lng); a.target = '_blank'; a.rel = 'noopener noreferrer';
+                            mapBox.appendChild(a);
+                        }
+                    }
+                    return;
+                }
+                const pts = [];
+                if (o) pts.push([o.lat, o.lng]);
+                if (d) pts.push([d.lat, d.lng]);
+                const path = data.trail.map(function (p) { return [p.lat, p.lng]; });
+                if (trail) trail.setLatLngs(path);
+                if (line && o && d) line.setLatLngs([[o.lat, o.lng], [d.lat, d.lng]]);
+                if (loc) {
+                    const ll = [loc.lat, loc.lng];
+                    if (!truck) truck = L.marker(ll, { icon: L.divIcon({ className: '', html: '<div class="trk-truck">' + TRUCK_SVG + '</div>', iconSize: [40, 40], iconAnchor: [20, 20] }), zIndexOffset: 1000, keyboard: false }).addTo(map);
+                    else truck.setLatLng(ll);
+                    pts.push(ll);
+                }
+                if (!fitted && pts.length) { map.fitBounds(pts, { padding: [36, 36], maxZoom: 12 }); fitted = true; }
+                else if (loc && !map.getBounds().pad(-0.1).contains([loc.lat, loc.lng])) map.panTo([loc.lat, loc.lng]);
+            };
+
+            const initMap = function () {
+                loadLeaflet().then(function (lib) {
+                    if (!alive()) return;
+                    L = lib;
+                    map = L.map(mapBox, { zoomControl: true, attributionControl: true, scrollWheelZoom: false });
+                    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a>' }).addTo(map);
+                    map.setView([41.3, 64.6], 5);
+                    const o = data && data.route.origin.center, d = data && data.route.destination.center;
+                    const pin = function (cls, txt) { return L.divIcon({ className: '', html: '<div class="trk-pin ' + cls + '">' + txt + '</div>', iconSize: [28, 28], iconAnchor: [14, 14] }); };
+                    line = L.polyline([], { color: '#94a3b8', weight: 3, opacity: 0.8, dashArray: '8 8' }).addTo(map);
+                    trail = L.polyline([], { color: '#10b981', weight: 5, opacity: 0.95 }).addTo(map);
+                    const tip = function (m, t) { m.bindTooltip(t, { direction: 'top', offset: [0, -12] }); };
+                    if (o) tip(L.marker([o.lat, o.lng], { icon: pin('trk-pin-a', 'A'), keyboard: false }).addTo(map), "Yuk olingan joy: " + data.route.origin.region);
+                    if (d) tip(L.marker([d.lat, d.lng], { icon: pin('trk-pin-b', 'B'), keyboard: false }).addTo(map), 'Yetkaziladi: ' + data.route.destination.region);
+                    setTimeout(function () { if (map) { map.invalidateSize(); paintMap(); } }, 80);
+                }).catch(function () { mapFailed = true; paintMap(); });
+            };
+
+            const schedule = function () { if (!stopped) timer = setTimeout(refresh, TRACK_POLL_MS); };
+            async function refresh() {
+                if (!alive()) return stop();
+                if (document.hidden) return schedule();
+                if (inflight) return;
+                inflight = true;
+                let res;
+                try {
+                    res = await authed('GET', '/shipments/' + s.id + '/location');
+                } catch (err) {
+                    inflight = false;
+                    if (err.status === 401) return stop();
+                    showBanner(err.raw || err.messages[0] || "Joylashuvni olib bo'lmadi.", 'err');
+                    return schedule();
+                }
+                inflight = false;
+                if (!alive()) return stop();
+                const first = !data;
+                data = res; fetchedAt = Date.now();
+                if (first && !stopped) initMap();
+                if (opts.onData) opts.onData(data);
+                if (!data.tracking) {
+                    stop();
+                    showBanner("Yuk endi yo'lda emas (" + (SHIPMENT_STATUS[data.status] || {}).label + "). Ro'yxat yangilanmoqda...", 'info');
+                    setTimeout(function () { if (dashboardView.classList.contains('open') && ['overview', 'shipments', 'myloads'].indexOf(dashTab) !== -1) selectDashTab(dashTab); }, 1200);
+                    return;
+                }
+                if (!data.location) showBanner("Haydovchi hali joylashuv yubormadi. Birinchi nuqta kelishi bilan xaritada ko'rinadi.", 'info');
+                else if (banner.dataset.kind !== 'stale') showBanner('');
+                foot.textContent = data.route.approximate
+                    ? "Marshrut viloyat markazlari orasida taxminiy chizilgan. Yashil chiziq — haydovchining haqiqiy yo'li."
+                    : '';
+                paintMeta();
+                paintMap();
+                schedule();
+            }
+            ticker = setInterval(paintMeta, 1000);
+            timer = setTimeout(refresh, 0);
+            box._stop = stop;
+            box._refresh = function () { if (alive() && !inflight) { clearTimeout(timer); refresh(); } };
+            return box;
+        }
+
+        // ----- Haydovchi: koordinata yuborish (brauzer GPS yoki demo simulyatsiya) -----
+        const tracker = {
+            shipmentId: null, mode: null, state: 'idle', message: '', lastSentAt: 0, lastFix: null, lastSentFixTs: 0,
+            watchId: null, timer: null, busy: false, backoffUntil: 0, sim: null, wake: null, listeners: new Set()
+        };
+        function trackerEmit() { tracker.listeners.forEach(function (fn) { try { fn(); } catch (e) {} }); }
+
+        async function acquireWake() {
+            try { if (navigator.wakeLock && !tracker.wake && !document.hidden) tracker.wake = await navigator.wakeLock.request('screen'); } catch (e) {}
+            if (tracker.wake) tracker.wake.addEventListener('release', function () { tracker.wake = null; });
+        }
+        document.addEventListener('visibilitychange', function () { if (!document.hidden && tracker.state !== 'idle') acquireWake(); });
+
+        function stopTracker(message) {
+            if (tracker.watchId !== null && navigator.geolocation) navigator.geolocation.clearWatch(tracker.watchId);
+            clearInterval(tracker.timer);
+            if (tracker.wake) { try { tracker.wake.release(); } catch (e) {} }
+            Object.assign(tracker, { shipmentId: null, mode: null, state: 'idle', message: message || '', watchId: null, timer: null, lastFix: null, sim: null, wake: null, busy: false, lastSentAt: 0, lastSentFixTs: 0 });
+            trackerEmit();
+        }
+
+        async function startTracker(shipmentId, mode) {
+            stopTracker('');
+            Object.assign(tracker, { shipmentId: shipmentId, mode: mode, state: 'searching', message: '' });
+            if (mode === 'gps') {
+                if (!navigator.geolocation || !window.isSecureContext) {
+                    return stopTracker("Bu brauzerda GPS mavjud emas yoki sahifa xavfsiz (HTTPS) emas. Demo rejimidan foydalaning.");
+                }
+                tracker.watchId = navigator.geolocation.watchPosition(function (pos) {
+                    const first = !tracker.lastFix;
+                    tracker.lastFix = pos;
+                    if (first) trackerTick();
+                }, function (err) {
+                    if (err.code === 1) return stopTracker("Geolokatsiya ruxsati rad etildi. Brauzer sozlamalarida ruxsat bering.");
+                    tracker.state = 'searching';
+                    tracker.message = 'GPS signali topilmadi. Ochiq joyga chiqing.';
+                    trackerEmit();
+                }, { enableHighAccuracy: true, maximumAge: 5000, timeout: 30000 });
+            } else {
+                try {
+                    const info = await authed('GET', '/shipments/' + shipmentId + '/location');
+                    if (tracker.shipmentId !== shipmentId) return;
+                    const o = info.route.origin.center, d = info.route.destination.center;
+                    if (!d || !(info.location || o)) return stopTracker("Demo uchun marshrut koordinatalari topilmadi.");
+                    const from = info.location || o;
+                    tracker.sim = { lat: from.lat, lng: from.lng, dest: d, lastAt: Date.now() };
+                } catch (err) {
+                    if (err.status !== 401) stopTracker(err.raw || err.messages[0]);
+                    return;
+                }
+                trackerTick();
+            }
+            tracker.timer = setInterval(trackerTick, TRACK_SEND_MS);
+            acquireWake();
+            trackerEmit();
+        }
+
+        async function trackerTick() {
+            if (tracker.busy || tracker.state === 'idle' || Date.now() < tracker.backoffUntil) return;
+            const id = tracker.shipmentId;
+            let payload;
+            if (tracker.mode === 'gps') {
+                const fix = tracker.lastFix;
+                if (!fix) { tracker.state = 'searching'; trackerEmit(); return; }
+                const c = fix.coords;
+                if (c.accuracy > 500) { tracker.state = 'searching'; tracker.message = "GPS aniqligi past (" + Math.round(c.accuracy) + " m). Ochiq joyga chiqing."; trackerEmit(); return; }
+                let ts = fix.timestamp;
+                if (ts <= tracker.lastSentFixTs) {
+                    if (Date.now() - ts > 40000) { tracker.state = 'searching'; tracker.message = 'Yangi GPS signali kutilmoqda...'; trackerEmit(); return; }
+                    ts = Date.now(); // joyida turibdi: qurilma yangi nuqta bermadi, lekin oxirgi nuqta hali yangi
+                } else tracker.lastSentFixTs = ts;
+                payload = { lat: c.latitude, lng: c.longitude, timestamp: new Date(Math.min(ts, Date.now())).toISOString(), accuracyM: Math.round(c.accuracy), source: 'GPS' };
+                if (typeof c.speed === 'number' && c.speed >= 0 && isFinite(c.speed)) payload.speedKmh = Math.min(300, Math.round(c.speed * 3.6));
+            } else {
+                const sim = tracker.sim;
+                // Haqiqiy o'tgan vaqtga mos qadam: server "sakrash" deb rad etmasligi uchun
+                const nowMs = Date.now();
+                const stepKm = SIM_SPEED_KMH * Math.min(nowMs - sim.lastAt, 30000) / 3600000;
+                sim.lastAt = nowMs;
+                const left = distanceKm(sim, sim.dest);
+                const moving = left > stepKm;
+                if (moving) {
+                    const f = stepKm / left;
+                    sim.lat += (sim.dest.lat - sim.lat) * f;
+                    sim.lng += (sim.dest.lng - sim.lng) * f;
+                }
+                payload = { lat: sim.lat, lng: sim.lng, timestamp: new Date().toISOString(), speedKmh: moving ? SIM_SPEED_KMH : 0, accuracyM: 5, source: 'SIMULATED' };
+            }
+            tracker.busy = true;
+            try {
+                await authed('POST', '/shipments/' + id + '/location', payload);
+                if (tracker.shipmentId !== id) return;
+                tracker.lastSentAt = Date.now();
+                tracker.state = 'active';
+                tracker.message = '';
+            } catch (err) {
+                if (tracker.shipmentId !== id) return;
+                if (err.status === 401) return stopTracker('');
+                if (err.status === 409 || err.status === 404) return stopTracker("Yuk endi yo'lda emas: joylashuv yuborish to'xtatildi.");
+                if (err.status === 403) return stopTracker(err.raw || "Demo rejimi bu serverda o'chirilgan.");
+                if (err.status === 429) { tracker.backoffUntil = Date.now() + 30000; tracker.message = "Juda tez yuborildi, biroz kutilmoqda."; }
+                else if (err.status === 422) tracker.message = "GPS signali noaniq: oxirgi nuqta o'tkazib yuborildi.";
+                else if (err.status === 0) tracker.message = "Aloqa yo'q. Internet qaytgach avtomatik davom etadi.";
+                else tracker.message = err.raw || err.messages[0];
+            } finally {
+                tracker.busy = false;
+                trackerEmit();
+            }
+        }
+
+        // Haydovchi kartasi: boshqaruv + xarita
+        function buildDriverTracking(s) {
+            const wrap = el('div', 'space-y-3');
+            const ctl = el('div', 'rounded-2xl border px-4 py-3 space-y-3');
+            const line = el('div', 'flex items-start gap-3');
+            const dot = el('span', 'mt-1.5 w-2.5 h-2.5 rounded-full shrink-0');
+            const text = el('div', 'text-sm font-semibold min-w-0');
+            line.append(dot, text);
+            const btns = el('div', 'flex flex-wrap gap-2');
+            ctl.append(line, btns);
+            let simAllowed = false, seen = false, lastSent = 0, panel = null;
+
+            const mkBtn = function (icon, label, primary, fn) {
+                const b = el('button', 'flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-extrabold border transition ' + (primary
+                    ? 'bg-emerald-500 border-emerald-500 text-slate-950 hover:bg-emerald-400' : 'border-white/15 text-slate-200 hover:bg-white/10'));
+                b.type = 'button';
+                b.appendChild(el('i', 'fa-solid ' + icon));
+                b.appendChild(el('span', '', label));
+                b.addEventListener('click', fn);
+                return b;
+            };
+            const paint = function () {
+                // Yangi nuqta yuborilgani zahoti xarita ham yangilanadi
+                if (tracker.shipmentId === s.id && tracker.lastSentAt !== lastSent) { lastSent = tracker.lastSentAt; if (panel && panel._refresh) panel._refresh(); }
+                if (ctl.isConnected) seen = true;
+                else if (seen) { tracker.listeners.delete(paint); clearInterval(iv); return; }
+                const mine = tracker.shipmentId === s.id && tracker.state !== 'idle';
+                let tone, msg;
+                if (mine && tracker.state === 'active') {
+                    tone = 'ok';
+                    msg = (tracker.mode === 'sim' ? 'Demo rejim: simulyatsiya qilingan harakat yuborilmoqda' : 'Joylashuv yuborilmoqda') + ' · oxirgi: ' + ageText(Date.now() - tracker.lastSentAt);
+                } else if (mine) {
+                    tone = 'warn';
+                    msg = tracker.message || (tracker.mode === 'sim' ? 'Demo boshlanmoqda...' : 'GPS signali qidirilmoqda...');
+                } else {
+                    tone = 'off';
+                    msg = tracker.message || "Joylashuv yuborilmayapti. Fermer va xaridor sizni xaritada ko'rishi uchun yoqing.";
+                }
+                if (mine && tracker.state === 'active' && tracker.message) msg += ' — ' + tracker.message;
+                ctl.className = 'rounded-2xl border px-4 py-3 space-y-3 ' + (tone === 'ok' ? 'border-emerald-500/30 bg-emerald-500/10' : tone === 'warn' ? 'border-amber-500/30 bg-amber-500/10' : 'border-rose-500/30 bg-rose-500/10');
+                dot.className = 'mt-1.5 w-2.5 h-2.5 rounded-full shrink-0 ' + (tone === 'ok' ? 'bg-emerald-400 animate-pulse' : tone === 'warn' ? 'bg-amber-400 animate-pulse' : 'bg-rose-400');
+                text.className = 'text-sm font-semibold min-w-0 ' + (tone === 'ok' ? 'text-emerald-300' : tone === 'warn' ? 'text-amber-300' : 'text-rose-300');
+                text.textContent = msg;
+                const nodes = [];
+                if (mine) nodes.push(mkBtn('fa-stop', "Yuborishni to'xtatish", false, function () { stopTracker("Joylashuv yuborish to'xtatildi."); }));
+                else {
+                    nodes.push(mkBtn('fa-location-crosshairs', 'GPS orqali yuborish', true, function () { startTracker(s.id, 'gps'); }));
+                    if (simAllowed) nodes.push(mkBtn('fa-flask', 'Demo (simulyatsiya)', false, function () { startTracker(s.id, 'sim'); }));
+                }
+                btns.replaceChildren.apply(btns, nodes);
+            };
+            const iv = setInterval(paint, 1000);
+            tracker.listeners.add(paint);
+            paint();
+
+            wrap.appendChild(ctl);
+            wrap.appendChild(el('p', 'text-[11px] text-slate-500', "Yo'lda ekranni yoqilgan va sahifani ochiq qoldiring: brauzer orqa fonda GPS'ni cheklashi mumkin."));
+            panel = buildTrackPanel(s, { onData: function (d) { if (d.simulationAllowed !== simAllowed) { simAllowed = !!d.simulationAllowed; paint(); } } });
+            wrap.appendChild(panel);
+            return wrap;
+        }
+
+        // ----- ELD jurnali (haydovchi) -----
+        function fmtDay(key) { const p = key.split('-'); return p[2] + '.' + p[1] + '.' + p[0]; }
+
+        function buildEldSummary(eld, compact) {
+            const todayKey = new Date(Date.now() + 5 * 3600000).toISOString().slice(0, 10);
+            const today = eld.days.find(function (d) { return d.date === todayKey; }) || { drivingMin: 0, stoppedMin: 0, distanceKm: 0, maxSpeedKmh: 0, stops: [], firstPingAt: null, lastPingAt: null, overLimit: false };
+            const limit = eld.dailyDrivingLimitMinutes;
+            const wrap = el('div', 'space-y-4');
+            const card = el('div', 'glass rounded-3xl border border-white/10 p-5 space-y-4');
+            const top = el('div', 'flex flex-wrap items-center justify-between gap-2');
+            top.appendChild(el('h3', 'text-lg font-extrabold text-white', "Bugungi harakat jurnali (ELD)"));
+            const cur = eld.current;
+            const live = cur && cur.lastLocationAt && (Date.now() - new Date(cur.lastLocationAt)) < TRACK_STALE_MS;
+            top.appendChild(el('span', 'text-xs font-bold px-3 py-1 rounded-full border ' + (live
+                ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' : cur
+                ? 'bg-amber-500/15 text-amber-400 border-amber-500/30' : 'bg-slate-500/20 text-slate-300 border-slate-500/30'),
+                live ? "Yo'lda · signal bor" : cur ? "Yo'lda · signal yo'q" : "Faol yuk yo'q"));
+            card.appendChild(top);
+
+            const stats = el('div', 'grid grid-cols-2 lg:grid-cols-4 gap-3');
+            stats.appendChild(statCard('fa-gauge-high', 'Haydash vaqti', fmtMin(today.drivingMin), 'text-emerald-400'));
+            stats.appendChild(statCard('fa-pause', "To'xtash vaqti", fmtMin(today.stoppedMin), 'text-amber-400'));
+            stats.appendChild(statCard('fa-road', 'Masofa', formatNumber(today.distanceKm) + ' km', 'text-blue-400'));
+            stats.appendChild(statCard('fa-bolt', 'Maks. tezlik', today.maxSpeedKmh + ' km/soat', 'text-rose-400'));
+            card.appendChild(stats);
+
+            const pct = Math.min(100, Math.round(today.drivingMin / limit * 100));
+            const bar = el('div', 'space-y-1.5');
+            const barRow = el('div', 'flex justify-between text-xs font-bold text-slate-400');
+            barRow.appendChild(el('span', '', 'Kunlik haydash chegarasi (' + fmtMin(limit) + ')'));
+            barRow.appendChild(el('span', today.overLimit ? 'text-rose-400' : '', pct + '%'));
+            bar.appendChild(barRow);
+            const track = el('div', 'h-2.5 rounded-full bg-white/10 overflow-hidden');
+            const fill = el('div', 'h-full rounded-full transition-all ' + (today.overLimit ? 'bg-rose-500' : pct >= 80 ? 'bg-amber-400' : 'bg-emerald-500'));
+            fill.style.width = pct + '%';
+            track.appendChild(fill);
+            bar.appendChild(track);
+            if (today.overLimit) bar.appendChild(el('p', 'text-xs font-semibold text-rose-300', "Kunlik haydash chegarasidan oshdingiz. Dam oling: charchoq xavfli."));
+            else if (pct >= 80) bar.appendChild(el('p', 'text-xs font-semibold text-amber-300', "Chegaraga yaqinlashyapsiz. Qisqa dam olishni rejalashtiring."));
+            card.appendChild(bar);
+            if (today.firstPingAt) card.appendChild(el('p', 'text-xs text-slate-500', 'Bugungi birinchi signal: ' + fmtClock(today.firstPingAt) + ' · oxirgisi: ' + fmtClock(today.lastPingAt) + ' (Toshkent vaqti)'));
+            wrap.appendChild(card);
+            if (compact) return wrap;
+
+            wrap.appendChild(sectionTitle("So'nggi to'xtashlar", "Kamida 3 daqiqa joyida turgan holatlar"));
+            if (eld.recentStops.length) {
+                const list = el('div', 'glass rounded-2xl border border-white/10 divide-y divide-white/5');
+                eld.recentStops.forEach(function (st) {
+                    const row = el('div', 'flex items-center justify-between gap-3 px-4 py-3');
+                    const left = el('div', 'min-w-0');
+                    left.appendChild(el('div', 'text-sm font-bold text-white', fmtDay(new Date(new Date(st.startedAt).getTime() + 5 * 3600000).toISOString().slice(0, 10)) + ' · ' + fmtClock(st.startedAt) + '–' + fmtClock(st.endedAt)));
+                    left.appendChild(el('div', 'text-xs text-slate-400', fmtMin(st.durationMin)));
+                    row.appendChild(left);
+                    const a = el('a', 'shrink-0 text-xs font-bold text-emerald-400 hover:underline', 'Xaritada');
+                    a.href = osmLink(st.lat, st.lng); a.target = '_blank'; a.rel = 'noopener noreferrer';
+                    row.appendChild(a);
+                    list.appendChild(row);
+                });
+                wrap.appendChild(list);
+            } else wrap.appendChild(dashMessage('fa-pause', "So'nggi kunlarda to'xtashlar qayd etilmagan."));
+
+            wrap.appendChild(sectionTitle("Kunlar bo'yicha", "Toshkent vaqti (UTC+5), so'nggi 7 kun"));
+            if (eld.days.length) {
+                const tbl = el('div', 'glass rounded-2xl border border-white/10 overflow-x-auto');
+                const t = el('table', 'w-full text-sm text-left min-w-[30rem]');
+                const hr = el('tr', 'text-xs uppercase tracking-wider text-slate-400');
+                ['Sana', 'Haydash', "To'xtash", 'Masofa', "To'xtashlar"].forEach(function (h) { hr.appendChild(el('th', 'px-4 py-3 font-bold', h)); });
+                const thead = el('thead'); thead.appendChild(hr); t.appendChild(thead);
+                const tb = el('tbody', 'divide-y divide-white/5');
+                eld.days.forEach(function (d) {
+                    const r = el('tr', 'text-slate-200');
+                    r.appendChild(el('td', 'px-4 py-3 font-bold text-white', fmtDay(d.date)));
+                    r.appendChild(el('td', 'px-4 py-3 ' + (d.overLimit ? 'text-rose-400 font-bold' : ''), fmtMin(d.drivingMin) + (d.overLimit ? ' ⚠' : '')));
+                    r.appendChild(el('td', 'px-4 py-3', fmtMin(d.stoppedMin)));
+                    r.appendChild(el('td', 'px-4 py-3', formatNumber(d.distanceKm) + ' km'));
+                    r.appendChild(el('td', 'px-4 py-3', String(d.stops.length)));
+                    tb.appendChild(r);
+                });
+                t.appendChild(tb); tbl.appendChild(t); wrap.appendChild(tbl);
+            } else wrap.appendChild(dashMessage('fa-clock-rotate-left', "Hali harakat jurnali yo'q. Yukni yo'lga olib chiqqaningizda joylashuv yozib boriladi."));
+            if (eld.truncated) wrap.appendChild(el('p', 'text-xs text-amber-300', "Jurnal juda katta: eng so'nggi yozuvlar ko'rsatildi."));
+            return wrap;
+        }
+
+        async function renderDashEld(user) {
+            const rid = ++dashRenderId;
+            dashContent.replaceChildren(dashMessage('fa-spinner fa-spin', 'Jurnal yuklanmoqda...'));
+            let eld;
+            try {
+                eld = await authed('GET', '/shipments/eld?days=7');
+            } catch (err) {
+                if (err.status === 401 || rid !== dashRenderId) return;
+                return dashContent.replaceChildren(dashMessage('fa-triangle-exclamation text-rose-400', err.messages[0], function () { renderDashEld(user); }));
+            }
+            if (rid !== dashRenderId) return;
+            const head = el('div', 'flex items-center justify-between gap-3 flex-wrap');
+            head.appendChild(el('h2', 'text-2xl font-extrabold text-white', 'Harakat jurnali (ELD)'));
+            head.appendChild(refreshButton(function () { renderDashEld(user); }));
+            dashContent.replaceChildren(head, buildEldSummary(eld, false));
+        }
+
         // ----- Yuk tashish (Shipments) -----
         const SHIPMENT_STEPS = [
             { key: 'OPEN',       label: 'Haydovchi kutilmoqda', icon: 'fa-hourglass-half' },
@@ -3014,6 +3520,8 @@
                 else await authed('POST', '/shipments/' + s.id + '/' + kind);
                 showToast(SHIPMENT_DONE_MSG[kind === 'advance' ? s.status : kind], 3500);
                 if (kind === 'accept') { dashShipFilter = 'ALL'; return selectDashTab('myloads'); }
+                if (kind === 'advance' && s.status === 'LOADING') startTracker(s.id, 'gps'); // yo'lga chiqdi: joylashuv yuborish boshlanadi
+                if (kind === 'advance' && s.status === 'IN_TRANSIT') stopTracker('');
             } catch (err) {
                 if (err.status === 401) return;
                 showToast(err.messages[0], 5000);
@@ -3050,6 +3558,14 @@
                 card.appendChild(shipmentStepper(s));
             }
 
+            if (s.status === 'IN_TRANSIT' && viewer !== 'driver-open') {
+                card.appendChild(viewer === 'driver-own' ? buildDriverTracking(s) : buildTrackPanel(s));
+            } else if (s.status === 'LOADING' && (viewer === 'farmer' || viewer === 'market')) {
+                const wait = el('p', 'text-xs text-slate-400 flex items-center gap-2');
+                wait.appendChild(el('i', 'fa-solid fa-map-location-dot text-emerald-400'));
+                wait.appendChild(document.createTextNode("Haydovchi yo'lga chiqqach, jonli xarita shu yerda paydo bo'ladi."));
+                card.appendChild(wait);
+            }
             // Kontaktlar: faqat backend ruxsat bergan bo'lsa to'ldiriladi
             const people = el('div', 'space-y-2');
             if (viewer === 'driver-own') {
