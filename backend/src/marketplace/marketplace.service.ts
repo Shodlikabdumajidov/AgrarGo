@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Prisma, ProductStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { MarketplaceQuery } from './dto/marketplace-query.dto';
@@ -30,11 +30,14 @@ export class MarketplaceService {
   constructor(private readonly prisma: PrismaService) {}
 
   async list(query: MarketplaceQuery) {
-    const { q, category, region, sort, page, limit } = query;
+    const { q, category, region, sort, page, limit, minPrice, maxPrice, minQty, maxQty } = query;
+    if (minPrice !== undefined && maxPrice !== undefined && minPrice > maxPrice) throw new BadRequestException("Minimal narx maksimal narxdan katta bo'lmasligi kerak");
+    if (minQty !== undefined && maxQty !== undefined && minQty > maxQty) throw new BadRequestException("Minimal miqdor maksimal miqdordan katta bo'lmasligi kerak");
 
     const where: Prisma.ProductWhereInput = {
       status: ProductStatus.ACTIVE,
-      quantityKg: { gt: 0 },
+      quantityKg: { gt: 0, ...(minQty !== undefined && { gte: minQty }), ...(maxQty !== undefined && { lte: maxQty }) },
+      ...((minPrice !== undefined || maxPrice !== undefined) && { pricePerKg: { ...(minPrice !== undefined && { gte: minPrice }), ...(maxPrice !== undefined && { lte: maxPrice }) } }),
       ...(category && { category: { equals: category, mode: 'insensitive' } }),
       ...(region && { farmer: { region: { equals: region, mode: 'insensitive' } } }),
       ...(q && {
@@ -52,7 +55,7 @@ export class MarketplaceService {
       : sort === 'price_desc' ? [{ pricePerKg: 'desc' }, { id: 'asc' }]
       : [{ createdAt: 'desc' }, { id: 'asc' }]; // id: sahifalashda barqaror tartib
 
-    const [total, rows] = await this.prisma.$transaction([
+    const [total, rows, bounds] = await this.prisma.$transaction([
       this.prisma.product.count({ where }),
       this.prisma.product.findMany({
         where,
@@ -60,6 +63,12 @@ export class MarketplaceService {
         skip: (page - 1) * limit,
         take: limit,
         select: PUBLIC_PRODUCT_SELECT,
+      }),
+      // Slayder chegaralari: barcha faol e'lonlar bo'yicha (filtrlar o'zgarganda slayder "sakramasligi" uchun)
+      this.prisma.product.aggregate({
+        where: { status: ProductStatus.ACTIVE, quantityKg: { gt: 0 } },
+        _min: { pricePerKg: true, quantityKg: true },
+        _max: { pricePerKg: true, quantityKg: true },
       }),
     ]);
 
@@ -76,7 +85,13 @@ export class MarketplaceService {
 
     return {
       items,
-      meta: { page, limit, total, totalPages: Math.max(1, Math.ceil(total / limit)) },
+      meta: {
+        page, limit, total, totalPages: Math.max(1, Math.ceil(total / limit)),
+        ranges: {
+          price: { min: bounds._min.pricePerKg, max: bounds._max.pricePerKg },
+          quantity: { min: bounds._min.quantityKg, max: bounds._max.quantityKg },
+        },
+      },
     };
   }
 }

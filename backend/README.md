@@ -62,6 +62,8 @@ Boshqa fermerning e'loni `404` qaytaradi. FARMER bo'lmagan rol `403`, tokensiz `
 ## Profil (`Authorization: Bearer <token>`, har qanday rol)
 - `GET /profile`, `PATCH /profile` (rolga mos maydonlar; telefon va rol o'zgarmaydi)
 - `POST /profile/avatar` (multipart, maydon nomi `file`; JPG/PNG/WEBP, ≤ 2 MB, tur baytlar bo'yicha tekshiriladi), `DELETE /profile/avatar`
+- `POST /profile/cover` (multipart, `file`; faqat FARMER/MARKET, JPG/PNG/WEBP, ≤ 4 MB, bayt-imzo tekshiriladi), `DELETE /profile/cover` — kabinet muqovasi (`User.coverUrl`)
+- `GET /marketplace` yangi filtrlar: `minPrice`, `maxPrice` (so'm/kg), `minQty`, `maxQty` (kg); javob `meta.ranges` — slayder chegaralari
 - Rasmlar `uploads/avatars/` papkasida saqlanadi va `/uploads/avatars/<fayl>` orqali beriladi (production'da doimiy disk yoki S3 kerak).
 
 ## Bronlar (qisman miqdor)

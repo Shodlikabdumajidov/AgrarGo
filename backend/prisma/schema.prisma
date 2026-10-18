@@ -23,6 +23,8 @@ model User {
   role         Role     @default(FARMER)
   fullName     String
   avatarUrl    String?
+  // Fermer va market uchun shaxsiy orqa fon muqovasi (cover banner), /uploads/covers/... yo'li
+  coverUrl     String?
   // Parol o'zgarganda/tiklanganda oshiriladi: eski JWT tokenlar darhol yaroqsiz bo'ladi
   tokenVersion Int      @default(0)
   isActive     Boolean  @default(true)

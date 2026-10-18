@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma, Role } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
@@ -12,7 +12,11 @@ import { UpdateDriverProfileDto, UpdateFarmerProfileDto, UpdateMarketProfileDto 
 
 export const UPLOADS_DIR = join(process.cwd(), 'uploads');
 const AVATAR_DIR = join(UPLOADS_DIR, 'avatars');
+const COVER_DIR = join(UPLOADS_DIR, 'covers');
 export const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
+export const MAX_COVER_BYTES = 4 * 1024 * 1024;
+// Muqova faqat fermer va market uchun (ular ommaviy tanishtiruvda ko'rinadi)
+const COVER_ROLES: Role[] = [Role.FARMER, Role.MARKET];
 
 // Fayl turi mijoz yuborgan Content-Type'ga emas, haqiqiy baytlarga qarab aniqlanadi
 export function detectImageExt(buf: Buffer): 'jpg' | 'png' | 'webp' | null {
@@ -98,10 +102,39 @@ export class ProfileService {
     return this.get(userId);
   }
 
+  async setCover(userId: string, role: Role, file: Express.Multer.File | undefined) {
+    if (!COVER_ROLES.includes(role)) throw new ForbiddenException('Muqova rasmini faqat fermer va market yuklay oladi');
+    if (!file) throw new BadRequestException('Rasm faylini yuboring (file maydoni)');
+    const ext = detectImageExt(file.buffer);
+    if (!ext) throw new BadRequestException('Faqat JPG, PNG yoki WEBP rasm yuklash mumkin');
+
+    await fs.mkdir(COVER_DIR, { recursive: true });
+    const filename = `${userId}-${randomBytes(6).toString('hex')}.${ext}`;
+    await fs.writeFile(join(COVER_DIR, filename), file.buffer);
+
+    const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { coverUrl: true } });
+    await this.prisma.user.update({ where: { id: userId }, data: { coverUrl: `/uploads/covers/${filename}` } });
+    await this.removeFile(user?.coverUrl);
+    return this.get(userId);
+  }
+
+  async removeCover(userId: string, role: Role) {
+    if (!COVER_ROLES.includes(role)) throw new ForbiddenException('Muqova rasmini faqat fermer va market boshqara oladi');
+    const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { coverUrl: true } });
+    await this.prisma.user.update({ where: { id: userId }, data: { coverUrl: null } });
+    await this.removeFile(user?.coverUrl);
+    return this.get(userId);
+  }
+
+  /** Faqat o'zimiz yaratgan papkalar ichidagi fayl o'chiriladi (yo'l o'zgartirib bo'lmaydi). */
   private async removeFile(url?: string | null) {
-    if (!url || !url.startsWith('/uploads/avatars/')) return;
-    const name = url.slice('/uploads/avatars/'.length);
-    if (name.includes('/') || name.includes('..')) return;
-    await fs.rm(join(AVATAR_DIR, name), { force: true });
+    if (!url) return;
+    for (const [prefix, dir] of [['/uploads/avatars/', AVATAR_DIR], ['/uploads/covers/', COVER_DIR]] as const) {
+      if (!url.startsWith(prefix)) continue;
+      const name = url.slice(prefix.length);
+      if (name.includes('/') || name.includes('..')) return;
+      await fs.rm(join(dir, name), { force: true });
+      return;
+    }
   }
 }
