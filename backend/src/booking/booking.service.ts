@@ -66,6 +66,7 @@ export class BookingService {
           quantityKg: qty,
           pricePerKg: product.pricePerKg, // narx bron paytida qotiriladi
           message: dto.message?.trim() || null,
+          urgent: !!dto.urgent,
         },
         include: BOOKING_INCLUDE,
       });

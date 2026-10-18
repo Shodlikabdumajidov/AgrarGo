@@ -1,6 +1,6 @@
 import { Transform } from 'class-transformer';
 import { IsNumber, IsOptional, IsPositive, IsString, Matches, Max, MinLength, ValidateIf } from 'class-validator';
-import { PLATE_REGEX } from '../../auth/dto/register-driver.dto';
+import { PLATE_REGEX, normalizePlate } from '../../auth/dto/register-driver.dto';
 
 // Majburiy maydonlar: yuborilmasa o'zgarmaydi, yuborilsa null/bo'sh bo'lmasligi kerak (ValidateIf).
 // Ixtiyoriy maydonlar: null yoki "" yuborilsa tozalanadi.
@@ -58,7 +58,8 @@ export class UpdateDriverProfileDto extends BaseProfileDto {
   vehicleType?: string;
 
   @ValidateIf((o) => o.plateNumber !== undefined)
-  @Matches(PLATE_REGEX, { message: "Davlat raqami noto'g'ri (masalan, 01A123BC)" })
+  @Transform(normalizePlate)
+  @Matches(PLATE_REGEX, { message: "Davlat raqami noto'g'ri: faqat KATTA lotin harflari va raqamlar (masalan, 01A777AA yoki 70777AAA)" })
   plateNumber?: string;
 
   @ValidateIf((o) => o.capacityKg !== undefined)

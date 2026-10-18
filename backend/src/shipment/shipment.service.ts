@@ -2,6 +2,7 @@ import { ConflictException, ForbiddenException, Injectable, NotFoundException } 
 import { PaymentStatus, Prisma, Role, ShipmentStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { SettingsService } from '../settings/settings.service';
+import { TrustService } from '../trust/trust.service';
 import { NotificationService } from '../telegram/notification.service';
 import { AvailableShipmentsQuery, ListShipmentsQuery } from './dto/list-shipments.query';
 
@@ -13,7 +14,7 @@ const ACTIVE: ShipmentStatus[] = [ShipmentStatus.LOADING, ShipmentStatus.IN_TRAN
 const SHIPMENT_INCLUDE = {
   events: { orderBy: { createdAt: Prisma.SortOrder.asc } },
   driver: {
-    select: { vehicleType: true, plateNumber: true, capacityKg: true, user: { select: { fullName: true, phone: true } } },
+    select: { userId: true, vehicleType: true, plateNumber: true, capacityKg: true, user: { select: { fullName: true, phone: true } } },
   },
   booking: { select: { id: true, payment: { select: { status: true } } } },
   warehouseOrder: { select: { id: true, status: true, payment: { select: { status: true } } } },
@@ -26,7 +27,7 @@ type Viewer = 'driver-open' | 'driver-own' | 'farmer' | 'market';
 
 @Injectable()
 export class ShipmentService {
-  constructor(private readonly prisma: PrismaService, private readonly settings: SettingsService, private readonly notify: NotificationService) {}
+  constructor(private readonly prisma: PrismaService, private readonly settings: SettingsService, private readonly notify: NotificationService, private readonly trust: TrustService) {}
 
   // ---------- Haydovchi ----------
 
@@ -136,6 +137,7 @@ export class ShipmentService {
         if (done.count === 0) throw new ConflictException("Buyurtma holati mos kelmaydi. Dispetcherga murojaat qiling");
       }
     });
+    if (reached === ShipmentStatus.DELIVERED) await this.invalidateTrust(id); // yangi bitim: status va badjlar qayta hisoblansin
     if (reached) this.notify.shipmentStatus(id, reached);
     return this.reload(id, 'driver-own');
   }
@@ -159,7 +161,7 @@ export class ShipmentService {
         orderBy: { updatedAt: 'desc' },
         include: SHIPMENT_INCLUDE,
       });
-      return rows.map((s) => this.shape(s, 'farmer', undefined, undefined));
+      return this.withTrust(rows.map((s) => this.shape(s, 'farmer', undefined, undefined)));
     }
     if (user.role === Role.MARKET && user.market) {
       const rows = await this.prisma.shipment.findMany({
@@ -168,12 +170,23 @@ export class ShipmentService {
         include: SHIPMENT_INCLUDE,
       });
       const wh = await this.warehouseContact(rows);
-      return rows.map((s) => this.shape(s, 'market', undefined, wh));
+      return this.withTrust(rows.map((s) => this.shape(s, 'market', undefined, wh)));
     }
     throw new ForbiddenException("Bu rol uchun yuklar mavjud emas");
   }
 
   // ---------- Yordamchilar ----------
+
+  private async invalidateTrust(shipmentId: string) {
+    const s = await this.prisma.shipment.findUnique({ where: { id: shipmentId }, select: { farmer: { select: { userId: true } }, market: { select: { userId: true } }, driver: { select: { userId: true } } } });
+    if (s) this.trust.invalidate(s.farmer.userId, s.market.userId, ...(s.driver ? [s.driver.userId] : []));
+  }
+
+  /** Haydovchi kartochkasiga ommaviy ishonch ma'lumoti (tasdiqlangan belgi, status, top badjlar) qo'shadi */
+  private async withTrust<T extends { driver: { userId: string } | null }>(items: T[]) {
+    const map = await this.trust.summaries(items.flatMap((i) => (i.driver ? [i.driver.userId] : [])));
+    return items.map((i) => (i.driver ? { ...i, driver: { ...i.driver, trust: map.get(i.driver.userId) ?? null } } : i));
+  }
 
   private async explainFailure(tx: Prisma.TransactionClient, id: string, driverId: string, wrongStateMsg: string): Promise<never> {
     const s = await tx.shipment.findFirst({ where: { id, driverId }, select: { id: true } });
@@ -212,6 +225,7 @@ export class ShipmentService {
       warehouseOrderId: s.warehouseOrderId,
       warehouseOrderStatus: s.warehouseOrder?.status ?? null,
       status: s.status,
+      urgent: s.urgent,
       cargoName: s.cargoName,
       category: s.category,
       weightKg: s.weightKg,
@@ -231,6 +245,7 @@ export class ShipmentService {
         : null,
       driver: (viewer === 'farmer' || viewer === 'market') && s.driver
         ? {
+            userId: s.driver.userId,
             fullName: s.driver.user.fullName,
             phone: s.driver.user.phone,
             vehicleType: s.driver.vehicleType,

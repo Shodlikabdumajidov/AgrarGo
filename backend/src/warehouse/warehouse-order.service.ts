@@ -2,6 +2,7 @@ import { ConflictException, ForbiddenException, Injectable, NotFoundException } 
 import { Prisma, Role, ShipmentStatus, StockMovementType, WarehouseItemStatus, WarehouseOrderStatus, WarehouseZone } from '@prisma/client';
 import { PaymentService } from '../payment/payment.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { TrustService } from '../trust/trust.service';
 import { SettingsService } from '../settings/settings.service';
 import { ShipmentService } from '../shipment/shipment.service';
 import { createShipmentForWarehouseOrder } from '../shipment/shipment.factory';
@@ -37,6 +38,7 @@ export class WarehouseOrderService {
     private readonly shipments: ShipmentService,
     private readonly settings: SettingsService,
     private readonly notify: NotificationService,
+    private readonly trust: TrustService,
   ) {}
 
   // ---------- Market: buyurtma berish ----------
@@ -89,10 +91,12 @@ export class WarehouseOrderService {
   async drivers() {
     const rows = await this.prisma.driver.findMany({
       orderBy: { createdAt: 'asc' }, take: 200,
-      select: { id: true, vehicleType: true, plateNumber: true, capacityKg: true, region: true, user: { select: { fullName: true, isActive: true } } },
+      select: { id: true, userId: true, vehicleType: true, plateNumber: true, capacityKg: true, region: true, user: { select: { fullName: true, isActive: true } } },
     });
-    return rows.filter((d) => d.user.isActive).map((d) => ({
-      id: d.id, fullName: d.user.fullName, vehicleType: d.vehicleType, plateNumber: d.plateNumber, capacityKg: d.capacityKg, region: d.region,
+    const active = rows.filter((d) => d.user.isActive);
+    const trust = await this.trust.summaries(active.map((d) => d.userId)); // dispetcher tanlayotganda: tasdiqlangan belgi, status, badjlar
+    return active.map((d) => ({
+      id: d.id, fullName: d.user.fullName, vehicleType: d.vehicleType, plateNumber: d.plateNumber, capacityKg: d.capacityKg, region: d.region, trust: trust.get(d.userId) ?? null,
     }));
   }
 

@@ -607,6 +607,65 @@
             .wx-day > :nth-child(4) { margin-left: auto; }
         }
 
+        /* ===== Ishonch: status, badjlar, KYC, Face ID ===== */
+        #rate-modal, #face-modal { opacity: 0; visibility: hidden; transition: opacity .3s ease, visibility .3s ease; }
+        #rate-modal.open, #face-modal.open { opacity: 1; visibility: visible; }
+        #rate-modal .auth-card, #face-modal .auth-card { transform: translateY(20px) scale(.96); transition: transform .4s cubic-bezier(.16,1,.3,1); }
+        #rate-modal.open .auth-card, #face-modal.open .auth-card { transform: none; }
+        .tr-chip { display: inline-flex; align-items: center; gap: .35rem; padding: .2rem .65rem; border-radius: 9999px; font-size: .72rem; font-weight: 800; border: 1px solid transparent; white-space: nowrap; }
+        .tr-chip.NEW { color: #86efac; background: rgba(34,197,94,.14); border-color: rgba(74,222,128,.4); }
+        .tr-chip.REGULAR { color: #93c5fd; background: rgba(59,130,246,.15); border-color: rgba(96,165,250,.45); }
+        .tr-chip.VETERAN { color: #fde68a; background: linear-gradient(135deg, rgba(245,158,11,.25), rgba(234,179,8,.1)); border-color: rgba(251,191,36,.55); box-shadow: 0 0 14px -4px rgba(251,191,36,.7); }
+        .tr-check { display: inline-flex; align-items: center; justify-content: center; width: 1.1rem; height: 1.1rem; border-radius: 9999px; background: #10b981; color: #022c22; font-size: .62rem; margin-left: .35rem; vertical-align: middle; box-shadow: 0 0 0 2px rgba(16,185,129,.25); animation: trPop .5s cubic-bezier(.34,1.56,.64,1) both; }
+        .tr-mini { display: inline-flex; align-items: center; justify-content: center; width: 1.7rem; height: 1.7rem; border-radius: .6rem; font-size: .95rem; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); }
+        .bdg-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); }
+        .bdg { --c: 52,211,153; position: relative; overflow: hidden; padding: 1.1rem 1rem 1rem; border-radius: 1.25rem; text-align: center; border: 1px solid rgba(255,255,255,.12); background: linear-gradient(160deg, rgba(255,255,255,.07), rgba(15,23,42,.7)); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); transition: transform .3s cubic-bezier(.16,1,.3,1), box-shadow .3s; }
+        .bdg.pro { --c: 96,165,250; }
+        .bdg.legendary { --c: 251,191,36; }
+        .bdg-ico { position: relative; width: 4.4rem; height: 4.4rem; margin: 0 auto .6rem; border-radius: 1.3rem; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; background: radial-gradient(circle at 30% 20%, rgba(var(--c), .45), rgba(var(--c), .08) 70%); border: 1px solid rgba(var(--c), .5); }
+        .bdg-tier { position: absolute; top: .55rem; right: .6rem; font-size: .6rem; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; color: rgb(var(--c)); }
+        .bdg h4 { font-weight: 800; color: #fff; font-size: .95rem; line-height: 1.25; }
+        .bdg p { margin-top: .3rem; font-size: .76rem; color: #94a3b8; line-height: 1.35; min-height: 2.1rem; }
+        .bdg-bar { height: .38rem; border-radius: 9999px; background: rgba(255,255,255,.1); overflow: hidden; margin-top: .7rem; }
+        .bdg-bar i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, rgba(var(--c), .7), rgb(var(--c))); transition: width 1s cubic-bezier(.16,1,.3,1); }
+        .bdg-cnt { margin-top: .3rem; font-size: .7rem; font-weight: 700; color: #cbd5e1; }
+        .bdg.locked { filter: grayscale(.95) brightness(.72); opacity: .62; }
+        .bdg.locked .bdg-ico::after { content: '\f023'; font-family: 'Font Awesome 6 Free'; font-weight: 900; position: absolute; right: -.35rem; bottom: -.35rem; width: 1.4rem; height: 1.4rem; border-radius: 9999px; background: #0f172a; border: 1px solid rgba(255,255,255,.2); color: #94a3b8; font-size: .65rem; display: flex; align-items: center; justify-content: center; }
+        .bdg.unlocked { border-color: rgba(var(--c), .6); box-shadow: 0 0 0 1px rgba(var(--c), .2), 0 18px 44px -22px rgba(var(--c), .8); }
+        .bdg.unlocked:hover { transform: translateY(-5px) rotate(-.4deg); }
+        .bdg.unlocked::before { content: ''; position: absolute; inset: 0; background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,.22) 50%, transparent 65%); transform: translateX(-120%); animation: bdgShine 3.8s ease-in-out infinite; pointer-events: none; }
+        .bdg.unlocked .bdg-ico { animation: bdgFloat 3.2s ease-in-out infinite; box-shadow: 0 0 26px -4px rgba(var(--c), .8); }
+        .bdg.fresh { animation: bdgBurst 1.2s cubic-bezier(.34,1.56,.64,1) both; }
+        .tr-ring { position: relative; width: 8.5rem; height: 8.5rem; flex: none; }
+        .tr-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+        .tr-ring .trk { stroke: rgba(255,255,255,.1); }
+        .tr-ring .val { stroke: #34d399; stroke-linecap: round; filter: drop-shadow(0 0 6px rgba(52,211,153,.6)); transition: stroke-dashoffset 1.2s cubic-bezier(.16,1,.3,1); }
+        .tr-ring .mid { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .kyc-step { display: flex; flex-direction: column; gap: .6rem; padding: 1.1rem; border-radius: 1.25rem; border: 1px solid rgba(255,255,255,.12); background: linear-gradient(160deg, rgba(255,255,255,.06), rgba(15,23,42,.65)); backdrop-filter: blur(12px); transition: border-color .25s, transform .25s; }
+        .kyc-step.done { border-color: rgba(52,211,153,.55); background: linear-gradient(160deg, rgba(16,185,129,.14), rgba(15,23,42,.65)); }
+        .kyc-step:hover { transform: translateY(-3px); }
+        .kyc-thumb { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: .8rem; border: 1px solid rgba(255,255,255,.15); }
+        /* Face ID */
+        .face-stage { position: relative; width: min(17rem, 70vw); aspect-ratio: 1; margin: 0 auto; }
+        .face-stage video, .face-stage .face-ph { position: absolute; inset: 7%; width: 86%; height: 86%; border-radius: 9999px; object-fit: cover; transform: scaleX(-1); background: #020617; }
+        .face-stage .face-ph { transform: none; display: flex; align-items: center; justify-content: center; font-size: 4rem; color: #334155; }
+        .face-ring { position: absolute; inset: 0; border-radius: 9999px; border: 3px solid rgba(52,211,153,.35); }
+        .face-stage.scan .face-ring { border-color: transparent; background: conic-gradient(from 0deg, #34d399 var(--p, 0%), rgba(52,211,153,.12) 0); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 4px)); mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 4px)); box-shadow: 0 0 30px rgba(52,211,153,.5); }
+        .face-line { position: absolute; left: 10%; right: 10%; height: 3px; top: 12%; border-radius: 9999px; background: linear-gradient(90deg, transparent, #6ee7b7, transparent); box-shadow: 0 0 14px 3px rgba(52,211,153,.7); opacity: 0; }
+        .face-stage.scan .face-line { opacity: 1; animation: faceScan 1.6s ease-in-out infinite alternate; }
+        .face-stage.ok .face-ring { border-color: #34d399; box-shadow: 0 0 40px rgba(52,211,153,.8); animation: faceOk .8s ease-out both; }
+        .face-stage.ok::after { content: ''; position: absolute; inset: 7%; border-radius: 9999px; background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,.55) 50%, transparent 70%); animation: bdgShine 1.1s ease-out both; }
+        @keyframes faceScan { to { top: 84%; } }
+        @keyframes faceOk { 0% { transform: scale(1); } 40% { transform: scale(1.07); } 100% { transform: scale(1); } }
+        @keyframes bdgShine { 0%, 55% { transform: translateX(-120%); } 100% { transform: translateX(120%); } }
+        @keyframes bdgFloat { 50% { transform: translateY(-4px); } }
+        @keyframes bdgBurst { 0% { transform: scale(.7); filter: brightness(2); } 60% { transform: scale(1.08); } 100% { transform: scale(1); } }
+        @keyframes trPop { from { transform: scale(0); } }
+        .rate-star { font-size: 2rem; color: #475569; transition: color .15s, transform .15s; padding: .1rem; }
+        .rate-star.on { color: #fbbf24; filter: drop-shadow(0 0 8px rgba(251,191,36,.6)); }
+        .rate-star:hover { transform: scale(1.18); }
+        @media (prefers-reduced-motion: reduce) { .bdg.unlocked::before, .bdg.unlocked .bdg-ico, .face-stage.scan .face-line { animation: none; } }
+
         /* ===== Bozor narxlari ===== */
         #price-modal { opacity: 0; visibility: hidden; transition: opacity .3s ease, visibility .3s ease; }
         #price-modal.open { opacity: 1; visibility: visible; }
@@ -1666,7 +1725,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="drv-plateNumber">Davlat raqami</label>
-                    <input id="drv-plateNumber" name="plateNumber" type="text" maxlength="12" placeholder="01 A 123 BC" class="auth-input">
+                    <input id="drv-plateNumber" name="plateNumber" type="text" maxlength="8" placeholder="01A777AA" class="auth-input">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="drv-capacityKg">Yuk sig'imi (kg)</label>
@@ -1894,6 +1953,42 @@
         </div>
     </div>
 
+    <!-- BAHOLASH oynasi (yetkazilgan yukdan keyin) -->
+    <div id="rate-modal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="rate-title" onclick="if (event.target === this) closeRateModal()">
+        <div class="auth-card glass relative w-full max-w-md max-h-[92vh] overflow-y-auto rounded-3xl border border-emerald-500/25 shadow-2xl shadow-emerald-500/10 bg-gradient-to-b from-slate-900 to-emerald-950/30 p-6 sm:p-8">
+            <button type="button" onclick="closeRateModal()" aria-label="Yopish" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl p-1 transition hover:rotate-90 duration-300"><i class="fa-solid fa-xmark"></i></button>
+            <div class="text-center space-y-2 mb-5">
+                <h2 id="rate-title" class="text-2xl font-extrabold tracking-tight">Baholash</h2>
+                <p id="rate-sub" class="text-slate-400 text-sm"></p>
+            </div>
+            <div id="rate-alert" class="hidden mb-4 rounded-2xl px-4 py-3 text-sm font-medium" role="alert"></div>
+            <form id="rate-form" class="space-y-4" novalidate>
+                <div id="rate-stars" class="flex justify-center gap-1" role="radiogroup" aria-label="Baho"></div>
+                <div id="rate-tags" class="space-y-2">
+                    <label class="flex items-center gap-3 rounded-xl border border-white/10 px-4 py-3 text-sm font-semibold text-slate-200 cursor-pointer hover:border-emerald-500/40"><input id="rate-friendly" type="checkbox" class="w-4 h-4 accent-emerald-500"> <span>🤝</span> <span>Juda xushmuomala</span></label>
+                    <label class="flex items-center gap-3 rounded-xl border border-white/10 px-4 py-3 text-sm font-semibold text-slate-200 cursor-pointer hover:border-rose-500/40"><input id="rate-damaged" type="checkbox" class="w-4 h-4 accent-rose-500"> <span>⚠️</span> <span>Yukka zarar yetdi</span></label>
+                </div>
+                <textarea id="rate-comment" rows="3" maxlength="300" placeholder="Izoh (ixtiyoriy)" class="auth-input resize-none"></textarea>
+                <button type="submit" class="auth-submit w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 disabled:opacity-60 text-slate-950 font-extrabold py-3.5 rounded-2xl transition shadow-xl shadow-emerald-500/25"><i class="fa-solid fa-star"></i> <span>Baho yuborish</span></button>
+            </form>
+        </div>
+    </div>
+
+    <!-- FACE ID (simulyatsiya) -->
+    <div id="face-modal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="face-title">
+        <div class="auth-card glass relative w-full max-w-md max-h-[94vh] overflow-y-auto rounded-3xl border border-emerald-500/30 shadow-2xl shadow-emerald-500/10 bg-gradient-to-b from-slate-900 to-emerald-950/40 p-6 sm:p-8 space-y-5 text-center">
+            <button type="button" onclick="closeFaceModal()" aria-label="Yopish" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl p-1 transition hover:rotate-90 duration-300"><i class="fa-solid fa-xmark"></i></button>
+            <h2 id="face-title" class="text-2xl font-extrabold tracking-tight">Face ID skanerlash</h2>
+            <div id="face-stage" class="face-stage"><div class="face-ph"><i class="fa-solid fa-user"></i></div><video id="face-video" playsinline muted class="hidden"></video><div class="face-ring"></div><div class="face-line"></div></div>
+            <p id="face-hint" class="text-sm font-semibold text-emerald-300 min-h-[1.5rem]" aria-live="polite">Kamerani yoqing va yuzingizni doira ichida ushlab turing.</p>
+            <p id="face-demo" class="hidden text-xs text-slate-500">Demo rejim: yuz haqiqiy ma'lumot bazasi bilan solishtirilmaydi.</p>
+            <div class="flex flex-col gap-2">
+                <button id="face-start" type="button" class="auth-submit w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 disabled:opacity-60 text-slate-950 font-extrabold py-3.5 rounded-2xl transition shadow-xl shadow-emerald-500/25"><i class="fa-solid fa-camera"></i> <span>Kamerani yoqish</span></button>
+                <label id="face-fallback" class="hidden cursor-pointer w-full py-3 rounded-2xl border border-white/15 text-slate-300 font-bold text-sm hover:border-emerald-500/50 transition"><i class="fa-solid fa-image mr-2"></i><span>Kamera yo'q: selfi rasm yuklash</span><input id="face-file" type="file" accept="image/*" capture="user" class="sr-only"></label>
+            </div>
+        </div>
+    </div>
+
     <!-- PAYMENT MODAL (xaridor to'laydi, escrow) -->
     <div id="payment-modal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="payment-title" onclick="if (event.target === this) closePaymentModal()">
         <div class="auth-card glass relative w-full max-w-md max-h-[92vh] overflow-y-auto rounded-3xl border border-blue-500/25 shadow-2xl shadow-blue-500/10 bg-gradient-to-b from-slate-900 to-blue-950/30 p-6 sm:p-8">
@@ -2036,6 +2131,7 @@
                     <span class="text-sm font-semibold text-slate-300">Jami summa</span>
                     <span id="booking-total" class="text-lg font-black text-emerald-400">0 so'm</span>
                 </div>
+                <label class="flex items-center gap-3 rounded-xl border border-rose-500/30 bg-rose-500/5 px-4 py-3 text-sm font-semibold text-slate-200 cursor-pointer hover:border-rose-500/60"><input id="booking-urgent" name="urgent" type="checkbox" class="w-4 h-4 accent-rose-500"> <span>🚀</span> <span>Shoshilinch bron</span> <span class="text-slate-500 font-medium">(yuk tezroq yetkazilishi kerak)</span></label>
                 <div>
                     <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="booking-message">Izoh <span class="text-slate-500 normal-case font-medium">(ixtiyoriy)</span></label>
                     <textarea id="booking-message" name="message" rows="3" maxlength="500" placeholder="Yetkazib berish vaqti, talablar..." class="auth-input resize-none"></textarea>
@@ -2156,7 +2252,7 @@
 
         // Sahifa skrolli: biror modal/panel/kabinet ochiq bo'lsa qulflanadi
         function syncScrollLock() {
-            const open = ['auth-modal', 'product-modal', 'booking-modal', 'payment-modal', 'wh-modal', 'price-modal', 'my-products-panel', 'dashboard-view', 'role-page', 'not-found'].some(function (id) {
+            const open = ['auth-modal', 'product-modal', 'booking-modal', 'payment-modal', 'wh-modal', 'price-modal', 'rate-modal', 'face-modal', 'my-products-panel', 'dashboard-view', 'role-page', 'not-found'].some(function (id) {
                 const node = document.getElementById(id);
                 return node && node.classList.contains('open');
             });
@@ -2903,7 +2999,8 @@
                     if (payload.fullName.length < 2) errors.push('Ism va familiyani kiriting.');
                     if (!/^\+998\d{9}$/.test(payload.phone)) errors.push(PHONE_ERR);
                     if (!payload.vehicleType) errors.push('Transport turini tanlang.');
-                    if (!/^[A-Za-z0-9 -]{5,12}$/.test(payload.plateNumber)) errors.push("Davlat raqamini to'g'ri kiriting (masalan, 01A123BC).");
+                    payload.plateNumber = maskPlate(payload.plateNumber);
+                    if (!PLATE_RE.test(payload.plateNumber)) errors.push("Davlat raqamini to'g'ri kiriting: faqat KATTA lotin harflari va raqamlar (01A777AA yoki 70777AAA).");
                     if (!(payload.capacityKg > 0)) errors.push("Yuk sig'imini kiriting (kg).");
                     if (!payload.region) errors.push('Viloyatni tanlang.');
                     const pwProblem = passwordProblems(payload.password)[0];
@@ -3268,7 +3365,9 @@
         document.addEventListener('keydown', function (e) {
             if (e.key !== 'Escape') return;
             if (tourState.active || notFoundView.classList.contains('open')) return; // tur va 404 o'z Escape'ini boshqaradi: kabinet yopilmasin
-            if (document.getElementById('price-modal').classList.contains('open')) closePriceModal();
+            if (document.getElementById('face-modal').classList.contains('open')) closeFaceModal();
+            else if (document.getElementById('rate-modal').classList.contains('open')) closeRateModal();
+            else if (document.getElementById('price-modal').classList.contains('open')) closePriceModal();
             else if (whModal.classList.contains('open')) closeWhModal();
             else if (paymentModal.classList.contains('open')) closePaymentModal();
             else if (bookingModal.classList.contains('open')) closeBookingModal();
@@ -3579,20 +3678,20 @@
             FARMER: [['overview', 'fa-gauge', 'Umumiy'], ['bookings', 'fa-inbox', 'Kelgan bronlar'],
                      ['shipments', 'fa-truck-ramp-box', 'Yuk tashish'], ['payments', 'fa-wallet', "To'lovlar"],
                      ['warehouse', 'fa-warehouse', 'Omborxona'], ['whorders', 'fa-clipboard-list', 'Ombor buyurtmalari'],
-                     ['products', 'fa-boxes-stacked', "E'lonlarim"], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'], ['subscription', 'fa-crown', 'Obuna'], ['profile', 'fa-id-card', 'Profil']],
+                     ['products', 'fa-boxes-stacked', "E'lonlarim"], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'], ['badges', 'fa-trophy', 'Ishonch badjlari'], ['subscription', 'fa-crown', 'Obuna'], ['profile', 'fa-id-card', 'Profil']],
             MARKET: [['overview', 'fa-gauge', 'Umumiy'], ['bookings', 'fa-clipboard-list', 'Mening bronlarim'],
                      ['shipments', 'fa-truck-ramp-box', 'Yuk tashish'], ['payments', 'fa-wallet', "To'lovlar"],
                      ['warehouse', 'fa-warehouse', 'Omborxona'], ['whorders', 'fa-clipboard-list', 'Ombor buyurtmalari'],
-                     ['catalog', 'fa-store', 'Katalog'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'], ['subscription', 'fa-crown', 'Obuna'], ['profile', 'fa-id-card', 'Profil']],
+                     ['catalog', 'fa-store', 'Katalog'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'], ['badges', 'fa-trophy', 'Ishonch badjlari'], ['subscription', 'fa-crown', 'Obuna'], ['profile', 'fa-id-card', 'Profil']],
             DRIVER: [['overview', 'fa-gauge', 'Umumiy'], ['loads', 'fa-boxes-packing', 'Mavjud yuklar'],
-                     ['myloads', 'fa-truck-fast', 'Mening yuklarim'], ['eld', 'fa-clock-rotate-left', 'Harakat jurnali'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'], ['subscription', 'fa-crown', 'Obuna'], ['profile', 'fa-id-card', 'Profil']],
+                     ['myloads', 'fa-truck-fast', 'Mening yuklarim'], ['eld', 'fa-clock-rotate-left', 'Harakat jurnali'], ['verify', 'fa-id-card-clip', 'Shaxsni tasdiqlash'], ['badges', 'fa-trophy', 'Darajalar va mukofotlar'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'], ['subscription', 'fa-crown', 'Obuna'], ['profile', 'fa-id-card', 'Profil']],
             DISPATCHER: [['whboard', 'fa-table-columns', 'Zonalar'], ['whunits', 'fa-temperature-half', 'Kameralar'],
                      ['whorders', 'fa-clipboard-list', 'Buyurtmalar'], ['whinventory', 'fa-chart-pie', 'Inventarizatsiya'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'], ['profile', 'fa-id-card', 'Profil']]
         };
         DASH_TABS.ADMIN = [['adm-dashboard', 'fa-chart-line', 'Boshqaruv paneli'], ['adm-users', 'fa-users', 'Foydalanuvchilar'],
                      ['adm-products', 'fa-boxes-stacked', "E'lonlar"], ['adm-shipments', 'fa-truck-fast', 'Yuk tashish'], ['adm-payments', 'fa-wallet', "To'lovlar"],
                      ['whboard', 'fa-warehouse', 'Ombor: zonalar'], ['whunits', 'fa-temperature-half', 'Kameralar'], ['whorders', 'fa-clipboard-list', 'Ombor buyurtmalari'],
-                     ['whinventory', 'fa-chart-pie', 'Inventarizatsiya'], ['adm-reviews', 'fa-star', 'Sharhlar'], ['adm-settings', 'fa-gear', 'Sayt sozlamalari'], ['adm-audit', 'fa-list-check', 'Audit jurnali'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'],
+                     ['whinventory', 'fa-chart-pie', 'Inventarizatsiya'], ['adm-reviews', 'fa-star', 'Sharhlar'], ['adm-kyc', 'fa-user-check', 'KYC arizalari'], ['adm-settings', 'fa-gear', 'Sayt sozlamalari'], ['adm-audit', 'fa-list-check', 'Audit jurnali'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'],
                      ['profile', 'fa-id-card', 'Profil']];
         const BOOKING_STATUS = {
             PENDING:   { label: 'Kutilmoqda',      cls: 'bg-amber-500/15 text-amber-400 border-amber-500/30' },
@@ -3697,6 +3796,9 @@
             else if (tab === 'whunits') renderWhUnits(user);
             else if (tab === 'whinventory') renderWhInventory(user);
             else if (tab === 'payments') renderDashPayments(user);
+            else if (tab === 'verify') renderDashVerify(user);
+            else if (tab === 'badges') renderDashBadges(user);
+            else if (tab === 'adm-kyc') renderAdmKyc(user);
             else if (tab === 'prices') renderDashPrices(user);
             else if (tab === 'subscription') renderDashSubscription(user);
             else if (tab === 'profile') renderDashProfile();
@@ -3778,6 +3880,19 @@
                 const storedUser = getStoredUser();
                 if ((user.role === 'FARMER' || user.role === 'MARKET') && storedUser && storedUser.coverUrl) nodes.push(buildCover(storedUser, false, true));
                 nodes.push(hello);
+                if (user.role === 'FARMER' || user.role === 'DRIVER' || user.role === 'MARKET') {
+                    const trow = el('div', 'flex flex-wrap items-center gap-2');
+                    nodes.push(trow);
+                    loadTrustMe().then(function (t) {
+                        if (!t || rid !== dashRenderId) return;
+                        trow.appendChild(statusChip(t.status));
+                        if (t.verified) { const v = el('span', ['tr-chip', 'NEW'].join(' ')); v.appendChild(el('i', 'fa-solid fa-circle-check')); v.appendChild(el('span', '', 'Tasdiqlangan')); trow.appendChild(v); }
+                        const go = el('button', 'text-xs font-bold text-slate-300 hover:text-emerald-300 transition', T('{0}/{1} badjlar ochilgan', t.unlocked, t.total));
+                        go.type = 'button';
+                        go.addEventListener('click', function () { selectDashTab('badges'); });
+                        trow.appendChild(go);
+                    });
+                }
 
                 if (user.role === 'FARMER') {
                     const res = await Promise.all([authed('GET', '/products'), authed('GET', '/bookings/incoming')]);
@@ -4803,7 +4918,7 @@
             openWhForm({
                 title: 'Haydovchi biriktirish', sub: o.item.name + ' · ' + kg(o.quantityKg), icon: 'fa-user-plus', submit: 'Biriktirish',
                 fields: [{ name: 'driverId', label: 'Haydovchi', type: 'select', required: true,
-                    options: drivers.map(function (d) { return [d.id, d.fullName + ' · ' + d.plateNumber + ' · ' + kg(d.capacityKg) + (Number(d.capacityKg) < Number(o.quantityKg) ? ' (sig\'im yetmaydi)' : '')]; }) }],
+                    options: drivers.map(function (d) { return [d.id, d.fullName + ' · ' + d.plateNumber + ' · ' + kg(d.capacityKg) + trustText(d.trust) + (Number(d.capacityKg) < Number(o.quantityKg) ? ' (sig\'im yetmaydi)' : '')]; }) }],
                 onSubmit: function (v) { return authed('PATCH', '/warehouse/orders/' + o.id + '/assign', { driverId: v.driverId }); },
                 done: "Haydovchi biriktirildi. Yuk uning kabinetida ko'rinadi."
             });
@@ -5570,7 +5685,7 @@
                 admSelect([['', 'Barcha holatlar'], ['true', 'Faol'], ['false', 'Bloklangan']], f.active, function (v) { f.active = v; f.page = 1; again(); })
             ]));
             nodes.push(admTable([
-                ['Foydalanuvchi', function (u) { return admName(u.fullName, u.phone); }],
+                ['Foydalanuvchi', function (u) { const n = admName(u.fullName, u.phone); if (u.isVerified) n.firstChild.appendChild(verifiedMark()); return n; }],
                 ['Rol', function (u) { return ADM_ROLE_LABEL[u.role]; }],
                 ['Tashkilot / hudud', function (u) { return [u.org, u.region].filter(Boolean).join(' · ') || '—'; }],
                 ['Holat', function (u) { return admStatusPill(u.isActive); }],
@@ -5579,6 +5694,8 @@
                     const me = currentUser();
                     const b = [admBtn('fa-pen', 'Tahrirlash', function () { admEditUser(u.id); }), admBtn('fa-key', 'Parol', function () { admPasswordDialog(u); })];
                     if (!me || me.id !== u.id) b.push(admBtn(u.isActive ? 'fa-user-lock' : 'fa-user-check', u.isActive ? 'Bloklash' : 'Faollashtirish', function () { admToggleUser(u); }, u.isActive ? 'danger' : 'ok'));
+                    const vb = admVerifyButton(u);
+                    if (vb) b.push(vb);
                     return admActions(b);
                 }]
             ], d.items, "Foydalanuvchilar topilmadi."));
@@ -6458,6 +6575,12 @@
             top.appendChild(title);
             const badges = el('div', 'shrink-0 flex flex-col items-end gap-1.5');
             badges.appendChild(el('span', 'text-xs font-bold px-3 py-1 rounded-full border ' + meta.cls, meta.label));
+            if (s.urgent) {
+                const ub = el('span', 'inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-rose-500/40 bg-rose-500/10 text-rose-300');
+                ub.appendChild(el('i', 'fa-solid fa-bolt'));
+                ub.appendChild(el('span', '', 'Shoshilinch'));
+                badges.appendChild(ub);
+            }
             if (s.source === 'WAREHOUSE') {
                 const wb = el('span', 'inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-teal-500/30 bg-teal-500/10 text-teal-300');
                 wb.appendChild(el('i', 'fa-solid fa-warehouse'));
@@ -6494,7 +6617,7 @@
             } else if (viewer === 'farmer' || viewer === 'market') {
                 if (viewer === 'farmer' && s.market) people.appendChild(partyBox('Xaridor', s.market.companyName, s.market.fullName, s.market.phone));
                 if (viewer === 'market' && s.farmer) people.appendChild(partyBox(s.source === 'WAREHOUSE' ? 'Omborxona' : 'Fermer', s.farmer.farmName, s.farmer.fullName, s.farmer.phone));
-                if (s.driver) people.appendChild(partyBox('Haydovchi', s.driver.fullName, s.driver.vehicleType + ' · ' + s.driver.plateNumber, s.driver.phone));
+                if (s.driver) people.appendChild(decorateDriverBox(partyBox('Haydovchi', s.driver.fullName, s.driver.vehicleType + ' · ' + s.driver.plateNumber, s.driver.phone), s.driver.trust));
                 else {
                     const wait = el('p', 'text-xs text-slate-400 flex items-center gap-2');
                     wait.appendChild(el('i', 'fa-solid fa-hourglass-half text-amber-400'));
@@ -6553,6 +6676,7 @@
             }
             if (actions.childNodes.length) card.appendChild(actions);
             if (viewer !== 'driver-open' && s.status !== 'CANCELLED') card.appendChild(buildDocActions(s));
+            if (viewer !== 'driver-open' && s.status === 'DELIVERED') card.appendChild(buildRateActions(s, viewer));
             return card;
         }
 
@@ -6573,7 +6697,8 @@
             dashContent.replaceChildren(dashMessage('fa-spinner fa-spin', 'Yuklar yuklanmoqda...'));
             let list;
             try {
-                list = await authed('GET', '/shipments/mine');
+                const both = await Promise.all([authed('GET', '/shipments/mine'), authed('GET', '/ratings/mine').catch(function () { return ratingsMine; })]);
+                list = both[0]; ratingsMine = both[1];
             } catch (err) {
                 if (err.status === 401 || rid !== dashRenderId) return;
                 return dashContent.replaceChildren(dashMessage('fa-triangle-exclamation text-rose-400', err.messages[0], function () { renderDashShipments(user); }));
@@ -7104,7 +7229,7 @@
                     input.type = type === 'number' ? 'number' : 'text';
                     if (type === 'number') { input.min = '0'; input.step = '1'; }
                     if (type === 'stir') { input.maxLength = 9; input.inputMode = 'numeric'; }
-                    if (type === 'plate') input.maxLength = 12;
+                    if (type === 'plate') bindPlateMask(input);
                     input.value = value === null || value === undefined ? '' : (type === 'number' ? Number(value) : value);
                     if (readonly) { input.readOnly = true; input.tabIndex = -1; }
                 }
@@ -7137,7 +7262,7 @@
                     if (f[2] === 'number') { payload[f[0]] = Number(raw); if (!(payload[f[0]] > 0)) errors.push(f[1] + " 0 dan katta bo'lishi kerak."); }
                     else payload[f[0]] = raw;
                     if (f[2] === 'stir' && raw && !/^\d{9}$/.test(raw)) errors.push("STIR 9 ta raqamdan iborat bo'lishi kerak.");
-                    if (f[2] === 'plate' && !/^[A-Za-z0-9 -]{5,12}$/.test(raw)) errors.push("Davlat raqamini to'g'ri kiriting (masalan, 01A123BC).");
+                    if (f[2] === 'plate' && !PLATE_RE.test(raw)) errors.push("Davlat raqamini to'g'ri kiriting: faqat KATTA lotin harflari va raqamlar (01A777AA yoki 70777AAA).");
                 });
                 if (errors.length) return showAuthAlert(errors, 'error', alertBox);
 
@@ -7373,6 +7498,7 @@
             const payload = { productId: p.id, quantityKg: quantityKg };
             const message = bookingForm.message.value.trim();
             if (message) payload.message = message;
+            if (document.getElementById('booking-urgent').checked) payload.urgent = true;
 
             setLoading(bookingForm, true);
             try {
@@ -10198,6 +10324,490 @@
         }
 
         document.querySelectorAll('[data-sfx-toggle]').forEach(syncSoundToggle);
+        // ===== Davlat raqami maskasi: faqat KATTA lotin harflari va raqamlar (01A777AA yoki 70777AAA) =====
+        const PLATE_RE = /^\d{2}(?:[A-Z]\d{3}[A-Z]{2}|\d{3}[A-Z]{3})$/;
+        function maskPlate(raw) {
+            const chars = String(raw).toUpperCase().replace(/[^A-Z0-9]/g, '');
+            let out = '';
+            for (let i = 0; i < chars.length && out.length < 8; i++) {
+                const ch = chars[i], isDigit = ch >= '0' && ch <= '9', pos = out.length;
+                let ok;
+                if (pos < 2) ok = isDigit;
+                else if (pos === 2) ok = true; // harf (01A777AA) yoki raqam (70777AAA)
+                else if (/[A-Z]/.test(out[2])) ok = pos <= 5 ? isDigit : !isDigit; // 01A 777 AA
+                else ok = pos <= 4 ? isDigit : !isDigit; // 70 777 AAA
+                if (ok) out += ch;
+            }
+            return out;
+        }
+        function bindPlateMask(input) {
+            if (!input || input.__plate) return;
+            input.__plate = true;
+            input.maxLength = 8;
+            input.placeholder = '01A777AA';
+            input.autocomplete = 'off';
+            input.spellcheck = false;
+            input.setAttribute('autocapitalize', 'characters');
+            input.setAttribute('aria-describedby', 'plate-hint');
+            input.title = '01A777AA yoki 70777AAA';
+            const apply = function () {
+                const v = maskPlate(input.value);
+                if (v !== input.value) { input.value = v; try { input.setSelectionRange(v.length, v.length); } catch (e) {} }
+            };
+            input.addEventListener('input', apply);
+            input.addEventListener('paste', function (e) {
+                e.preventDefault();
+                const t = (e.clipboardData || window.clipboardData).getData('text');
+                const a = input.selectionStart || 0, b = input.selectionEnd || 0;
+                input.value = maskPlate(input.value.slice(0, a) + t + input.value.slice(b));
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+            });
+            apply();
+        }
+        bindPlateMask(document.getElementById('drv-plateNumber'));
+
+        // ===== Ishonchlilik statusi, badjlar =====
+        const BADGE_META = {
+            verified_pro: ['Tasdiqlangan Haydovchi (Verified Pro)', "ID karta, guvohnoma, tex-pasport va Face ID'dan muvaffaqiyatli o'ting."],
+            speedy: ['Eng Tezkor (Speedy Delivery)', "10 ta yukni o'z vaqtida yoki tezroq yetkazing."],
+            safe_hauler: ['Eng Xavfsiz (Safe Hauler)', "25 ta qatnovda yukka biror marta zarar yetkazmang."],
+            rookie: ['Boshlovchi Haydovchi (Rookie Driver)', "Birinchi muvaffaqiyatli reysni yakunlang."],
+            master_driver: ['Usta Haydovchi (Master Driver)', "25 ta muvaffaqiyatli reys bajaring."],
+            legendary_pro: ['Afsonaviy Haydovchi (Legendary Pro)', "100 ta reys va 4.9+ reytingga erishing."],
+            night_rider: ['Kecha Qahramoni (Night Rider)', "Tunda (22:00–06:00) 5 ta uzoq (200+ km) reysga chiqing."],
+            reefer_expert: ['Muzqaymoq Ustasi (Reefer Expert)', "Sovutgichli (Reefer) tirkama bilan 10 ta sifatli yetkazib bering."],
+            eco_return: ['Qaytmas Eko-Haydovchi (Eco-Return)', "Bo'sh qaytmasdan, qaytishda 10 marta yuk topib tashing."],
+            top_rated: ['Yil Haydovchisi (Top Rated)', "50 ta 5 yulduzli baho oling."],
+            long_distance: ["Uzoq Yo'l Ustasi (Long Distance)", "Jami 3000+ km masofani bosib o'ting."],
+            eld_master: ['Intizomli Operator (ELD Master)', "ELD jurnalini 14 kun uzluksiz to'liq yuriting."],
+            friendly: ["Do'stona Muloqot (Friendly Driver)", "Mijozlardan 15 ta «Juda xushmuomala» tegi oling."],
+            emergency: ['Favqulodda Yordamchi (Emergency Transporter)', "Shoshilinch bronlarni 5 marta muvaffaqiyatli bajaring."],
+            vip_champion: ['AgrarGo Faxri (VIP Champion)', "Hujjatlar tasdiqlangan, 1 yillik faol obuna va 50+ reys."],
+            quality_guarantee: ['Sifat Kafolati', "10 va undan ko'p baho, o'rtacha 4.7+."],
+            big_harvest: ["Katta Hosil do'sti", "Jami 50 000 kg (50 tonna) yukni yetkazing."],
+            honest_farmer: ['Halol Fermer', "Tasdiqlangan, 10 ta bitim, bronlarni rad etish ulushi 10% dan kam."],
+            fast_loader: ['Tezkor Yuklovchi', "10 ta bronni 2 soat ichida tasdiqlang."],
+            escrow_master: ["Kafolatlangan To'lovchi (Escrow Master)", "10 ta to'lov Escrow'ga o'tgan va birortasi qaytarilmagan."],
+            bulk_buyer: ['Ulgurji Xaridor', "Jami 20 000 kg yukni qabul qiling."],
+            reliable_partner: ['Ishonchli Hamkor', "10 ta bitim va 4.5+ reyting (kamida 5 ta baho)."]
+        };
+        const TIER_LABEL = { master: 'Master', pro: 'Pro', legendary: 'Legendary' };
+        const TRUST_STATUS = { NEW: ['🟢', 'Yangi'], REGULAR: ['🔵', 'Doimiy'], VETERAN: ['👑', 'Qadrdon'] };
+        const TRUST_RANK = { LEGENDARY: 'Legendary Pro', MASTER: 'Master Pro', ROOKIE: 'Rookie' };
+        const BADGE_ICON = { verified_pro: '🆔', speedy: '⚡', safe_hauler: '🛡', rookie: '🥉', master_driver: '🥈', legendary_pro: '🥇', night_rider: '🌙', reefer_expert: '❄️', eco_return: '🔄', top_rated: '🌟', long_distance: '🛣', eld_master: '📋', friendly: '🤝', emergency: '🚀', vip_champion: '🏛', quality_guarantee: '🌾', big_harvest: '🚜', honest_farmer: '🏅', fast_loader: '⚡', escrow_master: '💰', bulk_buyer: '🛒', reliable_partner: '🤝' };
+
+        let trustMe = null;
+        async function loadTrustMe() {
+            try { trustMe = await authed('GET', '/trust/me'); } catch (err) { /* ko'rsatilmaydi */ }
+            return trustMe;
+        }
+        function statusChip(status) {
+            const m = TRUST_STATUS[status] || TRUST_STATUS.NEW;
+            const c = el('span', ['tr-chip', status].join(' '));
+            c.appendChild(el('span', '', m[0]));
+            c.appendChild(el('span', '', m[1]));
+            return c;
+        }
+        function verifiedMark() {
+            const v = el('span', 'tr-check');
+            v.title = T('Tasdiqlangan');
+            v.appendChild(el('i', 'fa-solid fa-check'));
+            return v;
+        }
+        // Haydovchi kartochkasi uchun ommaviy ishonch qatori: status, top-3 badj, daraja va ochilgan badjlar soni
+        function trustLine(t) {
+            const row = el('div', 'flex flex-wrap items-center gap-2 pt-1.5');
+            if (!t) return row;
+            row.appendChild(statusChip(t.status));
+            (t.topBadges || []).forEach(function (id) {
+                const b = el('span', 'tr-mini', BADGE_ICON[id] || '🏅');
+                b.title = T((BADGE_META[id] || [id])[0]);
+                row.appendChild(b);
+            });
+            const rank = T(t.rank ? TRUST_RANK[t.rank] : 'Yangi haydovchi');
+            row.appendChild(el('span', 'text-[11px] font-bold text-slate-300', T('{0} • {1}/{2} badjlar ochilgan', rank, t.unlocked, t.total)));
+            return row;
+        }
+        function decorateDriverBox(box, t) {
+            if (!t) return box;
+            const who = box.firstChild;
+            const name = who.children[1];
+            if (t.verified && name) { name.classList.remove('truncate'); name.appendChild(verifiedMark()); }
+            who.appendChild(trustLine(t));
+            return box;
+        }
+        function trustText(t) {
+            if (!t) return '';
+            return ' · ' + (t.verified ? '✔ ' : '') + TRUST_STATUS[t.status][0] + ' ' + T(TRUST_STATUS[t.status][1]) + ' · ' + T('{0} • {1}/{2} badjlar ochilgan', T(t.rank ? TRUST_RANK[t.rank] : 'Yangi haydovchi'), t.unlocked, t.total);
+        }
+
+        function badgeCard(b, fresh) {
+            const meta = BADGE_META[b.id] || [b.id, ''];
+            const c = el('article', ['bdg', b.tier, b.unlocked ? 'unlocked' : 'locked', fresh ? 'fresh' : ''].join(' '));
+            c.appendChild(el('span', 'bdg-tier', TIER_LABEL[b.tier]));
+            c.appendChild(el('div', 'bdg-ico', BADGE_ICON[b.id] || '🏅'));
+            c.appendChild(el('h4', '', meta[0]));
+            c.appendChild(el('p', '', meta[1]));
+            const bar = el('div', 'bdg-bar');
+            const fill = el('i');
+            fill.style.width = '0%';
+            bar.appendChild(fill);
+            c.appendChild(bar);
+            const big = b.target >= 1000;
+            c.appendChild(el('div', 'bdg-cnt', b.unlocked ? T('Ochildi ✓') : formatNumber(Math.min(b.current, b.target)) + ' / ' + formatNumber(b.target) + (big && b.id === 'long_distance' ? ' km' : '')));
+            requestAnimationFrame(function () { requestAnimationFrame(function () { fill.style.width = Math.round((b.unlocked ? 1 : b.progress) * 100) + '%'; }); });
+            return c;
+        }
+
+        function trustRing(t) {
+            const C = 2 * Math.PI * 52;
+            const wrap = el('div', 'tr-ring');
+            wrap.innerHTML = '<svg viewBox="0 0 120 120" aria-hidden="true"><circle class="trk" cx="60" cy="60" r="52" fill="none" stroke-width="9"/><circle class="val" cx="60" cy="60" r="52" fill="none" stroke-width="9" stroke-dasharray="' + C.toFixed(1) + '" stroke-dashoffset="' + C.toFixed(1) + '"/></svg>';
+            const mid = el('div', 'mid');
+            mid.appendChild(el('div', 'text-3xl font-black text-white', t.unlocked + '/' + t.total));
+            mid.appendChild(el('div', 'text-[10px] font-bold uppercase tracking-wider text-slate-400', 'badjlar'));
+            wrap.appendChild(mid);
+            requestAnimationFrame(function () { requestAnimationFrame(function () { wrap.querySelector('.val').setAttribute('stroke-dashoffset', (C * (1 - (t.total ? t.unlocked / t.total : 0))).toFixed(1)); }); });
+            return wrap;
+        }
+
+        async function renderDashBadges(user) {
+            const rid = ++dashRenderId;
+            dashContent.replaceChildren(dashMessage('fa-spinner fa-spin', 'Badjlar yuklanmoqda...'));
+            const t = await loadTrustMe();
+            if (rid !== dashRenderId) return;
+            if (!t) return dashContent.replaceChildren(dashMessage('fa-triangle-exclamation text-rose-400', "Ma'lumotni yuklab bo'lmadi.", function () { renderDashBadges(user); }));
+            const isDriver = user.role === 'DRIVER';
+            const nodes = [sectionTitle(isDriver ? 'Mening Darajalarim va Mukofotlarim' : 'Ishonchlilik badjlari', isDriver ? "Shartlarni bajaring: qulflangan badjlar yaltirab ochiladi." : "Bitimlar, reyting va tasdiqlash asosida badjlar ochiladi.")];
+            const head = el('div', 'glass rounded-3xl border border-white/10 p-6 flex flex-wrap items-center gap-6');
+            head.appendChild(trustRing(t));
+            const info = el('div', 'min-w-0 flex-1 basis-60 space-y-2');
+            const l1 = el('div', 'flex flex-wrap items-center gap-2');
+            l1.appendChild(statusChip(t.status));
+            if (t.verified) { const v = el('span', ['tr-chip', 'NEW'].join(' ')); v.appendChild(el('i', 'fa-solid fa-circle-check')); v.appendChild(el('span', '', 'Tasdiqlangan')); l1.appendChild(v); }
+            info.appendChild(l1);
+            if (isDriver) info.appendChild(el('div', 'text-2xl font-black text-white', t.rank ? TRUST_RANK[t.rank] : 'Yangi haydovchi'));
+            const stats = [];
+            stats.push(T('Bitimlar: {0}', t.deals));
+            if (t.rating.count) stats.push(T('Reyting: {0} ({1} baho)', t.rating.avg.toFixed(2), t.rating.count));
+            stats.push(T("Akkaunt yoshi: {0} kun", t.ageDays));
+            info.appendChild(el('div', 'text-sm text-slate-300', stats.join(' · ')));
+            const hint = t.status === 'NEW' ? "Doimiy bo'lish: 30 kundan keyin, tasdiqlangan va 5 ta muvaffaqiyatli bitim." : t.status === 'REGULAR' ? "Qadrdon bo'lish: 180 kundan keyin, 30+ bitim va 4.8+ reyting." : "Siz eng yuqori ishonch darajasidasiz.";
+            info.appendChild(el('div', 'text-xs text-slate-400', hint));
+            head.appendChild(info);
+            nodes.push(head);
+            if (isDriver && !t.verified) {
+                const cta = el('div', 'rounded-2xl border border-amber-400/40 bg-amber-400/10 p-4 flex flex-wrap items-center justify-between gap-3');
+                cta.appendChild(el('span', 'text-sm font-semibold text-amber-200', "Hujjatlarni tasdiqlang: «Tasdiqlangan Haydovchi» badji va ishonch ortadi."));
+                cta.appendChild(actionBtn('fa-id-card-clip', 'Shaxsni tasdiqlash', true, function () { selectDashTab('verify'); }));
+                nodes.push(cta);
+            }
+            // Yangi ochilgan badjlar: oxirgi ko'rilgandan keyin
+            const seenKey = 'agrargo_badges_seen_' + user.id;
+            let seen = [];
+            try { seen = JSON.parse(storageGet(seenKey)) || []; } catch (e) {}
+            const fresh = t.badges.filter(function (b) { return b.unlocked && seen.indexOf(b.id) === -1; });
+            const sorted = t.badges.slice().sort(function (a, b) { return (b.unlocked - a.unlocked) || (b.weight - a.weight); });
+            const grid = el('div', 'bdg-grid');
+            sorted.forEach(function (b) { grid.appendChild(badgeCard(b, seen.length && fresh.indexOf(b) !== -1)); });
+            nodes.push(grid);
+            storageSet(seenKey, JSON.stringify(t.badges.filter(function (b) { return b.unlocked; }).map(function (b) { return b.id; })));
+            dashContent.replaceChildren.apply(dashContent, nodes);
+            if (seen.length && fresh.length) { showToast(T('Yangi badj ochildi: {0}', T(BADGE_META[fresh[0].id][0])), 4200, 'success'); sfx.play('subscription'); }
+        }
+
+        // ===== Shaxsni tasdiqlash (KYC / Face ID simulyatsiyasi) =====
+        const KYC_STEPS = [
+            ['ID_CARD', 'fa-id-card', 'ID karta / Pasport', "Shaxsni tasdiqlovchi hujjatning old tomoni (aniq, yorug'da)."],
+            ['DRIVER_LICENSE', 'fa-id-badge', 'Haydovchilik guvohnomasi', "Guvohnomaning old tomoni."],
+            ['TECH_PASSPORT', 'fa-file-lines', 'Tex-pasport', "Transport vositasi texnik pasporti."],
+            ['FACE', 'fa-face-smile', 'Face ID', "Kamerada yuzingizni skanerlang."]
+        ];
+        let kycState = null, kycLocal = {};
+        async function kycUpload(type, file) {
+            if (!file) return;
+            if (!/^image\/(jpeg|png|webp)$/.test(file.type)) return showToast('Faqat JPG, PNG yoki WEBP rasm yuklang.', 4200, 'error');
+            if (file.size > 5 * 1024 * 1024) return showToast('Rasm hajmi 5 MB dan oshmasligi kerak.', 4200, 'error');
+            const token = storageGet(TOKEN_KEY);
+            if (!token) return handleSessionExpired(reopenDash);
+            const fd = new FormData();
+            fd.append('file', file, file.name || (type + '.jpg'));
+            let res;
+            try { res = await fetch(API_URL + '/kyc/documents/' + type, { method: 'POST', headers: { Authorization: 'Bearer ' + token }, body: fd }); }
+            catch (e) { return showToast("Serverga ulanib bo'lmadi. Internet aloqasini tekshiring.", 4600, 'error'); }
+            if (res.status === 401) return handleSessionExpired(reopenDash);
+            let data = null; try { data = await res.json(); } catch (e) {}
+            if (!res.ok) return showToast(res.status === 413 ? 'Rasm hajmi 5 MB dan oshmasligi kerak.' : (data && data.message ? [].concat(data.message)[0] : "Yuklab bo'lmadi."), 4600, 'error');
+            kycLocal[type] = URL.createObjectURL(file);
+            const wasVerified = kycState && kycState.isVerified;
+            kycState = data;
+            if (data.isVerified && !wasVerified) {
+                showSuccessCheck('Shaxs tasdiqlandi!', "«Tasdiqlangan Haydovchi» badji ochildi", 'subscription');
+                try { const u = await authed('GET', '/profile'); saveUser(u); } catch (e) {}
+            } else if (data.status === 'PENDING') showToast("Hujjatlar topshirildi. Administrator tekshiradi.", 4200, 'success');
+            else showToast('Hujjat yuklandi', 2400, 'success');
+            if (dashTab === 'verify') renderDashVerify(currentUser());
+        }
+
+        async function renderDashVerify(user) {
+            const rid = ++dashRenderId;
+            if (!kycState) dashContent.replaceChildren(dashMessage('fa-spinner fa-spin', "Tasdiqlash ma'lumotlari yuklanmoqda..."));
+            try { kycState = await authed('GET', '/kyc'); }
+            catch (err) {
+                if (err.status === 401 || rid !== dashRenderId) return;
+                return dashContent.replaceChildren(dashMessage('fa-triangle-exclamation text-rose-400', err.messages[0], function () { renderDashVerify(user); }));
+            }
+            if (rid !== dashRenderId) return;
+            const k = kycState;
+            const done = KYC_STEPS.filter(function (s) { return k.docs[s[0]]; }).length;
+            const nodes = [sectionTitle('Shaxsni tasdiqlash', "ID karta, guvohnoma, tex-pasport va Face ID orqali tasdiqlangan haydovchi bo'ling.")];
+            const tone = k.status === 'VERIFIED' ? ['border-emerald-500/50 bg-emerald-500/10 text-emerald-200', 'fa-circle-check', 'Shaxsingiz tasdiqlangan'] : k.status === 'PENDING' ? ['border-sky-500/40 bg-sky-500/10 text-sky-200', 'fa-hourglass-half', "Hujjatlar tekshirilmoqda"] : k.status === 'REJECTED' ? ['border-rose-500/50 bg-rose-500/10 text-rose-200', 'fa-circle-xmark', 'Tasdiqlash rad etildi'] : ['border-white/15 bg-white/5 text-slate-200', 'fa-shield-halved', 'Hali tasdiqlanmagan'];
+            const banner = el('div', ['rounded-2xl border px-5 py-4 flex flex-wrap items-center gap-3', tone[0]].join(' '));
+            banner.appendChild(el('i', ['fa-solid text-2xl', tone[1]].join(' ')));
+            const bt = el('div', 'flex-1 min-w-0');
+            bt.appendChild(el('div', 'font-extrabold', tone[2]));
+            if (k.status === 'REJECTED' && k.rejectReason) bt.appendChild(el('div', 'text-sm', T('Sabab: {0}', k.rejectReason)));
+            else if (k.status === 'VERIFIED' && k.verifiedAt) bt.appendChild(el('div', 'text-sm', T('Tasdiqlangan sana: {0}', formatDate(k.verifiedAt))));
+            else bt.appendChild(el('div', 'text-sm', T('{0}/4 qadam bajarildi', done)));
+            banner.appendChild(bt);
+            nodes.push(banner);
+            const bar = el('div', 'sub-bar');
+            bar.style.maxWidth = 'none';
+            const fill = el('i'); fill.style.width = (done * 25) + '%';
+            bar.appendChild(fill);
+            nodes.push(bar);
+
+            const grid = el('div', 'grid sm:grid-cols-2 gap-4');
+            KYC_STEPS.forEach(function (s, idx) {
+                const has = !!k.docs[s[0]];
+                const c = el('div', ['kyc-step', has ? 'done' : ''].join(' '));
+                const top = el('div', 'flex items-center gap-3');
+                const ic = el('span', ['w-11 h-11 rounded-2xl flex items-center justify-center text-lg', has ? 'bg-emerald-500 text-slate-950' : 'bg-white/10 text-slate-300'].join(' '));
+                ic.appendChild(el('i', ['fa-solid', has ? 'fa-check' : s[1]].join(' ')));
+                top.appendChild(ic);
+                const tt = el('div', 'min-w-0');
+                tt.appendChild(el('div', 'text-[10px] font-bold uppercase tracking-wider text-emerald-400', T('{0}-qadam', idx + 1)));
+                tt.appendChild(el('div', 'font-extrabold text-white', s[2]));
+                top.appendChild(tt);
+                c.appendChild(top);
+                c.appendChild(el('p', 'text-sm text-slate-400', s[3]));
+                if (kycLocal[s[0]]) { const im = el('img', 'kyc-thumb'); im.src = kycLocal[s[0]]; im.alt = ''; c.appendChild(im); }
+                if (has) c.appendChild(el('div', 'text-xs font-semibold text-emerald-300', T('Yuklandi: {0}', formatDate(k.docs[s[0]]))));
+                if (s[0] === 'FACE') {
+                    c.appendChild(actionBtn('fa-camera', has ? 'Qayta skanerlash' : 'Face ID skanerlash', !has, function () { openFaceModal(); }));
+                } else {
+                    const input = el('input', 'sr-only');
+                    input.type = 'file'; input.accept = 'image/jpeg,image/png,image/webp'; input.id = 'kyc-f-' + s[0];
+                    input.addEventListener('change', function () { kycUpload(s[0], input.files[0]); });
+                    const lab = el('label', ['flex items-center justify-center gap-2.5 px-5 py-3 rounded-2xl text-sm font-extrabold cursor-pointer transition active:scale-95', has ? 'border border-white/15 text-slate-200 hover:border-emerald-500/50' : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950'].join(' '));
+                    lab.htmlFor = input.id;
+                    lab.appendChild(el('i', 'fa-solid fa-cloud-arrow-up'));
+                    lab.appendChild(el('span', '', has ? 'Qayta yuklash' : 'Rasm yuklash'));
+                    c.appendChild(input);
+                    c.appendChild(lab);
+                }
+                grid.appendChild(c);
+            });
+            nodes.push(grid);
+            nodes.push(el('p', 'text-xs text-slate-500', "Hujjat rasmlari shifrlanmagan ommaviy papkada emas, alohida yopiq saqlanadi va faqat siz hamda administrator ko'ra oladi."));
+            dashContent.replaceChildren.apply(dashContent, nodes);
+        }
+
+        // Face ID: kamera + skanerlash animatsiyasi (simulyatsiya), oxirida kadr serverga yuboriladi
+        const faceModal = document.getElementById('face-modal');
+        const face = { stream: null, busy: false };
+        function faceStop() {
+            if (face.stream) { face.stream.getTracks().forEach(function (t) { t.stop(); }); face.stream = null; }
+            const v = document.getElementById('face-video');
+            v.srcObject = null; v.classList.add('hidden');
+        }
+        function openFaceModal() {
+            const st = document.getElementById('face-stage');
+            st.className = 'face-stage';
+            st.style.removeProperty('--p');
+            document.getElementById('face-hint').textContent = T('Kamerani yoqing va yuzingizni doira ichida ushlab turing.');
+            document.getElementById('face-start').querySelector('span').textContent = T('Kamerani yoqish');
+            document.getElementById('face-start').disabled = false;
+            document.getElementById('face-fallback').classList.toggle('hidden', !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia));
+            document.getElementById('face-demo').classList.toggle('hidden', !(kycState && kycState.simulated));
+            face.busy = false;
+            faceModal.classList.add('open');
+            syncScrollLock();
+        }
+        function closeFaceModal() {
+            faceStop();
+            faceModal.classList.remove('open');
+            syncScrollLock();
+        }
+        async function faceScan() {
+            const hint = document.getElementById('face-hint'), st = document.getElementById('face-stage'), btn = document.getElementById('face-start');
+            const video = document.getElementById('face-video');
+            if (face.busy) return;
+            if (!face.stream) {
+                try {
+                    face.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 640 } }, audio: false });
+                } catch (e) {
+                    hint.textContent = T("Kameraga ruxsat berilmadi. Selfi rasm yuklashingiz mumkin.");
+                    document.getElementById('face-fallback').classList.remove('hidden');
+                    return;
+                }
+                video.srcObject = face.stream;
+                video.classList.remove('hidden');
+                try { await video.play(); } catch (e) {}
+                btn.querySelector('span').textContent = T('Skanerlashni boshlash');
+                hint.textContent = T('Yuzingizni doira ichiga joylashtiring.');
+                return;
+            }
+            face.busy = true;
+            btn.disabled = true;
+            st.classList.add('scan');
+            const steps = [T("To'g'ri qarab turing..."), T('Sekin chapga buriling...'), T("Endi o'ngga buriling..."), T('Yaxshi! Tahlil qilinmoqda...')];
+            const total = 4200, t0 = performance.now();
+            await new Promise(function (resolve) {
+                const tick = function (now) {
+                    const p = Math.min(1, (now - t0) / total);
+                    st.style.setProperty('--p', Math.round(p * 100) + '%');
+                    hint.textContent = steps[Math.min(steps.length - 1, Math.floor(p * steps.length))];
+                    if (p < 1) requestAnimationFrame(tick); else resolve();
+                };
+                requestAnimationFrame(tick);
+            });
+            const cv = document.createElement('canvas');
+            cv.width = video.videoWidth || 480; cv.height = video.videoHeight || 480;
+            cv.getContext('2d').drawImage(video, 0, 0, cv.width, cv.height);
+            const blob = await new Promise(function (r) { cv.toBlob(r, 'image/jpeg', 0.85); });
+            st.classList.remove('scan'); st.classList.add('ok');
+            hint.textContent = T('Yuz aniqlandi ✓');
+            sfx.play('success');
+            await new Promise(function (r) { setTimeout(r, 900); });
+            closeFaceModal();
+            if (blob) await kycUpload('FACE', new File([blob], 'face.jpg', { type: 'image/jpeg' }));
+        }
+        document.getElementById('face-start').addEventListener('click', faceScan);
+        document.getElementById('face-file').addEventListener('change', async function (e) {
+            const f = e.target.files[0];
+            if (!f) return;
+            closeFaceModal();
+            await kycUpload('FACE', f);
+            e.target.value = '';
+        });
+
+        // ===== Baholash (yetkazilgan yukdan keyin) =====
+        let ratingsMine = [];
+        const rateModal = document.getElementById('rate-modal');
+        const rateForm = document.getElementById('rate-form');
+        const rateAlert = document.getElementById('rate-alert');
+        const rateState = { shipment: null, target: null, stars: 0 };
+        const TARGET_LABEL = { DRIVER: 'Haydovchi', FARMER: 'Fermer', MARKET: 'Market' };
+        function ratedOf(shipmentId, target) {
+            return ratingsMine.find(function (r) { return r.shipmentId === shipmentId && r.targetRole === target; }) || null;
+        }
+        function paintStars() {
+            document.querySelectorAll('#rate-stars .rate-star').forEach(function (b, i) { b.classList.toggle('on', i < rateState.stars); b.setAttribute('aria-checked', String(i + 1 === rateState.stars)); });
+        }
+        (function () {
+            const box = document.getElementById('rate-stars');
+            for (let i = 1; i <= 5; i++) {
+                const b = el('button', 'rate-star');
+                b.type = 'button'; b.setAttribute('role', 'radio'); b.setAttribute('aria-label', i + ' ★');
+                b.appendChild(el('i', 'fa-solid fa-star'));
+                b.addEventListener('click', function () { rateState.stars = i; paintStars(); sfx.play('tick'); });
+                box.appendChild(b);
+            }
+        })();
+        function openRateModal(shipment, target) {
+            rateState.shipment = shipment; rateState.target = target; rateState.stars = 0;
+            hideAuthAlert(rateAlert);
+            rateForm.reset();
+            paintStars();
+            document.getElementById('rate-sub').textContent = T('{0}ni baholang: {1}', T(TARGET_LABEL[target]), shipment.cargoName);
+            document.getElementById('rate-tags').classList.toggle('hidden', target !== 'DRIVER');
+            rateModal.classList.add('open');
+            syncScrollLock();
+        }
+        function closeRateModal() { rateModal.classList.remove('open'); syncScrollLock(); }
+        rateForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            hideAuthAlert(rateAlert);
+            if (!rateState.stars) return showAuthAlert(['Yulduzchalar orqali baho bering.'], 'error', rateAlert);
+            const payload = { shipmentId: rateState.shipment.id, targetRole: rateState.target, stars: rateState.stars };
+            if (rateState.target === 'DRIVER') { payload.friendly = document.getElementById('rate-friendly').checked; payload.damaged = document.getElementById('rate-damaged').checked; }
+            const c = document.getElementById('rate-comment').value.trim();
+            if (c) payload.comment = c;
+            setLoading(rateForm, true);
+            try {
+                await authed('POST', '/ratings', payload);
+                ratingsMine.push({ shipmentId: payload.shipmentId, targetRole: payload.targetRole, stars: payload.stars });
+                closeRateModal();
+                showToast('Baho yuborildi. Rahmat!', 3000, 'success');
+                sfx.play('success');
+                if (dashTab === 'shipments' || dashTab === 'myloads') selectDashTab(dashTab);
+            } catch (err) {
+                if (err.status !== 401) showAuthAlert(err.messages, 'error', rateAlert);
+            } finally { setLoading(rateForm, false); }
+        });
+        // Yetkazilgan yuk kartochkasi uchun "Baho berish" qatori
+        function buildRateActions(s, viewer) {
+            const targets = viewer === 'driver-own' ? ['FARMER', 'MARKET'] : viewer === 'farmer' ? ['DRIVER', 'MARKET'] : ['DRIVER', 'FARMER'];
+            const row = el('div', 'flex flex-wrap items-center gap-2 pt-1');
+            targets.forEach(function (tg) {
+                if (tg === 'DRIVER' && !s.driver) return;
+                const done = ratedOf(s.id, tg);
+                const b = el('button', ['px-3.5 py-2 rounded-xl text-xs sm:text-sm font-extrabold border transition', done ? 'border-amber-400/40 text-amber-300 cursor-default' : 'border-amber-400/50 text-amber-300 hover:bg-amber-400/10'].join(' '));
+                b.type = 'button';
+                b.appendChild(el('i', 'fa-solid fa-star mr-1.5'));
+                b.appendChild(el('span', '', done ? T('{0}: {1} ★', T(TARGET_LABEL[tg]), done.stars) : T('{0}ni baholash', T(TARGET_LABEL[tg]))));
+                if (done) b.disabled = true; else b.addEventListener('click', function () { openRateModal(s, tg); });
+                row.appendChild(b);
+            });
+            return row;
+        }
+
+        // ===== Administrator: KYC arizalari =====
+        async function viewKycDoc(userId, type) {
+            const token = storageGet(TOKEN_KEY);
+            try {
+                const res = await fetch(API_URL + '/kyc/' + userId + '/documents/' + type, { headers: { Authorization: 'Bearer ' + token } });
+                if (!res.ok) return showToast('Hujjat topilmadi.', 3200, 'error');
+                window.open(URL.createObjectURL(await res.blob()), '_blank', 'noopener');
+            } catch (e) { showToast("Serverga ulanib bo'lmadi.", 3600, 'error'); }
+        }
+        async function renderAdmKyc(user) {
+            const list = await admLoad(user, '', '/kyc/pending', null, function () { renderAdmKyc(user); });
+            if (!list) return;
+            const again = function () { renderAdmKyc(user); };
+            const nodes = [admHead('KYC arizalari', again)];
+            nodes.push(el('p', 'text-sm text-slate-400', "Haydovchilar yuborgan hujjatlar. Tasdiqlansa «Tasdiqlangan haydovchi» badji ochiladi."));
+            nodes.push(admTable([
+                ['Haydovchi', function (u) { return admName(u.fullName, u.phone + (u.plateNumber ? ' · ' + u.plateNumber : '')); }],
+                ['Hujjatlar', function (u) {
+                    const w = el('div', 'flex flex-wrap gap-1.5');
+                    KYC_STEPS.forEach(function (s) { w.appendChild(admBtn(s[1], s[2], function () { viewKycDoc(u.id, s[0]); }, 'ok')); });
+                    return w;
+                }],
+                ['Yuborilgan', function (u) { return admDate(u.createdAt); }],
+                ['Amallar', function (u) {
+                    return admActions([
+                        admBtn('fa-circle-check', 'Tasdiqlash', async function () { try { await authed('POST', '/kyc/' + u.id + '/approve'); showToast('Tasdiqlandi', 2400, 'success'); again(); } catch (e) { showToast(e.messages[0], 4000, 'error'); } }, 'ok'),
+                        admBtn('fa-circle-xmark', 'Rad etish', function () {
+                            openWhForm({ title: 'Rad etish sababi', sub: u.fullName, icon: 'fa-circle-xmark', submit: 'Rad etish',
+                                fields: [{ name: 'reason', label: 'Sabab', type: 'text', required: true }],
+                                onSubmit: function (v) { return authed('POST', '/kyc/' + u.id + '/reject', { reason: v.reason }); }, done: 'Ariza rad etildi.' });
+                        }, 'danger')
+                    ]);
+                }]
+            ], list, "Tekshirishni kutayotgan arizalar yo'q."));
+            dashContent.replaceChildren.apply(dashContent, nodes);
+        }
+        function admVerifyButton(u) {
+            if (u.role !== 'FARMER' && u.role !== 'MARKET') return null;
+            const on = u.isVerified;
+            return admBtn(on ? 'fa-user-slash' : 'fa-user-check', on ? 'Tasdiqni bekor qilish' : 'Tasdiqlash', async function () {
+                try { await authed('POST', '/kyc/' + u.id + (on ? '/revoke' : '/approve')); showToast(on ? 'Tasdiq bekor qilindi' : 'Tasdiqlandi', 2400, 'success'); selectDashTab(dashTab); }
+                catch (e) { showToast(e.messages[0], 4000, 'error'); }
+            }, on ? 'danger' : 'ok');
+        }
+
         startLiveReviews();
         routeRoleHash();
         routeNotFound();

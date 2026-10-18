@@ -35,6 +35,7 @@ export interface AppEnv {
   THROTTLE_CHANGE_PASSWORD_LIMIT: number;
   THROTTLE_LOCATION_LIMIT: number;
   LOCATION_ALLOW_SIMULATION: boolean;
+  KYC_ALLOW_SIMULATION: boolean;
   TELEGRAM_BOT_TOKEN: string; // bo'sh = bot o'chiq
   TELEGRAM_BOT_USERNAME: string;
   TELEGRAM_POLLING: boolean;
@@ -151,6 +152,10 @@ export function validateEnv(raw: Record<string, unknown>): AppEnv & Record<strin
     errors.push("Production'da simulyatsiya qilingan SMS taqiqlangan: haqiqiy SMS provayderini ulang (faqat demo uchun SMS_ALLOW_SIMULATION=true)");
   }
 
+  // KYC: simulyatsiyada Face ID haqiqiy tekshirilmaydi va hujjatlar yuklangach avtomatik tasdiqlanadi; production'da administrator ko'rib chiqadi
+  const kycSimRaw = String(raw.KYC_ALLOW_SIMULATION ?? (prod ? 'false' : 'true')).toLowerCase();
+  if (!['true', 'false'].includes(kycSimRaw)) errors.push("KYC_ALLOW_SIMULATION true yoki false bo'lishi kerak");
+
   const locSimRaw = String(raw.LOCATION_ALLOW_SIMULATION ?? (prod ? 'false' : 'true')).toLowerCase();
   if (!['true', 'false'].includes(locSimRaw)) errors.push("LOCATION_ALLOW_SIMULATION true yoki false bo'lishi kerak");
 
@@ -208,6 +213,7 @@ export function validateEnv(raw: Record<string, unknown>): AppEnv & Record<strin
     THROTTLE_LOCATION_LIMIT: intInRange(raw.THROTTLE_LOCATION_LIMIT, 'THROTTLE_LOCATION_LIMIT', 12, 1, 100000, errors),
     // Demo (soxta) joylashuv: productionda sukut bo'yicha o'chiq, fermer/market haqiqiy joyni ko'rishiga ishonadi
     LOCATION_ALLOW_SIMULATION: locSimRaw === 'true',
+    KYC_ALLOW_SIMULATION: kycSimRaw === 'true',
     PAYMENT_PROVIDER: 'simulated' as const,
     PAYMENT_ALLOW_SIMULATION: allowSimulation,
     // Yetkazilgandan keyin xaridor tasdiqlamasa, fermer pulni shu soatdan keyin o'zi chiqarib ola oladi

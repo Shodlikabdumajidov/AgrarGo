@@ -1,4 +1,4 @@
-import { IsNumber, IsOptional, IsPositive, IsString, IsUUID, Max, MaxLength } from 'class-validator';
+import { IsBoolean, IsNumber, IsOptional, IsPositive, IsString, IsUUID, Max, MaxLength } from 'class-validator';
 
 export class CreateBookingDto {
   @IsUUID(undefined, { message: "E'lon identifikatori noto'g'ri" })
@@ -13,4 +13,9 @@ export class CreateBookingDto {
   @IsString()
   @MaxLength(500)
   message?: string;
+
+  /** Shoshilinch bron: haydovchilarga "Favqulodda yordamchi" badji uchun hisoblanadi */
+  @IsOptional()
+  @IsBoolean()
+  urgent?: boolean;
 }

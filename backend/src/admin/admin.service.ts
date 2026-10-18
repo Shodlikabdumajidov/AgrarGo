@@ -301,6 +301,7 @@ export class AdminService {
   private userView(u: Prisma.UserGetPayload<{ include: typeof USER_LIST_INCLUDE }>) {
     return {
       id: u.id, phone: u.phone, fullName: u.fullName, role: u.role, isActive: u.isActive, createdAt: u.createdAt, avatarUrl: u.avatarUrl,
+      isVerified: u.isVerified, kycStatus: u.kycStatus,
       org: u.farmer?.farmName ?? u.market?.companyName ?? u.driver?.plateNumber ?? null,
       region: u.farmer?.region ?? u.market?.region ?? u.driver?.region ?? null,
     };

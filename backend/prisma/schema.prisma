@@ -29,6 +29,11 @@ model User {
   // Kirish huquqi = ikkalasidan kechroq sana. Admin/dispetcherlarda bo'sh (obuna talab qilinmaydi).
   trialEndsAt        DateTime?
   subscriptionEndsAt DateTime?
+  // Shaxsni tasdiqlash (KYC): haydovchida hujjatlar+Face ID, fermer/marketda administrator tasdig'i
+  isVerified      Boolean   @default(false)
+  verifiedAt      DateTime?
+  kycStatus       KycStatus @default(NONE)
+  kycRejectReason String?
   // Parol o'zgarganda/tiklanganda oshiriladi: eski JWT tokenlar darhol yaroqsiz bo'ladi
   tokenVersion Int      @default(0)
   isActive     Boolean  @default(true)
@@ -48,6 +53,9 @@ model User {
   passwordResets PasswordReset[]
   review         Review?
   subscriptionPayments SubscriptionPayment[]
+  kycDocuments         KycDocument[]
+  ratingsGiven         ShipmentRating[]      @relation("RatingRater")
+  ratingsReceived      ShipmentRating[]      @relation("RatingTarget")
 }
 
 model Farmer {
@@ -127,6 +135,7 @@ model Booking {
   decidedAt  DateTime?
   shipment   Shipment?
   payment    Payment?
+  urgent     Boolean       @default(false) // shoshilinch bron
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -189,6 +198,8 @@ model Shipment {
   driver           Driver?         @relation(fields: [driverId], references: [id], onDelete: SetNull)
 
   status ShipmentStatus @default(OPEN)
+  urgent Boolean        @default(false) // shoshilinch (bron belgisi nusxasi)
+  ratings ShipmentRating[]
 
   // Bron paytidagi ma'lumotlar nusxasi: keyin profil o'zgarsa ham marshrut o'zgarmaydi
   cargoName      String
@@ -578,4 +589,50 @@ model MarketPrice {
   createdAt      DateTime @default(now())
 
   @@index([marketName, productName, createdAt])
+}
+
+enum KycStatus {
+  NONE
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum KycDocType {
+  ID_CARD
+  DRIVER_LICENSE
+  TECH_PASSPORT
+  FACE
+}
+
+// KYC hujjatlari. Fayllar ommaviy /uploads'da EMAS: backend/private/kyc/ ichida, faqat egasi va administratorga beriladi.
+model KycDocument {
+  id        String     @id @default(uuid())
+  userId    String
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      KycDocType
+  path      String // private/kyc ichidagi nisbiy yo'l
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@unique([userId, type])
+}
+
+// Yetkazilgan yukdan keyin tomonlarning bir-birini baholashi (yulduz + teglar). Ishonchlilik darajalari va badjlar shundan hisoblanadi.
+model ShipmentRating {
+  id         String   @id @default(uuid())
+  shipmentId String
+  shipment   Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  raterId    String
+  rater      User     @relation("RatingRater", fields: [raterId], references: [id], onDelete: Cascade)
+  targetId   String
+  target     User     @relation("RatingTarget", fields: [targetId], references: [id], onDelete: Cascade)
+  stars      Int
+  friendly   Boolean  @default(false) // "Juda xushmuomala" (haydovchiga)
+  damaged    Boolean  @default(false) // yukka zarar yetgan (haydovchiga)
+  comment    String?
+  createdAt  DateTime @default(now())
+
+  @@unique([shipmentId, raterId, targetId])
+  @@index([targetId, stars])
 }

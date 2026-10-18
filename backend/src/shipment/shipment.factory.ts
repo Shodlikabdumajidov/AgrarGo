@@ -7,6 +7,7 @@ export async function createShipmentForBooking(tx: Prisma.TransactionClient, boo
     select: {
       quantityKg: true,
       marketId: true,
+      urgent: true,
       product: {
         select: { name: true, category: true, farmerId: true, farmer: { select: { region: true, district: true, address: true } } },
       },
@@ -22,6 +23,7 @@ export async function createShipmentForBooking(tx: Prisma.TransactionClient, boo
       farmerId: booking.product.farmerId,
       marketId: booking.marketId,
       status: ShipmentStatus.OPEN,
+      urgent: booking.urgent,
       cargoName: booking.product.name,
       category: booking.product.category,
       weightKg: booking.quantityKg,
