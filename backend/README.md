@@ -91,6 +91,20 @@ Holatlar: `OPEN` (haydovchi kutilmoqda) → `LOADING` (yuklanmoqda) → `IN_TRAN
 - `GET /shipments/eld?days=1..7` (DRIVER) — ELD jurnali: kunlar bo'yicha haydash/to'xtash daqiqalari, masofa, tezlik, to'xtashlar tarixi (≥3 daqiqa), 9 soatlik kunlik chegara belgisi. Kunlar Toshkent vaqti (UTC+5) bo'yicha. 5 daqiqadan uzoq signalsiz oraliq hisobga olinmaydi.
 - Jadvallar: `LocationLog` (har bir nuqta), `Shipment.last*` (oxirgi nuqta nusxasi). Eslatma: jurnal hozircha cheksiz saqlanadi — productionda eski yozuvlarni arxivlash/o'chirish ishini qo'shing.
 
+## Omborxona (Warehouse / WMS)
+Rollar: **FARMER** (e'lon qiladi, o'z yuklarini kuzatadi), **MARKET** (tayyor postlardan buyurtma beradi), **DISPATCHER** yoki **ADMIN** (ombor operatsiyalari). Dispetcher API orqali ro'yxatdan o'tmaydi:
+`ADMIN_PASSWORD='...' npm run admin:create -- --role=DISPATCHER +998901234567 "Ism Familiya"`
+
+Zonalar: `INBOUND` (qabul) → `STORAGE` (kamera/ombor) ↔ `SORTING` (saralash/qadoqlash) → `OUTBOUND` (jo'natish). Yuk holati: `ANNOUNCED → RECEIVED → ACTIVE` (yoki `REJECTED`) → `DEPLETED`.
+
+- Fermer: `POST /warehouse/items` (e'lon; saqlash turi nomi/toifasidan aniqlanadi), `GET /warehouse/items/mine`, `DELETE /warehouse/items/:id` (qabul qilinmaguncha), `POST /warehouse/items/:id/photo`.
+- Dispetcher: `POST /warehouse/items/:id/receive` (tortish + shtrix-kod `AG-YYMMDD-XXXXXXXX`, ixtiyoriy RFID), `/inspect` (baho A/B/C, yaroqsiz miqdor, rad etish), `/move` (zona + kamera; sovuq talab qiladigan mahsulot quruq omborga qo'yilmaydi, sig'im tekshiriladi, saqlash muddati hisoblanadi), `/sort` (o'lcham, qadoq, chiqit), `/count` (inventarizatsiya), `GET /warehouse/scan/:code`, `GET /warehouse/items`, `GET /warehouse/inventory`.
+- Kameralar: `GET/POST /warehouse/units`, `POST /warehouse/units/defaults`, `POST /warehouse/units/:id/readings` (harorat/namlik; me'yor/ogohlantirish/avariya, 30 daqiqadan eski ko'rsatkich = NO_DATA).
+- Market: `GET /warehouse/feed` (faqat jo'natishga tayyor postlar; telefon va zaxira miqdori yashirin), `POST /warehouse/orders` (miqdor atomik zaxiralanadi), `GET /warehouse/orders/mine`, `PATCH /warehouse/orders/:id/cancel|deliver`.
+- Dispetcher buyurtmalari: `PATCH /warehouse/orders/:id/picking|picked|dispatch` (haydovchi tanlanadi, sig'im tekshiriladi), `GET /warehouse/orders`, `GET /warehouse/drivers`. Haydovchi biriktirilgan buyurtmalarini `GET /warehouse/orders/mine` orqali ko'radi.
+- Qoldiq `StockMovement` jurnali bilan mos; bazada `CHECK (reservedKg <= weightKg, weightKg >= 0)` cheklovlari bor.
+- Eslatma: buyurtmalar hozircha escrow to'lovga ulanmagan va ombor jo'natmalari `Shipment` (GPS) tizimidan alohida; harorat datchiklari uchun haqiqiy IoT integratsiyasi yo'q (dispetcher kiritadi).
+
 ## Kafolatlangan to'lov (Escrow)
 Bron tasdiqlanganda `PENDING` to'lov yaratiladi (summa = miqdor × bron narxi, serverda hisoblanadi, `UZS`). Yuk faqat to'lov `HELD` bo'lgandan keyin olinadi.
 

@@ -88,7 +88,7 @@ export async function resetDb(prisma: PrismaClient) {
   const [{ db }] = await prisma.$queryRaw<{ db: string }[]>`SELECT current_database() AS db`;
   if (!db.endsWith('_test')) throw new Error(`resetDb "${db}" bazasida bajarilmaydi: faqat *_test`);
   // CASCADE: User'ga bog'liq barcha jadvallar (profillar, e'lon, bron, yuk) tozalanadi
-  await prisma.$executeRawUnsafe('TRUNCATE TABLE "User" CASCADE');
+  await prisma.$executeRawUnsafe('TRUNCATE TABLE "User", "StorageUnit" CASCADE');
 }
 
 let phoneCounter = 0;
@@ -155,11 +155,11 @@ export const pay = (http: Http, market: Account, bookingId: string) =>
   http().post('/payments/init').set('Authorization', bearer(market)).send({ bookingId });
 
 /** Administrator API orqali ro'yxatdan o'tmaydi: bazada yaratiladi va oddiy login bilan kiradi */
-export async function createAdmin(t: TestApp): Promise<Account> {
+export async function createAdmin(t: TestApp, role: 'ADMIN' | 'DISPATCHER' = 'ADMIN'): Promise<Account> {
   const bcrypt = await import('bcrypt');
   const phone = nextPhone();
   const user = await t.prisma.user.create({
-    data: { phone, fullName: 'Admin', role: 'ADMIN', passwordHash: await bcrypt.hash(PASSWORD, 4) },
+    data: { phone, fullName: role === 'ADMIN' ? 'Admin' : 'Dispetcher', role, passwordHash: await bcrypt.hash(PASSWORD, 4) },
   });
   const res = await t.http().post('/auth/login').send({ phone, password: PASSWORD });
   if (res.status !== 200) throw new Error(`createAdmin login ${res.status}`);

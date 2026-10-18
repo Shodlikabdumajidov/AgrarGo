@@ -16,6 +16,7 @@ import { AppThrottlerGuard } from './security/app-throttler.guard';
 import { buildThrottlers } from './security/throttling';
 import { ShipmentModule } from './shipment/shipment.module';
 import { SmsModule } from './sms/sms.module';
+import { WarehouseModule } from './warehouse/warehouse.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { SmsModule } from './sms/sms.module';
     BookingModule,
     ShipmentModule,
     PaymentModule,
+    WarehouseModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_GUARD, useClass: AppThrottlerGuard }],
