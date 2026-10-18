@@ -25,6 +25,10 @@ model User {
   avatarUrl    String?
   // Fermer va market uchun shaxsiy orqa fon muqovasi (cover banner), /uploads/covers/... yo'li
   coverUrl     String?
+  // Obuna: ro'yxatdan o'tganda 1 oylik bepul sinov; to'lovdan keyin subscriptionEndsAt uzaytiriladi.
+  // Kirish huquqi = ikkalasidan kechroq sana. Admin/dispetcherlarda bo'sh (obuna talab qilinmaydi).
+  trialEndsAt        DateTime?
+  subscriptionEndsAt DateTime?
   // Parol o'zgarganda/tiklanganda oshiriladi: eski JWT tokenlar darhol yaroqsiz bo'ladi
   tokenVersion Int      @default(0)
   isActive     Boolean  @default(true)
@@ -43,6 +47,7 @@ model User {
 
   passwordResets PasswordReset[]
   review         Review?
+  subscriptionPayments SubscriptionPayment[]
 }
 
 model Farmer {
@@ -542,4 +547,21 @@ model Review {
 
   @@index([isApproved, createdAt(sort: Desc)])
   @@index([role, isApproved])
+}
+
+// Platforma obunasi to'lovi (rolga qarab oylik tarif). Escrow to'lovlaridan alohida.
+model SubscriptionPayment {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role        Role
+  months      Int
+  amount      Decimal  @db.Decimal(20, 2) // server hisoblaydi: oylik tarif x oylar
+  provider    String
+  providerRef String
+  periodStart DateTime
+  periodEnd   DateTime
+  createdAt   DateTime @default(now())
+
+  @@index([userId, createdAt])
 }

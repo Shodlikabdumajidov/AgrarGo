@@ -64,6 +64,9 @@ Boshqa fermerning e'loni `404` qaytaradi. FARMER bo'lmagan rol `403`, tokensiz `
 - `POST /profile/avatar` (multipart, maydon nomi `file`; JPG/PNG/WEBP, ≤ 2 MB, tur baytlar bo'yicha tekshiriladi), `DELETE /profile/avatar`
 - `POST /profile/cover` (multipart, `file`; faqat FARMER/MARKET, JPG/PNG/WEBP, ≤ 4 MB, bayt-imzo tekshiriladi), `DELETE /profile/cover` — kabinet muqovasi (`User.coverUrl`)
 - `GET /marketplace` yangi filtrlar: `minPrice`, `maxPrice` (so'm/kg), `minQty`, `maxQty` (kg); javob `meta.ranges` — slayder chegaralari
+- **Obuna va bepul sinov**: ro'yxatdan o'tgan FARMER/DRIVER/MARKET'ga avtomatik 30 kunlik sinov (`User.trialEndsAt`); to'lovdan keyin `User.subscriptionEndsAt` uzaytiriladi (kirish huquqi = ikkalasidan kechrog'i; qolgan sinov kunlari yo'qolmaydi). Tariflar (oyiga): Fermer 49 000, Haydovchi 79 000, Market 149 000 so'm — server hisoblaydi.
+  - `GET /subscription` (holat, qolgan kunlar, tariflar), `GET /subscription/plans`, `GET /subscription/history`, `POST /subscription/pay` `{ months: 1|3|6|12 }` (hozir simulyatsiya provayderi orqali)
+  - Muddat tugagach `SubscriptionGuard` e'lon berish (`POST /products`, `POST /warehouse/items`), bron qilish (`POST /bookings`) va yuk qabul qilishni (`POST /shipments/:id/accept`) bloklaydi: **402** `{ code: 'SUBSCRIPTION_REQUIRED' }`. O'qish amallari va to'lov ishlayveradi. Admin/dispetcher obunadan ozod.
 - Rasmlar `uploads/avatars/` papkasida saqlanadi va `/uploads/avatars/<fayl>` orqali beriladi (production'da doimiy disk yoki S3 kerak).
 
 ## Bronlar (qisman miqdor)

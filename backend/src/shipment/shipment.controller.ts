@@ -2,6 +2,7 @@ import { Body, Controller, ForbiddenException, Get, Header, HttpCode, Param, Par
 import { Role } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/current-user.decorator';
+import { SubscriptionGuard } from '../subscription/subscription.guard';
 import { Roles } from '../common/roles.decorator';
 import { RolesGuard } from '../common/roles.guard';
 import { ThrottleProfile } from '../security/throttle-profile';
@@ -23,6 +24,7 @@ export class ShipmentController {
   }
 
   @Post(':id/accept')
+  @UseGuards(SubscriptionGuard)
   @Roles(Role.DRIVER)
   accept(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string) {
     return this.shipments.accept(this.driver(user), id);

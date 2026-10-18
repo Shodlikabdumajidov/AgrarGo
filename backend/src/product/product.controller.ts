@@ -4,6 +4,7 @@ import {
 import { Role } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/current-user.decorator';
+import { SubscriptionGuard } from '../subscription/subscription.guard';
 import { Roles } from '../common/roles.decorator';
 import { RolesGuard } from '../common/roles.guard';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -19,6 +20,7 @@ export class ProductController {
   constructor(private readonly products: ProductService) {}
 
   @Post()
+  @UseGuards(SubscriptionGuard)
   create(@CurrentUser() user: any, @Body() dto: CreateProductDto) {
     return this.products.create(this.farmerId(user), dto);
   }

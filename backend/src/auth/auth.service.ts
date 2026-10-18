@@ -7,6 +7,7 @@ import { publicUser } from '../common/public-user';
 import { PrismaService } from '../prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterBaseDto } from './dto/register-base.dto';
+import { trialEndsFromNow } from '../subscription/subscription.logic';
 import { RegisterDriverDto } from './dto/register-driver.dto';
 import { RegisterFarmerDto } from './dto/register-farmer.dto';
 import { RegisterMarketDto } from './dto/register-market.dto';
@@ -67,7 +68,7 @@ export class AuthService {
     const passwordHash = await bcrypt.hash(base.password, 10);
     try {
       const user = await this.prisma.user.create({
-        data: { phone: base.phone, passwordHash, fullName: base.fullName, role, ...profile },
+        data: { phone: base.phone, passwordHash, fullName: base.fullName, role, trialEndsAt: trialEndsFromNow(), ...profile },
         include: USER_WITH_PROFILES,
       });
       return this.buildResponse(user);

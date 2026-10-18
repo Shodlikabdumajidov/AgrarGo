@@ -18,6 +18,7 @@ import { AppThrottlerGuard } from './security/app-throttler.guard';
 import { buildThrottlers } from './security/throttling';
 import { ReviewsModule } from './reviews/reviews.module';
 import { ShipmentModule } from './shipment/shipment.module';
+import { SubscriptionModule } from './subscription/subscription.module';
 import { SmsModule } from './sms/sms.module';
 import { TelegramModule } from './telegram/telegram.module';
 import { WarehouseModule } from './warehouse/warehouse.module';
@@ -42,6 +43,7 @@ import { WarehouseModule } from './warehouse/warehouse.module';
     BookingModule,
     ShipmentModule,
     PaymentModule,
+    SubscriptionModule,
     WarehouseModule,
     SettingsModule,
     ReviewsModule,

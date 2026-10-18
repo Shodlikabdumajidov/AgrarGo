@@ -5,7 +5,7 @@ import { PAYMENT_PROVIDER, SimulatedPaymentProvider } from './provider/payment-p
 
 @Module({
   controllers: [PaymentController],
-  exports: [PaymentService],
+  exports: [PaymentService, PAYMENT_PROVIDER],
   providers: [
     PaymentService,
     // Haqiqiy provayder (Payme, Click...) qo'shilganda faqat shu yerda almashtiriladi

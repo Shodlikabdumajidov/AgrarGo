@@ -7,6 +7,7 @@ import { memoryStorage } from 'multer';
 import { StaffAuditInterceptor } from '../admin/audit.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/current-user.decorator';
+import { SubscriptionGuard } from '../subscription/subscription.guard';
 import { Roles } from '../common/roles.decorator';
 import { RolesGuard } from '../common/roles.guard';
 import { ThrottleProfile } from '../security/throttle-profile';
@@ -28,6 +29,7 @@ export class WarehouseController {
 
   // ===== Fermer =====
   @Post('items')
+  @UseGuards(SubscriptionGuard)
   @Roles(Role.FARMER)
   @ThrottleProfile('booking')
   announce(@CurrentUser() user: any, @Body() dto: AnnounceItemDto) {

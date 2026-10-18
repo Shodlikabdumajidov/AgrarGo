@@ -2,6 +2,7 @@ import { Body, Controller, ForbiddenException, Get, Param, ParseUUIDPipe, Patch,
 import { Role } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/current-user.decorator';
+import { SubscriptionGuard } from '../subscription/subscription.guard';
 import { Roles } from '../common/roles.decorator';
 import { RolesGuard } from '../common/roles.guard';
 import { ThrottleProfile } from '../security/throttle-profile';
@@ -17,6 +18,7 @@ export class BookingController {
   // --- Supermarket (MARKET) ---
   @Post()
   @ThrottleProfile('booking')
+  @UseGuards(SubscriptionGuard)
   @Roles(Role.MARKET)
   create(@CurrentUser() user: any, @Body() dto: CreateBookingDto) {
     return this.bookings.create(this.marketId(user), dto);
