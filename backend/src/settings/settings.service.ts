@@ -14,6 +14,9 @@ const FALLBACK = {
   youtubeUrl: null as string | null,
   workingHours: { uz: '', ru: '', en: '' },
   address: { uz: '', ru: '', en: '' },
+  warehouseRegion: 'Samarqand',
+  warehouseDistrict: 'Samarqand shahri',
+  warehouseAddress: null as string | null,
 };
 
 @Injectable()
@@ -37,7 +40,7 @@ export class SettingsService {
   async update(actorId: string, dto: UpdateSettingsDto) {
     const before = await this.getForAdmin();
     const fields: Prisma.SystemSettingsUncheckedUpdateInput = { updatedById: actorId };
-    for (const k of ['siteName', 'supportEmail', 'telegramUrl', 'instagramUrl', 'facebookUrl', 'youtubeUrl'] as const) {
+    for (const k of ['siteName', 'supportEmail', 'telegramUrl', 'instagramUrl', 'facebookUrl', 'youtubeUrl', 'warehouseRegion', 'warehouseDistrict', 'warehouseAddress'] as const) {
       if (dto[k] !== undefined) (fields as any)[k] = dto[k];
     }
     if (dto.telegramHandle !== undefined) fields.telegramHandle = dto.telegramHandle ? dto.telegramHandle.replace(/^@?/, '@') : null;

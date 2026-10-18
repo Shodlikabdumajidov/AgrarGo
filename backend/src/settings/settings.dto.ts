@@ -42,4 +42,14 @@ export class UpdateSettingsDto {
 
   @IsOptional() @ValidateNested() @Type(() => LocalizedTextDto)
   address?: LocalizedTextDto;
+
+  // Omborxona joylashuvi (ombor yuklari marshrutining boshlanish nuqtasi)
+  @IsOptional() @IsString() @MinLength(2) @MaxLength(50)
+  warehouseRegion?: string;
+
+  @IsOptional() @IsString() @MinLength(2) @MaxLength(80)
+  warehouseDistrict?: string;
+
+  @IsOptional() @IsString() @MaxLength(150)
+  warehouseAddress?: string | null;
 }

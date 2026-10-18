@@ -243,7 +243,10 @@ export class AdminService {
         where, orderBy: { updatedAt: 'desc' }, skip: (page - 1) * limit, take: limit,
         include: {
           driver: { select: { plateNumber: true, vehicleType: true, user: { select: { fullName: true, phone: true } } } },
-          booking: { select: { payment: { select: { status: true, amount: true } }, product: { select: { farmer: { select: { farmName: true } } } }, market: { select: { companyName: true } } } },
+          booking: { select: { payment: { select: { status: true, amount: true } } } },
+          warehouseOrder: { select: { payment: { select: { status: true, amount: true } } } },
+          farmer: { select: { farmName: true } },
+          market: { select: { companyName: true } },
         },
       }),
     ]);
@@ -252,8 +255,9 @@ export class AdminService {
         id: s.id, status: s.status, cargoName: s.cargoName, category: s.category, weightKg: s.weightKg,
         origin: { region: s.originRegion, district: s.originDistrict }, destination: { region: s.destRegion, district: s.destDistrict },
         createdAt: s.createdAt, deliveredAt: s.deliveredAt, lastLocationAt: s.lastLocationAt,
-        farmName: s.booking.product.farmer.farmName, companyName: s.booking.market.companyName,
-        paymentStatus: s.booking.payment?.status ?? null, amount: s.booking.payment?.amount ?? null,
+        source: s.warehouseOrderId ? 'WAREHOUSE' : 'BOOKING',
+        farmName: s.farmer.farmName, companyName: s.market.companyName,
+        paymentStatus: (s.booking?.payment ?? s.warehouseOrder?.payment)?.status ?? null, amount: (s.booking?.payment ?? s.warehouseOrder?.payment)?.amount ?? null,
         driver: s.driver ? { fullName: s.driver.user.fullName, phone: s.driver.user.phone, plateNumber: s.driver.plateNumber, vehicleType: s.driver.vehicleType } : null,
       })),
       total, page, pages: Math.max(1, Math.ceil(total / limit)),

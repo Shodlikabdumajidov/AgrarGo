@@ -1,6 +1,7 @@
 import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PaymentStatus, Prisma, Role, ShipmentStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { SettingsService } from '../settings/settings.service';
 import { AvailableShipmentsQuery, ListShipmentsQuery } from './dto/list-shipments.query';
 
 // Haydovchi bir vaqtda nechta yakunlanmagan yukni olib yura oladi
@@ -13,14 +14,10 @@ const SHIPMENT_INCLUDE = {
   driver: {
     select: { vehicleType: true, plateNumber: true, capacityKg: true, user: { select: { fullName: true, phone: true } } },
   },
-  booking: {
-    select: {
-      id: true,
-      payment: { select: { status: true } },
-      product: { select: { farmer: { select: { farmName: true, user: { select: { fullName: true, phone: true } } } } } },
-      market: { select: { companyName: true, user: { select: { fullName: true, phone: true } } } },
-    },
-  },
+  booking: { select: { id: true, payment: { select: { status: true } } } },
+  warehouseOrder: { select: { id: true, status: true, payment: { select: { status: true } } } },
+  farmer: { select: { farmName: true, user: { select: { fullName: true, phone: true } } } },
+  market: { select: { companyName: true, user: { select: { fullName: true, phone: true } } } },
 } satisfies Prisma.ShipmentInclude;
 
 type ShipmentRow = Prisma.ShipmentGetPayload<{ include: typeof SHIPMENT_INCLUDE }>;
@@ -28,7 +25,7 @@ type Viewer = 'driver-open' | 'driver-own' | 'farmer' | 'market';
 
 @Injectable()
 export class ShipmentService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly settings: SettingsService) {}
 
   // ---------- Haydovchi ----------
 
@@ -43,7 +40,8 @@ export class ShipmentService {
       orderBy: { createdAt: 'desc' },
       include: SHIPMENT_INCLUDE,
     });
-    return rows.map((s) => this.shape(s, 'driver-open', driver.capacityKg));
+    const wh = await this.warehouseContact(rows);
+    return rows.map((s) => this.shape(s, 'driver-open', driver.capacityKg, wh));
   }
 
   /** Yukni o'ziga biriktirish: OPEN -> LOADING */
@@ -63,7 +61,10 @@ export class ShipmentService {
         throw new ConflictException('Bu yuk allaqachon boshqa haydovchiga biriktirilgan');
       }
       // Kafolatlangan to'lov: yuk faqat xaridor mablag'ni escrow'ga o'tkazgandan keyin olinadi
-      const payment = await tx.payment.findUnique({ where: { bookingId: shipment.bookingId }, select: { status: true } });
+      const payment = await tx.payment.findFirst({
+        where: shipment.bookingId ? { bookingId: shipment.bookingId } : { warehouseOrderId: shipment.warehouseOrderId },
+        select: { status: true },
+      });
       if (payment?.status !== PaymentStatus.HELD) {
         throw new ConflictException("Xaridor to'lovi hali kafolatlanmagan. To'lov escrow'ga o'tgandan keyin yukni olish mumkin");
       }
@@ -79,6 +80,7 @@ export class ShipmentService {
       });
       if (claimed.count === 0) throw new ConflictException('Bu yuk allaqachon boshqa haydovchiga biriktirilgan');
       await tx.shipmentEvent.create({ data: { shipmentId: id, status: ShipmentStatus.LOADING } });
+      if (shipment.warehouseOrderId) await tx.warehouseOrder.updateMany({ where: { id: shipment.warehouseOrderId }, data: { driverId: driver.id } });
     });
     return this.reload(id, 'driver-own');
   }
@@ -92,6 +94,8 @@ export class ShipmentService {
       });
       if (released.count === 0) await this.explainFailure(tx, id, driverId, "Yukni faqat yo'lga chiqishdan oldin qaytarish mumkin");
       await tx.shipmentEvent.create({ data: { shipmentId: id, status: ShipmentStatus.OPEN } });
+      const sh = await tx.shipment.findUnique({ where: { id }, select: { warehouseOrderId: true } });
+      if (sh?.warehouseOrderId) await tx.warehouseOrder.updateMany({ where: { id: sh.warehouseOrderId }, data: { driverId: null } });
     });
     return this.reload(id, 'driver-own');
   }
@@ -99,8 +103,12 @@ export class ShipmentService {
   /** Keyingi bosqichga o'tkazish: LOADING -> IN_TRANSIT -> DELIVERED */
   async advance(driverId: string, id: string) {
     await this.prisma.$transaction(async (tx) => {
-      const current = await tx.shipment.findFirst({ where: { id, driverId }, select: { status: true } });
+      const current = await tx.shipment.findFirst({ where: { id, driverId }, select: { status: true, warehouseOrderId: true } });
       if (!current) throw new NotFoundException('Yuk topilmadi');
+      // Ombor yuki: omborxonadan chiqishni (qoldiq kamayishi bilan) dispetcher yuklab tasdiqlaydi, haydovchi emas
+      if (current.warehouseOrderId && current.status === ShipmentStatus.LOADING) {
+        throw new ConflictException("Ombor yukini dispetcher yuklab jo'natadi. Yuklash tasdiqlanishini kuting");
+      }
 
       const next =
         current.status === ShipmentStatus.LOADING ? ShipmentStatus.IN_TRANSIT
@@ -117,6 +125,13 @@ export class ShipmentService {
       });
       if (moved.count === 0) throw new ConflictException("Yuk holati allaqachon o'zgargan. Sahifani yangilang");
       await tx.shipmentEvent.create({ data: { shipmentId: id, status: next } });
+      if (next === ShipmentStatus.DELIVERED && current.warehouseOrderId) {
+        // Ombor buyurtmasi yetkazildi (pul esa xaridor yoki dispetcher tasdiqlagach chiqariladi)
+        const done = await tx.warehouseOrder.updateMany({
+          where: { id: current.warehouseOrderId, status: 'DISPATCHED' }, data: { status: 'DELIVERED', deliveredAt: new Date() },
+        });
+        if (done.count === 0) throw new ConflictException("Buyurtma holati mos kelmaydi. Dispetcherga murojaat qiling");
+      }
     });
     return this.reload(id, 'driver-own');
   }
@@ -131,23 +146,25 @@ export class ShipmentService {
         orderBy: { updatedAt: 'desc' },
         include: SHIPMENT_INCLUDE,
       });
-      return rows.map((s) => this.shape(s, 'driver-own'));
+      const wh = await this.warehouseContact(rows);
+      return rows.map((s) => this.shape(s, 'driver-own', undefined, wh));
     }
     if (user.role === Role.FARMER && user.farmer) {
       const rows = await this.prisma.shipment.findMany({
-        where: { booking: { product: { farmerId: user.farmer.id } }, ...statusFilter },
+        where: { farmerId: user.farmer.id, ...statusFilter },
         orderBy: { updatedAt: 'desc' },
         include: SHIPMENT_INCLUDE,
       });
-      return rows.map((s) => this.shape(s, 'farmer'));
+      return rows.map((s) => this.shape(s, 'farmer', undefined, undefined));
     }
     if (user.role === Role.MARKET && user.market) {
       const rows = await this.prisma.shipment.findMany({
-        where: { booking: { marketId: user.market.id }, ...statusFilter },
+        where: { marketId: user.market.id, ...statusFilter },
         orderBy: { updatedAt: 'desc' },
         include: SHIPMENT_INCLUDE,
       });
-      return rows.map((s) => this.shape(s, 'market'));
+      const wh = await this.warehouseContact(rows);
+      return rows.map((s) => this.shape(s, 'market', undefined, wh));
     }
     throw new ForbiddenException("Bu rol uchun yuklar mavjud emas");
   }
@@ -162,7 +179,7 @@ export class ShipmentService {
 
   private async reload(id: string, viewer: Viewer) {
     const row = await this.prisma.shipment.findUniqueOrThrow({ where: { id }, include: SHIPMENT_INCLUDE });
-    return this.shape(row, viewer);
+    return this.shape(row, viewer, undefined, await this.warehouseContact([row]));
   }
 
   /**
@@ -171,14 +188,25 @@ export class ShipmentService {
    *  - haydovchi (o'zining yuki): ikkala tomonning manzili va telefoni
    *  - fermer/market: o'z kontragentining telefoni (bron tasdiqlanganda ochilgan) + biriktirilgan haydovchi ma'lumoti
    */
-  private shape(s: ShipmentRow, viewer: Viewer, capacityKg?: Prisma.Decimal) {
-    const farmer = s.booking.product.farmer;
-    const market = s.booking.market;
+  /** Ombor yuklarida jo'natuvchi — omborxona (call-center aloqasi): fermer va marketlar bir-birining telefonini olmaydi. */
+  private async warehouseContact(rows: { warehouseOrderId: string | null }[]) {
+    if (!rows.some((r) => r.warehouseOrderId)) return undefined;
+    const st = await this.settings.getPublic();
+    return { farmName: `${st.siteName} omborxonasi`, fullName: 'Dispetcher', phone: st.callCenterPhones[0] ?? '' };
+  }
+
+  private shape(s: ShipmentRow, viewer: Viewer, capacityKg?: Prisma.Decimal, wh?: { farmName: string; fullName: string; phone: string }) {
+    const warehouse = !!s.warehouseOrderId;
+    const farmer = warehouse && wh ? { farmName: wh.farmName, user: { fullName: wh.fullName, phone: wh.phone } } : s.farmer;
+    const market = s.market;
     const full = viewer !== 'driver-open';
 
     return {
       id: s.id,
-      bookingId: s.booking.id,
+      source: warehouse ? ('WAREHOUSE' as const) : ('BOOKING' as const),
+      bookingId: s.booking?.id ?? null,
+      warehouseOrderId: s.warehouseOrderId,
+      warehouseOrderStatus: s.warehouseOrder?.status ?? null,
       status: s.status,
       cargoName: s.cargoName,
       category: s.category,
@@ -189,7 +217,7 @@ export class ShipmentService {
       assignedAt: s.assignedAt,
       deliveredAt: s.deliveredAt,
       events: s.events.map((e) => ({ status: e.status, createdAt: e.createdAt })),
-      paymentStatus: s.booking.payment?.status ?? null, // haydovchi uchun: to'lov kafolatlanganmi
+      paymentStatus: s.booking?.payment?.status ?? s.warehouseOrder?.payment?.status ?? null, // haydovchi uchun: to'lov kafolatlanganmi
       ...(viewer === 'driver-open' && capacityKg ? { fitsCapacity: s.weightKg.lte(capacityKg) } : {}),
       farmer: viewer === 'driver-own' || viewer === 'market'
         ? { farmName: farmer.farmName, fullName: farmer.user.fullName, phone: farmer.user.phone }

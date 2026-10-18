@@ -194,10 +194,16 @@ export class WarehouseController {
     return this.orders.picked(id);
   }
 
+  @Patch('orders/:id/assign')
+  @Roles(...STAFF)
+  assign(@Param('id', uuid) id: string, @Body() dto: DispatchDto) {
+    return this.orders.assign(id, dto);
+  }
+
   @Patch('orders/:id/dispatch')
   @Roles(...STAFF)
-  dispatch(@CurrentUser() user: any, @Param('id', uuid) id: string, @Body() dto: DispatchDto) {
-    return this.orders.dispatch(user.id, id, dto);
+  dispatch(@CurrentUser() user: any, @Param('id', uuid) id: string) {
+    return this.orders.dispatch(user.id, id);
   }
 
   @Patch('orders/:id/cancel')
@@ -207,7 +213,7 @@ export class WarehouseController {
   }
 
   @Patch('orders/:id/deliver')
-  @Roles(Role.MARKET, Role.DRIVER, ...STAFF)
+  @Roles(Role.MARKET, ...STAFF)
   deliver(@CurrentUser() user: any, @Param('id', uuid) id: string) {
     return this.orders.deliver(user, id);
   }

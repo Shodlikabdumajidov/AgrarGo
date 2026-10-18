@@ -134,8 +134,8 @@ export class LocationService {
   private ownership(user: any): Prisma.ShipmentWhereInput {
     if (user.role === Role.ADMIN) return {};
     if (user.role === Role.DRIVER && user.driver) return { driverId: user.driver.id };
-    if (user.role === Role.FARMER && user.farmer) return { booking: { product: { farmerId: user.farmer.id } } };
-    if (user.role === Role.MARKET && user.market) return { booking: { marketId: user.market.id } };
+    if (user.role === Role.FARMER && user.farmer) return { farmerId: user.farmer.id };
+    if (user.role === Role.MARKET && user.market) return { marketId: user.market.id };
     throw new ForbiddenException("Bu rol uchun joylashuv mavjud emas");
   }
 

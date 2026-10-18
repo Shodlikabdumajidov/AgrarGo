@@ -20,6 +20,7 @@ export interface AppEnv {
   PAYMENT_PROVIDER: 'simulated';
   PAYMENT_ALLOW_SIMULATION: boolean;
   PAYMENT_RELEASE_GRACE_HOURS: number;
+  WAREHOUSE_FEE_PERCENT: number;
   SMS_PROVIDER: 'simulated';
   SMS_ALLOW_SIMULATION: boolean;
   OTP_TTL_SECONDS: number;
@@ -179,6 +180,8 @@ export function validateEnv(raw: Record<string, unknown>): AppEnv & Record<strin
     PAYMENT_PROVIDER: 'simulated' as const,
     PAYMENT_ALLOW_SIMULATION: allowSimulation,
     // Yetkazilgandan keyin xaridor tasdiqlamasa, fermer pulni shu soatdan keyin o'zi chiqarib ola oladi
+    // Omborxona xizmat haqi (foiz): ombor buyurtmasi yetkazilganda fermer o'rniga omborxona hisobiga o'tadi
+    WAREHOUSE_FEE_PERCENT: intInRange(raw.WAREHOUSE_FEE_PERCENT, 'WAREHOUSE_FEE_PERCENT', 2, 0, 30, errors),
     PAYMENT_RELEASE_GRACE_HOURS: intInRange(raw.PAYMENT_RELEASE_GRACE_HOURS, 'PAYMENT_RELEASE_GRACE_HOURS', 72, 0, 720, errors),
   };
 

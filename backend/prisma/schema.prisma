@@ -54,6 +54,7 @@ model Farmer {
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
   warehouseItems WarehouseItem[]
+  shipments      Shipment[]
 }
 
 model Driver {
@@ -88,6 +89,7 @@ model Market {
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   warehouseOrders WarehouseOrder[]
+  shipments       Shipment[]
 }
 
 enum BookingStatus {
@@ -158,11 +160,19 @@ enum ShipmentStatus {
 }
 
 model Shipment {
-  id        String  @id @default(uuid())
-  bookingId String  @unique
-  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Restrict)
-  driverId  String?
-  driver    Driver? @relation(fields: [driverId], references: [id], onDelete: SetNull)
+  id               String          @id @default(uuid())
+  // Yuk manbai: yoki bron (fermer -> market), yoki ombor buyurtmasi (omborxona -> market). Aynan bittasi to'ldirilgan (CHECK).
+  bookingId        String?         @unique
+  booking          Booking?        @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+  warehouseOrderId String?         @unique
+  warehouseOrder   WarehouseOrder? @relation(fields: [warehouseOrderId], references: [id], onDelete: Restrict)
+  // Egalar to'g'ridan-to'g'ri saqlanadi: kuzatuv va ko'rinish huquqi manbaga bog'liq emas
+  farmerId         String
+  farmer           Farmer          @relation(fields: [farmerId], references: [id], onDelete: Restrict)
+  marketId         String
+  market           Market          @relation(fields: [marketId], references: [id], onDelete: Restrict)
+  driverId         String?
+  driver           Driver?         @relation(fields: [driverId], references: [id], onDelete: SetNull)
 
   status ShipmentStatus @default(OPEN)
 
@@ -194,6 +204,8 @@ model Shipment {
 
   @@index([status, createdAt])
   @@index([driverId, status])
+  @@index([farmerId, status])
+  @@index([marketId, status])
 }
 
 // GPS nuqta manbasi: haqiqiy qurilma yoki demo simulyatsiya (ko'ruvchilarga ochiq aytiladi)
@@ -242,18 +254,22 @@ enum PaymentStatus {
 }
 
 model Payment {
-  id          String         @id @default(uuid())
-  bookingId   String         @unique
-  booking     Booking        @relation(fields: [bookingId], references: [id], onDelete: Restrict)
-  amount      Decimal        @db.Decimal(20, 2) // server hisoblaydi: miqdor x bron narxi
-  currency    String         @default("UZS")
-  status      PaymentStatus  @default(PENDING)
-  provider    String
-  providerRef String?
-  heldAt      DateTime?
-  releasedAt  DateTime?
-  refundedAt  DateTime?
-  events      PaymentEvent[]
+  id               String          @id @default(uuid())
+  // Manba: bron yoki ombor buyurtmasi (aynan bittasi; CHECK)
+  bookingId        String?         @unique
+  booking          Booking?        @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+  warehouseOrderId String?         @unique
+  warehouseOrder   WarehouseOrder? @relation(fields: [warehouseOrderId], references: [id], onDelete: Restrict)
+  feeAmount        Decimal         @default(0) @db.Decimal(20, 2) // omborxona xizmat haqi (summaning ichida): fermerga amount - feeAmount o'tadi
+  amount           Decimal         @db.Decimal(20, 2) // server hisoblaydi: miqdor x bron narxi
+  currency         String          @default("UZS")
+  status           PaymentStatus   @default(PENDING)
+  provider         String
+  providerRef      String?
+  heldAt           DateTime?
+  releasedAt       DateTime?
+  refundedAt       DateTime?
+  events           PaymentEvent[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -452,6 +468,9 @@ model WarehouseOrder {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
+  payment  Payment?
+  shipment Shipment?
+
   @@index([marketId, createdAt])
   @@index([itemId, status])
   @@index([status, createdAt])
@@ -463,19 +482,23 @@ model WarehouseOrder {
 // Sayt bo'yicha yagona sozlamalar qatori (id doim 1): call-center, email, ijtimoiy tarmoqlar, ish vaqti, manzil.
 // Matnli maydonlar (ish vaqti, manzil) har bir til uchun alohida: { "uz": "...", "ru": "...", "en": "..." }
 model SystemSettings {
-  id               Int      @id @default(1)
-  siteName         String   @default("AgrarGo")
-  callCenterPhones String[]
-  supportEmail     String?
-  telegramHandle   String?
-  telegramUrl      String?
-  instagramUrl     String?
-  facebookUrl      String?
-  youtubeUrl       String?
-  workingHours     Json
-  address          Json
-  updatedById      String?
-  updatedAt        DateTime @updatedAt
+  id                Int      @id @default(1)
+  siteName          String   @default("AgrarGo")
+  callCenterPhones  String[]
+  supportEmail      String?
+  telegramHandle    String?
+  telegramUrl       String?
+  instagramUrl      String?
+  facebookUrl       String?
+  youtubeUrl        String?
+  workingHours      Json
+  address           Json
+  // Omborxona joylashuvi: ombor yuklari shu yerdan olib ketiladi (marshrut boshlanish nuqtasi)
+  warehouseRegion   String   @default("Samarqand")
+  warehouseDistrict String   @default("Samarqand shahri")
+  warehouseAddress  String?
+  updatedById       String?
+  updatedAt         DateTime @updatedAt
 }
 
 // Administrator va xodimlarning o'zgartiruvchi amallari jurnali (kim, nima, qachon)

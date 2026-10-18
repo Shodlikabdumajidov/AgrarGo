@@ -38,6 +38,14 @@ describe('Warehouse (e2e)', () => {
     return res.body as any;
   };
 
+  /** Dispetcher haydovchini biriktiradi (yuk LOADING) va yuklab jo'natadi (yuk YO'LDA). */
+  const loadAndDispatch = async (w: { staff: any }, orderId: string) => {
+    const driver = await t.prisma.driver.findFirstOrThrow({ orderBy: { createdAt: 'desc' } });
+    const assigned = await call('patch', w.staff, `/orders/${orderId}/assign`, { driverId: driver.id });
+    expect(assigned.status).toBe(200);
+    return call('patch', w.staff, `/orders/${orderId}/dispatch`);
+  };
+
   /** Fermer e'lon qiladi -> qabul -> tekshiruv -> kameraga -> jo'natish zonasi */
   async function readyItem(w: Awaited<ReturnType<typeof world>>, opts: { weight?: number; name?: string; category?: string; unitType?: string } = {}) {
     const { weight = 1000, name = 'Pomidor', category = 'Sabzavot', unitType = 'COLD' } = opts;
@@ -310,14 +318,14 @@ describe('Warehouse (e2e)', () => {
       expect(row.weightKg.toString()).toBe('1000');
 
       const id = order.body.id;
-      expect((await call('patch', w.staff, `/orders/${id}/dispatch`, { driverId: w.driver.user.driver?.id ?? (await t.prisma.driver.findFirstOrThrow()).id })).status).toBe(409); // yig'ilmagan
+      expect((await call('patch', w.staff, `/orders/${id}/dispatch`)).status).toBe(409); // yig'ilmagan
       expect((await call('patch', w.staff, `/orders/${id}/picked`)).status).toBe(409);
       expect((await call('patch', w.staff, `/orders/${id}/picking`)).body.status).toBe('PICKING');
       expect((await call('patch', w.staff, `/orders/${id}/picking`)).status).toBe(409);
       expect((await call('patch', w.staff, `/orders/${id}/picked`)).body.status).toBe('PICKED');
 
-      const driverId = (await t.prisma.driver.findFirstOrThrow()).id;
-      const dispatched = await call('patch', w.staff, `/orders/${id}/dispatch`, { driverId });
+      expect((await call('patch', w.staff, `/orders/${id}/dispatch`)).status).toBe(409); // haydovchi yo'q
+      const dispatched = await loadAndDispatch(w, id);
       expect(dispatched.body).toMatchObject({ status: 'DISPATCHED', driver: { plateNumber: expect.any(String) } });
       row = await t.prisma.warehouseItem.findUniqueOrThrow({ where: { id: item.id } });
       expect(row.weightKg.toString()).toBe('700');
@@ -347,7 +355,7 @@ describe('Warehouse (e2e)', () => {
       const id = (await call('post', w.market, '/orders', { itemId: item.id, quantityKg: 200 })).body.id;
       await call('patch', w.staff, `/orders/${id}/picking`);
       await call('patch', w.staff, `/orders/${id}/picked`);
-      await call('patch', w.staff, `/orders/${id}/dispatch`, { driverId: (await t.prisma.driver.findFirstOrThrow()).id });
+      await loadAndDispatch(w, id);
       expect((await t.prisma.warehouseItem.findUniqueOrThrow({ where: { id: item.id } })).status).toBe('DEPLETED');
       expect((await call('get', w.market, '/feed')).body.total).toBe(0);
     });
@@ -400,7 +408,7 @@ describe('Warehouse (e2e)', () => {
       const c = (await call('post', w.market, '/orders', { itemId: item.id, quantityKg: 10 })).body.id;
       await call('patch', w.staff, `/orders/${c}/picking`);
       await call('patch', w.staff, `/orders/${c}/picked`);
-      await call('patch', w.staff, `/orders/${c}/dispatch`, { driverId: (await t.prisma.driver.findFirstOrThrow()).id });
+      await loadAndDispatch(w, c);
       expect((await call('patch', w.staff, `/orders/${c}/cancel`)).status).toBe(409);
       expect((await t.prisma.warehouseItem.findUniqueOrThrow({ where: { id: item.id } })).weightKg.toString()).toBe('90');
     });
@@ -411,9 +419,10 @@ describe('Warehouse (e2e)', () => {
       const id = (await call('post', w.market, '/orders', { itemId: item.id, quantityKg: 60 })).body.id;
       await call('patch', w.staff, `/orders/${id}/picking`);
       await call('patch', w.staff, `/orders/${id}/picked`);
-      const driverId = (await t.prisma.driver.findFirstOrThrow()).id;
+      const driverId = (await t.prisma.driver.findFirstOrThrow({ orderBy: { createdAt: 'desc' } })).id;
+      expect((await call('patch', w.staff, `/orders/${id}/assign`, { driverId })).status).toBe(200);
       const [a, b] = await Promise.all([
-        call('patch', w.staff, `/orders/${id}/dispatch`, { driverId }),
+        call('patch', w.staff, `/orders/${id}/dispatch`),
         call('patch', w.staff, `/orders/${id}/cancel`),
       ]);
       expect([a.status, b.status].sort()).toEqual([200, 409]);
@@ -437,10 +446,10 @@ describe('Warehouse (e2e)', () => {
       const big = (await call('post', w.market, '/orders', { itemId: item.id, quantityKg: 6000 })).body.id;
       await call('patch', w.staff, `/orders/${big}/picking`);
       await call('patch', w.staff, `/orders/${big}/picked`);
-      const driverId = (await t.prisma.driver.findFirstOrThrow()).id; // sig'imi 5000
-      expect((await call('patch', w.staff, `/orders/${big}/dispatch`, { driverId })).status).toBe(409);
-      expect((await call('patch', w.staff, `/orders/${big}/dispatch`, { driverId: '00000000-0000-4000-8000-000000000000' })).status).toBe(404);
-      expect((await call('patch', w.staff, `/orders/${big}/dispatch`, {})).status).toBe(400);
+      const driverId = (await t.prisma.driver.findFirstOrThrow({ orderBy: { createdAt: 'desc' } })).id; // sig'imi 5000
+      expect((await call('patch', w.staff, `/orders/${big}/assign`, { driverId })).status).toBe(409);
+      expect((await call('patch', w.staff, `/orders/${big}/assign`, { driverId: '00000000-0000-4000-8000-000000000000' })).status).toBe(404);
+      expect((await call('patch', w.staff, `/orders/${big}/assign`, {})).status).toBe(400);
       expect((await call('get', w.staff, '/drivers')).body).toHaveLength(1);
     });
 

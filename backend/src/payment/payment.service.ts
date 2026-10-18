@@ -1,6 +1,7 @@
 import { BadGatewayException, ConflictException, ForbiddenException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { BookingStatus, PaymentStatus, Prisma, Role, ShipmentStatus } from '@prisma/client';
 import { restoreStock } from '../booking/stock';
+import { computeAmount } from './payment.factory';
 import { APP_ENV } from '../config/app-env.module';
 import { AppEnv } from '../config/env.validation';
 import { PrismaService } from '../prisma/prisma.service';
@@ -25,6 +26,18 @@ const PAYMENT_INCLUDE = {
       shipment: { select: { id: true, status: true, deliveredAt: true } },
     },
   },
+  warehouseOrder: {
+    select: {
+      id: true,
+      status: true,
+      marketId: true,
+      quantityKg: true,
+      pricePerKg: true,
+      item: { select: { name: true, category: true, farmerId: true, farmer: { select: { farmName: true, region: true } } } },
+      market: { select: { companyName: true, region: true } },
+      shipment: { select: { id: true, status: true, deliveredAt: true } },
+    },
+  },
 } satisfies Prisma.PaymentInclude;
 
 type PaymentRow = Prisma.PaymentGetPayload<{ include: typeof PAYMENT_INCLUDE }>;
@@ -45,6 +58,54 @@ export class PaymentService {
     @Inject(PAYMENT_PROVIDER) private readonly provider: PaymentProvider,
     @Inject(APP_ENV) private readonly env: AppEnv,
   ) {}
+
+  // ---------- Ombor buyurtmalari (escrow) ----------
+  // Bu amallar WarehouseOrderService'ning tranzaksiyasi ichida chaqiriladi: provayder xatosi butun amalni (zaxira ham) qaytaradi.
+
+  /** Omborxona xizmat haqi: summaning WAREHOUSE_FEE_PERCENT foizi (tiyingacha yaxlitlanadi). */
+  warehouseFee(amount: Prisma.Decimal): Prisma.Decimal {
+    return amount.mul(this.env.WAREHOUSE_FEE_PERCENT).div(100).toDecimalPlaces(2, Prisma.Decimal.ROUND_HALF_UP);
+  }
+
+  /** Buyurtma berilganda mablag' darhol muzlatiladi: to'g'ridan-to'g'ri HELD (xaridor to'lovni buyurtma bilan birga amalga oshiradi). */
+  async holdForWarehouseOrder(tx: Prisma.TransactionClient, order: { id: string; quantityKg: Prisma.Decimal; pricePerKg: Prisma.Decimal }) {
+    const amount = computeAmount(order.quantityKg, order.pricePerKg);
+    const fee = this.warehouseFee(amount);
+    const payment = await tx.payment.create({
+      data: {
+        warehouseOrderId: order.id, amount, feeAmount: fee, currency: 'UZS', status: PaymentStatus.HELD,
+        heldAt: new Date(), provider: this.provider.name,
+      },
+    });
+    const res = await this.callProvider("Mablag' yechilmadi", () => this.provider.charge({ paymentId: payment.id, amount: amount.toFixed(2), currency: payment.currency }));
+    await tx.payment.update({ where: { id: payment.id }, data: { providerRef: res.ref } });
+    await this.event(tx, payment.id, PaymentStatus.HELD, 'MARKET', `Mablag' escrow'ga o'tkazildi (${res.ref})`);
+    return payment;
+  }
+
+  /** Yetkazilgach: HELD -> RELEASED. Fermerga summa - xizmat haqi, omborxona hisobiga xizmat haqi o'tadi. */
+  async releaseForWarehouseOrder(tx: Prisma.TransactionClient, orderId: string, actor: string) {
+    const row = await tx.payment.findUnique({ where: { warehouseOrderId: orderId } });
+    if (!row) return null; // to'lov integratsiyasidan oldin yaratilgan eski buyurtma
+    const claimed = await tx.payment.updateMany({ where: { id: row.id, status: PaymentStatus.HELD }, data: { status: PaymentStatus.RELEASED, releasedAt: new Date() } });
+    if (claimed.count === 0) throw new ConflictException("To'lov holati o'zgargan. Sahifani yangilang");
+    const farmerNet = row.amount.sub(row.feeAmount);
+    const res = await this.callProvider("Mablag' fermerga o'tkazilmadi", () => this.provider.payout({ paymentId: row.id, amount: farmerNet.toFixed(2), currency: row.currency }));
+    await this.event(tx, row.id, PaymentStatus.RELEASED, actor,
+      `Mablag' fermerga (${farmerNet.toFixed(2)}) va omborxonaga (${row.feeAmount.toFixed(2)}) o'tkazildi (${res.ref})`);
+    return row.id;
+  }
+
+  /** Buyurtma bekor qilinganda escrow'dagi mablag' xaridorga qaytariladi: HELD -> REFUNDED. */
+  async refundForWarehouseOrder(tx: Prisma.TransactionClient, orderId: string, actor: string, reason?: string) {
+    const row = await tx.payment.findUnique({ where: { warehouseOrderId: orderId } });
+    if (!row) return null; // to'lov integratsiyasidan oldin yaratilgan eski buyurtma
+    const claimed = await tx.payment.updateMany({ where: { id: row.id, status: PaymentStatus.HELD }, data: { status: PaymentStatus.REFUNDED, refundedAt: new Date() } });
+    if (claimed.count === 0) throw new ConflictException("To'lov holati o'zgargan. Sahifani yangilang");
+    const res = await this.callProvider("Mablag' qaytarilmadi", () => this.provider.refund({ paymentId: row.id, amount: row.amount.toFixed(2), currency: row.currency }));
+    await this.event(tx, row.id, PaymentStatus.REFUNDED, actor, `${reason?.trim() || "Mablag' xaridorga qaytarildi"} (${res.ref})`);
+    return row.id;
+  }
 
   // ---------- Amallar ----------
 
@@ -105,6 +166,7 @@ export class PaymentService {
       const decision = refundDecision(actor, this.ctx(row));
       if (!decision.allowed) throw new ConflictException(decision.reason);
 
+      const bk = this.bookingOf(row);
       const wasHeld = row.status === PaymentStatus.HELD;
       const claimed = await tx.payment.updateMany({
         where: { id: row.id, status: row.status },
@@ -116,7 +178,7 @@ export class PaymentService {
         // Yuk faqat hali yo'lga chiqmagan holatda bekor qilinadi (xaridor: faqat OPEN; fermer/admin: OPEN yoki LOADING)
         const cancellable: ShipmentStatus[] =
           wasHeld && actor !== 'MARKET' ? [ShipmentStatus.OPEN, ShipmentStatus.LOADING] : [ShipmentStatus.OPEN];
-        const shipment = row.booking.shipment;
+        const shipment = bk.shipment;
         if (shipment) {
           const cancelled = await tx.shipment.updateMany({
             where: { id: shipment.id, status: { in: cancellable } },
@@ -129,7 +191,7 @@ export class PaymentService {
           where: { id: bookingId, status: BookingStatus.APPROVED },
           data: { status: BookingStatus.CANCELLED },
         });
-        if (booking.count > 0) await restoreStock(tx, row.booking.productId, row.booking.quantityKg);
+        if (booking.count > 0) await restoreStock(tx, bk.productId, bk.quantityKg);
       }
 
       let note = reason?.trim() || (wasHeld ? 'Mablag\' xaridorga qaytarildi' : "To'lanmagan buyurtma bekor qilindi");
@@ -149,8 +211,10 @@ export class PaymentService {
   async list(user: PaymentUser, query: ListPaymentsQuery) {
     const actor = this.actorOf(user);
     const scope: Prisma.PaymentWhereInput =
-      actor === 'MARKET' ? { booking: { marketId: this.need(user.market, 'Market profili topilmadi').id } }
-      : actor === 'FARMER' ? { booking: { product: { farmerId: this.need(user.farmer, 'Fermer profili topilmadi').id } } }
+      actor === 'MARKET'
+        ? { OR: [{ booking: { marketId: this.need(user.market, 'Market profili topilmadi').id } }, { warehouseOrder: { marketId: user.market!.id } }] }
+      : actor === 'FARMER'
+        ? { OR: [{ booking: { product: { farmerId: this.need(user.farmer, 'Fermer profili topilmadi').id } } }, { warehouseOrder: { item: { farmerId: user.farmer!.id } } }] }
       : {};
     const rows = await this.prisma.payment.findMany({
       where: { ...scope, ...(query.status && { status: query.status }) },
@@ -185,17 +249,24 @@ export class PaymentService {
     const mine =
       !!row &&
       (actor === 'ADMIN' ||
-        (actor === 'MARKET' && row.booking.marketId === user.market?.id) ||
-        (actor === 'FARMER' && row.booking.product.farmerId === user.farmer?.id));
+        (actor === 'MARKET' && row.booking?.marketId === user.market?.id) ||
+        (actor === 'FARMER' && row.booking?.product.farmerId === user.farmer?.id));
     if (!row || !mine) throw new NotFoundException("To'lov topilmadi");
     return row;
   }
 
+  /** Bron to'lovlari uchun bron ma'lumoti; ombor buyurtmasi to'lovlari bu yo'l bilan boshqarilmaydi (ular ombor buyurtmasi orqali). */
+  private bookingOf(row: PaymentRow): NonNullable<PaymentRow['booking']> {
+    if (!row.booking) throw new ConflictException("Bu to'lov ombor buyurtmasiga tegishli: uni buyurtma orqali boshqaring");
+    return row.booking;
+  }
+
   private ctx(row: PaymentRow): PolicyContext {
+    const bk = this.bookingOf(row);
     return {
       paymentStatus: row.status,
-      shipmentStatus: row.booking.shipment?.status ?? null,
-      deliveredAt: row.booking.shipment?.deliveredAt ?? null,
+      shipmentStatus: bk.shipment?.status ?? null,
+      deliveredAt: bk.shipment?.deliveredAt ?? null,
       now: new Date(),
       graceHours: this.env.PAYMENT_RELEASE_GRACE_HOURS,
     };
@@ -231,17 +302,21 @@ export class PaymentService {
   /** Javob: holat, summa, tarix va foydalanuvchi uchun mumkin bo'lgan amallar (frontend qoidalarni takrorlamaydi). */
   private view(row: PaymentRow, user: PaymentUser) {
     const actor = this.actorOf(user);
+    if (row.warehouseOrder) return this.warehouseView(row, row.warehouseOrder, actor);
+    const bk = this.bookingOf(row);
     const ctx = this.ctx(row);
     const open = row.status === PaymentStatus.PENDING || row.status === PaymentStatus.HELD;
     const pay = payDecision(actor, ctx);
     const release = releaseDecision(actor, ctx);
     const refund = refundDecision(actor, ctx);
-    const farm = row.booking.product.farmer;
-    const market = row.booking.market;
+    const farm = bk.product.farmer;
+    const market = bk.market;
 
     return {
       id: row.id,
+      source: 'BOOKING' as const,
       bookingId: row.bookingId,
+      feeAmount: row.feeAmount,
       amount: row.amount,
       currency: row.currency,
       status: row.status,
@@ -253,14 +328,14 @@ export class PaymentService {
       updatedAt: row.updatedAt,
       events: row.events.map((e) => ({ status: e.status, actor: e.actor, note: e.note, createdAt: e.createdAt })),
       order: {
-        productName: row.booking.product.name,
-        category: row.booking.product.category,
-        quantityKg: row.booking.quantityKg,
-        pricePerKg: row.booking.pricePerKg,
-        bookingStatus: row.booking.status,
+        productName: bk.product.name,
+        category: bk.product.category,
+        quantityKg: bk.quantityKg,
+        pricePerKg: bk.pricePerKg,
+        bookingStatus: bk.status,
       },
-      shipmentStatus: row.booking.shipment?.status ?? null,
-      deliveredAt: row.booking.shipment?.deliveredAt ?? null,
+      shipmentStatus: bk.shipment?.status ?? null,
+      deliveredAt: bk.shipment?.deliveredAt ?? null,
       farmer: actor !== 'FARMER' ? { name: farm.farmName, region: farm.region } : null,
       market: actor !== 'MARKET' ? { name: market.companyName, region: market.region } : null,
       actions: {
@@ -271,6 +346,35 @@ export class PaymentService {
         releaseBlockedReason: !release.allowed && open && row.status === PaymentStatus.HELD ? release.reason : null,
         refundBlockedReason: !refund.allowed && open ? refund.reason : null,
       },
+    };
+  }
+
+  /** Ombor buyurtmasi to'lovi: amallar buyurtma orqali bajariladi, shuning uchun bu yerda barcha "can*" bayroqlari yopiq. */
+  private warehouseView(row: PaymentRow, wo: NonNullable<PaymentRow['warehouseOrder']>, actor: PaymentActor) {
+    const farm = wo.item.farmer;
+    return {
+      id: row.id,
+      source: 'WAREHOUSE' as const,
+      bookingId: null,
+      warehouseOrderId: wo.id,
+      amount: row.amount,
+      feeAmount: row.feeAmount,
+      farmerAmount: row.amount.sub(row.feeAmount),
+      currency: row.currency,
+      status: row.status,
+      provider: row.provider,
+      heldAt: row.heldAt,
+      releasedAt: row.releasedAt,
+      refundedAt: row.refundedAt,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+      events: row.events.map((e) => ({ status: e.status, actor: e.actor, note: e.note, createdAt: e.createdAt })),
+      order: { productName: wo.item.name, category: wo.item.category, quantityKg: wo.quantityKg, pricePerKg: wo.pricePerKg, bookingStatus: wo.status },
+      shipmentStatus: wo.shipment?.status ?? null,
+      deliveredAt: wo.shipment?.deliveredAt ?? null,
+      farmer: actor !== 'FARMER' ? { name: farm.farmName, region: farm.region } : null,
+      market: actor !== 'MARKET' ? { name: wo.market.companyName, region: wo.market.region } : null,
+      actions: { canPay: false, canRelease: false, canRefund: false, refundEffect: null, releaseBlockedReason: null, refundBlockedReason: null },
     };
   }
 }
