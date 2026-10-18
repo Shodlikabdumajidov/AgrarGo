@@ -324,6 +324,155 @@
         @media (prefers-reduced-motion: reduce) {
             .logo-3d, .logo-stage, .logo-shadow { animation: none; }
         }
+
+        /* ===== UI/UX: bo'limlar, hover effektlar, akkordeon, karusel, mobil ===== */
+        html { scroll-behavior: smooth; }
+        .sec-anchor { scroll-margin-top: 7.5rem; }
+        @media (max-width: 1279px) { .sec-anchor { scroll-margin-top: 6rem; } }
+        .sec-flash { animation: sec-flash 1.4s ease-out; }
+        @keyframes sec-flash { 0% { box-shadow: inset 0 0 0 2px rgba(16,185,129,.55), 0 0 40px rgba(16,185,129,.25); } 100% { box-shadow: inset 0 0 0 2px rgba(16,185,129,0), 0 0 0 rgba(16,185,129,0); } }
+
+        /* Yuqori menyu havolalari */
+        .top-link { position: relative; padding: .5rem .1rem; font-weight: 600; white-space: nowrap; color: inherit; transition: color .25s ease; }
+        .top-link::after { content: ''; position: absolute; left: 0; bottom: 2px; width: 0; height: 2px; background: #10B981; transition: width .3s ease; }
+        .top-link:hover, .top-link.active { color: #34d399; }
+        .top-link:hover::after, .top-link.active::after { width: 100%; }
+
+        /* Tugmalar: yumshoq o'tish, yorug'lik va bosilganda siqilish */
+        button, [role="button"], a.contact-link, .faq-q { -webkit-tap-highlight-color: transparent; }
+        button:not(:disabled) { transition: background-color .25s ease, border-color .25s ease, color .25s ease, box-shadow .3s ease, filter .25s ease, transform .2s cubic-bezier(.16,1,.3,1), opacity .25s ease; }
+        button:not(:disabled):active { transform: scale(.97); }
+        button.bg-emerald-500:not(:disabled):hover, button.bg-amber-400:not(:disabled):hover, button.bg-blue-500:not(:disabled):hover, button.bg-sky-500:not(:disabled):hover, button.bg-amber-500:not(:disabled):hover {
+            box-shadow: 0 0 0 4px rgba(16,185,129,.16), 0 12px 32px -10px rgba(16,185,129,.6); filter: brightness(1.06); }
+        button[class*="border-white/15"]:not(:disabled):hover, button[class*="border-white/20"]:not(:disabled):hover { border-color: rgba(16,185,129,.55); box-shadow: 0 0 20px rgba(16,185,129,.16); }
+        :focus-visible { outline: 2px solid #34d399; outline-offset: 2px; }
+
+        /* Kartalar: yorug'lik kursor ortidan yuradi (fx-card va hover-glow) */
+        .fx-card, .hover-glow { position: relative; }
+        .fx-card::before, .hover-glow::before { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity .35s ease;
+            background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 0%), rgba(16,185,129,.16), transparent 45%); }
+        .fx-card:hover::before, .hover-glow:hover::before { opacity: 1; }
+        .fx-card { transition: transform .35s cubic-bezier(.16,1,.3,1), border-color .3s ease, box-shadow .35s ease; }
+        .fx-card:not(.hover-glow):hover { transform: translateY(-3px); box-shadow: 0 18px 40px -18px rgba(16,185,129,.35); }
+        .hover-glow { transition: transform .35s cubic-bezier(.16,1,.3,1), border-color .3s ease, box-shadow .35s ease; }
+
+        /* Tizim qanday ishlaydi: rol tablari va qadamlar */
+        .how-tab { display: inline-flex; align-items: center; gap: .6rem; padding: .75rem 1.4rem; border-radius: .9rem; font-weight: 800; font-size: .95rem; color: #94a3b8; white-space: nowrap; min-height: 44px; }
+        .how-tab:hover { color: #e2e8f0; background: rgba(255,255,255,.06); }
+        .how-tab.active { background: rgba(16,185,129,.18); color: #34d399; box-shadow: inset 0 0 0 1px rgba(16,185,129,.45); }
+        .how-panel { animation: how-in .45s cubic-bezier(.16,1,.3,1) both; }
+        .how-panel[hidden] { display: none; }
+        @keyframes how-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+        .how-steps { counter-reset: step; position: relative; }
+        .how-num { position: absolute; top: -1rem; left: -.25rem; width: 2.5rem; height: 2.5rem; border-radius: 1rem; display: flex; align-items: center; justify-content: center; color: #020617; font-weight: 900; box-shadow: 0 8px 20px rgba(0,0,0,.4); z-index: 1; }
+        .how-ico { width: 3.5rem; height: 3.5rem; border-radius: 1rem; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: transform .35s cubic-bezier(.16,1,.3,1); }
+        .how-step:hover .how-ico, .tariff:hover .how-ico { transform: scale(1.12) rotate(-4deg); }
+        @media (min-width: 1024px) {
+            .how-step:not(:last-child)::after { content: ''; position: absolute; top: 3rem; right: -2rem; width: 2rem; border-top: 2px dashed rgba(16,185,129,.4); }
+        }
+
+        /* Zanjir */
+        .chain { counter-reset: node; }
+        .chain-node { text-align: center; display: flex; flex-direction: column; align-items: center; gap: .6rem; position: relative; }
+        .chain-node h3 { font-weight: 800; color: #fff; font-size: 1.1rem; }
+        .chain-node p { font-size: .8rem; color: #94a3b8; }
+        .chain-ico { width: 5rem; height: 5rem; border-radius: 1.5rem; border-width: 1px; display: flex; align-items: center; justify-content: center; font-size: 2rem; transition: transform .35s cubic-bezier(.16,1,.3,1), box-shadow .35s ease; }
+        .chain-node:hover .chain-ico { transform: translateY(-6px) scale(1.06); box-shadow: 0 16px 36px -12px rgba(16,185,129,.5); }
+        .chain-node::after { content: ''; position: absolute; left: 50%; bottom: -1.5rem; height: 1.5rem; border-left: 2px dashed rgba(16,185,129,.4); }
+        .chain-node:last-child::after { display: none; }
+        @media (min-width: 768px) {
+            .chain-node::after { left: calc(50% + 3rem); right: calc(-50% + 3rem); top: 2.5rem; bottom: auto; height: 0; width: auto; border-left: 0; border-top: 2px dashed rgba(16,185,129,.4); }
+        }
+
+        /* Tariflar */
+        .tariff-list { display: grid; gap: .7rem; font-size: .92rem; color: #cbd5e1; }
+        .tariff-list li { display: flex; gap: .7rem; align-items: flex-start; }
+        .tariff-list i { color: #34d399; margin-top: .3rem; font-size: .75rem; }
+        .tariff-featured { background: linear-gradient(180deg, rgba(16,185,129,.12), rgba(15,23,42,.6)); box-shadow: 0 0 0 1px rgba(16,185,129,.25), 0 24px 60px -30px rgba(16,185,129,.5); }
+        .tariff-cta { width: 100%; min-height: 48px; border-radius: 1rem; font-weight: 800; border: 1px solid rgba(255,255,255,.18); color: #e2e8f0; }
+        .tariff-cta:hover { border-color: rgba(16,185,129,.6); color: #34d399; background: rgba(16,185,129,.08); }
+        .tariff-cta-primary { background: #10B981; color: #022c22; border-color: #10B981; }
+        .tariff-cta-primary:hover { background: #34d399; color: #022c22; }
+
+        /* Hamkorlar karuseli */
+        .marquee { position: relative; overflow: hidden; padding: 1.25rem 0; -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+        .marquee-track { display: flex; gap: 1.25rem; width: max-content; animation: marquee 38s linear infinite; }
+        .marquee:hover .marquee-track, .marquee:focus-within .marquee-track { animation-play-state: paused; }
+        @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+        .partner { display: flex; align-items: center; gap: .9rem; min-width: 15rem; padding: 1rem 1.4rem; border-radius: 1.1rem; background: rgba(15,23,42,.7); border: 1px solid rgba(255,255,255,.1); transition: border-color .3s ease, transform .3s cubic-bezier(.16,1,.3,1), box-shadow .3s ease; }
+        .partner:hover { border-color: rgba(16,185,129,.5); transform: translateY(-3px); box-shadow: 0 14px 32px -16px rgba(16,185,129,.5); }
+        .partner-logo { width: 3rem; height: 3rem; border-radius: .9rem; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; overflow: hidden; background: rgba(16,185,129,.12); color: #34d399; }
+        .partner-logo img { width: 100%; height: 100%; object-fit: contain; background: #fff; padding: 4px; }
+        .partner b { display: block; color: #fff; font-weight: 800; font-size: .95rem; }
+        .partner small { display: block; color: #94a3b8; font-size: .72rem; margin-top: 2px; }
+
+        /* FAQ akkordeon: grid-template-rows 0fr -> 1fr silliq balandlik */
+        .faq-item { overflow: hidden; transition: border-color .3s ease, box-shadow .3s ease, background-color .3s ease; }
+        .faq-item.open { border-color: rgba(16,185,129,.45); box-shadow: 0 0 30px -12px rgba(16,185,129,.4); }
+        .faq-q { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 1rem; text-align: left; padding: 1.15rem 1.4rem; min-height: 56px; font-weight: 700; font-size: 1.02rem; color: #fff; }
+        .faq-q:hover { color: #34d399; }
+        .faq-q i { color: #34d399; font-size: .8rem; transition: transform .35s cubic-bezier(.16,1,.3,1); flex-shrink: 0; }
+        .faq-item.open .faq-q i { transform: rotate(180deg); }
+        .faq-a { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .4s cubic-bezier(.16,1,.3,1); }
+        .faq-item.open .faq-a { grid-template-rows: 1fr; }
+        .faq-a > div { overflow: hidden; }
+        .faq-a p { padding: 0 1.4rem 1.3rem; color: #cbd5e1; font-size: .95rem; line-height: 1.7; opacity: 0; transform: translateY(-4px); transition: opacity .35s ease .05s, transform .35s ease .05s; }
+        .faq-item.open .faq-a p { opacity: 1; transform: none; }
+
+        /* Aloqa */
+        .contact-link { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.2rem; min-height: 64px; border-radius: 1.1rem; background: rgba(2,6,23,.55); border: 1px solid rgba(255,255,255,.1); transition: border-color .3s ease, transform .3s cubic-bezier(.16,1,.3,1), box-shadow .3s ease; }
+        .contact-link:hover { border-color: rgba(16,185,129,.55); transform: translateX(4px); box-shadow: 0 12px 30px -16px rgba(16,185,129,.5); }
+        .contact-ico { width: 2.75rem; height: 2.75rem; border-radius: .9rem; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; flex-shrink: 0; }
+
+        /* 3D logotip: yumshoqroq aylanish, nur va orbita */
+        .logo-glow { filter: none; position: relative; }
+        .logo-glow::before { content: ''; position: absolute; inset: -22%; border-radius: 50%; pointer-events: none;
+            background: radial-gradient(circle, rgba(16,185,129,.38) 0%, rgba(20,184,166,.16) 42%, transparent 70%); animation: logo-halo 5s ease-in-out infinite; }
+        .logo-ring { position: absolute; inset: -9%; border-radius: 50%; pointer-events: none; background: conic-gradient(from 0deg, transparent 0 62%, rgba(52,211,153,.75) 82%, transparent 100%);
+            -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px)); mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px)); animation: logo-orbit 9s linear infinite; opacity: .85; }
+        .logo-stage { will-change: transform; transform: translateZ(0); animation-timing-function: cubic-bezier(.45,0,.55,1); }
+        .logo-tilt { transition: transform .5s cubic-bezier(.16,1,.3,1); transform-style: preserve-3d; width: 100%; height: 100%; }
+        .logo-3d { will-change: transform; animation: logo-spin 16s linear infinite; }
+        .logo-face, .logo-edge { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+        .logo-face { box-shadow: 0 0 24px rgba(16,185,129,.35); }
+        @keyframes logo-halo { 0%, 100% { opacity: .65; transform: scale(.96); } 50% { opacity: 1; transform: scale(1.06); } }
+        @keyframes logo-orbit { to { transform: rotate(360deg); } }
+
+        /* Sahifa va modal almashinuvi: sakramasdan fade */
+        #dashboard-view, #role-page { will-change: opacity, transform; }
+        #my-products-panel { transition: transform .45s cubic-bezier(.16,1,.3,1), opacity .3s ease, visibility .3s ease; }
+        #sidebar { transition: transform .5s cubic-bezier(.16,1,.3,1); }
+        #sidebar-overlay { transition: opacity .35s ease, visibility .35s ease; }
+        #custom-dropdown-menu, #lang-menu, #account-menu { transform-origin: top; }
+        @keyframes menu-in { from { opacity: 0; transform: translateY(-8px) scale(.97); } to { opacity: 1; transform: none; } }
+        #lang-menu:not(.hidden) { animation: menu-in .25s cubic-bezier(.16,1,.3,1); }
+        body.page-ready main, body.page-ready section { scroll-margin-top: 6rem; }
+
+        /* Mobil (320-768px): qulay bosish maydonlari, gorizontal skrollsiz */
+        html, body { max-width: 100%; overflow-x: clip; }
+        img, video, svg { max-width: 100%; }
+        @media (max-width: 768px) {
+            button:not(.no-touch), select, .auth-input, .contact-link, a.top-link { min-height: 44px; }
+            button.icon-only, #sidebar button, .how-tab { min-width: 44px; }
+            .how-tabs { width: 100%; }
+            .how-tab { flex: 1; justify-content: center; padding: .75rem .9rem; }
+            .how-tab span { font-size: .85rem; }
+            .how-num { left: .5rem; top: -.9rem; }
+            .marquee-track { animation-duration: 28s; }
+            .partner { min-width: 13rem; padding: .85rem 1.1rem; }
+            h1 { word-break: break-word; }
+        }
+        @media (max-width: 380px) {
+            .chain-ico { width: 4rem; height: 4rem; font-size: 1.6rem; }
+            .faq-q { font-size: .95rem; padding: 1rem 1.1rem; }
+            .faq-a p { padding: 0 1.1rem 1.1rem; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
+            .marquee-track, .logo-ring, .logo-glow::before, .how-panel, .sec-flash { animation: none !important; }
+            .marquee { overflow-x: auto; }
+            .fx-card, .hover-glow, .partner, .contact-link { transition: none; }
+        }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans antialiased overflow-x-hidden selection:bg-emerald-500 selection:text-slate-950">
@@ -333,12 +482,12 @@
 
     <!-- TOP UTILITY BAR -->
     <div class="bg-slate-900 border-b border-white/10 text-sm text-slate-200 px-6 sm:px-10 py-3 flex flex-wrap justify-between items-center gap-4">
-        <div class="flex items-center gap-6 font-semibold overflow-x-auto py-1">
-            <span class="nav-link-hover cursor-pointer transition whitespace-nowrap">AgrarGo B2B Hub</span>
-            <span class="nav-link-hover cursor-pointer transition whitespace-nowrap">Hamkorlik / Aloqa</span>
-            <span class="nav-link-hover cursor-pointer transition whitespace-nowrap">Logistika Tariflari</span>
-            <span class="nav-link-hover cursor-pointer transition whitespace-nowrap">Market.uz Zanjiri</span>
-            <button type="button" onclick="openWarehouse()" class="nav-link-hover transition whitespace-nowrap text-emerald-300 font-bold"><i class="fa-solid fa-warehouse mr-1.5"></i>Omborxona</button>
+        <div class="flex items-center gap-6 font-semibold overflow-x-auto py-1 min-w-0">
+            <a href="#hub" data-scroll="#hub" class="top-link hidden md:inline-block">AgrarGo B2B Hub</a>
+            <a href="#contact" data-scroll="#contact" class="top-link hidden md:inline-block">Hamkorlik / Aloqa</a>
+            <a href="#tariffs" data-scroll="#tariffs" class="top-link hidden md:inline-block">Logistika Tariflari</a>
+            <a href="#chain" data-scroll="#chain" class="top-link hidden md:inline-block">Market.uz Zanjiri</a>
+            <button type="button" onclick="openWarehouse()" class="top-link transition whitespace-nowrap text-emerald-300 font-bold hidden sm:inline-block"><i class="fa-solid fa-warehouse mr-1.5"></i>Omborxona</button>
         </div>
         <div class="flex items-center gap-3 sm:gap-6 ml-auto">
             <a id="site-telegram" href="https://t.me/agrargobot" target="_blank" rel="noopener noreferrer" class="hidden sm:flex items-center gap-2 hover:text-emerald-400 transition whitespace-nowrap font-medium">
@@ -480,6 +629,14 @@
                 <span class="text-base font-semibold text-slate-200 group-hover:text-emerald-400">Warehouse Storage (Ombor)</span>
                 <span class="text-xs bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full font-bold">Zaxira</span>
             </a>
+            <p class="px-5 py-3 text-xs text-slate-400 font-semibold leading-relaxed bg-slate-950/30 uppercase tracking-widest">Sayt bo'limlari</p>
+            <a href="#hub" data-scroll="#hub" class="flex items-center gap-3 p-4 pl-5 hover:bg-white/10 transition group"><i class="fa-solid fa-cubes w-5 text-emerald-400"></i><span class="font-semibold text-slate-200 group-hover:text-emerald-400">AgrarGo B2B Hub</span></a>
+            <a href="#how" data-scroll="#how" class="flex items-center gap-3 p-4 pl-5 hover:bg-white/10 transition group"><i class="fa-solid fa-route w-5 text-blue-400"></i><span class="font-semibold text-slate-200 group-hover:text-emerald-400">Tizim qanday ishlaydi?</span></a>
+            <a href="#chain" data-scroll="#chain" class="flex items-center gap-3 p-4 pl-5 hover:bg-white/10 transition group"><i class="fa-solid fa-link w-5 text-emerald-400"></i><span class="font-semibold text-slate-200 group-hover:text-emerald-400">Market.uz Zanjiri</span></a>
+            <a href="#tariffs" data-scroll="#tariffs" class="flex items-center gap-3 p-4 pl-5 hover:bg-white/10 transition group"><i class="fa-solid fa-tags w-5 text-blue-400"></i><span class="font-semibold text-slate-200 group-hover:text-emerald-400">Logistika Tariflari</span></a>
+            <a href="#partners" data-scroll="#partners" class="flex items-center gap-3 p-4 pl-5 hover:bg-white/10 transition group"><i class="fa-solid fa-handshake w-5 text-amber-400"></i><span class="font-semibold text-slate-200 group-hover:text-emerald-400">Hamkorlar</span></a>
+            <a href="#faq" data-scroll="#faq" class="flex items-center gap-3 p-4 pl-5 hover:bg-white/10 transition group"><i class="fa-solid fa-circle-question w-5 text-teal-400"></i><span class="font-semibold text-slate-200 group-hover:text-emerald-400">Ko'p beriladigan savollar</span></a>
+            <a href="#contact" data-scroll="#contact" class="flex items-center gap-3 p-4 pl-5 hover:bg-white/10 transition group"><i class="fa-solid fa-comments w-5 text-emerald-400"></i><span class="font-semibold text-slate-200 group-hover:text-emerald-400">Hamkorlik / Aloqa</span></a>
         </div>
         <div class="p-5 border-t border-white/10 bg-slate-950 text-center text-xs text-slate-400 font-semibold space-y-3">
             <button type="button" id="pwa-install-sidebar" onclick="installApp()" class="hidden w-full items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-extrabold hover:bg-emerald-400 transition">
@@ -507,14 +664,23 @@
                     <!-- Rotating 3D Logo -->
                     <div class="logo-glow relative">
                         <div class="logo-stage relative w-44 h-44 sm:w-52 sm:h-52">
+                            <div class="logo-ring" aria-hidden="true"></div>
+                            <div class="logo-tilt">
                             <div class="logo-3d">
-                                <span class="logo-edge" style="--z:-7px"></span>
-                                <span class="logo-edge" style="--z:-4px"></span>
-                                <span class="logo-edge" style="--z:-1px"></span>
-                                <span class="logo-edge" style="--z:2px"></span>
-                                <span class="logo-edge" style="--z:5px"></span>
+                                    <span class="logo-edge" style="--z:-8.00px"></span>
+                                    <span class="logo-edge" style="--z:-6.50px"></span>
+                                    <span class="logo-edge" style="--z:-5.00px"></span>
+                                    <span class="logo-edge" style="--z:-3.50px"></span>
+                                    <span class="logo-edge" style="--z:-2.00px"></span>
+                                    <span class="logo-edge" style="--z:-0.50px"></span>
+                                    <span class="logo-edge" style="--z:1.00px"></span>
+                                    <span class="logo-edge" style="--z:2.50px"></span>
+                                    <span class="logo-edge" style="--z:4.00px"></span>
+                                    <span class="logo-edge" style="--z:5.50px"></span>
+                                    <span class="logo-edge" style="--z:7.00px"></span>
                                 <img src="logo.png" alt="AgrarGo Logo" class="logo-face front">
                                 <img src="logo.png" alt="" aria-hidden="true" class="logo-face back">
+                            </div>
                             </div>
                             <div class="logo-shadow"></div>
                         </div>
@@ -587,7 +753,7 @@
     </section>
 
     <!-- ECOSYSTEM CARDS SECTION -->
-    <section class="py-24 px-6 max-w-7xl mx-auto relative">
+    <section id="hub" class="sec-anchor py-24 px-6 max-w-7xl mx-auto relative">
         <div class="text-center mb-16 space-y-4" data-aos="fade-up">
             <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-widest">
                 <i class="fa-solid fa-cubes"></i> Kompleks Yechimlar
@@ -688,44 +854,188 @@
         </div>
     </section>
 
-    <!-- HOW IT WORKS SECTION (Restored) -->
-    <section class="py-24 px-6 max-w-7xl mx-auto relative border-t border-white/10">
-        <div class="text-center mb-16 space-y-4" data-aos="fade-up">
+    <!-- TIZIM QANDAY ISHLAYDI? (rol bo'yicha qadamlar) -->
+    <section id="how" class="sec-anchor py-24 px-6 max-w-7xl mx-auto relative border-t border-white/10">
+        <div class="text-center mb-12 space-y-4" data-aos="fade-up">
             <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold uppercase tracking-widest">
                 <i class="fa-solid fa-route"></i> Qadamlar
             </div>
-            <h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight">AgrarGo Qanday Ishlaydi?</h2>
-            <p class="text-slate-400 text-lg max-w-2xl mx-auto">Hosildan to oxirgi xaridorga yetib borguncha 4 ta sodda qadam.</p>
+            <h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight">Tizim qanday ishlaydi?</h2>
+            <p class="text-slate-400 text-lg max-w-2xl mx-auto">O'z rolingizni tanlang: har biri uchun jarayon 4 ta sodda qadamdan iborat.</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div class="glass p-8 rounded-3xl border border-white/10 hover:border-emerald-500/50 hover-glow transition duration-300 space-y-4 relative group" data-aos="fade-up" data-aos-delay="100">
-                <div class="absolute -top-4 -left-4 w-10 h-10 bg-emerald-500 text-slate-950 font-black rounded-2xl flex items-center justify-center text-lg shadow-lg">01</div>
-                <div class="w-14 h-14 bg-emerald-500/20 text-emerald-400 rounded-2xl flex items-center justify-center text-2xl font-bold group-hover:scale-110 transition"><i class="fa-solid fa-seedling"></i></div>
-                <h3 class="text-xl font-bold text-white">E'lon Berish</h3>
-                <p class="text-slate-400 text-sm leading-relaxed">Fermer mahsulot turi va narxini platformaga joylashtiradi.</p>
+        <div class="flex justify-center mb-12" data-aos="fade-up" data-aos-delay="100">
+            <div role="tablist" aria-label="Rol bo'yicha jarayon" class="how-tabs inline-flex max-w-full overflow-x-auto gap-1 p-1.5 rounded-2xl glass border border-white/10">
+                <button type="button" role="tab" id="how-tab-farmer" aria-controls="how-panel-farmer" aria-selected="true" data-how="farmer" class="how-tab active"><i class="fa-solid fa-seedling"></i><span>Fermer</span></button>
+                <button type="button" role="tab" id="how-tab-driver" aria-controls="how-panel-driver" aria-selected="false" tabindex="-1" data-how="driver" class="how-tab"><i class="fa-solid fa-truck-fast"></i><span>Haydovchi</span></button>
+                <button type="button" role="tab" id="how-tab-market" aria-controls="how-panel-market" aria-selected="false" tabindex="-1" data-how="market" class="how-tab"><i class="fa-solid fa-store"></i><span>Market</span></button>
             </div>
+        </div>
 
-            <div class="glass p-8 rounded-3xl border border-white/10 hover:border-amber-500/50 hover-glow transition duration-300 space-y-4 relative group" data-aos="fade-up" data-aos-delay="200">
-                <div class="absolute -top-4 -left-4 w-10 h-10 bg-amber-400 text-slate-950 font-black rounded-2xl flex items-center justify-center text-lg shadow-lg">02</div>
-                <div class="w-14 h-14 bg-amber-500/20 text-amber-400 rounded-2xl flex items-center justify-center text-2xl font-bold group-hover:scale-110 transition"><i class="fa-solid fa-store"></i></div>
-                <h3 class="text-xl font-bold text-white">B2B Bron Qilish</h3>
-                <p class="text-slate-400 text-sm leading-relaxed">Supermarketlar kerakli hajmdagi mahsulotni band qiladi.</p>
-            </div>
+        <div id="how-panel-farmer" role="tabpanel" aria-labelledby="how-tab-farmer" class="how-panel active">
+            <ol class="how-steps grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <li class="how-step glass fx-card hover-glow p-8 rounded-3xl border border-white/10 hover:border-emerald-500/50 space-y-4 relative" data-aos="fade-up" data-aos-delay="100">
+                    <span class="how-num bg-emerald-500">01</span>
+                    <div class="how-ico bg-emerald-500/20 text-emerald-400"><i class="fa-solid fa-user-plus"></i></div>
+                    <h3 class="text-xl font-bold text-white">Ro'yxatdan o'ting</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">Telefon raqam bilan bepul ro'yxatdan o'ting va xo'jalik ma'lumotlarini kiriting.</p>
+                </li>
+                <li class="how-step glass fx-card hover-glow p-8 rounded-3xl border border-white/10 hover:border-emerald-500/50 space-y-4 relative" data-aos="fade-up" data-aos-delay="200">
+                    <span class="how-num bg-emerald-500">02</span>
+                    <div class="how-ico bg-emerald-500/20 text-emerald-400"><i class="fa-solid fa-bullhorn"></i></div>
+                    <h3 class="text-xl font-bold text-white">E'lon joylang</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">Mahsulot turi, miqdori va narxini kiriting. Do'konlar e'loningizni darhol ko'radi.</p>
+                </li>
+                <li class="how-step glass fx-card hover-glow p-8 rounded-3xl border border-white/10 hover:border-emerald-500/50 space-y-4 relative" data-aos="fade-up" data-aos-delay="300">
+                    <span class="how-num bg-emerald-500">03</span>
+                    <div class="how-ico bg-emerald-500/20 text-emerald-400"><i class="fa-solid fa-clipboard-check"></i></div>
+                    <h3 class="text-xl font-bold text-white">Bronni tasdiqlang</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">Market bron qilgach tasdiqlang: yuk tashish buyurtmasi avtomatik yaratiladi.</p>
+                </li>
+                <li class="how-step glass fx-card hover-glow p-8 rounded-3xl border border-white/10 hover:border-emerald-500/50 space-y-4 relative" data-aos="fade-up" data-aos-delay="400">
+                    <span class="how-num bg-emerald-500">04</span>
+                    <div class="how-ico bg-emerald-500/20 text-emerald-400"><i class="fa-solid fa-sack-dollar"></i></div>
+                    <h3 class="text-xl font-bold text-white">Pulni oling</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">Yuk yetkazilgach Escrow'da saqlangan mablag' hisobingizga o'tadi.</p>
+                </li>
+            </ol>
+        </div>
 
-            <div class="glass p-8 rounded-3xl border border-white/10 hover:border-blue-500/50 hover-glow transition duration-300 space-y-4 relative group" data-aos="fade-up" data-aos-delay="300">
-                <div class="absolute -top-4 -left-4 w-10 h-10 bg-blue-500 text-slate-950 font-black rounded-2xl flex items-center justify-center text-lg shadow-lg">03</div>
-                <div class="w-14 h-14 bg-blue-500/20 text-blue-400 rounded-2xl flex items-center justify-center text-2xl font-bold group-hover:scale-110 transition"><i class="fa-solid fa-truck-fast"></i></div>
-                <h3 class="text-xl font-bold text-white">Smart Logistika</h3>
-                <p class="text-slate-400 text-sm leading-relaxed">ELD GPS orqali harakat dispetcher tomonidan kuzatiladi.</p>
-            </div>
+        <div id="how-panel-driver" role="tabpanel" aria-labelledby="how-tab-driver" class="how-panel" hidden>
+            <ol class="how-steps grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <li class="how-step glass fx-card hover-glow p-8 rounded-3xl border border-white/10 hover:border-blue-500/50 space-y-4 relative">
+                    <span class="how-num bg-blue-500">01</span>
+                    <div class="how-ico bg-blue-500/20 text-blue-400"><i class="fa-solid fa-id-card"></i></div>
+                    <h3 class="text-xl font-bold text-white">Profilni to'ldiring</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">Transport turi, davlat raqami, yuk sig'imi va faoliyat hududini kiriting.</p>
+                </li>
+                <li class="how-step glass fx-card hover-glow p-8 rounded-3xl border border-white/10 hover:border-blue-500/50 space-y-4 relative">
+                    <span class="how-num bg-blue-500">02</span>
+                    <div class="how-ico bg-blue-500/20 text-blue-400"><i class="fa-solid fa-boxes-packing"></i></div>
+                    <h3 class="text-xl font-bold text-white">Yukni tanlang</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">To'lovi Escrow'da kafolatlangan yuklar ro'yxatidan o'zingizga mosini oling.</p>
+                </li>
+                <li class="how-step glass fx-card hover-glow p-8 rounded-3xl border border-white/10 hover:border-blue-500/50 space-y-4 relative">
+                    <span class="how-num bg-blue-500">03</span>
+                    <div class="how-ico bg-blue-500/20 text-blue-400"><i class="fa-solid fa-location-crosshairs"></i></div>
+                    <h3 class="text-xl font-bold text-white">Yo'lga chiqing</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">GPS kuzatuv va ELD jurnali harakatingizni avtomatik yozib boradi.</p>
+                </li>
+                <li class="how-step glass fx-card hover-glow p-8 rounded-3xl border border-white/10 hover:border-blue-500/50 space-y-4 relative">
+                    <span class="how-num bg-blue-500">04</span>
+                    <div class="how-ico bg-blue-500/20 text-blue-400"><i class="fa-solid fa-flag-checkered"></i></div>
+                    <h3 class="text-xl font-bold text-white">Yetkazing</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">Yukni topshiring: yetkazish tasdiqlanadi va hamma tomonga xabar boradi.</p>
+                </li>
+            </ol>
+        </div>
 
-            <div class="glass p-8 rounded-3xl border border-white/10 hover:border-purple-500/50 hover-glow transition duration-300 space-y-4 relative group" data-aos="fade-up" data-aos-delay="400">
-                <div class="absolute -top-4 -left-4 w-10 h-10 bg-purple-500 text-slate-950 font-black rounded-2xl flex items-center justify-center text-lg shadow-lg">04</div>
-                <div class="w-14 h-14 bg-purple-500/20 text-purple-400 rounded-2xl flex items-center justify-center text-2xl font-bold group-hover:scale-110 transition"><i class="fa-solid fa-handshake"></i></div>
-                <h3 class="text-xl font-bold text-white">Kafolatlangan To'lov</h3>
-                <p class="text-slate-400 text-sm leading-relaxed">Mahsulot yetib borgach, mablag' dehqon balansiga o'tadi.</p>
+        <div id="how-panel-market" role="tabpanel" aria-labelledby="how-tab-market" class="how-panel" hidden>
+            <ol class="how-steps grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <li class="how-step glass fx-card hover-glow p-8 rounded-3xl border border-white/10 hover:border-amber-500/50 space-y-4 relative">
+                    <span class="how-num bg-amber-400">01</span>
+                    <div class="how-ico bg-amber-500/20 text-amber-400"><i class="fa-solid fa-magnifying-glass"></i></div>
+                    <h3 class="text-xl font-bold text-white">Katalogdan tanlang</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">Fermerlarning e'lonlarini kategoriya, hudud va narx bo'yicha filtrlang.</p>
+                </li>
+                <li class="how-step glass fx-card hover-glow p-8 rounded-3xl border border-white/10 hover:border-amber-500/50 space-y-4 relative">
+                    <span class="how-num bg-amber-400">02</span>
+                    <div class="how-ico bg-amber-500/20 text-amber-400"><i class="fa-solid fa-cart-shopping"></i></div>
+                    <h3 class="text-xl font-bold text-white">Bron qiling</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">Kerakli miqdorni band qiling: narx bron paytida qotiriladi.</p>
+                </li>
+                <li class="how-step glass fx-card hover-glow p-8 rounded-3xl border border-white/10 hover:border-amber-500/50 space-y-4 relative">
+                    <span class="how-num bg-amber-400">03</span>
+                    <div class="how-ico bg-amber-500/20 text-amber-400"><i class="fa-solid fa-shield-halved"></i></div>
+                    <h3 class="text-xl font-bold text-white">Escrow'ga to'lang</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">Pul yuk yetkazilguncha xavfsiz saqlanadi: fermer ham, siz ham himoyadasiz.</p>
+                </li>
+                <li class="how-step glass fx-card hover-glow p-8 rounded-3xl border border-white/10 hover:border-amber-500/50 space-y-4 relative">
+                    <span class="how-num bg-amber-400">04</span>
+                    <div class="how-ico bg-amber-500/20 text-amber-400"><i class="fa-solid fa-circle-check"></i></div>
+                    <h3 class="text-xl font-bold text-white">Qabul qiling</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">Yukni xaritada kuzating, qabul qilib tasdiqlang va fikringizni qoldiring.</p>
+                </li>
+            </ol>
+        </div>
+    </section>
+
+    <!-- MARKET.UZ ZANJIRI (yagona qiymat zanjiri) -->
+    <section id="chain" class="sec-anchor py-24 px-6 max-w-7xl mx-auto relative border-t border-white/10">
+        <div class="text-center mb-14 space-y-4" data-aos="fade-up">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-widest">
+                <i class="fa-solid fa-link"></i> Market.uz Zanjiri
             </div>
+            <h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight">Dehqondan javongacha: yagona raqamli zanjir</h2>
+            <p class="text-slate-400 text-lg max-w-2xl mx-auto">Har bir bosqich bitta platformada: vositachisiz, shaffof va kuzatiladigan.</p>
+        </div>
+        <ol class="chain grid grid-cols-1 md:grid-cols-5 gap-6 md:gap-4 relative">
+            <li class="chain-node" data-aos="zoom-in" data-aos-delay="100"><div class="chain-ico text-emerald-400 bg-emerald-500/15 border-emerald-500/30"><i class="fa-solid fa-tractor"></i></div><h3>Dehqon</h3><p>E'lon va hosil</p></li>
+            <li class="chain-node" data-aos="zoom-in" data-aos-delay="200"><div class="chain-ico text-teal-400 bg-teal-500/15 border-teal-500/30"><i class="fa-solid fa-warehouse"></i></div><h3>Omborxona</h3><p>Sifat nazorati va saqlash</p></li>
+            <li class="chain-node" data-aos="zoom-in" data-aos-delay="300"><div class="chain-ico text-blue-400 bg-blue-500/15 border-blue-500/30"><i class="fa-solid fa-truck-fast"></i></div><h3>Logistika</h3><p>GPS va ELD kuzatuv</p></li>
+            <li class="chain-node" data-aos="zoom-in" data-aos-delay="400"><div class="chain-ico text-amber-400 bg-amber-500/15 border-amber-500/30"><i class="fa-solid fa-store"></i></div><h3>Market</h3><p>Bron va Escrow to'lov</p></li>
+            <li class="chain-node" data-aos="zoom-in" data-aos-delay="500"><div class="chain-ico text-purple-400 bg-purple-500/15 border-purple-500/30"><i class="fa-solid fa-basket-shopping"></i></div><h3>Xaridor</h3><p>Yangi va sifatli mahsulot</p></li>
+        </ol>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-14">
+            <div class="glass fx-card hover-glow rounded-2xl border border-white/10 p-6 flex gap-4 items-start" data-aos="fade-up" data-aos-delay="100"><i class="fa-solid fa-eye text-emerald-400 text-2xl mt-1"></i><div><h4 class="font-bold text-white">Shaffof narx</h4><p class="text-sm text-slate-400 mt-1">Dehqon belgilagan narx bron paytida qotiriladi va o'zgarmaydi.</p></div></div>
+            <div class="glass fx-card hover-glow rounded-2xl border border-white/10 p-6 flex gap-4 items-start" data-aos="fade-up" data-aos-delay="200"><i class="fa-solid fa-shield-halved text-emerald-400 text-2xl mt-1"></i><div><h4 class="font-bold text-white">Kafolatlangan to'lov</h4><p class="text-sm text-slate-400 mt-1">Mablag' Escrow'da saqlanadi va yetkazilgach fermerga o'tadi.</p></div></div>
+            <div class="glass fx-card hover-glow rounded-2xl border border-white/10 p-6 flex gap-4 items-start" data-aos="fade-up" data-aos-delay="300"><i class="fa-solid fa-satellite-dish text-emerald-400 text-2xl mt-1"></i><div><h4 class="font-bold text-white">Jonli kuzatuv</h4><p class="text-sm text-slate-400 mt-1">Yuk xaritada ko'rinadi va har bosqichda Telegram xabari keladi.</p></div></div>
+        </div>
+    </section>
+
+    <!-- LOGISTIKA TARIFLARI -->
+    <section id="tariffs" class="sec-anchor py-24 px-6 max-w-7xl mx-auto relative border-t border-white/10">
+        <div class="text-center mb-14 space-y-4" data-aos="fade-up">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold uppercase tracking-widest">
+                <i class="fa-solid fa-tags"></i> Logistika Tariflari
+            </div>
+            <h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight">Shaffof tariflar, yashirin to'lovlarsiz</h2>
+            <p class="text-slate-400 text-lg max-w-2xl mx-auto">Yuk tashish turini tanlang. Aniq narx masofa, yuk og'irligi va mavsumga qarab hisoblanadi.</p>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <article class="tariff glass fx-card hover-glow rounded-3xl border border-white/10 hover:border-emerald-500/50 p-8 flex flex-col gap-6" data-aos="fade-up" data-aos-delay="100">
+                <div class="space-y-3">
+                    <div class="how-ico bg-emerald-500/20 text-emerald-400"><i class="fa-solid fa-truck-ramp-box"></i></div>
+                    <h3 class="text-2xl font-extrabold text-white">Bron yuki</h3>
+                    <p class="text-sm text-slate-400">Fermerdan marketgacha to'g'ridan-to'g'ri reys.</p>
+                </div>
+                <ul class="tariff-list">
+                    <li><i class="fa-solid fa-check"></i> Narx haydovchi bilan shaffof kelishiladi</li>
+                    <li><i class="fa-solid fa-check"></i> Escrow orqali kafolatlangan to'lov</li>
+                    <li><i class="fa-solid fa-check"></i> GPS kuzatuv va ELD jurnali</li>
+                    <li><i class="fa-solid fa-check"></i> Telegram xabarnomalar</li>
+                </ul>
+                <button type="button" data-scroll="#contact" class="tariff-cta mt-auto">Narx so'rash</button>
+            </article>
+            <article class="tariff tariff-featured glass fx-card hover-glow rounded-3xl border border-emerald-500/40 p-8 flex flex-col gap-6 relative" data-aos="fade-up" data-aos-delay="200">
+                <span class="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-emerald-500 text-slate-950 text-xs font-black uppercase tracking-wider whitespace-nowrap">Eng mashhur</span>
+                <div class="space-y-3">
+                    <div class="how-ico bg-emerald-500/20 text-emerald-400"><i class="fa-solid fa-warehouse"></i></div>
+                    <h3 class="text-2xl font-extrabold text-white">Omborxona yuki</h3>
+                    <p class="text-sm text-slate-400">Omborxonadan marketga: saralangan va shtrix-kodli mahsulot.</p>
+                </div>
+                <ul class="tariff-list">
+                    <li><i class="fa-solid fa-check"></i> Xizmat haqi buyurtma summasidan foiz sifatida</li>
+                    <li><i class="fa-solid fa-check"></i> Sifat nazorati, saralash va qadoqlash</li>
+                    <li><i class="fa-solid fa-check"></i> Dispetcher yuklab tasdiqlaydi</li>
+                    <li><i class="fa-solid fa-check"></i> Escrow, GPS va ELD birga</li>
+                </ul>
+                <button type="button" data-scroll="#contact" class="tariff-cta tariff-cta-primary mt-auto">Narx so'rash</button>
+            </article>
+            <article class="tariff glass fx-card hover-glow rounded-3xl border border-white/10 hover:border-amber-500/50 p-8 flex flex-col gap-6" data-aos="fade-up" data-aos-delay="300">
+                <div class="space-y-3">
+                    <div class="how-ico bg-amber-500/20 text-amber-400"><i class="fa-solid fa-building"></i></div>
+                    <h3 class="text-2xl font-extrabold text-white">Korporativ</h3>
+                    <p class="text-sm text-slate-400">Tarmoq do'konlari va doimiy buyurtmalar uchun.</p>
+                </div>
+                <ul class="tariff-list">
+                    <li><i class="fa-solid fa-check"></i> Individual shartlar va hajm chegirmalari</li>
+                    <li><i class="fa-solid fa-check"></i> Doimiy shartnoma va takroriy buyurtma</li>
+                    <li><i class="fa-solid fa-check"></i> Shaxsiy menejer</li>
+                    <li><i class="fa-solid fa-check"></i> Hisobot va integratsiya</li>
+                </ul>
+                <button type="button" data-scroll="#contact" class="tariff-cta mt-auto">Bog'lanish</button>
+            </article>
         </div>
     </section>
 
@@ -761,6 +1071,20 @@
         </div>
     </section>
 
+    <!-- HAMKORLAR -->
+    <section id="partners" class="sec-anchor py-24 px-6 max-w-7xl mx-auto relative border-t border-white/10">
+        <div class="text-center mb-12 space-y-4" data-aos="fade-up">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-semibold uppercase tracking-widest">
+                <i class="fa-solid fa-handshake"></i> Hamkorlar
+            </div>
+            <h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight">Bizga ishonadigan hamkorlar</h2>
+            <p class="text-slate-400 text-lg max-w-2xl mx-auto">Supermarketlar, logistika kompaniyalari va omborxonalar AgrarGo ekotizimida birga ishlaydi.</p>
+        </div>
+        <div id="partners-marquee" class="marquee" aria-label="Hamkorlar" data-aos="fade-up" data-aos-delay="100">
+            <div id="partners-track" class="marquee-track"></div>
+        </div>
+    </section>
+
     <!-- JONLI SHARHLAR (bazadan) -->
     <section id="reviews" class="py-24 px-6 max-w-7xl mx-auto relative border-t border-white/10 scroll-mt-24">
         <div class="text-center mb-12 space-y-4" data-aos="fade-up">
@@ -782,30 +1106,70 @@
         </div>
     </section>
 
-    <!-- FAQ SECTION (Restored Fully) -->
-    <section class="py-24 px-6 max-w-5xl mx-auto relative border-t border-white/10" data-aos="fade-up">
-        <div class="text-center mb-16 space-y-4">
+    <!-- FAQ: akkordeon -->
+    <section id="faq" class="sec-anchor py-24 px-6 max-w-4xl mx-auto relative border-t border-white/10">
+        <div class="text-center mb-14 space-y-4" data-aos="fade-up">
             <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-400 text-xs font-semibold uppercase tracking-widest">
                 <i class="fa-solid fa-circle-question"></i> FAQ
             </div>
-            <h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight">Ko'p Beriladigan Savollar</h2>
-            <p class="text-slate-400 text-lg max-w-2xl mx-auto">Platformaning ishlash tartibi bo'yicha batafsil javoblar.</p>
+            <h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight">Ko'p beriladigan savollar</h2>
+            <p class="text-slate-400 text-lg max-w-2xl mx-auto">Platformaning ishlash tartibi bo'yicha qisqa javoblar.</p>
         </div>
-
-        <div class="space-y-4">
-            <div class="glass p-6 rounded-2xl border border-white/10 hover-glow transition space-y-2" data-aos="fade-up" data-aos-delay="100">
-                <h3 class="text-lg font-bold text-white flex items-center gap-3"><i class="fa-solid fa-chevron-right text-emerald-400 text-xs"></i> Dehqonlar uchun ro'yxatdan o'tish bepulmi?</h3>
-                <p class="text-slate-300 text-sm pl-6 leading-relaxed">Ha, fermerlar va dehqonlar uchun ro'yxatdan o'tish hamda e'lon joylashtirish mutlaqo bepul.</p>
+        <div id="faq-list" class="space-y-3">
+            <div class="faq-item glass fx-card rounded-2xl border border-white/10" data-aos="fade-up">
+                <h3><button type="button" class="faq-q" aria-expanded="false" aria-controls="faq-a1" id="faq-q1"><span>Fermerlar uchun ro'yxatdan o'tish bepulmi?</span><i class="fa-solid fa-chevron-down"></i></button></h3>
+                <div class="faq-a" id="faq-a1" role="region" aria-labelledby="faq-q1"><div><p>Ha, fermerlar uchun ro'yxatdan o'tish va e'lon joylashtirish mutlaqo bepul.</p></div></div>
             </div>
-
-            <div class="glass p-6 rounded-2xl border border-white/10 hover-glow transition space-y-2" data-aos="fade-up" data-aos-delay="200">
-                <h3 class="text-lg font-bold text-white flex items-center gap-3"><i class="fa-solid fa-chevron-right text-emerald-400 text-xs"></i> Sifat kafolati qanday nazorat qilinadi?</h3>
-                <p class="text-slate-300 text-sm pl-6 leading-relaxed">Sifat mezonlari, jarima tizimi va ELD GPS tracking orqali dispetcherlik nazorat qiladi.</p>
+            <div class="faq-item glass fx-card rounded-2xl border border-white/10" data-aos="fade-up">
+                <h3><button type="button" class="faq-q" aria-expanded="false" aria-controls="faq-a2" id="faq-q2"><span>Kafolatlangan to'lov (Escrow) qanday ishlaydi?</span><i class="fa-solid fa-chevron-down"></i></button></h3>
+                <div class="faq-a" id="faq-a2" role="region" aria-labelledby="faq-q2"><div><p>Xaridor to'lagan mablag' yuk yetkazilguncha platformada xavfsiz saqlanadi. Yuk qabul qilinib tasdiqlangach pul fermerga o'tkaziladi, bekor qilinsa xaridorga qaytariladi.</p></div></div>
             </div>
+            <div class="faq-item glass fx-card rounded-2xl border border-white/10" data-aos="fade-up">
+                <h3><button type="button" class="faq-q" aria-expanded="false" aria-controls="faq-a3" id="faq-q3"><span>Sifat kafolati qanday nazorat qilinadi?</span><i class="fa-solid fa-chevron-down"></i></button></h3>
+                <div class="faq-a" id="faq-a3" role="region" aria-labelledby="faq-q3"><div><p>Omborxonada yuk tortiladi, sifat bahosi (A/B/C) beriladi va saralanadi. Yo'lda esa GPS kuzatuv va ELD jurnali orqali dispetcher nazorat qiladi.</p></div></div>
+            </div>
+            <div class="faq-item glass fx-card rounded-2xl border border-white/10" data-aos="fade-up">
+                <h3><button type="button" class="faq-q" aria-expanded="false" aria-controls="faq-a4" id="faq-q4"><span>Narx tushganda hosilni saqlash mumkinmi?</span><i class="fa-solid fa-chevron-down"></i></button></h3>
+                <div class="faq-a" id="faq-a4" role="region" aria-labelledby="faq-q4"><div><p>Ha. Omborxona (sovutgichli kameralar) orqali mahsulotni saqlab, narx ko'tarilganda sotishingiz mumkin.</p></div></div>
+            </div>
+            <div class="faq-item glass fx-card rounded-2xl border border-white/10" data-aos="fade-up">
+                <h3><button type="button" class="faq-q" aria-expanded="false" aria-controls="faq-a5" id="faq-q5"><span>Haydovchi bo'lib qanday yuk olaman?</span><i class="fa-solid fa-chevron-down"></i></button></h3>
+                <div class="faq-a" id="faq-a5" role="region" aria-labelledby="faq-q5"><div><p>Haydovchi sifatida ro'yxatdan o'ting, "Mavjud yuklar" bo'limidan to'lovi Escrow'ga o'tgan va transportingizga mos yukni tanlang. Bir vaqtda bitta yuk olinadi.</p></div></div>
+            </div>
+            <div class="faq-item glass fx-card rounded-2xl border border-white/10" data-aos="fade-up">
+                <h3><button type="button" class="faq-q" aria-expanded="false" aria-controls="faq-a6" id="faq-q6"><span>Xabarnomalarni Telegramda olsam bo'ladimi?</span><i class="fa-solid fa-chevron-down"></i></button></h3>
+                <div class="faq-a" id="faq-a6" role="region" aria-labelledby="faq-q6"><div><p>Ha. Profil bo'limida "Telegram botni ulash" tugmasini bosing: bron, to'lov va yuk holati haqidagi xabarlar avtomatik keladi.</p></div></div>
+            </div>
+            <div class="faq-item glass fx-card rounded-2xl border border-white/10" data-aos="fade-up">
+                <h3><button type="button" class="faq-q" aria-expanded="false" aria-controls="faq-a7" id="faq-q7"><span>Ilovani telefonga o'rnatish mumkinmi?</span><i class="fa-solid fa-chevron-down"></i></button></h3>
+                <div class="faq-a" id="faq-a7" role="region" aria-labelledby="faq-q7"><div><p>Ha, AgrarGo PWA sifatida ishlaydi: menyudagi "Ilovani o'rnatish" tugmasi orqali bosh ekranga qo'shing, u tezroq ochiladi va oflayn ham ishlaydi.</p></div></div>
+            </div>
+            <div class="faq-item glass fx-card rounded-2xl border border-white/10" data-aos="fade-up">
+                <h3><button type="button" class="faq-q" aria-expanded="false" aria-controls="faq-a8" id="faq-q8"><span>Hamkor bo'lish uchun kimga murojaat qilaman?</span><i class="fa-solid fa-chevron-down"></i></button></h3>
+                <div class="faq-a" id="faq-a8" role="region" aria-labelledby="faq-q8"><div><p>Pastdagi "Hamkorlik / Aloqa" bo'limidagi telefon yoki Telegram orqali bog'laning: jamoamiz sizga mos hamkorlik shartlarini taklif qiladi.</p></div></div>
+            </div>
+        </div>
+    </section>
 
-            <div class="glass p-6 rounded-2xl border border-white/10 hover-glow transition space-y-2" data-aos="fade-up" data-aos-delay="300">
-                <h3 class="text-lg font-bold text-white flex items-center gap-3"><i class="fa-solid fa-chevron-right text-emerald-400 text-xs"></i> Bozorda narx tushganda hosilni saqlash mumkinmi?</h3>
-                <p class="text-slate-300 text-sm pl-6 leading-relaxed">Ha, Warehouse Storage orqali mahsulotni omborda saqlab, narx ko'tarilganda sotishingiz mumkin.</p>
+    <!-- HAMKORLIK / ALOQA -->
+    <section id="contact" class="sec-anchor py-24 px-6 max-w-6xl mx-auto relative border-t border-white/10">
+        <div class="glass rounded-[2rem] border border-emerald-500/25 bg-gradient-to-br from-emerald-950/40 via-slate-900 to-slate-900 p-8 sm:p-14 grid lg:grid-cols-[1.1fr_1fr] gap-10 items-center" data-aos="zoom-in">
+            <div class="space-y-5 text-center lg:text-left">
+                <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-widest">
+                    <i class="fa-solid fa-comments"></i> Hamkorlik / Aloqa
+                </div>
+                <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight">Birga o'sishga tayyormisiz?</h2>
+                <p class="text-slate-300 leading-relaxed">Supermarket tarmog'i, logistika kompaniyasi yoki omborxona bo'lsangiz, ekotizimimizga qo'shiling. Tarif, integratsiya va hamkorlik shartlari bo'yicha savollaringizga javob beramiz.</p>
+                <ul class="flex flex-wrap justify-center lg:justify-start gap-2 text-xs font-bold">
+                    <li class="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-slate-300"><i class="fa-solid fa-store text-emerald-400 mr-1.5"></i>Supermarketlar</li>
+                    <li class="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-slate-300"><i class="fa-solid fa-truck text-blue-400 mr-1.5"></i>Logistika</li>
+                    <li class="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-slate-300"><i class="fa-solid fa-warehouse text-amber-400 mr-1.5"></i>Omborxonalar</li>
+                </ul>
+            </div>
+            <div class="grid gap-4">
+                <a id="contact-phone" href="tel:+998781400909" class="contact-link"><span class="contact-ico bg-emerald-500/20 text-emerald-400"><i class="fa-solid fa-phone"></i></span><span class="min-w-0"><span class="block text-xs text-slate-400 font-semibold">Qo'ng'iroq qiling</span><span id="contact-phone-text" class="block font-extrabold text-white truncate" translate="no">+998 78 140 09 09</span></span></a>
+                <a id="contact-telegram" href="https://t.me/agrargobot" target="_blank" rel="noopener noreferrer" class="contact-link"><span class="contact-ico bg-sky-500/20 text-sky-400"><i class="fa-brands fa-telegram"></i></span><span class="min-w-0"><span class="block text-xs text-slate-400 font-semibold">Telegramda yozing</span><span id="contact-telegram-text" class="block font-extrabold text-white truncate" translate="no">@agrargobot</span></span></a>
+                <a id="contact-email" href="#" class="contact-link" style="display:none"><span class="contact-ico bg-amber-500/20 text-amber-400"><i class="fa-solid fa-envelope"></i></span><span class="min-w-0"><span class="block text-xs text-slate-400 font-semibold">Elektron pochta</span><span id="contact-email-text" class="block font-extrabold text-white truncate" translate="no"></span></span></a>
             </div>
         </div>
     </section>
@@ -824,16 +1188,16 @@
             <div class="space-y-4">
                 <h4 class="font-bold text-white text-base">Modullar</h4>
                 <ul class="space-y-2.5 text-slate-400 text-sm font-medium">
-                    <li><a href="#" class="hover:text-emerald-400 transition">AgrarGo Farm</a></li>
-                    <li><a href="#" class="hover:text-emerald-400 transition">AgrarGo Driver</a></li>
-                    <li><a href="#" class="hover:text-emerald-400 transition">AgrarGo Market</a></li>
+                    <li><a href="#role-farmer" onclick="openRolePage('FARMER'); return false;" class="hover:text-emerald-400 transition inline-block py-1">AgrarGo Farm</a></li>
+                    <li><a href="#role-driver" onclick="openRolePage('DRIVER'); return false;" class="hover:text-emerald-400 transition inline-block py-1">AgrarGo Driver</a></li>
+                    <li><a href="#role-market" onclick="openRolePage('MARKET'); return false;" class="hover:text-emerald-400 transition inline-block py-1">AgrarGo Market</a></li>
                 </ul>
             </div>
             <div class="space-y-4">
                 <h4 class="font-bold text-white text-base">Texnologiyalar</h4>
                 <ul class="space-y-2.5 text-slate-400 text-sm font-medium">
-                    <li><a href="#" class="hover:text-emerald-400 transition">ELD GPS Tracking</a></li>
-                    <li><a href="#" class="hover:text-emerald-400 transition">Warehouse Storage</a></li>
+                    <li><a href="#chain" data-scroll="#chain" class="hover:text-emerald-400 transition inline-block py-1">ELD GPS Tracking</a></li>
+                    <li><a href="#" onclick="openWarehouse(); return false;" class="hover:text-emerald-400 transition inline-block py-1">Warehouse Storage</a></li>
                 </ul>
             </div>
             <div class="space-y-4">
@@ -6475,6 +6839,18 @@
             document.getElementById('site-hours-row').classList.toggle('hidden', !hours);
             document.getElementById('site-hours-row').classList.toggle('flex', !!hours);
             set('site-hours', hours || '');
+            // "Hamkorlik / Aloqa" bloki
+            const cph = document.getElementById('contact-phone');
+            if (cph) {
+                cph.style.display = phones.length ? '' : 'none';
+                if (phones.length) { cph.href = 'tel:' + phones[0].replace(/[^\d+]/g, ''); set('contact-phone-text', phones[0]); }
+                const ctg = document.getElementById('contact-telegram');
+                ctg.style.display = tgUrl ? '' : 'none';
+                if (tgUrl) { ctg.href = tgUrl; set('contact-telegram-text', st.telegramHandle || 'Telegram'); }
+                const cem = document.getElementById('contact-email');
+                cem.style.display = st.supportEmail ? '' : 'none';
+                if (st.supportEmail) { cem.href = 'mailto:' + st.supportEmail; set('contact-email-text', st.supportEmail); }
+            }
             const soc = document.getElementById('site-social');
             soc.replaceChildren();
             Object.keys(SOCIAL_ICONS).forEach(function (k) {
@@ -7098,6 +7474,156 @@
                 }).catch(function () { /* SW o'rnatilmasa sayt odatdagidek ishlaydi */ });
             });
         }
+
+
+        // ===== UI/UX: bo'limlarga silliq o'tish, akkordeon, karusel, effektlar =====
+        // Silliq skroll: yuqori menyu, sidebar, tarif tugmalari va footer havolalari
+        function scrollToSection(sel, fromSidebar) {
+            const target = document.querySelector(sel);
+            if (!target) return;
+            if (fromSidebar && sidebar.classList.contains('open')) toggleSidebar();
+            if (rolePage && rolePage.classList.contains('open')) closeRolePage();
+            const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+            try { history.replaceState(null, '', sel); } catch (e) {}
+            target.setAttribute('tabindex', '-1');
+            target.focus({ preventScroll: true });
+            target.classList.remove('sec-flash');
+            void target.offsetWidth; // animatsiyani qayta ishga tushirish
+            target.classList.add('sec-flash');
+        }
+        document.addEventListener('click', function (e) {
+            const a = e.target.closest('[data-scroll]');
+            if (!a) return;
+            e.preventDefault();
+            scrollToSection(a.getAttribute('data-scroll'), !!a.closest('#sidebar'));
+        });
+
+        // Yuqori menyuda hozirgi bo'lim ajratib ko'rsatiladi
+        (function () {
+            const links = Array.prototype.slice.call(document.querySelectorAll('.top-link[data-scroll]'));
+            if (!links.length || !('IntersectionObserver' in window)) return;
+            const map = {};
+            links.forEach(function (l) { map[l.getAttribute('data-scroll')] = l; });
+            const io = new IntersectionObserver(function (entries) {
+                entries.forEach(function (en) {
+                    if (!en.isIntersecting) return;
+                    links.forEach(function (l) { l.classList.remove('active'); l.removeAttribute('aria-current'); });
+                    const l = map['#' + en.target.id];
+                    if (l) { l.classList.add('active'); l.setAttribute('aria-current', 'true'); }
+                });
+            }, { rootMargin: '-35% 0px -55% 0px' });
+            Object.keys(map).forEach(function (sel) { const t = document.querySelector(sel); if (t) io.observe(t); });
+        })();
+
+        // "Tizim qanday ishlaydi?": rol tablari (klaviatura bilan ham)
+        (function () {
+            const tabs = Array.prototype.slice.call(document.querySelectorAll('.how-tab'));
+            const select = function (tab, focus) {
+                tabs.forEach(function (t) {
+                    const on = t === tab;
+                    t.classList.toggle('active', on);
+                    t.setAttribute('aria-selected', String(on));
+                    t.tabIndex = on ? 0 : -1;
+                    const panel = document.getElementById('how-panel-' + t.dataset.how);
+                    if (panel) panel.hidden = !on;
+                });
+                if (focus) tab.focus();
+                if (window.AOS && AOS.refresh) AOS.refresh();
+            };
+            tabs.forEach(function (t, i) {
+                t.addEventListener('click', function () { select(t); });
+                t.addEventListener('keydown', function (e) {
+                    const k = e.key;
+                    if (k === 'ArrowRight' || k === 'ArrowLeft') { e.preventDefault(); select(tabs[(i + (k === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length], true); }
+                    else if (k === 'Home') { e.preventDefault(); select(tabs[0], true); }
+                    else if (k === 'End') { e.preventDefault(); select(tabs[tabs.length - 1], true); }
+                });
+            });
+        })();
+
+        // FAQ akkordeon: bir vaqtda bitta savol ochiq
+        (function () {
+            const list = document.getElementById('faq-list');
+            if (!list) return;
+            list.addEventListener('click', function (e) {
+                const btn = e.target.closest('.faq-q');
+                if (!btn) return;
+                const item = btn.closest('.faq-item');
+                const open = !item.classList.contains('open');
+                list.querySelectorAll('.faq-item.open').forEach(function (it) {
+                    it.classList.remove('open');
+                    it.querySelector('.faq-q').setAttribute('aria-expanded', 'false');
+                });
+                if (open) { item.classList.add('open'); btn.setAttribute('aria-expanded', 'true'); }
+            });
+        })();
+
+        // Hamkorlar karuseli. Haqiqiy hamkor qo'shish: logo — rasm manzili (https:// yoki papka ichida), name va type matni
+        const PARTNERS = [
+            { name: 'Supermarket tarmog\'i', type: 'Chakana savdo', icon: 'fa-store' },
+            { name: 'Logistika kompaniyasi', type: 'Yuk tashish', icon: 'fa-truck-fast' },
+            { name: 'Sovutgichli omborlar', type: 'Saqlash va sovutish', icon: 'fa-snowflake' },
+            { name: 'Agro-kooperativ', type: 'Fermerlar uyushmasi', icon: 'fa-wheat-awn' },
+            { name: "To'lov xizmati", type: 'Xavfsiz to\'lovlar', icon: 'fa-credit-card' },
+            { name: 'Sug\'urta kompaniyasi', type: 'Yuk sug\'urtasi', icon: 'fa-umbrella' },
+            { name: 'Qadoqlash ishlab chiqaruvchisi', type: 'Qadoq va yorliqlar', icon: 'fa-box-open' },
+            { name: 'Mobil aloqa operatori', type: 'Aloqa va SMS', icon: 'fa-tower-cell' }
+        ];
+        (function () {
+            const track = document.getElementById('partners-track');
+            if (!track) return;
+            const build = function (p, hidden) {
+                const card = el('div', 'partner');
+                if (hidden) card.setAttribute('aria-hidden', 'true');
+                const logo = el('div', 'partner-logo');
+                if (p.logo && /^(https:\/\/|partners\/)/.test(p.logo)) {
+                    const im = el('img'); im.src = p.logo; im.alt = ''; im.loading = 'lazy';
+                    im.addEventListener('error', function () { im.remove(); logo.appendChild(el('i', 'fa-solid ' + p.icon)); });
+                    logo.appendChild(im);
+                } else logo.appendChild(el('i', 'fa-solid ' + p.icon));
+                card.appendChild(logo);
+                const txt = el('div', 'min-w-0');
+                txt.appendChild(el('b', '', p.name));
+                txt.appendChild(el('small', '', p.type));
+                card.appendChild(txt);
+                return card;
+            };
+            // Ikki nusxa: -50% siljish uzluksiz (sakrashsiz) takrorlanadi; ikkinchisi ekran o'qigichlardan yashirin
+            PARTNERS.forEach(function (p) { track.appendChild(build(p, false)); });
+            PARTNERS.forEach(function (p) { track.appendChild(build(p, true)); });
+        })();
+
+        // Kartalarda yorug'lik kursor ortidan yuradi (faqat sichqoncha bor qurilmalarda)
+        if (window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+            let fxRaf = 0;
+            document.addEventListener('pointermove', function (e) {
+                const card = e.target.closest && e.target.closest('.fx-card, .hover-glow');
+                if (!card || fxRaf) return;
+                fxRaf = requestAnimationFrame(function () {
+                    fxRaf = 0;
+                    const r = card.getBoundingClientRect();
+                    card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+                    card.style.setProperty('--my', (e.clientY - r.top) + 'px');
+                });
+            }, { passive: true });
+
+            // 3D logotip: sichqoncha tomon biroz og'adi
+            const stage = document.querySelector('.logo-stage');
+            const tilt = document.querySelector('.logo-tilt');
+            if (stage && tilt) {
+                const hero = stage.closest('header');
+                hero.addEventListener('pointermove', function (e) {
+                    const r = stage.getBoundingClientRect();
+                    const dx = (e.clientX - (r.left + r.width / 2)) / window.innerWidth;
+                    const dy = (e.clientY - (r.top + r.height / 2)) / window.innerHeight;
+                    tilt.style.transform = `rotateX(${(-dy * 16).toFixed(2)}deg) rotateY(${(dx * 22).toFixed(2)}deg)`;
+                }, { passive: true });
+                hero.addEventListener('pointerleave', function () { tilt.style.transform = ''; });
+            }
+        }
+
+        document.body.classList.add('page-ready');
 
         startLiveReviews();
         routeRoleHash();
