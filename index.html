@@ -120,20 +120,20 @@
         /* Hero orqa fon slayderi: chap/o'ng bloklar, xira va markazga qarab so'nadi */
         .hero-bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
         .hero-pane { position: absolute; top: 0; bottom: 0; width: 46%; }
-        .hero-pane.left { left: 0; -webkit-mask-image: linear-gradient(to right, #000 0%, rgba(0,0,0,.55) 55%, transparent 100%); mask-image: linear-gradient(to right, #000 0%, rgba(0,0,0,.55) 55%, transparent 100%); }
-        .hero-pane.right { right: 0; -webkit-mask-image: linear-gradient(to left, #000 0%, rgba(0,0,0,.55) 55%, transparent 100%); mask-image: linear-gradient(to left, #000 0%, rgba(0,0,0,.55) 55%, transparent 100%); }
-        .hero-layer { position: absolute; inset: -6%; background-size: cover; background-position: center; filter: blur(14px) saturate(1.1); opacity: 0; transition: opacity 1.8s ease-in-out; will-change: opacity; }
-        .hero-layer.on { opacity: .38; }
+        .hero-pane.left { left: 0; -webkit-mask-image: linear-gradient(to right, #000 0%, rgba(0,0,0,.8) 55%, transparent 100%); mask-image: linear-gradient(to right, #000 0%, rgba(0,0,0,.8) 55%, transparent 100%); }
+        .hero-pane.right { right: 0; -webkit-mask-image: linear-gradient(to left, #000 0%, rgba(0,0,0,.8) 55%, transparent 100%); mask-image: linear-gradient(to left, #000 0%, rgba(0,0,0,.8) 55%, transparent 100%); }
+        .hero-layer { position: absolute; inset: -6%; background-size: cover; background-position: center; filter: blur(3px) saturate(1.15); opacity: 0; transition: opacity 1.8s ease-in-out; will-change: opacity; }
+        .hero-layer.on { opacity: .75; }
         /* Matn joylashgan markazga qarab qorayuvchi qatlam (o'qish qiyinlashmasin) */
         .hero-bg::after { content: ''; position: absolute; inset: 0; background:
-            radial-gradient(ellipse at center, rgba(2,6,23,.88) 0%, rgba(2,6,23,.55) 45%, rgba(2,6,23,0) 80%),
+            radial-gradient(ellipse at center, rgba(2,6,23,.82) 0%, rgba(2,6,23,.45) 40%, rgba(2,6,23,0) 70%),
             linear-gradient(to bottom, rgba(2,6,23,.55) 0%, rgba(2,6,23,0) 25%, rgba(2,6,23,0) 70%, rgba(2,6,23,1) 100%); }
         @media (max-width: 1023px) {
             .hero-pane { width: 100%; }
             .hero-pane.left { bottom: 50%; -webkit-mask-image: linear-gradient(to bottom, #000 0%, transparent 100%); mask-image: linear-gradient(to bottom, #000 0%, transparent 100%); }
             .hero-pane.right { top: 50%; -webkit-mask-image: linear-gradient(to top, #000 0%, transparent 100%); mask-image: linear-gradient(to top, #000 0%, transparent 100%); }
-            .hero-layer { filter: blur(10px); }
-            .hero-layer.on { opacity: .3; }
+            .hero-layer { filter: blur(2px) saturate(1.15); }
+            .hero-layer.on { opacity: .6; }
         }
         @media (prefers-reduced-motion: reduce) { .hero-layer { transition: none; } }
         /* Xarita (Leaflet) va belgilar */
