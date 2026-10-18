@@ -27,6 +27,13 @@ describe('validateEnv', () => {
   });
 
   describe('production', () => {
+    it('LOCATION_ALLOW_SIMULATION: development\'da yoqiq, productionda sukut bo\'yicha o\'chiq, noto\'g\'ri qiymat rad etiladi', () => {
+      expect(validateEnv({ ...base }).LOCATION_ALLOW_SIMULATION).toBe(true);
+      expect(validateEnv({ ...prod }).LOCATION_ALLOW_SIMULATION).toBe(false);
+      expect(validateEnv({ ...prod, LOCATION_ALLOW_SIMULATION: 'true' }).LOCATION_ALLOW_SIMULATION).toBe(true);
+      expect(() => validateEnv({ ...base, LOCATION_ALLOW_SIMULATION: 'ha' })).toThrow(/LOCATION_ALLOW_SIMULATION/);
+    });
+
     it("to'g'ri sozlamani qabul qiladi", () => {
       const env = validateEnv({ ...prod, TRUST_PROXY: '1' });
       expect(env.CORS_ORIGINS).toEqual(['https://agrargo.uz']);

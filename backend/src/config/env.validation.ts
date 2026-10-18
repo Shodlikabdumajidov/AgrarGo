@@ -32,6 +32,8 @@ export interface AppEnv {
   THROTTLE_VERIFY_PHONE_LIMIT: number;
   THROTTLE_RESET_LIMIT: number;
   THROTTLE_CHANGE_PASSWORD_LIMIT: number;
+  THROTTLE_LOCATION_LIMIT: number;
+  LOCATION_ALLOW_SIMULATION: boolean;
 }
 
 // Namuna (.env.example) va keng tarqalgan zaif qiymatlar production'da qabul qilinmaydi
@@ -140,6 +142,9 @@ export function validateEnv(raw: Record<string, unknown>): AppEnv & Record<strin
     errors.push("Production'da simulyatsiya qilingan SMS taqiqlangan: haqiqiy SMS provayderini ulang (faqat demo uchun SMS_ALLOW_SIMULATION=true)");
   }
 
+  const locSimRaw = String(raw.LOCATION_ALLOW_SIMULATION ?? (prod ? 'false' : 'true')).toLowerCase();
+  if (!['true', 'false'].includes(locSimRaw)) errors.push("LOCATION_ALLOW_SIMULATION true yoki false bo'lishi kerak");
+
   const env = {
     NODE_ENV: nodeEnv as NodeEnv,
     PORT: intInRange(raw.PORT, 'PORT', 3000, 1, 65535, errors),
@@ -168,6 +173,9 @@ export function validateEnv(raw: Record<string, unknown>): AppEnv & Record<strin
     THROTTLE_VERIFY_PHONE_LIMIT: intInRange(raw.THROTTLE_VERIFY_PHONE_LIMIT, 'THROTTLE_VERIFY_PHONE_LIMIT', 10, 1, 100000, errors),
     THROTTLE_RESET_LIMIT: intInRange(raw.THROTTLE_RESET_LIMIT, 'THROTTLE_RESET_LIMIT', 10, 1, 100000, errors),
     THROTTLE_CHANGE_PASSWORD_LIMIT: intInRange(raw.THROTTLE_CHANGE_PASSWORD_LIMIT, 'THROTTLE_CHANGE_PASSWORD_LIMIT', 5, 1, 100000, errors),
+    THROTTLE_LOCATION_LIMIT: intInRange(raw.THROTTLE_LOCATION_LIMIT, 'THROTTLE_LOCATION_LIMIT', 12, 1, 100000, errors),
+    // Demo (soxta) joylashuv: productionda sukut bo'yicha o'chiq, fermer/market haqiqiy joyni ko'rishiga ishonadi
+    LOCATION_ALLOW_SIMULATION: locSimRaw === 'true',
     PAYMENT_PROVIDER: 'simulated' as const,
     PAYMENT_ALLOW_SIMULATION: allowSimulation,
     // Yetkazilgandan keyin xaridor tasdiqlamasa, fermer pulni shu soatdan keyin o'zi chiqarib ola oladi
@@ -189,6 +197,9 @@ export function envWarnings(env: AppEnv): string[] {
   }
   if (env.SMS_PROVIDER === 'simulated') {
     out.push("SMS simulyatsiya rejimida: kodlar yuborilmaydi (development'da javobda va jurnalda ko'rinadi)");
+  }
+  if (env.LOCATION_ALLOW_SIMULATION && env.NODE_ENV === 'production') {
+    out.push("LOCATION_ALLOW_SIMULATION yoqilgan: haydovchilar soxta (demo) joylashuv yubora oladi");
   }
   if (env.PAYMENT_PROVIDER === 'simulated') {
     out.push("To'lovlar simulyatsiya rejimida: haqiqiy pul harakati yo'q");

@@ -18,12 +18,13 @@ const LIMITS = {
   THROTTLE_VERIFY_PHONE_LIMIT: 10,
   THROTTLE_RESET_LIMIT: 10,
   THROTTLE_CHANGE_PASSWORD_LIMIT: 5,
+  THROTTLE_LOCATION_LIMIT: 12,
   OTP_RESEND_COOLDOWN_SECONDS: 60,
   JWT_SECRET: 'unit-test-secret-unit-test-secret-123',
 };
 
 // Haqiqiy dekorator bilan belgilangan "marshrut" va uning ExecutionContext'i
-function contextWith(profile?: 'login' | 'register' | 'upload' | 'booking' | 'payment' | 'forgot' | 'verify' | 'reset' | 'pwchange'): ExecutionContext {
+function contextWith(profile?: 'login' | 'register' | 'upload' | 'booking' | 'payment' | 'forgot' | 'verify' | 'reset' | 'pwchange' | 'location'): ExecutionContext {
   class Ctrl {
     handler() {}
   }
@@ -34,7 +35,7 @@ function contextWith(profile?: 'login' | 'register' | 'upload' | 'booking' | 'pa
 describe('buildThrottlers', () => {
   const throttlers = buildThrottlers(LIMITS);
   const byName = (n: string) => throttlers.find((t) => t.name === n)!;
-  type Profile = 'login' | 'register' | 'upload' | 'booking' | 'payment' | 'forgot' | 'verify' | 'reset' | 'pwchange';
+  type Profile = 'login' | 'register' | 'upload' | 'booking' | 'payment' | 'forgot' | 'verify' | 'reset' | 'pwchange' | 'location';
   const skipped = (name: string, profile?: Profile) =>
     byName(name).skipIf!(contextWith(profile));
 
@@ -85,6 +86,9 @@ describe('buildThrottlers', () => {
     expect(byName('forgot-phone')).toMatchObject({ limit: 3, ttl: 60 * 60_000 });
     expect(byName('verify-phone')).toMatchObject({ limit: 10, blockDuration: 30 * 60_000 });
     expect(byName('pwchange')).toMatchObject({ limit: 5, blockDuration: 30 * 60_000 });
+    expect(byName('location')).toMatchObject({ limit: 12 });
+    expect(skipped('location', 'location')).toBe(false);
+    expect(skipped('location', 'login')).toBe(true);
   });
 
   it('login urinishlari limitdan oshsa vaqtincha bloklanadi', () => {

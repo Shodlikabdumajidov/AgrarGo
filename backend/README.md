@@ -82,6 +82,15 @@ Holatlar: `OPEN` (haydovchi kutilmoqda) → `LOADING` (yuklanmoqda) → `IN_TRAN
 - `PATCH /shipments/:id/advance` (DRIVER): `LOADING → IN_TRANSIT → DELIVERED`.
 - `GET /shipments/mine?status=` (DRIVER | FARMER | MARKET): o'ziga tegishli yuklar. Haydovchi ikkala tomonning manzili va telefonini, fermer/market esa biriktirilgan haydovchi ma'lumotini ko'radi.
 
+## GPS joylashuv va ELD (`Authorization: Bearer <token>`)
+- `POST /shipments/:id/location` (DRIVER, faqat o'z yuki, faqat **YO'LDA**) — `{ lat, lng, timestamp?, speedKmh?, accuracyM?, source? }`. Javob: `{ accepted, latest }`.
+  - Tekshiruvlar: koordinata diapazoni, `timestamp` kelajakda bo'lmasligi va 10 daqiqadan eski bo'lmasligi, oldingi nuqtadan 200 km/soatdan tez "sakrash" → 422, takroriy vaqt → `accepted:false` (xato emas), eski nuqta jurnalga yoziladi lekin "oxirgi joylashuv"ni almashtirmaydi.
+  - Rate-limit: haydovchi bo'yicha minutiga `THROTTLE_LOCATION_LIMIT` (12). Mijoz har 10-15 soniyada yuboradi.
+  - `source: "SIMULATED"` demo rejimi: `LOCATION_ALLOW_SIMULATION=true` bo'lsagina qabul qilinadi (productionda sukut bo'yicha yo'q), ko'ruvchilarga "Demo" deb ko'rsatiladi.
+- `GET /shipments/:id/location` (DRIVER/FARMER/MARKET/ADMIN, faqat o'ziga tegishli yuk; begona yuk 404) — joriy nuqta, so'nggi 200 nuqtalik iz va marshrut (viloyat markazlari, taxminiy). Faqat yuk YO'LDA bo'lganda; yetkazilgach joylashuv ko'rsatilmaydi. `Cache-Control: no-store`.
+- `GET /shipments/eld?days=1..7` (DRIVER) — ELD jurnali: kunlar bo'yicha haydash/to'xtash daqiqalari, masofa, tezlik, to'xtashlar tarixi (≥3 daqiqa), 9 soatlik kunlik chegara belgisi. Kunlar Toshkent vaqti (UTC+5) bo'yicha. 5 daqiqadan uzoq signalsiz oraliq hisobga olinmaydi.
+- Jadvallar: `LocationLog` (har bir nuqta), `Shipment.last*` (oxirgi nuqta nusxasi). Eslatma: jurnal hozircha cheksiz saqlanadi — productionda eski yozuvlarni arxivlash/o'chirish ishini qo'shing.
+
 ## Kafolatlangan to'lov (Escrow)
 Bron tasdiqlanganda `PENDING` to'lov yaratiladi (summa = miqdor × bron narxi, serverda hisoblanadi, `UZS`). Yuk faqat to'lov `HELD` bo'lgandan keyin olinadi.
 

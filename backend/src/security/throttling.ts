@@ -45,7 +45,7 @@ export type ThrottleEnv = Pick<AppEnv,
   | 'THROTTLE_DEFAULT_LIMIT' | 'THROTTLE_LOGIN_IP_LIMIT' | 'THROTTLE_LOGIN_PHONE_LIMIT'
   | 'THROTTLE_REGISTER_LIMIT' | 'THROTTLE_UPLOAD_LIMIT' | 'THROTTLE_BOOKING_LIMIT' | 'THROTTLE_PAYMENT_LIMIT'
   | 'THROTTLE_FORGOT_IP_LIMIT' | 'THROTTLE_FORGOT_PHONE_LIMIT' | 'THROTTLE_VERIFY_IP_LIMIT'
-  | 'THROTTLE_VERIFY_PHONE_LIMIT' | 'THROTTLE_RESET_LIMIT' | 'THROTTLE_CHANGE_PASSWORD_LIMIT'>;
+  | 'THROTTLE_VERIFY_PHONE_LIMIT' | 'THROTTLE_RESET_LIMIT' | 'THROTTLE_CHANGE_PASSWORD_LIMIT' | 'THROTTLE_LOCATION_LIMIT'>;
 
 export function buildThrottlers(env: ThrottleEnv): ThrottlerOptions[] {
   return [
@@ -71,6 +71,8 @@ export function buildThrottlers(env: ThrottleEnv): ThrottlerOptions[] {
     { name: 'verify-phone', ttl: 15 * MINUTE, limit: env.THROTTLE_VERIFY_PHONE_LIMIT, blockDuration: 30 * MINUTE, getTracker: phoneTracker, skipIf: onlyFor('verify') },
     { name: 'reset-ip', ttl: 15 * MINUTE, limit: env.THROTTLE_RESET_LIMIT, blockDuration: 15 * MINUTE, skipIf: onlyFor('reset') },
     // Joriy parolni terib ko'rishdan himoya: foydalanuvchi bo'yicha (IP almashtirib aylanib o'tib bo'lmaydi)
+    // GPS nuqtalari: haydovchi bo'yicha (har 10-15 soniyada bitta; spam va bazani to'ldirishdan himoya)
+    { name: 'location', ttl: MINUTE, limit: env.THROTTLE_LOCATION_LIMIT, getTracker: userTracker(env.JWT_SECRET), skipIf: onlyFor('location') },
     { name: 'pwchange', ttl: 15 * MINUTE, limit: env.THROTTLE_CHANGE_PASSWORD_LIMIT, blockDuration: 30 * MINUTE, getTracker: userTracker(env.JWT_SECRET), skipIf: onlyFor('pwchange') },
   ];
 }

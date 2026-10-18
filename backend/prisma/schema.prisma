@@ -65,6 +65,7 @@ model Driver {
   region        String
   licenseNumber String?
   shipments     Shipment[]
+  locationLogs  LocationLog[]
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }
@@ -176,11 +177,44 @@ model Shipment {
   deliveredAt DateTime?
   events      ShipmentEvent[]
 
+  // Oxirgi ma'lum joylashuv (LocationLog'ning nusxasi): xaritani tez ko'rsatish uchun
+  lastLat            Float?
+  lastLng            Float?
+  lastSpeedKmh       Float?
+  lastLocationAt     DateTime?
+  lastLocationSource LocationSource?
+  locationLogs       LocationLog[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([status, createdAt])
   @@index([driverId, status])
+}
+
+// GPS nuqta manbasi: haqiqiy qurilma yoki demo simulyatsiya (ko'ruvchilarga ochiq aytiladi)
+enum LocationSource {
+  GPS
+  SIMULATED
+}
+
+// Haydovchi yo'lda yuborgan koordinatalar jurnali (live tracking va ELD uchun)
+model LocationLog {
+  id         String         @id @default(uuid())
+  shipmentId String
+  shipment   Shipment       @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  driverId   String
+  driver     Driver         @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  lat        Float
+  lng        Float
+  speedKmh   Float? // qurilma xabar bergan tezlik (ishonib bo'lmaydi: faqat ma'lumot uchun)
+  accuracyM  Float?
+  source     LocationSource @default(GPS)
+  recordedAt DateTime // nuqta olingan vaqt (mijoz, server tekshirgan)
+  createdAt  DateTime       @default(now())
+
+  @@unique([shipmentId, recordedAt])
+  @@index([driverId, recordedAt])
 }
 
 model ShipmentEvent {
