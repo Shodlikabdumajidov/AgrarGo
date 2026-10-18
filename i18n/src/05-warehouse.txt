@@ -1,0 +1,244 @@
+# --- Omborxona: zonalar, holatlar ---
+Qabul qilish ‖ Приёмка ‖ Receiving
+Qabul ‖ Приёмка ‖ Receiving
+Saralash va qadoqlash ‖ Сортировка и упаковка ‖ Sorting & packaging
+Saralash ‖ Сортировка ‖ Sorting
+Jo'natish ‖ Отгрузка ‖ Dispatch
+E'lon qilindi, yo'lda ‖ Заявлено, в пути ‖ Announced, on the way
+Tekshiruv kutilmoqda ‖ Ожидает проверки ‖ Awaiting inspection
+Omborda ‖ На складе ‖ In warehouse
+Rad etildi ‖ Отклонено ‖ Rejected
+To'liq jo'natildi ‖ Полностью отгружено ‖ Fully dispatched
+Quruq ombor ‖ Сухой склад ‖ Dry warehouse
+Sovitkichli kamera ‖ Холодильная камера ‖ Cold room
+Ventilyatsiyali ombor ‖ Вентилируемый склад ‖ Ventilated warehouse
+Me'yorda ‖ В норме ‖ Normal
+Chegarada ‖ На пределе ‖ Borderline
+Avariya! ‖ Авария! ‖ Alarm!
+Ma'lumot yo'q ‖ Нет данных ‖ No data
+Urug'lik ‖ Семена ‖ Seeds
+Qadoqlangan ‖ Фасованное ‖ Packaged
+Kichik ‖ Мелкий ‖ Small
+O'rta ‖ Средний ‖ Medium
+Katta ‖ Крупный ‖ Large
+Yig'ilmoqda ‖ Комплектуется ‖ Being picked
+Yig'ildi ‖ Скомплектован ‖ Picked
+Yetkazildi ‖ Доставлен ‖ Delivered
+Bekor qilindi ‖ Отменён ‖ Cancelled
+{0} kun ‖ {0} дн. ‖ {0} days
+Muddati tugagan ‖ Срок истёк ‖ Expired
+Sifat {0} ‖ Качество {0} ‖ Grade {0}
+Me'yor: {0}–{1}{2} ‖ Норма: {0}–{1}{2} ‖ Normal: {0}–{1}{2}
+Kamera belgilanmagan ‖ Камера не назначена ‖ No chamber assigned
+Harorat ‖ Температура ‖ Temperature
+Namlik ‖ Влажность ‖ Humidity
+Oxirgi o'lchov: {0} ‖ Последнее измерение: {0} ‖ Last reading: {0}
+Narx / kg ‖ Цена / кг ‖ Price / kg
+Yaroqlilik ‖ Срок годности ‖ Shelf life
+E'lon qilingan ‖ Заявлено ‖ Declared
+Tortilgan ‖ Взвешено ‖ Weighed
+Yaroqsiz ‖ Брак ‖ Rejected
+Tekshiruv izohi: {0} ‖ Комментарий проверки: {0} ‖ Inspection note: {0}
+{0} marketlar buyurtmasi uchun zaxiralangan. ‖ {0} зарезервировано под заказы маркетов. ‖ {0} is reserved for market orders.
+Buyurtma berish ‖ Сделать заказ ‖ Place an order
+Rasmni almashtirish ‖ Заменить фото ‖ Replace photo
+Rasm qo'shish ‖ Добавить фото ‖ Add photo
+E'lonni bekor qilish ‖ Отменить объявление ‖ Cancel announcement
+# --- Fermer: yuk yuborish, rasm ---
+Omborga yuk yuborish ‖ Отправить груз на склад ‖ Send a Load to the Warehouse
+Yukingiz haqida ma'lumot bering. Dispetcher qabul qilib, tortadi va sifatini tekshiradi. ‖ Расскажите о вашем грузе. Диспетчер примет, взвесит и проверит качество. ‖ Tell us about your load. The dispatcher will receive it, weigh it and check its quality.
+E'lon qilish ‖ Объявить ‖ Announce
+Masalan: Kartoshka (Sante) ‖ Например: Картофель (Санте) ‖ For example: Potatoes (Sante)
+Toifa ‖ Категория ‖ Category
+Taxminiy og'irlik (kg) ‖ Ориентировочный вес (кг) ‖ Estimated weight (kg)
+Haqiqiy og'irlik omborda tortilganda aniqlanadi. ‖ Фактический вес определяется при взвешивании на складе. ‖ The actual weight is determined when weighed at the warehouse.
+Narx (so'm / kg) ‖ Цена (сум / кг) ‖ Price (UZS / kg)
+Izoh (ixtiyoriy) ‖ Комментарий (необязательно) ‖ Note (optional)
+Navi, hosil sanasi, qadoqlanishi... ‖ Сорт, дата урожая, упаковка... ‖ Variety, harvest date, packaging...
+Rasm (ixtiyoriy) ‖ Фото (необязательно) ‖ Photo (optional)
+JPG, PNG yoki WEBP, 3 MB gacha. ‖ JPG, PNG или WEBP, до 3 МБ. ‖ JPG, PNG or WEBP, up to 3 MB.
+E'lon qo'shildi, lekin rasm yuklanmadi: {0} ‖ Объявление добавлено, но фото не загружено: {0} ‖ The announcement was added, but the photo wasn't uploaded: {0}
+E'lon qo'shildi. Yukni omborga olib boring. ‖ Объявление добавлено. Привезите груз на склад. ‖ Announcement added. Bring the load to the warehouse.
+Mahsulot rasmi ‖ Фото продукта ‖ Product photo
+Yuklash ‖ Загрузить ‖ Upload
+Rasm ‖ Фото ‖ Photo
+Rasmni tanlang. ‖ Выберите фото. ‖ Choose a photo.
+Rasm yangilandi. ‖ Фото обновлено. ‖ Photo updated.
+Faqat JPG, PNG yoki WEBP rasm yuklang. ‖ Загрузите только фото JPG, PNG или WEBP. ‖ Upload only JPG, PNG or WEBP images.
+Rasm hajmi 3 MB dan oshmasligi kerak. ‖ Размер фото не должен превышать 3 МБ. ‖ The image must not exceed 3 MB.
+Rasmni yuklab bo'lmadi. ‖ Не удалось загрузить фото. ‖ Could not upload the photo.
+"{0}" e'lonini bekor qilasizmi? ‖ Отменить объявление «{0}»? ‖ Cancel the "{0}" announcement?
+E'lon bekor qilindi. ‖ Объявление отменено. ‖ Announcement cancelled.
+Omborxona yuklanmoqda... ‖ Загрузка склада... ‖ Loading warehouse...
+Omborxonadagi yuklarim ‖ Мои грузы на складе ‖ My Loads in the Warehouse
+Yuk yuborish ‖ Отправить груз ‖ Send a load
+Omborga yuborgan yuklaringiz holati, zonasi va saqlash sharoiti (harorat, namlik) shu yerda ko'rinadi. ‖ Здесь отображаются статус, зона и условия хранения (температура, влажность) ваших грузов на складе. ‖ The status, zone and storage conditions (temperature, humidity) of the loads you sent to the warehouse appear here.
+Eng so'nggi {0} ta yuk ko'rsatildi (jami {1}). ‖ Показаны последние {0} грузов (всего {1}). ‖ Showing the latest {0} loads (total {1}).
+Hali omborga yuk yubormagansiz. "Yuk yuborish" tugmasini bosing. ‖ Вы ещё не отправляли грузы на склад. Нажмите «Отправить груз». ‖ You haven't sent any load to the warehouse yet. Press "Send a load".
+Bu zonada yuklaringiz yo'q. ‖ В этой зоне у вас нет грузов. ‖ You have no loads in this zone.
+# --- Market: lenta va buyurtma ---
+Tayyor mahsulotlar yuklanmoqda... ‖ Загрузка готовой продукции... ‖ Loading ready products...
+Omborxona: jo'natishga tayyor mahsulotlar ‖ Склад: продукция, готовая к отгрузке ‖ Warehouse: Products Ready for Dispatch
+Sifati tekshirilgan, saralangan va jo'natish zonasida turgan yuklar. Kerakli postni tanlab, buyurtma bering. ‖ Грузы с проверенным качеством, отсортированные и находящиеся в зоне отгрузки. Выберите нужный пост и сделайте заказ. ‖ Quality-checked, sorted loads waiting in the dispatch zone. Pick a post and place an order.
+Mahsulot yoki xo'jalik nomi... ‖ Продукт или название хозяйства... ‖ Product or farm name...
+Barcha toifalar ‖ Все категории ‖ All categories
+Barcha saqlash turlari ‖ Все типы хранения ‖ All storage types
+Oldingi ‖ Назад ‖ Previous
+{0} / {1} · jami {2} ta ‖ {0} / {1} · всего {2} ‖ {0} / {1} · {2} in total
+Keyingi ‖ Далее ‖ Next
+Filtrga mos mahsulot topilmadi. ‖ По фильтру ничего не найдено. ‖ No products match the filter.
+Hozircha jo'natishga tayyor mahsulot yo'q. ‖ Пока нет продукции, готовой к отгрузке. ‖ No products ready for dispatch yet.
+Mahsulot nomi ‖ Название продукта ‖ Product name
+{0} · {1} · mavjud: {2} ‖ {0} · {1} · в наличии: {2} ‖ {0} · {1} · available: {2}
+Miqdor (kg) ‖ Количество (кг) ‖ Quantity (kg)
+Jami: — ‖ Итого: — ‖ Total: —
+Masalan: ertalab soat 8 gacha yetkazing. ‖ Например: доставьте до 8 утра. ‖ For example: deliver by 8 a.m.
+Jami: {0} (narx: {1} / kg) ‖ Итого: {0} (цена: {1} / кг) ‖ Total: {0} (price: {1} / kg)
+Buyurtma qabul qilindi. Miqdor siz uchun zaxiralandi. ‖ Заказ принят. Количество зарезервировано для вас. ‖ Order received. The quantity has been reserved for you.
+Buyurtma bekor qilingan, zaxira qaytarilgan. ‖ Заказ отменён, резерв возвращён. ‖ The order was cancelled and the reservation released.
+{0} · {1} / kg ‖ {0} · {1} / кг ‖ {0} · {1} / kg
+Jami: {0} ‖ Итого: {0} ‖ Total: {0}
+Izoh: {0} ‖ Комментарий: {0} ‖ Note: {0}
+Yig'ishni boshlash ‖ Начать комплектацию ‖ Start picking
+Yig'ish boshlandi. ‖ Комплектация начата. ‖ Picking started.
+Buyurtma yig'ildi. ‖ Заказ скомплектован. ‖ The order has been picked.
+Haydovchiga yuklash ‖ Погрузить водителю ‖ Load onto a driver
+Buyurtmani bekor qilasizmi? ‖ Отменить заказ? ‖ Cancel the order?
+Buyurtma bekor qilindi. ‖ Заказ отменён. ‖ Order cancelled.
+Yetkazildi deb belgilash ‖ Отметить как доставленное ‖ Mark as delivered
+Yetkazildi. ‖ Доставлено. ‖ Delivered.
+Qabul qildim ‖ Получил ‖ Received
+Qabul qilindi. Rahmat! ‖ Принято. Спасибо! ‖ Received. Thank you!
+Yetkazdim ‖ Доставил ‖ Delivered
+Yetkazildi deb belgilandi. ‖ Отмечено как доставленное. ‖ Marked as delivered.
+Hali ro'yxatdan o'tgan haydovchi yo'q. ‖ Зарегистрированных водителей пока нет. ‖ There are no registered drivers yet.
+Yuklab jo'natish ‖ Загрузить и отправить ‖ Load and dispatch
+ (sig'im yetmaydi) ‖ (грузоподъёмности не хватает) ‖ (capacity insufficient)
+Buyurtma haydovchiga yuklandi va jo'natildi. ‖ Заказ погружен водителю и отправлен. ‖ The order was loaded onto the driver and dispatched.
+Buyurtmalar yuklanmoqda... ‖ Загрузка заказов... ‖ Loading orders...
+Yakunlangan ‖ Завершённые ‖ Completed
+Bu holatdagi buyurtmalar yo'q. ‖ Нет заказов в этом статусе. ‖ No orders with this status.
+Hali buyurtma bermagansiz. "Omborxona" bo'limidan mahsulot tanlang. ‖ Вы ещё не делали заказов. Выберите продукт в разделе «Склад». ‖ You haven't placed an order yet. Choose a product in the "Warehouse" section.
+Sizga biriktirilgan ombor jo'natmalari yo'q. ‖ За вами не закреплено складских отправок. ‖ No warehouse dispatches are assigned to you.
+Hali buyurtmalar yo'q. ‖ Заказов пока нет. ‖ No orders yet.
+# --- Dispetcher: amallar ---
+{0} · {1} · bo'sh: {2}{3} ‖ {0} · {1} · свободно: {2}{3} ‖ {0} · {1} · free: {2}{3}
+ (mos emas) ‖ (не подходит) ‖ (not suitable)
+Yukni qabul qilish ‖ Приёмка груза ‖ Receive the Load
+Qabul qilish va shtrix-kod berish ‖ Принять и присвоить штрих-код ‖ Receive and assign a barcode
+Tortilgan og'irlik (kg) ‖ Взвешенный вес (кг) ‖ Weighed weight (kg)
+E'lon qilingan: {0} ‖ Заявлено: {0} ‖ Declared: {0}
+RFID teg (ixtiyoriy) ‖ RFID-метка (необязательно) ‖ RFID tag (optional)
+Skaner bilan o'qing yoki qo'lda kiriting (4-64 belgi). ‖ Считайте сканером или введите вручную (4–64 символа). ‖ Scan it or enter it manually (4–64 characters).
+Yuk qabul qilindi va shtrix-kod berildi. ‖ Груз принят, штрих-код присвоен. ‖ The load was received and a barcode assigned.
+Sifat tekshiruvi ‖ Проверка качества ‖ Quality inspection
+Natijani saqlash ‖ Сохранить результат ‖ Save the result
+Qaror ‖ Решение ‖ Decision
+Qabul qilinadi ‖ Принимается ‖ Accepted
+To'liq rad etiladi ‖ Полностью отклоняется ‖ Fully rejected
+Sifat bahosi ‖ Оценка качества ‖ Quality grade
+A — a'lo ‖ A — отлично ‖ A — excellent
+B — yaxshi ‖ B — хорошо ‖ B — good
+C — qoniqarli ‖ C — удовлетворительно ‖ C — satisfactory
+Yaroqsiz miqdor (kg) ‖ Бракованное количество (кг) ‖ Rejected quantity (kg)
+Tekshiruvda chiqarib tashlangan qism. ‖ Часть, исключённая при проверке. ‖ The part removed during inspection.
+Izoh ‖ Комментарий ‖ Note
+Tekshiruv natijasi saqlandi. ‖ Результат проверки сохранён. ‖ The inspection result was saved.
+Avval "Kameralar" bo'limida kamera/ombor yarating. ‖ Сначала создайте камеру/склад в разделе «Камеры». ‖ First create a chamber/warehouse in the "Chambers" section.
+Qaysi kameraga ‖ В какую камеру ‖ Which chamber
+Qaysi kamerada turadi ‖ В какой камере находится ‖ Which chamber it stays in
+Mos bo'lmasa ham majburan joylash (masalan, vaqtincha) ‖ Разместить принудительно, даже если не подходит (например, временно) ‖ Force placement even if unsuitable (e.g. temporarily)
+{0} zonasiga ‖ В зону: {0} ‖ To zone: {0}
+Ko'chirish ‖ Переместить ‖ Move
+Yuk {0} zonasiga o'tkaziladi. Davom etasizmi? ‖ Груз будет перемещён в зону «{0}». Продолжить? ‖ The load will be moved to the {0} zone. Continue?
+Yuk {0} zonasiga o'tkazildi. ‖ Груз перемещён в зону «{0}». ‖ The load was moved to the {0} zone.
+{0} · mavjud: {1} ‖ {0} · в наличии: {1} ‖ {0} · available: {1}
+O'lcham sinfi (kalibrlash) ‖ Размерный класс (калибровка) ‖ Size class (calibration)
+— o'zgartirmaslik — ‖ — не менять — ‖ — keep unchanged —
+Yaroqsiz (chiqit) miqdor, kg ‖ Бракованное (отходы), кг ‖ Rejected (waste) quantity, kg
+Saralashda chiqarib tashlangan mahsulot qoldiqdan ayriladi. ‖ Продукция, отбракованная при сортировке, вычитается из остатка. ‖ Produce rejected during sorting is deducted from the stock.
+Qadoq turi (supermarket talabi) ‖ Тип упаковки (требование супермаркета) ‖ Packaging type (supermarket requirement)
+Masalan: Karton quti 10 kg ‖ Например: картонная коробка 10 кг ‖ For example: Cardboard box 10 kg
+Bitta qadoq og'irligi, kg ‖ Вес одной упаковки, кг ‖ Weight of one package, kg
+Saralash natijasi saqlandi. ‖ Результат сортировки сохранён. ‖ The sorting result was saved.
+Inventarizatsiya (sanash) ‖ Инвентаризация (пересчёт) ‖ Inventory (stock count)
+{0} · tizimda: {1}{2} ‖ {0} · в системе: {1}{2} ‖ {0} · in system: {1}{2}
+ · zaxira: {0} ‖  · резерв: {0} ‖  · reserved: {0}
+Qoldiqni tuzatish ‖ Скорректировать остаток ‖ Adjust the stock
+Haqiqiy sanalgan miqdor (kg) ‖ Фактически подсчитанное количество (кг) ‖ Actual counted quantity (kg)
+Masalan: kamomad, qurib qolish ‖ Например: недостача, усушка ‖ For example: shortage, shrinkage
+Qoldiq tuzatildi va jurnalga yozildi. ‖ Остаток скорректирован и записан в журнал. ‖ The stock was adjusted and logged.
+Bu kod bo'yicha yuk topilmadi. ‖ По этому коду груз не найден. ‖ No load found for this code.
+Harakatlar jurnali ‖ Журнал операций ‖ Movement log
+Qabul qilindi ‖ Принят ‖ Received
+Tekshiruvda chiqarildi ‖ Исключён при проверке ‖ Removed during inspection
+Zona o'zgardi ‖ Зона изменена ‖ Zone changed
+Saralashda chiqit ‖ Отходы при сортировке ‖ Sorting waste
+Jo'natildi ‖ Отгружен ‖ Dispatched
+Yuk ma'lumoti ‖ Данные о грузе ‖ Load details
+Batafsil ma'lumot ‖ Подробная информация ‖ More details
+Qoldiq ‖ Остаток ‖ Stock
+Sifat ‖ Качество ‖ Grade
+Talab: {0}{1}{2} ‖ Требуется: {0}{1}{2} ‖ Required: {0}{1}{2}
+ · muddat: {0} ‖  · срок: {0} ‖  · expires: {0}
+⚠ Kamera sharoiti: {0} ‖ ⚠ Условия камеры: {0} ‖ ⚠ Chamber conditions: {0}
+Saqlashga ‖ На хранение ‖ To storage
+Saralashga ‖ На сортировку ‖ To sorting
+Jo'natishga ‖ На отгрузку ‖ To dispatch
+Saralash / qadoq ‖ Сортировка / упаковка ‖ Sorting / packaging
+Saqlashga qaytarish ‖ Вернуть на хранение ‖ Return to storage
+Sanash ‖ Пересчёт ‖ Count
+Ombor zonalari yuklanmoqda... ‖ Загрузка зон склада... ‖ Loading warehouse zones...
+Ombor zonalari ‖ Зоны склада ‖ Warehouse Zones
+Shtrix-kod yoki RFID kodni skanerlang / kiriting... ‖ Отсканируйте / введите штрих-код или RFID-код... ‖ Scan / enter a barcode or RFID code...
+Topish ‖ Найти ‖ Find
+Rad etilgan va to'liq jo'natilganlarni ham ko'rsatish ‖ Показывать также отклонённые и полностью отгруженные ‖ Also show rejected and fully dispatched
+Bu zonada yuk yo'q ‖ В этой зоне нет грузов ‖ No loads in this zone
+Eng so'nggi {0} ta ko'rsatildi (jami {1}) ‖ Показаны последние {0} (всего {1}) ‖ Showing the latest {0} (total {1})
+Band: {0} ({1} ta yuk) ‖ Занято: {0} ({1} грузов) ‖ Used: {0} ({1} loads)
+Sig'im: {0} ‖ Вместимость: {0} ‖ Capacity: {0}
+Ko'rsatkich kiritish ‖ Ввести показание ‖ Enter a reading
+Datchik ko'rsatkichi ‖ Показание датчика ‖ Sensor reading
+Harorat (°C) ‖ Температура (°C) ‖ Temperature (°C)
+Namlik (%) ‖ Влажность (%) ‖ Humidity (%)
+Ko'rsatkich saqlandi. ‖ Показание сохранено. ‖ The reading was saved.
+Datchik simulyatsiyasi ‖ Симуляция датчика ‖ Sensor simulation
+Demo ko'rsatkich yuborildi: {0} °C, {1} % ‖ Демо-показание отправлено: {0} °C, {1} % ‖ Demo reading sent: {0} °C, {1} %
+Kameralar yuklanmoqda... ‖ Загрузка камер... ‖ Loading chambers...
+Kameralar va harorat nazorati ‖ Камеры и контроль температуры ‖ Chambers & Temperature Control
+Yangi kamera ‖ Новая камера ‖ New chamber
+Yangi kamera / ombor ‖ Новая камера / склад ‖ New chamber / warehouse
+Yaratish ‖ Создать ‖ Create
+Nomi ‖ Название ‖ Name
+Masalan: Sovitkich kamera 3 ‖ Например: Холодильная камера 3 ‖ For example: Cold room 3
+Turi ‖ Тип ‖ Type
+Sig'im (kg) ‖ Вместимость (кг) ‖ Capacity (kg)
+Min harorat (°C) — ixtiyoriy ‖ Мин. температура (°C) — необязательно ‖ Min temperature (°C) — optional
+Max harorat (°C) — ixtiyoriy ‖ Макс. температура (°C) — необязательно ‖ Max temperature (°C) — optional
+Min namlik (%) — ixtiyoriy ‖ Мин. влажность (%) — необязательно ‖ Min humidity (%) — optional
+Max namlik (%) — ixtiyoriy ‖ Макс. влажность (%) — необязательно ‖ Max humidity (%) — optional
+Kamera yaratildi. ‖ Камера создана. ‖ The chamber was created.
+Hali kamera/ombor yaratilmagan. ‖ Камеры/склады ещё не созданы. ‖ No chambers/warehouses have been created yet.
+Standart 4 ta joyni yaratish ‖ Создать 4 стандартных места ‖ Create the 4 default locations
+Standart kameralar yaratildi. ‖ Стандартные камеры созданы. ‖ The default chambers were created.
+Inventarizatsiya yuklanmoqda... ‖ Загрузка инвентаризации... ‖ Loading inventory...
+Inventarizatsiya (real vaqt) ‖ Инвентаризация (в реальном времени) ‖ Inventory (real time)
+Jami qoldiq ‖ Общий остаток ‖ Total stock
+Kutilayotgan yuklar ‖ Ожидаемые грузы ‖ Expected loads
+Ochiq buyurtmalar ‖ Открытые заказы ‖ Open orders
+Kamera ogohlantirishlari ‖ Предупреждения по камерам ‖ Chamber alerts
+Zonalar bo'yicha qoldiq ‖ Остатки по зонам ‖ Stock by zone
+{0} ({1} ta) ‖ {0} ({1} шт.) ‖ {0} ({1})
+ · zaxira {0} ‖  · резерв {0} ‖  · reserved {0}
+Toifalar bo'yicha ‖ По категориям ‖ By category
+Hozircha omborda mahsulot yo'q. ‖ Пока на складе нет продукции. ‖ There is no produce in the warehouse yet.
+Saqlash turlari bo'yicha ‖ По типам хранения ‖ By storage type
+Ma'lumot yo'q. ‖ Нет данных. ‖ No data.
+Barcha kameralar me'yorda. ‖ Все камеры в норме. ‖ All chambers are normal.
+Muddati yaqinlashayotgan yuklar ‖ Грузы с близким сроком годности ‖ Loads nearing expiry
+3 kun ichida yoki o'tib ketgan ‖ В течение 3 дней или уже просрочены ‖ Within 3 days or already expired
+{0} kun qoldi ‖ Осталось {0} дн. ‖ {0} days left
+Muddati yaqin yuklar yo'q. ‖ Грузов с близким сроком годности нет. ‖ No loads nearing expiry.
+Omborxonadan foydalanish uchun tizimga kiring yoki ro'yxatdan o'ting. ‖ Чтобы пользоваться складом, войдите в систему или зарегистрируйтесь. ‖ Sign in or sign up to use the warehouse.
+Dispetcher kabineti faqat ombor xodimlari uchun. Akkauntlar administrator tomonidan yaratiladi. ‖ Кабинет диспетчера только для сотрудников склада. Аккаунты создаёт администратор. ‖ The dispatcher dashboard is for warehouse staff only. Accounts are created by an administrator.
+Dispetcher akkauntlari administrator tomonidan yaratiladi. Telefon va parolingiz bilan kiring. ‖ Аккаунты диспетчеров создаёт администратор. Войдите по номеру телефона и паролю. ‖ Dispatcher accounts are created by an administrator. Sign in with your phone and password.

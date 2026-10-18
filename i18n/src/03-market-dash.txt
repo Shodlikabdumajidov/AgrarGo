@@ -1,0 +1,186 @@
+# --- Server/tarmoq xatolari (frontend) ---
+Serverga ulanib bo'lmadi. Internetni tekshirib, qayta urinib ko'ring. ‖ Не удалось подключиться к серверу. Проверьте интернет и повторите попытку. ‖ Could not connect to the server. Check your internet connection and try again.
+Ma'lumotlar noto'g'ri kiritilgan. ‖ Данные введены неверно. ‖ The data was entered incorrectly.
+Telefon raqam yoki parol noto'g'ri. ‖ Неверный номер телефона или пароль. ‖ Incorrect phone number or password.
+Bu amal faqat fermerlar uchun. ‖ Это действие доступно только фермерам. ‖ This action is only available to farmers.
+Juda ko'p urinish. Birozdan keyin qayta urinib ko'ring. ‖ Слишком много попыток. Повторите немного позже. ‖ Too many attempts. Please try again in a moment.
+E'lon topilmadi. U allaqachon o'chirilgan bo'lishi mumkin. ‖ Объявление не найдено. Возможно, оно уже удалено. ‖ Listing not found. It may have already been deleted.
+Bu telefon raqam allaqachon ro'yxatdan o'tgan. ‖ Этот номер телефона уже зарегистрирован. ‖ This phone number is already registered.
+Serverda xatolik yuz berdi (kod {0}). Keyinroq qayta urinib ko'ring. ‖ Ошибка сервера (код {0}). Повторите попытку позже. ‖ A server error occurred (code {0}). Please try again later.
+Serverga ulanib bo'lmadi. Qayta urinib ko'ring. ‖ Не удалось подключиться к серверу. Повторите попытку. ‖ Could not connect to the server. Please try again.
+Serverga ulanib bo'lmadi. ‖ Не удалось подключиться к серверу. ‖ Could not connect to the server.
+# --- E'lon joylash modali ---
+Boshqa ‖ Другое ‖ Other
+E'lonni tahrirlash ‖ Редактирование объявления ‖ Edit Listing
+Yangi e'lon qo'shish ‖ Добавить новое объявление ‖ Add a New Listing
+Ma'lumotlarni o'zgartirib, saqlang. ‖ Измените данные и сохраните. ‖ Change the details and save.
+Mahsulotingiz haqida ma'lumot kiriting. ‖ Введите информацию о вашей продукции. ‖ Enter information about your product.
+Tahrirlash ‖ Редактировать ‖ Edit
+Saqlash ‖ Сохранить ‖ Save
+E'lonni joylash ‖ Разместить объявление ‖ Publish Listing
+Mahsulot nomi ‖ Название продукта ‖ Product name
+Kategoriyasi ‖ Категория ‖ Category
+Vazni (kg) ‖ Вес (кг) ‖ Weight (kg)
+Narxi (1 kg, so'm) ‖ Цена (за 1 кг, сум) ‖ Price (per 1 kg, UZS)
+O'rim-yig'im sanasi ‖ Дата сбора урожая ‖ Harvest date
+Mahsulot nomini kiriting. ‖ Введите название продукта. ‖ Enter the product name.
+Kategoriyani tanlang. ‖ Выберите категорию. ‖ Select a category.
+Vaznni kiriting (0 dan katta bo'lsin). ‖ Введите вес (больше 0). ‖ Enter the weight (greater than 0).
+Narxni kiriting (0 dan katta bo'lsin). ‖ Введите цену (больше 0). ‖ Enter the price (greater than 0).
+E'lon yangilandi! ‖ Объявление обновлено! ‖ Listing updated!
+E'lon muvaffaqiyatli joylandi! ‖ Объявление успешно размещено! ‖ Listing published successfully!
+Masalan: Pomidor ‖ Например: Помидоры ‖ For example: Tomatoes
+Masalan: 100 ‖ Например: 100 ‖ For example: 100
+Yetkazib berish vaqti, talablar... ‖ Сроки доставки, требования... ‖ Delivery time, requirements...
+# --- Mening e'lonlarim paneli ---
+Faol ‖ Активно ‖ Active
+Arxivda ‖ В архиве ‖ Archived
+Bron qilingan ‖ Забронировано ‖ Booked
+Sotilgan ‖ Продано ‖ Sold
+E'lonlar yuklanmoqda... ‖ Загрузка объявлений... ‖ Loading listings...
+Qayta urinish ‖ Повторить ‖ Retry
+Jami: {0} ta e'lon ‖ Всего: {0} объявл. ‖ Total: {0} listings
+Hali e'lon qo'shmagansiz. Birinchi e'loningizni joylang! ‖ Вы ещё не добавляли объявлений. Разместите первое! ‖ You haven't added any listings yet. Post your first one!
+Bu holatdagi e'lonlar yo'q. ‖ Нет объявлений в этом статусе. ‖ No listings with this status.
+Vazni ‖ Вес ‖ Weight
+{0} kg ‖ {0} кг ‖ {0} kg
+Narxi ‖ Цена ‖ Price
+{0} so'm/kg ‖ {0} сум/кг ‖ {0} UZS/kg
+Jami ‖ Итого ‖ Total
+{0} so'm ‖ {0} сум ‖ {0} UZS
+O'rim-yig'im: {0} ‖ Сбор урожая: {0} ‖ Harvest: {0}
+O'chirishni tasdiqlaysizmi? ‖ Подтвердить удаление? ‖ Confirm deletion?
+Ha ‖ Да ‖ Yes
+Yo'q ‖ Нет ‖ No
+Faollashtirish ‖ Активировать ‖ Activate
+Arxivlash ‖ В архив ‖ Archive
+O'chirish ‖ Удалить ‖ Delete
+E'lon arxivlandi. ‖ Объявление перенесено в архив. ‖ Listing archived.
+E'lon qayta faollashtirildi. ‖ Объявление снова активно. ‖ Listing reactivated.
+E'lon o'chirildi. ‖ Объявление удалено. ‖ Listing deleted.
+# --- Katalog ---
+Barcha faol e'lonlar ‖ Все активные объявления ‖ All active listings
+Filtrni olib tashlash ‖ Убрать фильтр ‖ Remove filter
+Hammasini tozalash ‖ Очистить всё ‖ Clear all
+E'lonlarni yuklab bo'lmadi ‖ Не удалось загрузить объявления ‖ Could not load listings
+Topildi: {0} ta e'lon ‖ Найдено: {0} объявл. ‖ Found: {0} listings
+Hech narsa topilmadi ‖ Ничего не найдено ‖ Nothing found
+Hozircha e'lonlar yo'q ‖ Пока нет объявлений ‖ No listings yet
+So'rovingiz bo'yicha faol e'lon yo'q. Filtrlarni o'zgartirib ko'ring. ‖ По вашему запросу нет активных объявлений. Попробуйте изменить фильтры. ‖ No active listings match your request. Try changing the filters.
+Fermerlar e'lon joylashi bilan bu yerda ko'rinadi. ‖ Как только фермеры разместят объявления, они появятся здесь. ‖ Listings will appear here as soon as farmers post them.
+Filtrlarni tozalash ‖ Сбросить фильтры ‖ Clear filters
+Tasdiqlangan ‖ Подтверждено ‖ Approved
+Mavjud ‖ В наличии ‖ Available
+Fermer kontakti bron qilingandan keyin ochiladi ‖ Контакты фермера открываются после бронирования ‖ The farmer's contact is revealed after booking
+Bron qilish ‖ Забронировать ‖ Book
+Oldingi sahifa ‖ Предыдущая страница ‖ Previous page
+Keyingi sahifa ‖ Следующая страница ‖ Next page
+# --- Kabinet bo'limlari ---
+Umumiy ‖ Обзор ‖ Overview
+Kelgan bronlar ‖ Входящие брони ‖ Incoming bookings
+Yuk tashish ‖ Грузоперевозки ‖ Shipping
+To'lovlar ‖ Платежи ‖ Payments
+Ombor buyurtmalari ‖ Заказы со склада ‖ Warehouse orders
+E'lonlarim ‖ Мои объявления ‖ My listings
+Profil ‖ Профиль ‖ Profile
+Mening bronlarim ‖ Мои брони ‖ My bookings
+Katalog ‖ Каталог ‖ Catalog
+Mavjud yuklar ‖ Доступные грузы ‖ Available loads
+Mening yuklarim ‖ Мои грузы ‖ My loads
+Harakat jurnali ‖ Журнал движения ‖ Activity log
+Ombor jo'natmalari ‖ Складские отправки ‖ Warehouse dispatches
+Zonalar ‖ Зоны ‖ Zones
+Kameralar ‖ Камеры ‖ Chambers
+Buyurtmalar ‖ Заказы ‖ Orders
+Inventarizatsiya ‖ Инвентаризация ‖ Inventory
+Boshqaruv paneli ‖ Панель управления ‖ Control Panel
+Foydalanuvchilar ‖ Пользователи ‖ Users
+E'lonlar ‖ Объявления ‖ Listings
+Ombor: zonalar ‖ Склад: зоны ‖ Warehouse: zones
+Sayt sozlamalari ‖ Настройки сайта ‖ Site Settings
+Audit jurnali ‖ Журнал аудита ‖ Audit Log
+Kutilmoqda ‖ Ожидает ‖ Pending
+Rad etilgan ‖ Отклонено ‖ Rejected
+Bekor qilingan ‖ Отменено ‖ Cancelled
+Bu rol uchun kabinet mavjud emas. ‖ Для этой роли кабинета нет. ‖ There is no dashboard for this role.
+Ma'lumotlar yuklanmoqda... ‖ Загрузка данных... ‖ Loading data...
+Salom, {0}! ‖ Здравствуйте, {0}! ‖ Hello, {0}!
+{0} boshqaruv paneli ‖ Панель управления: {0} ‖ {0} control panel
+Faol e'lonlar ‖ Активные объявления ‖ Active listings
+Mavjud qoldiq ‖ Доступный остаток ‖ Available stock
+Kutilayotgan bronlar ‖ Ожидающие брони ‖ Pending bookings
+Tasdiqlashni kutayotgan bronlar ‖ Брони, ожидающие подтверждения ‖ Bookings awaiting approval
+Tasdiqlagandan keyin xaridorning telefon raqami ochiladi. ‖ После подтверждения откроется номер телефона покупателя. ‖ The buyer's phone number is revealed after you approve.
+Hozircha yangi bron so'rovlari yo'q. ‖ Новых запросов на бронирование пока нет. ‖ No new booking requests yet.
+Tasdiqlangan summa ‖ Подтверждённая сумма ‖ Approved amount
+Rad / bekor ‖ Откл. / отмена ‖ Rejected / cancelled
+Katalogga o'tish ‖ Перейти в каталог ‖ Go to catalog
+Barcha bronlarim ‖ Все мои брони ‖ All my bookings
+So'nggi bronlar ‖ Последние брони ‖ Recent bookings
+Hali bron qilmagansiz. Katalogdan mahsulot tanlang. ‖ Вы ещё ничего не бронировали. Выберите продукт в каталоге. ‖ You haven't booked anything yet. Choose a product from the catalog.
+Faol yuk ‖ Активный груз ‖ Active load
+Yetkazilgan ‖ Доставлено ‖ Delivered
+Yuk sig'imi ‖ Грузоподъёмность ‖ Load capacity
+Mavjud yuklarni ko'rish ‖ Смотреть доступные грузы ‖ Browse available loads
+Profilni tahrirlash ‖ Редактировать профиль ‖ Edit profile
+To'liq harakat jurnali ‖ Полный журнал движения ‖ Full activity log
+Hozir faol yuk yo'q. "Mavjud yuklar" bo'limidan yuk tanlang. ‖ Сейчас нет активного груза. Выберите груз в разделе «Доступные грузы». ‖ No active load right now. Pick a load in the "Available loads" section.
+Miqdor ‖ Количество ‖ Quantity
+Narx ‖ Цена ‖ Price
+Aloqa ochildi ‖ Контакт открыт ‖ Contact unlocked
+Tasdiqlaganingizdan keyin xaridorning telefon raqami ochiladi. ‖ После подтверждения откроется номер телефона покупателя. ‖ The buyer's phone number is revealed once you approve.
+Fermer tasdiqlagandan keyin telefon raqami ochiladi. ‖ После подтверждения фермером откроется номер телефона. ‖ The phone number is revealed once the farmer approves.
+Rad etish ‖ Отклонить ‖ Reject
+Bekor qilish ‖ Отменить ‖ Cancel
+Bron tasdiqlandi. Xaridorning telefon raqami ochildi, yuk tashish buyurtmasi yaratildi va to'lov kutilmoqda. ‖ Бронь подтверждена. Номер покупателя открыт, заказ на перевозку создан, ожидается оплата. ‖ Booking approved. The buyer's phone is unlocked, a shipping order was created and payment is pending.
+Bron rad etildi. Miqdor e'longa qaytarildi. ‖ Бронь отклонена. Количество возвращено в объявление. ‖ Booking rejected. The quantity was returned to the listing.
+Bron bekor qilindi. Miqdor e'longa qaytarildi. ‖ Бронь отменена. Количество возвращено в объявление. ‖ Booking cancelled. The quantity was returned to the listing.
+Bronlar yuklanmoqda... ‖ Загрузка броней... ‖ Loading bookings...
+Hammasi ‖ Все ‖ All
+Bu holatdagi bronlar yo'q. ‖ Нет броней в этом статусе. ‖ No bookings with this status.
+Hali bron so'rovlari kelmagan. ‖ Запросов на бронирование пока нет. ‖ No booking requests yet.
+Bron qilish uchun Market akkaunti kerak. Kiring yoki ro'yxatdan o'ting. ‖ Для бронирования нужен аккаунт Market. Войдите или зарегистрируйтесь. ‖ A Market account is required to book. Sign in or sign up.
+Bron qilish faqat Market akkauntlari uchun. Siz {0} sifatida kirgansiz. ‖ Бронировать могут только аккаунты Market. Вы вошли как «{0}». ‖ Only Market accounts can book. You are signed in as {0}.
+{0} so'm / kg ‖ {0} сум / кг ‖ {0} UZS / kg
+Mavjud: {0} kg. Qisman miqdor bron qilishingiz mumkin. ‖ В наличии: {0} кг. Можно забронировать часть объёма. ‖ Available: {0} kg. You can book a partial quantity.
+Miqdorni kiriting (0 dan katta bo'lsin). ‖ Введите количество (больше 0). ‖ Enter the quantity (greater than 0).
+Mavjud miqdordan ({0} kg) ko'p bron qilib bo'lmaydi. ‖ Нельзя забронировать больше доступного количества ({0} кг). ‖ You can't book more than the available quantity ({0} kg).
+Bron so'rovi yuborildi. Fermer tasdiqlagach telefon raqamlar ochiladi. ‖ Запрос на бронирование отправлен. После подтверждения фермером номера телефонов откроются. ‖ Booking request sent. Phone numbers are revealed once the farmer approves.
+Profil yuklanmoqda... ‖ Загрузка профиля... ‖ Loading profile...
+Rasmni o'zgartirish ‖ Изменить фото ‖ Change photo
+Rasm yuklash ‖ Загрузить фото ‖ Upload photo
+Rasmni o'chirish ‖ Удалить фото ‖ Remove photo
+JPG, PNG yoki WEBP, 2 MB gacha ‖ JPG, PNG или WEBP, до 2 МБ ‖ JPG, PNG or WEBP, up to 2 MB
+Rasm hajmi 2 MB dan oshmasligi kerak. ‖ Размер фото не должен превышать 2 МБ. ‖ The image must not exceed 2 MB.
+Profil rasmi yangilandi. ‖ Фото профиля обновлено. ‖ Profile photo updated.
+Profil rasmi o'chirildi. ‖ Фото профиля удалено. ‖ Profile photo removed.
+Xodim ma'lumotlari ‖ Данные сотрудника ‖ Staff details
+Ombor xodimi akkaunti administrator tomonidan boshqariladi. Parolni quyidagi bo'limda o'zgartirishingiz mumkin. ‖ Аккаунт сотрудника склада управляется администратором. Пароль можно сменить в разделе ниже. ‖ The warehouse staff account is managed by an administrator. You can change the password in the section below.
+Shaxsiy va {0} ma'lumotlari ‖ Личные данные и данные: {0} ‖ Personal and {0} details
+xo'jalik ‖ хозяйства ‖ farm
+kompaniya ‖ компании ‖ company
+transport ‖ транспорта ‖ vehicle
+Manzil (ixtiyoriy) ‖ Адрес (необязательно) ‖ Address (optional)
+STIR (ixtiyoriy) ‖ ИНН (STIR) (необязательно) ‖ TIN (STIR) (optional)
+Haydovchilik guvohnomasi (ixtiyoriy) ‖ Водительское удостоверение (необязательно) ‖ Driver's licence (optional)
+Telefon raqam akkaunt identifikatori bo'lgani uchun o'zgartirilmaydi. ‖ Номер телефона — идентификатор аккаунта, поэтому его нельзя изменить. ‖ The phone number is the account identifier, so it can't be changed.
+O'zgarishlarni saqlash ‖ Сохранить изменения ‖ Save changes
+{0} bo'sh bo'lmasligi kerak. ‖ Поле «{0}» не должно быть пустым. ‖ {0} must not be empty.
+{0} 0 dan katta bo'lishi kerak. ‖ Значение «{0}» должно быть больше 0. ‖ {0} must be greater than 0.
+Profil yangilandi. ‖ Профиль обновлён. ‖ Profile updated.
+Parolni o'zgartirish ‖ Смена пароля ‖ Change password
+Xavfsizlik uchun joriy parolingizni kiriting. O'zgartirgach, boshqa qurilmalardagi sessiyalar yopiladi. ‖ Для безопасности введите текущий пароль. После смены сессии на других устройствах будут закрыты. ‖ For security, enter your current password. After changing it, sessions on other devices will be signed out.
+Joriy parol ‖ Текущий пароль ‖ Current password
+Parolni yangilash ‖ Обновить пароль ‖ Update password
+Joriy parolni kiriting. ‖ Введите текущий пароль. ‖ Enter your current password.
+Yangi parol joriy paroldan farq qilishi kerak. ‖ Новый пароль должен отличаться от текущего. ‖ The new password must differ from the current one.
+Yangi parollar mos kelmadi. ‖ Новые пароли не совпадают. ‖ The new passwords do not match.
+Parol muvaffaqiyatli o'zgartirildi. Boshqa qurilmalardagi sessiyalar yopildi. ‖ Пароль успешно изменён. Сессии на других устройствах закрыты. ‖ Password changed successfully. Sessions on other devices were signed out.
+Parol yangilandi. ‖ Пароль обновлён. ‖ Password updated.
+Yangilash ‖ Обновить ‖ Refresh
+Yuklanmoqda... ‖ Загрузка... ‖ Loading...
+{0} daqiqa oldin ‖ {0} мин. назад ‖ {0} minutes ago
+{0} soat oldin ‖ {0} ч. назад ‖ {0} hours ago
+{0} kun oldin ‖ {0} дн. назад ‖ {0} days ago
+{0} soniya oldin ‖ {0} сек. назад ‖ {0} seconds ago
+hozirgina ‖ только что ‖ just now

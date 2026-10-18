@@ -1,0 +1,24 @@
+name: i18n check
+
+on:
+  push:
+    paths: ['index.html', 'i18n/**', '.github/workflows/i18n-check.yml']
+  pull_request:
+    paths: ['index.html', 'i18n/**', '.github/workflows/i18n-check.yml']
+
+jobs:
+  i18n:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # check.js acorn'ni backend/node_modules'dan oladi
+      - run: npm ci
+        working-directory: backend
+      # ru.js/en.js/uz.js i18n/src/*.txt dan hosil bo'ladi: qo'lda o'zgartirilgan bo'lsa farq beradi
+      - run: node i18n/build.js
+      - run: git diff --exit-code -- i18n
+      # index.html'dagi barcha matnlarning tarjimasi bormi
+      - run: node i18n/check.js
