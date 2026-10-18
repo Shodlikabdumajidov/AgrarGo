@@ -565,3 +565,17 @@ model SubscriptionPayment {
 
   @@index([userId, createdAt])
 }
+
+// Bozor narxlari tarixi: har bir kiritish — alohida qator. Ro'yxatda har (bozor, mahsulot) uchun eng oxirgisi ko'rsatiladi.
+// priceYesterday — shu juftlikning oldingi kiritilgan narxi (server avtomatik to'ldiradi).
+model MarketPrice {
+  id             String   @id @default(uuid())
+  marketName     String
+  productName    String
+  priceToday     Int
+  priceYesterday Int
+  image          String?
+  createdAt      DateTime @default(now())
+
+  @@index([marketName, productName, createdAt])
+}

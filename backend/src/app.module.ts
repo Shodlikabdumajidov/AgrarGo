@@ -9,6 +9,7 @@ import { BookingModule } from './booking/booking.module';
 import { APP_ENV, AppEnvModule } from './config/app-env.module';
 import { AppEnv } from './config/env.validation';
 import { HealthController } from './health/health.controller';
+import { MarketPriceModule } from './market-price/market-price.module';
 import { MarketplaceModule } from './marketplace/marketplace.module';
 import { PaymentModule } from './payment/payment.module';
 import { PrismaModule } from './prisma/prisma.module';
@@ -44,6 +45,7 @@ import { WarehouseModule } from './warehouse/warehouse.module';
     ShipmentModule,
     PaymentModule,
     SubscriptionModule,
+    MarketPriceModule,
     WarehouseModule,
     SettingsModule,
     ReviewsModule,

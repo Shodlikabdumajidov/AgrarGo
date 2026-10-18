@@ -533,6 +533,34 @@
         @media (max-width: 640px) { .tour-tip.dock { left: 1rem !important; right: 1rem; top: auto !important; bottom: 1rem; width: auto; } }
         @media (prefers-reduced-motion: reduce) { .empty-art, .nf-wheel, .nf-truck, .nf-twinkle, .empty-art .pulse { animation: none; } .tour-spot, .tour-tip { transition: none; } }
 
+        /* ===== Bozor narxlari ===== */
+        #price-modal { opacity: 0; visibility: hidden; transition: opacity .3s ease, visibility .3s ease; }
+        #price-modal.open { opacity: 1; visibility: visible; }
+        #price-modal .auth-card { transform: translateY(20px) scale(.96); transition: transform .4s cubic-bezier(.16,1,.3,1); }
+        #price-modal.open .auth-card { transform: none; }
+        #dashboard-view > .max-w-6xl { position: relative; z-index: 2; }
+        #pr-bg.pr-off { display: none; }
+        .pr-search { position: relative; }
+        .pr-search i { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: #6ee7b7; pointer-events: none; }
+        .pr-search input { width: 100%; min-height: 3.25rem; padding: .8rem 1rem .8rem 2.8rem; border-radius: 1rem; background: rgba(15,23,42,.6); border: 1px solid rgba(255,255,255,.16); color: #f1f5f9; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); transition: border-color .2s, box-shadow .2s; }
+        .pr-search input:focus { outline: none; border-color: rgba(52,211,153,.7); box-shadow: 0 0 0 3px rgba(16,185,129,.18); }
+        .pr-grid { display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); }
+        .pr-card { display: flex; flex-direction: column; overflow: hidden; border-radius: 1.5rem; border: 1px solid rgba(255,255,255,.14); background: linear-gradient(160deg, rgba(255,255,255,.09), rgba(15,23,42,.62)); backdrop-filter: blur(18px) saturate(1.2); -webkit-backdrop-filter: blur(18px) saturate(1.2); box-shadow: 0 20px 50px -28px rgba(0,0,0,.9); transition: transform .35s cubic-bezier(.16,1,.3,1), border-color .25s, box-shadow .25s; animation: prIn .6s cubic-bezier(.16,1,.3,1) both; animation-delay: calc(var(--i, 0) * 55ms); }
+        .pr-card:hover { transform: translateY(-6px); border-color: rgba(52,211,153,.5); box-shadow: 0 28px 60px -26px rgba(16,185,129,.45); }
+        .pr-img { position: relative; aspect-ratio: 16 / 10; overflow: hidden; background: #0f172a; }
+        .pr-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .6s ease; }
+        .pr-card:hover .pr-img img { transform: scale(1.07); }
+        .pr-ph { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 3.4rem; font-weight: 900; color: rgba(255,255,255,.9); background: radial-gradient(circle at 30% 20%, hsl(var(--h, 150) 70% 42%), hsl(calc(var(--h, 150) + 40) 60% 16%)); }
+        .pr-trend { display: inline-flex; align-items: center; gap: .4rem; padding: .4rem .7rem; border-radius: 9999px; font-weight: 800; font-size: .85rem; border: 1px solid transparent; white-space: nowrap; }
+        .pr-trend.up { color: #6ee7b7; background: rgba(16,185,129,.16); border-color: rgba(52,211,153,.4); }
+        .pr-trend.down { color: #fda4af; background: rgba(244,63,94,.16); border-color: rgba(251,113,133,.4); }
+        .pr-trend.flat { color: #cbd5e1; background: rgba(148,163,184,.14); border-color: rgba(148,163,184,.3); }
+        .pr-drop { display: flex; align-items: center; gap: .9rem; padding: .9rem 1rem; border-radius: 1rem; border: 1.5px dashed rgba(255,255,255,.25); cursor: pointer; color: #cbd5e1; transition: border-color .2s, background .2s; }
+        .pr-drop:hover, .pr-drop.drag { border-color: rgba(52,211,153,.8); background: rgba(16,185,129,.08); }
+        .pr-drop img { width: 3.5rem; height: 3.5rem; border-radius: .75rem; object-fit: cover; flex: none; }
+        @keyframes prIn { from { opacity: 0; transform: translateY(22px) scale(.97); } }
+        @media (prefers-reduced-motion: reduce) { .pr-card { animation: none; } }
+
         /* ===== Obuna / bepul sinov ===== */
         .sub-banner { position: relative; overflow: hidden; display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; padding: 1rem 1.25rem; border-radius: 1.25rem; border: 1px solid rgba(52,211,153,.35); background: linear-gradient(120deg, rgba(16,185,129,.18), rgba(15,23,42,.7) 60%); box-shadow: 0 18px 50px -30px rgba(16,185,129,.7); animation: subIn .5s cubic-bezier(.16,1,.3,1) both; }
         .sub-banner.warn { border-color: rgba(251,191,36,.45); background: linear-gradient(120deg, rgba(251,191,36,.18), rgba(15,23,42,.7) 60%); box-shadow: 0 18px 50px -30px rgba(251,191,36,.6); }
@@ -1736,6 +1764,49 @@
         </div>
     </div>
 
+    <!-- BOZOR NARXLARI: yangi narx kiritish (admin / dispetcher) -->
+    <div id="price-modal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="price-title" onclick="if (event.target === this) closePriceModal()">
+        <div class="auth-card glass relative w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-3xl border border-emerald-500/25 shadow-2xl shadow-emerald-500/10 bg-gradient-to-b from-slate-900 to-emerald-950/30 p-6 sm:p-8">
+            <button type="button" onclick="closePriceModal()" aria-label="Yopish" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl p-1 transition hover:rotate-90 duration-300">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="text-center space-y-2 mb-6">
+                <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold uppercase tracking-widest">
+                    <i class="fa-solid fa-tags"></i> <span>Bozor narxlari</span>
+                </div>
+                <h2 id="price-title" class="text-2xl sm:text-3xl font-extrabold tracking-tight">Yangi narx kiritish</h2>
+                <p class="text-slate-400 text-sm">Avvalgi narx avtomatik «Kecha» narxiga o'tadi.</p>
+            </div>
+            <div id="price-alert" class="hidden mb-5 rounded-2xl px-4 py-3 text-sm font-medium" role="alert"></div>
+            <form id="price-form" class="space-y-4" novalidate>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="pr-market">Bozor</label>
+                    <select id="pr-market" class="auth-input"><option value="">Tanlang...</option></select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="pr-product">Mahsulot nomi</label>
+                    <input id="pr-product" type="text" maxlength="80" list="pr-product-list" placeholder="Masalan: Kartoshka" class="auth-input" autocomplete="off">
+                    <datalist id="pr-product-list"></datalist>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="pr-price">Bugungi narx (so'm / kg)</label>
+                    <input id="pr-price" type="number" min="1" step="1" inputmode="numeric" placeholder="Masalan: 5600" class="auth-input">
+                </div>
+                <div>
+                    <span class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Mahsulot rasmi <span class="text-slate-500 normal-case font-medium">(ixtiyoriy)</span></span>
+                    <label id="pr-drop" class="pr-drop" for="pr-file">
+                        <i class="fa-solid fa-cloud-arrow-up text-2xl text-emerald-400"></i>
+                        <span id="pr-drop-text" class="text-sm font-medium min-w-0 break-words">Rasm tanlang yoki shu yerga tashlang (JPG, PNG, WEBP, 3 MB gacha)</span>
+                    </label>
+                    <input id="pr-file" type="file" accept="image/jpeg,image/png,image/webp" class="sr-only">
+                </div>
+                <button type="submit" class="auth-submit w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed text-slate-950 font-extrabold py-3.5 rounded-2xl transition duration-200 shadow-xl shadow-emerald-500/25">
+                    <i class="fa-solid fa-check"></i> <span>Narxni saqlash</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- PAYMENT MODAL (xaridor to'laydi, escrow) -->
     <div id="payment-modal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="payment-title" onclick="if (event.target === this) closePaymentModal()">
         <div class="auth-card glass relative w-full max-w-md max-h-[92vh] overflow-y-auto rounded-3xl border border-blue-500/25 shadow-2xl shadow-blue-500/10 bg-gradient-to-b from-slate-900 to-blue-950/30 p-6 sm:p-8">
@@ -1780,6 +1851,7 @@
                 </div>
             </div>
         </div>
+        <div id="pr-bg" class="rp-bg-wrap pr-off" aria-hidden="true"><div class="rp-bg"><div class="rp-bg-layer"></div><div class="rp-bg-layer"></div></div></div>
         <div id="sub-banner-slot" class="max-w-6xl mx-auto px-4 sm:px-6 pt-6 empty:hidden"></div>
         <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8 grid lg:grid-cols-[15rem_minmax(0,1fr)] gap-6">
             <nav id="dash-tabs" class="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-1 lg:pb-0 lg:sticky lg:top-24 self-start" aria-label="Kabinet bo'limlari"></nav>
@@ -1996,7 +2068,7 @@
 
         // Sahifa skrolli: biror modal/panel/kabinet ochiq bo'lsa qulflanadi
         function syncScrollLock() {
-            const open = ['auth-modal', 'product-modal', 'booking-modal', 'payment-modal', 'wh-modal', 'my-products-panel', 'dashboard-view', 'role-page', 'not-found'].some(function (id) {
+            const open = ['auth-modal', 'product-modal', 'booking-modal', 'payment-modal', 'wh-modal', 'price-modal', 'my-products-panel', 'dashboard-view', 'role-page', 'not-found'].some(function (id) {
                 const node = document.getElementById(id);
                 return node && node.classList.contains('open');
             });
@@ -3012,7 +3084,8 @@
         document.addEventListener('keydown', function (e) {
             if (e.key !== 'Escape') return;
             if (tourState.active || notFoundView.classList.contains('open')) return; // tur va 404 o'z Escape'ini boshqaradi: kabinet yopilmasin
-            if (whModal.classList.contains('open')) closeWhModal();
+            if (document.getElementById('price-modal').classList.contains('open')) closePriceModal();
+            else if (whModal.classList.contains('open')) closeWhModal();
             else if (paymentModal.classList.contains('open')) closePaymentModal();
             else if (bookingModal.classList.contains('open')) closeBookingModal();
             else if (productModal.classList.contains('open')) closeProductModal();
@@ -3322,20 +3395,20 @@
             FARMER: [['overview', 'fa-gauge', 'Umumiy'], ['bookings', 'fa-inbox', 'Kelgan bronlar'],
                      ['shipments', 'fa-truck-ramp-box', 'Yuk tashish'], ['payments', 'fa-wallet', "To'lovlar"],
                      ['warehouse', 'fa-warehouse', 'Omborxona'], ['whorders', 'fa-clipboard-list', 'Ombor buyurtmalari'],
-                     ['products', 'fa-boxes-stacked', "E'lonlarim"], ['subscription', 'fa-crown', 'Obuna'], ['profile', 'fa-id-card', 'Profil']],
+                     ['products', 'fa-boxes-stacked', "E'lonlarim"], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'], ['subscription', 'fa-crown', 'Obuna'], ['profile', 'fa-id-card', 'Profil']],
             MARKET: [['overview', 'fa-gauge', 'Umumiy'], ['bookings', 'fa-clipboard-list', 'Mening bronlarim'],
                      ['shipments', 'fa-truck-ramp-box', 'Yuk tashish'], ['payments', 'fa-wallet', "To'lovlar"],
                      ['warehouse', 'fa-warehouse', 'Omborxona'], ['whorders', 'fa-clipboard-list', 'Ombor buyurtmalari'],
-                     ['catalog', 'fa-store', 'Katalog'], ['subscription', 'fa-crown', 'Obuna'], ['profile', 'fa-id-card', 'Profil']],
+                     ['catalog', 'fa-store', 'Katalog'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'], ['subscription', 'fa-crown', 'Obuna'], ['profile', 'fa-id-card', 'Profil']],
             DRIVER: [['overview', 'fa-gauge', 'Umumiy'], ['loads', 'fa-boxes-packing', 'Mavjud yuklar'],
-                     ['myloads', 'fa-truck-fast', 'Mening yuklarim'], ['eld', 'fa-clock-rotate-left', 'Harakat jurnali'], ['subscription', 'fa-crown', 'Obuna'], ['profile', 'fa-id-card', 'Profil']],
+                     ['myloads', 'fa-truck-fast', 'Mening yuklarim'], ['eld', 'fa-clock-rotate-left', 'Harakat jurnali'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'], ['subscription', 'fa-crown', 'Obuna'], ['profile', 'fa-id-card', 'Profil']],
             DISPATCHER: [['whboard', 'fa-table-columns', 'Zonalar'], ['whunits', 'fa-temperature-half', 'Kameralar'],
-                     ['whorders', 'fa-clipboard-list', 'Buyurtmalar'], ['whinventory', 'fa-chart-pie', 'Inventarizatsiya'], ['profile', 'fa-id-card', 'Profil']]
+                     ['whorders', 'fa-clipboard-list', 'Buyurtmalar'], ['whinventory', 'fa-chart-pie', 'Inventarizatsiya'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'], ['profile', 'fa-id-card', 'Profil']]
         };
         DASH_TABS.ADMIN = [['adm-dashboard', 'fa-chart-line', 'Boshqaruv paneli'], ['adm-users', 'fa-users', 'Foydalanuvchilar'],
                      ['adm-products', 'fa-boxes-stacked', "E'lonlar"], ['adm-shipments', 'fa-truck-fast', 'Yuk tashish'], ['adm-payments', 'fa-wallet', "To'lovlar"],
                      ['whboard', 'fa-warehouse', 'Ombor: zonalar'], ['whunits', 'fa-temperature-half', 'Kameralar'], ['whorders', 'fa-clipboard-list', 'Ombor buyurtmalari'],
-                     ['whinventory', 'fa-chart-pie', 'Inventarizatsiya'], ['adm-reviews', 'fa-star', 'Sharhlar'], ['adm-settings', 'fa-gear', 'Sayt sozlamalari'], ['adm-audit', 'fa-list-check', 'Audit jurnali'],
+                     ['whinventory', 'fa-chart-pie', 'Inventarizatsiya'], ['adm-reviews', 'fa-star', 'Sharhlar'], ['adm-settings', 'fa-gear', 'Sayt sozlamalari'], ['adm-audit', 'fa-list-check', 'Audit jurnali'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'],
                      ['profile', 'fa-id-card', 'Profil']];
         const BOOKING_STATUS = {
             PENDING:   { label: 'Kutilmoqda',      cls: 'bg-amber-500/15 text-amber-400 border-amber-500/30' },
@@ -3401,6 +3474,7 @@
         }
 
         function closeDashboard() {
+            stopPricesBg();
             dashboardView.classList.remove('open');
             dashboardView.setAttribute('aria-hidden', 'true');
             syncScrollLock();
@@ -3409,6 +3483,7 @@
         function selectDashTab(tab) {
             destroyCharts();
             if (tab === 'products') return openMyProducts();
+            if (tab !== 'prices') stopPricesBg();
             if (tab === 'catalog') { closeDashboard(); return scrollToMarket(); }
             const user = currentUser();
             if (!user) return;
@@ -3438,6 +3513,7 @@
             else if (tab === 'whunits') renderWhUnits(user);
             else if (tab === 'whinventory') renderWhInventory(user);
             else if (tab === 'payments') renderDashPayments(user);
+            else if (tab === 'prices') renderDashPrices(user);
             else if (tab === 'subscription') renderDashSubscription(user);
             else if (tab === 'profile') renderDashProfile();
             else renderDashOverview(user);
@@ -9069,6 +9145,263 @@
             nodes.push(hbox);
             dashContent.replaceChildren.apply(dashContent, nodes);
         }
+
+        // ===== Bozor narxlari =====
+        const PRICE_STAFF = ['ADMIN', 'DISPATCHER'];
+        const priceState = { q: '', rid: 0, items: [], markets: null, timer: null, bgTimer: null, bgIdx: 0 };
+        const priceModal = document.getElementById('price-modal');
+        const priceForm = document.getElementById('price-form');
+        const priceAlert = document.getElementById('price-alert');
+
+        // Orqa fon: Market roli rasmlari (market.jpg ... market7.jpg), har 10 soniyada silliq almashadi
+        async function priceBgShow() {
+            const list = ROLE_BG.MARKET;
+            const wrap = document.getElementById('pr-bg');
+            for (let tries = 0; tries < list.length; tries++) {
+                const src = list[priceState.bgIdx % list.length];
+                priceState.bgIdx++;
+                if (!(await roleBgPreload(src))) continue;
+                if (!priceState.bgTimer) return;
+                const layers = wrap.querySelectorAll('.rp-bg-layer');
+                const cur = wrap.querySelector('.rp-bg-layer.on');
+                const next = cur === layers[0] ? layers[1] : layers[0];
+                next.style.backgroundImage = 'url("' + src + '")';
+                next.classList.add('on');
+                if (cur) cur.classList.remove('on');
+                return;
+            }
+        }
+        function startPricesBg() {
+            if (priceState.bgTimer) return;
+            const wrap = document.getElementById('pr-bg');
+            wrap.classList.remove('pr-off');
+            priceState.bgIdx = Math.floor(Math.random() * ROLE_BG.MARKET.length);
+            priceState.bgTimer = setInterval(function () { if (!document.hidden) priceBgShow(); }, ROLE_BG_INTERVAL);
+            priceBgShow();
+        }
+        function stopPricesBg() {
+            clearInterval(priceState.bgTimer);
+            priceState.bgTimer = null;
+            const wrap = document.getElementById('pr-bg');
+            if (!wrap) return;
+            wrap.classList.add('pr-off');
+            wrap.querySelectorAll('.rp-bg-layer').forEach(function (l) { l.classList.remove('on'); l.style.backgroundImage = ''; });
+        }
+
+        function priceHue(s) {
+            let h = 0;
+            for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 360;
+            return h;
+        }
+
+        function buildPriceCard(p, i) {
+            const c = el('article', 'pr-card');
+            c.style.setProperty('--i', String(Math.min(i, 12)));
+            const imgBox = el('div', 'pr-img');
+            const placeholder = function () {
+                const ph = el('div', 'pr-ph', p.productName.charAt(0).toUpperCase());
+                ph.style.setProperty('--h', String(priceHue(p.productName)));
+                imgBox.replaceChildren(ph);
+            };
+            if (p.image) {
+                const im = el('img');
+                im.src = API_URL + p.image; im.alt = p.productName; im.loading = 'lazy';
+                im.addEventListener('error', placeholder);
+                imgBox.appendChild(im);
+            } else placeholder();
+            c.appendChild(imgBox);
+
+            const body = el('div', 'p-5 flex flex-col gap-3 flex-1');
+            const mk = el('div', 'flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-300');
+            mk.appendChild(el('i', 'fa-solid fa-location-dot'));
+            mk.appendChild(el('span', 'min-w-0 break-words', p.marketName));
+            body.appendChild(mk);
+            body.appendChild(el('h3', 'text-xl font-extrabold text-white break-words', p.productName));
+
+            const row = el('div', 'flex items-end justify-between gap-3 mt-auto pt-3 border-t border-white/10');
+            const left = el('div', 'space-y-1 min-w-0');
+            left.appendChild(el('div', 'text-sm text-slate-400', T("Kecha: {0} so'm", formatNumber(p.priceYesterday))));
+            left.appendChild(el('div', 'text-lg font-black text-white', T("Bugun: {0} so'm", formatNumber(p.priceToday))));
+            row.appendChild(left);
+            const pct = Math.abs(p.changePercent);
+            const sign = p.trend === 'up' ? '+' : p.trend === 'down' ? '-' : '';
+            const t = el('span', ['pr-trend', p.trend].join(' '));
+            t.title = p.trend === 'up' ? T('Narx oshgan') : p.trend === 'down' ? T('Narx tushgan') : T("Narx o'zgarmagan");
+            t.appendChild(el('i', ['fa-solid', p.trend === 'up' ? 'fa-arrow-up' : p.trend === 'down' ? 'fa-arrow-down' : 'fa-minus'].join(' ')));
+            t.appendChild(el('span', '', sign + formatNumber(pct) + '%'));
+            row.appendChild(t);
+            body.appendChild(row);
+            body.appendChild(el('div', 'text-[11px] text-slate-500', T('Yangilandi: {0}', formatDate(p.createdAt))));
+            c.appendChild(body);
+            return c;
+        }
+
+        async function loadPrices() {
+            const box = document.getElementById('pr-results');
+            const count = document.getElementById('pr-count');
+            if (!box) return;
+            const rid = ++priceState.rid;
+            if (!priceState.items.length) {
+                const g = el('div', 'pr-grid');
+                for (let i = 0; i < 6; i++) g.appendChild(el('div', 'sk-card h-80'));
+                box.replaceChildren(g);
+            }
+            let items;
+            try {
+                items = await authed('GET', '/market-prices' + (priceState.q ? '?q=' + encodeURIComponent(priceState.q) : ''));
+            } catch (err) {
+                if (err.status === 401 || rid !== priceState.rid) return;
+                return box.replaceChildren(dashMessage('fa-triangle-exclamation text-rose-400', err.messages[0], loadPrices));
+            }
+            if (rid !== priceState.rid) return;
+            priceState.items = items;
+            count.textContent = items.length ? T('Topildi: {0}', items.length) : '';
+            if (!items.length) {
+                return box.replaceChildren(emptyState({ art: 'listings', compact: true,
+                    title: priceState.q ? 'Hech narsa topilmadi' : "Bozor narxlari hali kiritilmagan",
+                    text: priceState.q ? "Boshqa bozor yoki mahsulot nomini yozib ko'ring." : "Narxlar dispetcher yoki administrator tomonidan kiritiladi." }));
+            }
+            const grid = el('div', 'pr-grid');
+            items.forEach(function (p, i) { grid.appendChild(buildPriceCard(p, i)); });
+            box.replaceChildren(grid);
+        }
+
+        function renderDashPrices(user) {
+            dashRenderId++;
+            priceState.q = '';
+            priceState.items = [];
+            const nodes = [];
+            const head = el('div', 'flex flex-wrap items-end justify-between gap-4');
+            head.appendChild(sectionTitle('Bozor narxlari', "Toshkent, Samarqand va Jizzax bozorlaridagi bugungi narxlar"));
+            if (PRICE_STAFF.indexOf(user.role) !== -1) {
+                const add = actionBtn('fa-plus', 'Yangi narx kiritish', true, openPriceModal);
+                add.id = 'pr-add';
+                head.appendChild(add);
+            }
+            nodes.push(head);
+            const sw = el('div', 'pr-search');
+            sw.appendChild(el('i', 'fa-solid fa-magnifying-glass'));
+            const input = el('input');
+            input.type = 'search'; input.id = 'pr-search'; input.maxLength = 80; input.autocomplete = 'off';
+            input.placeholder = "Bozor yoki mahsulot nomi bo'yicha qidiring...";
+            input.setAttribute('aria-label', 'Qidiruv');
+            input.addEventListener('input', function () {
+                clearTimeout(priceState.timer);
+                priceState.timer = setTimeout(function () { priceState.q = input.value.trim(); loadPrices(); }, 250);
+            });
+            sw.appendChild(input);
+            nodes.push(sw);
+            const count = el('div', 'text-sm font-semibold text-slate-300');
+            count.id = 'pr-count';
+            nodes.push(count);
+            const res = el('div');
+            res.id = 'pr-results';
+            nodes.push(res);
+            dashContent.replaceChildren.apply(dashContent, nodes);
+            startPricesBg();
+            loadPrices();
+        }
+
+        // ----- Yangi narx kiritish oynasi -----
+        async function openPriceModal() {
+            hideAuthAlert(priceAlert);
+            priceForm.reset();
+            resetPriceDrop();
+            const dl = document.getElementById('pr-product-list');
+            dl.replaceChildren.apply(dl, Array.from(new Set(priceState.items.map(function (p) { return p.productName; }))).map(function (n) { const o = el('option'); o.value = n; return o; }));
+            priceModal.classList.add('open');
+            syncScrollLock();
+            if (!priceState.markets) {
+                try { priceState.markets = await authed('GET', '/market-prices/markets'); } catch (err) { return showAuthAlert(err.messages || ["Bozorlar ro'yxatini yuklab bo'lmadi."], 'error', priceAlert); }
+            }
+            const sel = document.getElementById('pr-market');
+            if (sel.options.length < 2) {
+                priceState.markets.forEach(function (g) {
+                    const og = el('optgroup');
+                    og.label = g.region;
+                    g.markets.forEach(function (m) { const o = el('option', '', m); o.value = m; og.appendChild(o); });
+                    sel.appendChild(og);
+                });
+            }
+        }
+        function closePriceModal() {
+            priceModal.classList.remove('open');
+            syncScrollLock();
+        }
+        function resetPriceDrop() {
+            const d = document.getElementById('pr-drop');
+            d.querySelectorAll('img').forEach(function (i) { i.remove(); });
+            d.firstElementChild.classList.remove('hidden');
+            document.getElementById('pr-drop-text').textContent = T('Rasm tanlang yoki shu yerga tashlang (JPG, PNG, WEBP, 3 MB gacha)');
+        }
+        function showPriceFile(file) {
+            const d = document.getElementById('pr-drop');
+            resetPriceDrop();
+            if (!file) return;
+            d.firstElementChild.classList.add('hidden');
+            const im = el('img'); im.alt = '';
+            im.src = URL.createObjectURL(file);
+            im.addEventListener('load', function () { URL.revokeObjectURL(im.src); });
+            d.insertBefore(im, d.firstElementChild);
+            document.getElementById('pr-drop-text').textContent = file.name;
+        }
+        (function () {
+            const input = document.getElementById('pr-file');
+            const drop = document.getElementById('pr-drop');
+            const check = function (f) {
+                if (!f) return true;
+                if (!/^image\/(jpeg|png|webp)$/.test(f.type)) { showAuthAlert(['Faqat JPG, PNG yoki WEBP rasm yuklang.'], 'error', priceAlert); return false; }
+                if (f.size > 3 * 1024 * 1024) { showAuthAlert(['Rasm hajmi 3 MB dan oshmasligi kerak.'], 'error', priceAlert); return false; }
+                hideAuthAlert(priceAlert);
+                return true;
+            };
+            input.addEventListener('change', function () {
+                const f = input.files[0];
+                if (!check(f)) { input.value = ''; return resetPriceDrop(); }
+                showPriceFile(f);
+            });
+            ['dragenter', 'dragover'].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add('drag'); }); });
+            ['dragleave', 'drop'].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove('drag'); }); });
+            drop.addEventListener('drop', function (e) {
+                const f = e.dataTransfer && e.dataTransfer.files[0];
+                if (!f || !check(f)) return;
+                try { const dt = new DataTransfer(); dt.items.add(f); input.files = dt.files; } catch (err) {}
+                showPriceFile(f);
+            });
+        })();
+        priceForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            hideAuthAlert(priceAlert);
+            const market = document.getElementById('pr-market').value;
+            const product = document.getElementById('pr-product').value.trim();
+            const price = Number(document.getElementById('pr-price').value);
+            const errors = [];
+            if (!market) errors.push('Bozorni tanlang.');
+            if (product.length < 2) errors.push('Mahsulot nomini kiriting.');
+            if (!Number.isInteger(price) || price < 1) errors.push("Bugungi narxni butun son (so'm) ko'rinishida kiriting.");
+            if (errors.length) return showAuthAlert(errors, 'error', priceAlert);
+            const token = storageGet(TOKEN_KEY);
+            if (!token) return handleSessionExpired(reopenDash);
+            const fd = new FormData();
+            fd.append('marketName', market); fd.append('productName', product); fd.append('priceToday', String(price));
+            const file = document.getElementById('pr-file').files[0];
+            if (file) fd.append('image', file);
+            setLoading(priceForm, true);
+            let res;
+            try { res = await fetch(API_URL + '/market-prices', { method: 'POST', headers: { Authorization: 'Bearer ' + token }, body: fd }); }
+            catch (err) { setLoading(priceForm, false); return showAuthAlert(["Serverga ulanib bo'lmadi. Qayta urinib ko'ring."], 'error', priceAlert); }
+            let data = null; try { data = await res.json(); } catch (err) {}
+            setLoading(priceForm, false);
+            if (res.status === 401) { closePriceModal(); return handleSessionExpired(reopenDash); }
+            if (!res.ok) {
+                const msg = res.status === 413 ? ['Rasm hajmi 3 MB dan oshmasligi kerak.'] : res.status === 403 ? ["Narx kiritish faqat administrator va dispetcher uchun."]
+                    : (data && data.message ? [].concat(data.message) : ["Narxni saqlab bo'lmadi."]);
+                return showAuthAlert(msg, 'error', priceAlert);
+            }
+            closePriceModal();
+            showSuccessCheck('Narx saqlandi!', data.productName + ': ' + formatNumber(data.priceYesterday) + ' → ' + formatNumber(data.priceToday));
+            if (dashTab === 'prices') loadPrices();
+        });
 
         startLiveReviews();
         routeRoleHash();
