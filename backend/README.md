@@ -149,3 +149,14 @@ Qoidalar `src/payment/payment.policy.ts` da (sof funksiyalar, unit testlangan). 
 - Maxfiylik: API javoblarida `telegramChatId` va token ko'rinmaydi, faqat `telegramLinked`. Bitta chat — bitta akkaunt.
 - Xabarnomalar: bron (fermerga), bron tasdiqlanishi (market va fermerga), escrow muzlatilishi (bron va ombor buyurtmasi; market va fermerga), yuk "Yo'lda" va "Yetkazildi" (fermer, market va ombor yuklari uchun dispetcherlarga). Xabarlar tranzaksiya tasdiqlangandan keyin, asosiy amalni kutdirmasdan yuboriladi; xato bo'lsa amal buziladi emas. Bot bloklangan chat avtomatik uziladi.
 - Cheklov: yuborish navbati xotirada (server qayta ishga tushsa kutayotgan xabarlar yo'qoladi). Long polling bitta nusxada ishlashi kerak.
+
+## Sharhlar (Live Reviews)
+
+- `GET /reviews?role=&limit=` — ochiq (tokensiz): faqat tasdiqlangan sharhlar + umumiy va rollar bo'yicha statistika (o'rtacha, taqsimot). Ismning faqat bosh harfi, rol va viloyat ko'rinadi; telefon/ID chiqmaydi. IP bo'yicha daqiqasiga cheklangan.
+- `POST /reviews { rating: 1..5, comment: 10..500 }` — faqat fermer, haydovchi, market. Bitta foydalanuvchi — bitta sharh (qayta yuborsa yangilanadi). Foydalanuvchi bo'yicha soatiga cheklangan (`THROTTLE_REVIEW_LIMIT`). Spamga qarshi: havola/@username/domen taqiqlanadi, takroriy belgilar va boshqa foydalanuvchining aynan shu matni rad etiladi; boshqaruv belgilari olib tashlanadi; baho va uzunlik bazada ham CHECK bilan himoyalangan.
+- `GET /reviews/mine`, `DELETE /reviews/mine` — o'z sharhi.
+- Moderatsiya (ADMIN): `GET /admin/reviews`, `PATCH /admin/reviews/:id { isApproved }`, `DELETE /admin/reviews/:id` (audit jurnaliga yoziladi). `REVIEWS_AUTO_APPROVE=false` bo'lsa yangi sharh admin tasdiqlaguncha ko'rinmaydi.
+
+## PWA
+
+Frontend ildizida: `manifest.json`, `sw.js` (Service Worker), `offline.html`, `icons/`. Service Worker faqat `https://` yoki `localhost` da ishlaydi. App shell oldindan keshlanadi, statik fayllar va CDN stale-while-revalidate; backend API va Authorization'li so'rovlar hech qachon keshlanmaydi. Keshni yangilash uchun `sw.js` dagi `VERSION` ni oshiring.

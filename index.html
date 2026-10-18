@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AgrarGo — Smart Agro-Logistics Ecosystem</title>
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#064E3B">
+    <meta name="application-name" content="AgrarGo">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="AgrarGo">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -180,6 +190,20 @@
             visibility: visible;
             transform: translateY(0);
         }
+        /* Rol sahifalari (tanishtiruv) */
+        #role-page {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(14px);
+            transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s ease;
+        }
+        #role-page.open { opacity: 1; visibility: visible; transform: translateY(0); }
+        .star-btn { transition: transform .15s ease, color .15s ease; }
+        .star-btn:hover { transform: scale(1.15); }
+        .star-btn:focus-visible { outline: 2px solid #34d399; outline-offset: 2px; border-radius: 6px; }
+        @keyframes review-in { 0% { opacity: 0; transform: translateY(16px) scale(.97); box-shadow: 0 0 0 rgba(16,185,129,0); } 60% { box-shadow: 0 0 28px rgba(16,185,129,.45); } 100% { opacity: 1; transform: none; box-shadow: 0 0 0 rgba(16,185,129,0); } }
+        .review-new { animation: review-in .8s ease both; }
+        #pwa-banner, #offline-pill { transition: opacity .3s ease, transform .3s ease; }
         .dash-tab.active {
             background: rgba(16, 185, 129, 0.18);
             border-color: rgba(16, 185, 129, 0.55);
@@ -432,15 +456,15 @@
         </div>
         <div class="flex-1 overflow-y-auto divide-y divide-white/5">
             <p class="px-5 py-3 text-xs text-slate-400 font-semibold leading-relaxed bg-slate-950/30">Rolingizni tanlang. Bitta telefon raqam faqat bitta rolda ro'yxatdan o'ta oladi.</p>
-            <a href="#" onclick="chooseRole('FARMER'); return false;" class="flex justify-between items-center p-5 hover:bg-white/10 transition group">
+            <a href="#" onclick="openRolePage('FARMER'); return false;" class="flex justify-between items-center p-5 hover:bg-white/10 transition group">
                 <span class="text-base font-semibold text-slate-200 group-hover:text-emerald-400">AgrarGo Farm (Fermer)</span>
                 <span class="text-xs bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full font-bold">Faol</span>
             </a>
-            <a href="#" onclick="chooseRole('DRIVER'); return false;" class="flex justify-between items-center p-5 hover:bg-white/10 transition group">
+            <a href="#" onclick="openRolePage('DRIVER'); return false;" class="flex justify-between items-center p-5 hover:bg-white/10 transition group">
                 <span class="text-base font-semibold text-slate-200 group-hover:text-emerald-400">AgrarGo Driver (Haydovchi)</span>
                 <span class="text-xs bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full font-bold">GPS</span>
             </a>
-            <a href="#" onclick="chooseRole('MARKET'); return false;" class="flex justify-between items-center p-5 hover:bg-white/10 transition group">
+            <a href="#" onclick="openRolePage('MARKET'); return false;" class="flex justify-between items-center p-5 hover:bg-white/10 transition group">
                 <span class="text-base font-semibold text-slate-200 group-hover:text-emerald-400">AgrarGo Market (B2B Do'kon)</span>
                 <span class="text-xs bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full font-bold">Market</span>
             </a>
@@ -457,8 +481,11 @@
                 <span class="text-xs bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full font-bold">Zaxira</span>
             </a>
         </div>
-        <div class="p-5 border-t border-white/10 bg-slate-950 text-center text-xs text-slate-400 font-semibold">
-            AgrarGo Enterprise Platform v2.0
+        <div class="p-5 border-t border-white/10 bg-slate-950 text-center text-xs text-slate-400 font-semibold space-y-3">
+            <button type="button" id="pwa-install-sidebar" onclick="installApp()" class="hidden w-full items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-extrabold hover:bg-emerald-400 transition">
+                <i class="fa-solid fa-download"></i> <span>Ilovani o'rnatish</span>
+            </button>
+            <div>AgrarGo Enterprise Platform v2.0</div>
         </div>
     </div>
 
@@ -734,39 +761,23 @@
         </div>
     </section>
 
-    <!-- TESTIMONIALS SECTION -->
-    <section class="py-24 px-6 max-w-7xl mx-auto relative border-t border-white/10">
-        <div class="text-center mb-16 space-y-4" data-aos="fade-up">
+    <!-- JONLI SHARHLAR (bazadan) -->
+    <section id="reviews" class="py-24 px-6 max-w-7xl mx-auto relative border-t border-white/10 scroll-mt-24">
+        <div class="text-center mb-12 space-y-4" data-aos="fade-up">
             <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-semibold uppercase tracking-widest">
                 <i class="fa-solid fa-comments"></i> Taqrizlar
             </div>
             <h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight">Fermer va Hamkorlarimiz Fikrlari</h2>
-            <p class="text-slate-400 text-lg max-w-2xl mx-auto">AgrarGo ekotizimidan amalda foydalanayotganlar taassurotlari.</p>
+            <p class="text-slate-400 text-lg max-w-2xl mx-auto">AgrarGo ekotizimidan amalda foydalanayotganlarning haqiqiy sharhlari: yangi fikrlar bu yerda darhol paydo bo'ladi.</p>
         </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div class="glass p-8 rounded-3xl border border-white/10 hover:border-purple-500/40 hover-glow transition duration-300 space-y-6 flex flex-col justify-between" data-aos="fade-up" data-aos-delay="100">
-                <p class="text-slate-300 text-sm leading-relaxed italic">"AgrarGo Farm tufayli to'g'ridan-to'g'ri do'konlarga chiqib, daromadimizni sezilarli oshirdik."</p>
-                <div class="flex items-center gap-4 pt-4 border-t border-white/10">
-                    <div class="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center text-lg">SH</div>
-                    <div><h4 class="font-bold text-white text-base">Shavkat aka</h4><p class="text-xs text-slate-400">Samarqandlik Fermer</p></div>
-                </div>
-            </div>
-
-            <div class="glass p-8 rounded-3xl border border-white/10 hover:border-purple-500/40 hover-glow transition duration-300 space-y-6 flex flex-col justify-between" data-aos="fade-up" data-aos-delay="200">
-                <p class="text-slate-300 text-sm leading-relaxed italic">"ELD GPS tracking va bo'sh yuklarni topish moduli ishlarimizni tartibga soldi. Reyslarimiz aniq."</p>
-                <div class="flex items-center gap-4 pt-4 border-t border-white/10">
-                    <div class="w-12 h-12 rounded-full bg-blue-500/20 text-blue-400 font-bold flex items-center justify-center text-lg">JB</div>
-                    <div><h4 class="font-bold text-white text-base">Jasur Bekmurodov</h4><p class="text-xs text-slate-400">Logistika Haydovchisi</p></div>
-                </div>
-            </div>
-
-            <div class="glass p-8 rounded-3xl border border-white/10 hover:border-purple-500/40 hover-glow transition duration-300 space-y-6 flex flex-col justify-between" data-aos="fade-up" data-aos-delay="300">
-                <p class="text-slate-300 text-sm leading-relaxed italic">"Supermarketimiz uchun dehqondan bevosita yangi mahsulot olishimizda AgrarGo Market qo'l keldi."</p>
-                <div class="flex items-center gap-4 pt-4 border-t border-white/10">
-                    <div class="w-12 h-12 rounded-full bg-amber-500/20 text-amber-400 font-bold flex items-center justify-center text-lg">UT</div>
-                    <div><h4 class="font-bold text-white text-base">Umid Tursunov</h4><p class="text-xs text-slate-400">B2B Market Rahbari</p></div>
-                </div>
+        <div id="reviews-summary" class="mb-10"></div>
+        <div id="reviews-feed" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" aria-live="polite"></div>
+        <div class="mt-12 text-center space-y-4">
+            <p class="text-slate-300 font-semibold">Siz ham fikringizni qoldiring:</p>
+            <div class="flex flex-wrap justify-center gap-3">
+                <button type="button" onclick="openRolePage('FARMER', true)" class="px-5 py-2.5 rounded-full border border-emerald-500/40 text-emerald-300 font-bold text-sm hover:bg-emerald-500/10 transition"><i class="fa-solid fa-seedling mr-2"></i>Fermer sifatida</button>
+                <button type="button" onclick="openRolePage('DRIVER', true)" class="px-5 py-2.5 rounded-full border border-blue-500/40 text-blue-300 font-bold text-sm hover:bg-blue-500/10 transition"><i class="fa-solid fa-truck-fast mr-2"></i>Haydovchi sifatida</button>
+                <button type="button" onclick="openRolePage('MARKET', true)" class="px-5 py-2.5 rounded-full border border-amber-500/40 text-amber-300 font-bold text-sm hover:bg-amber-500/10 transition"><i class="fa-solid fa-store mr-2"></i>Market sifatida</button>
             </div>
         </div>
     </section>
@@ -1211,6 +1222,20 @@
         </div>
     </div>
 
+    <!-- ROL SAHIFASI (tanishtiruv + sharhlar) -->
+    <div id="role-page" class="fixed inset-0 z-[45] bg-slate-950 overflow-y-auto" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="rp-title">
+        <div class="sticky top-0 z-10 glass border-b border-white/15">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-3">
+                <button type="button" onclick="closeRolePage()" class="flex items-center gap-2 text-slate-300 hover:text-emerald-400 font-bold text-sm transition">
+                    <i class="fa-solid fa-arrow-left"></i> <span class="hidden sm:inline">Saytga qaytish</span>
+                </button>
+                <div id="rp-chip" class="flex items-center gap-2 text-emerald-400 font-extrabold uppercase tracking-widest text-xs sm:text-sm"></div>
+                <button type="button" id="rp-cta-top" class="px-4 py-2 rounded-xl bg-emerald-500 text-slate-950 font-extrabold text-sm hover:bg-emerald-400 transition"></button>
+            </div>
+        </div>
+        <main id="rp-content" class="max-w-6xl mx-auto px-4 sm:px-6 py-10 space-y-16"></main>
+    </div>
+
     <!-- BOOKING MODAL (B2B bron) -->
     <div id="booking-modal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="booking-title" onclick="if (event.target === this) closeBookingModal()">
         <div class="auth-card glass relative w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-3xl border border-emerald-500/25 shadow-2xl shadow-emerald-500/10 bg-gradient-to-b from-slate-900 to-emerald-950/30 p-6 sm:p-8">
@@ -1356,7 +1381,7 @@
 
         // Sahifa skrolli: biror modal/panel/kabinet ochiq bo'lsa qulflanadi
         function syncScrollLock() {
-            const open = ['auth-modal', 'product-modal', 'booking-modal', 'payment-modal', 'wh-modal', 'my-products-panel', 'dashboard-view'].some(function (id) {
+            const open = ['auth-modal', 'product-modal', 'booking-modal', 'payment-modal', 'wh-modal', 'my-products-panel', 'dashboard-view', 'role-page'].some(function (id) {
                 const node = document.getElementById(id);
                 return node && node.classList.contains('open');
             });
@@ -2674,7 +2699,7 @@
         DASH_TABS.ADMIN = [['adm-dashboard', 'fa-chart-line', 'Boshqaruv paneli'], ['adm-users', 'fa-users', 'Foydalanuvchilar'],
                      ['adm-products', 'fa-boxes-stacked', "E'lonlar"], ['adm-shipments', 'fa-truck-fast', 'Yuk tashish'], ['adm-payments', 'fa-wallet', "To'lovlar"],
                      ['whboard', 'fa-warehouse', 'Ombor: zonalar'], ['whunits', 'fa-temperature-half', 'Kameralar'], ['whorders', 'fa-clipboard-list', 'Ombor buyurtmalari'],
-                     ['whinventory', 'fa-chart-pie', 'Inventarizatsiya'], ['adm-settings', 'fa-gear', 'Sayt sozlamalari'], ['adm-audit', 'fa-list-check', 'Audit jurnali'],
+                     ['whinventory', 'fa-chart-pie', 'Inventarizatsiya'], ['adm-reviews', 'fa-star', 'Sharhlar'], ['adm-settings', 'fa-gear', 'Sayt sozlamalari'], ['adm-audit', 'fa-list-check', 'Audit jurnali'],
                      ['profile', 'fa-id-card', 'Profil']];
         const BOOKING_STATUS = {
             PENDING:   { label: 'Kutilmoqda',      cls: 'bg-amber-500/15 text-amber-400 border-amber-500/30' },
@@ -2765,6 +2790,7 @@
             else if (tab === 'adm-products') renderAdmProducts(user);
             else if (tab === 'adm-shipments') renderAdmShipments(user);
             else if (tab === 'adm-payments') renderAdmPayments(user);
+            else if (tab === 'adm-reviews') renderAdmReviews(user);
             else if (tab === 'adm-settings') renderAdmSettings(user);
             else if (tab === 'adm-audit') renderAdmAudit(user);
             else if (tab === 'whboard' || (isStaffRole(user) && tab === 'overview')) renderWhBoard(user);
@@ -4359,6 +4385,7 @@
             products: { status: '', q: '', page: 1 },
             shipments: { status: '', page: 1 },
             payments: 'ALL',
+            reviews: { state: '', page: 1 },
             audit: { entity: '', page: 1 }
         };
         let admSearchTimer = null;
@@ -4730,6 +4757,36 @@
                 }]
             ], items, "To'lovlar topilmadi."));
             if (list.length >= 200) nodes.push(el('p', 'text-xs text-slate-500 text-center', "Eng so'nggi 200 ta tranzaksiya ko'rsatildi."));
+            dashContent.replaceChildren.apply(dashContent, nodes);
+        }
+
+        // ----- Sharhlar (moderatsiya) -----
+        async function renderAdmReviews(user) {
+            const f = admState.reviews;
+            const d = await admLoad(user, '', '/admin/reviews' + whQuery({ state: f.state, page: f.page, limit: 15 }), null, function () { renderAdmReviews(user); });
+            if (!d) return;
+            const again = function () { renderAdmReviews(user); };
+            const nodes = [admHead('Sharhlar', again)];
+            nodes.push(el('p', 'text-sm text-slate-400', "Yashirilgan sharh asosiy sahifada ko'rinmaydi. Spam yoki nomaqbul sharhlarni yashiring yoki o'chiring."));
+            nodes.push(admFilterBar([admSelect([['', 'Barcha sharhlar'], ['approved', 'Ochiq'], ['hidden', 'Yashirilgan']], f.state, function (v) { f.state = v; f.page = 1; again(); })]));
+            nodes.push(admTable([
+                ['Muallif', function (r) { return admName(r.author.fullName, ADM_ROLE_LABEL[r.role] + ' · ' + r.author.phone); }],
+                ['Baho', function (r) { return starRow(r.rating); }],
+                ['Izoh', function (r) { const x = el('div', 'max-w-xs sm:max-w-md whitespace-normal break-words text-slate-300'); x.textContent = r.comment; return x; }],
+                ['Holat', function (r) { return r.isApproved ? whPill('Ochiq', 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30') : whPill('Yashirin', 'bg-slate-500/20 text-slate-300 border-slate-500/30'); }],
+                ['Sana', function (r) { return admDate(r.createdAt); }],
+                ['Amallar', function (r) {
+                    return admActions([
+                        admBtn(r.isApproved ? 'fa-eye-slash' : 'fa-eye', r.isApproved ? 'Yashirish' : "Ko'rsatish", async function () {
+                            try { await authed('PATCH', '/admin/reviews/' + r.id, { isApproved: !r.isApproved }); again(); refreshLiveReviews(true); } catch (err) { admErrToast(err); }
+                        }, r.isApproved ? undefined : 'ok'),
+                        admBtn('fa-trash', "O'chirish", async function () {
+                            if (!window.confirm(T("Sharhni butunlay o'chirasizmi?"))) return;
+                            try { await authed('DELETE', '/admin/reviews/' + r.id); showToast("Sharh o'chirildi."); again(); refreshLiveReviews(true); } catch (err) { admErrToast(err); }
+                        }, 'danger')]);
+                }]
+            ], d.items, 'Sharhlar topilmadi.'));
+            nodes.push(admPager(d, function (pg) { f.page = pg; again(); }));
             dashContent.replaceChildren.apply(dashContent, nodes);
         }
 
@@ -6461,6 +6518,589 @@
         loadMarket();
         updateAuthButton();
         refreshSession();
+
+        // ===== ROL SAHIFALARI (tanishtiruv) VA JONLI SHARHLAR =====
+        const ROLE_PAGES = {
+            FARMER: {
+                slug: 'farmer', icon: 'fa-seedling', badge: 'AgrarGo Farm', title: 'Fermerlar uchun AgrarGo',
+                lead: "Hosilingizni vositachilarsiz, adolatli narxda va kafolatlangan to'lov bilan soting.",
+                problems: [
+                    ['fa-scale-unbalanced', 'Vositachilar narxni tushiradi', "Dehqon mahsulotini arzon topshirar, vositachi esa uni bozorda bir necha baravar qimmat sotardi."],
+                    ['fa-magnifying-glass', 'Xaridor topish qiyin', "Hosil pishganda xaridor izlash, telefonlashish va bozorga qatnashga ko'p vaqt ketardi."],
+                    ['fa-hand-holding-dollar', "To'lov xavfi", "Mahsulot topshirilgach pul kechikishi yoki umuman to'lanmasligi holatlari uchrardi."],
+                    ['fa-box-open', "Hosil saqlanmay nobud bo'lardi", "Sovutgich va ombor yo'qligi sababli mahsulotni narx tushganda ham zudlik bilan sotishga to'g'ri kelardi."]
+                ],
+                solutions: [
+                    ['fa-store', "To'g'ridan-to'g'ri bozor", "E'lon joylashtiring: supermarketlar va do'konlar sizning narxingizda bron qiladi."],
+                    ['fa-shield-halved', "Kafolatlangan to'lov (Escrow)", "Xaridor puli yuk yetkazilguncha xavfsiz saqlanadi va tasdiqlangach hisobingizga o'tadi."],
+                    ['fa-truck-fast', 'Yuk tashish avtomatik', "Bron tasdiqlanishi bilan haydovchi biriktiriladi, yukni jonli xaritada kuzatasiz."],
+                    ['fa-warehouse', 'Omborxona va sovutgichlar', "Hosilni sifat nazorati bilan omborda saqlang va narx ko'tarilganda soting."]
+                ],
+                future: [
+                    ['fa-chart-line', 'Narx tahlili va prognoz', "Hududlar bo'yicha narx dinamikasi va talabga asoslangan tavsiyalar."],
+                    ['fa-coins', 'Fermerlar uchun mikromoliya', "Kelgusi hosil ta'minoti asosida urug' va o'g'it uchun qulay moliyalashtirish."],
+                    ['fa-mobile-screen', "Mobil ilova va tezkor e'lon", "Telefon orqali bir necha soniyada e'lon joylash va xabarnomalar."]
+                ]
+            },
+            DRIVER: {
+                slug: 'driver', icon: 'fa-truck-fast', badge: 'AgrarGo Driver', title: 'Haydovchilar uchun AgrarGo',
+                lead: "Bo'sh yurmang: to'lovi kafolatlangan yuklarni toping, yo'lda GPS bilan himoyalaning.",
+                problems: [
+                    ['fa-road', "Bo'sh qaytish", "Yuk topilmay, mashina yo'lning yarmida bo'sh qaytar va yoqilg'i zarar bo'lardi."],
+                    ['fa-circle-question', 'Noaniq buyurtmalar', "Yukning og'irligi, manzili va narxi kelishilmasdan ish boshlanardi."],
+                    ['fa-hourglass-half', "To'lovni kutish", "Yetkazilgach pulni olish uchun haftalab qo'ng'iroq qilishga to'g'ri kelardi."],
+                    ['fa-file-circle-xmark', "Hisobsiz yo'l", "Reyslar, soatlar va masofa qo'lda yozilar, bahsli holatlar isbotsiz qolardi."]
+                ],
+                solutions: [
+                    ['fa-boxes-packing', "Mavjud yuklar ro'yxati", "Hududingizdagi tasdiqlangan va to'lovi kafolatlangan yuklarni tanlab oling."],
+                    ['fa-shield-halved', "To'lov kafolati", "Yuk faqat mablag' Escrow'ga o'tgandan keyin olinadi: pulingiz xavfsiz."],
+                    ['fa-location-crosshairs', 'GPS kuzatuv va ELD jurnali', "Harakatingiz avtomatik yoziladi, fermer va market yukni jonli ko'radi."],
+                    ['fa-warehouse', 'Omborxona yuklari', "Omborxonadan ham yuklar chiqadi: dispetcher yuklab tasdiqlagach yo'lga chiqasiz."]
+                ],
+                future: [
+                    ['fa-arrows-rotate', 'Qaytish yuklarini birlashtirish', "Marshrutingiz bo'yicha qaytish yukini avtomatik taklif qilish."],
+                    ['fa-medal', 'Reyting va bonus tizimi', "Vaqtida yetkazgan haydovchilar uchun mukofot va ustuvor yuklar."],
+                    ['fa-gas-pump', "Yoqilg'i va ta'mirlash hamkorlari", "Hamkor shoxobchalarda chegirmalar va xizmat."]
+                ]
+            },
+            MARKET: {
+                slug: 'market', icon: 'fa-store', badge: 'AgrarGo Market', title: "Marketlar va do'konlar uchun AgrarGo",
+                lead: "Yangi mahsulotni fermerdan bevosita, shaffof narx va xavfsiz to'lov bilan xarid qiling.",
+                problems: [
+                    ['fa-triangle-exclamation', 'Sifat va muddat kafolatsiz', "Mahsulot sifati va yetib kelish vaqti ko'pincha kafolatlanmasdi."],
+                    ['fa-layer-group', 'Qimmat vositachilik', "Zanjirdagi har bir vositachi narxni oshirib yuborardi."],
+                    ['fa-lock-open', "To'lovda ishonchsizlik", "Oldindan to'lash xavfli, keyin to'lash esa fermer uchun noqulay edi."],
+                    ['fa-eye-slash', "Yukni kuzatib bo'lmasdi", "Buyurtma qayerdaligi noma'lum, zaxirani rejalash qiyin edi."]
+                ],
+                solutions: [
+                    ['fa-handshake', 'Fermerdan bevosita xarid', "Katalogdan mahsulot tanlab, qo'ng'iroqsiz bron qiling."],
+                    ['fa-shield-halved', "Escrow: xavfsiz to'lov", "Pul yuk yetkazilguncha muzlatiladi va qabul qilganingizdan keyingina fermerga o'tadi."],
+                    ['fa-bell', 'Jonli kuzatuv va xabarnoma', "Yuk xaritada ko'rinadi, holat o'zgarishi Telegramga keladi."],
+                    ['fa-barcode', 'Sifat nazoratidagi omborxona', "Saralangan, qadoqlangan va shtrix-kodli mahsulotlarni ombordan buyurtma qiling."]
+                ],
+                future: [
+                    ['fa-calendar-check', 'Doimiy shartnoma va takroriy buyurtma', "Haftalik avtomatik buyurtmalar va barqaror narx kelishuvlari."],
+                    ['fa-file-invoice', 'Hisob-faktura va ERP integratsiyasi', "Buxgalteriya va zaxira tizimlari bilan bog'lanish."],
+                    ['fa-certificate', 'Sertifikatlangan mahsulotlar', "Organik va sifat sertifikatli yetkazib beruvchilar bo'yicha filtr."]
+                ]
+            }
+        };
+        const RP_THEME = {
+            FARMER: { text: 'text-emerald-400', soft: 'bg-emerald-500/10 border-emerald-500/30', grad: 'from-emerald-500/25 via-teal-500/10', btn: 'bg-emerald-500 hover:bg-emerald-400 text-slate-950', avatar: 'bg-emerald-500/20 text-emerald-300' },
+            DRIVER: { text: 'text-blue-400', soft: 'bg-blue-500/10 border-blue-500/30', grad: 'from-blue-500/25 via-indigo-500/10', btn: 'bg-blue-500 hover:bg-blue-400 text-slate-950', avatar: 'bg-blue-500/20 text-blue-300' },
+            MARKET: { text: 'text-amber-400', soft: 'bg-amber-500/10 border-amber-500/30', grad: 'from-amber-500/25 via-orange-500/10', btn: 'bg-amber-500 hover:bg-amber-400 text-slate-950', avatar: 'bg-amber-500/20 text-amber-300' }
+        };
+        const REVIEW_ROLES = ['FARMER', 'DRIVER', 'MARKET'];
+        const rolePage = document.getElementById('role-page');
+        const rpContent = document.getElementById('rp-content');
+        let rpRole = null;
+        let rpReviewLimit = 6;
+
+        function starRow(rating, cls) {
+            const row = el('span', 'inline-flex gap-0.5 ' + (cls || 'text-sm'));
+            row.setAttribute('role', 'img');
+            row.setAttribute('aria-label', rating + ' / 5');
+            for (let i = 1; i <= 5; i++) row.appendChild(el('i', 'fa-solid fa-star ' + (i <= Math.round(rating) ? 'text-amber-400' : 'text-slate-600')));
+            return row;
+        }
+
+        function fetchReviews(role, limit) {
+            return apiRequest('GET', '/reviews?limit=' + limit + (role ? '&role=' + role : ''));
+        }
+
+        function buildReviewCard(r, isNew) {
+            const th = RP_THEME[r.role] || RP_THEME.FARMER;
+            const card = el('article', 'glass p-6 rounded-3xl border border-white/10 hover:border-purple-500/40 transition duration-300 flex flex-col justify-between gap-5' + (isNew ? ' review-new' : ''));
+            card.dataset.id = r.id;
+            const top = el('div', 'space-y-3');
+            top.appendChild(starRow(r.rating));
+            const q = el('p', 'text-slate-300 text-sm leading-relaxed whitespace-pre-line break-words');
+            q.textContent = '"' + r.comment + '"'; // textContent: foydalanuvchi matni HTML sifatida talqin qilinmaydi
+            top.appendChild(q);
+            card.appendChild(top);
+            const who = el('div', 'flex items-center gap-3 pt-4 border-t border-white/10');
+            who.appendChild(el('div', 'w-11 h-11 rounded-full font-bold flex items-center justify-center text-base shrink-0 ' + th.avatar, (r.name || '?').slice(0, 1).toUpperCase()));
+            const meta = el('div', 'min-w-0');
+            meta.appendChild(el('h4', 'font-bold text-white text-sm truncate', r.name));
+            const sub = el('p', 'text-xs text-slate-400 truncate');
+            sub.appendChild(el('span', '', ROLE_META[r.role].label));
+            if (r.region) { sub.appendChild(document.createTextNode(' · ')); sub.appendChild(el('span', '', r.region)); }
+            sub.appendChild(document.createTextNode(' · '));
+            sub.appendChild(el('span', '', timeAgo(r.createdAt)));
+            meta.appendChild(sub);
+            who.appendChild(meta);
+            card.appendChild(who);
+            return card;
+        }
+
+        function buildRatingSummary(stats, role) {
+            const box = el('div', 'glass rounded-3xl border border-white/10 p-6 grid sm:grid-cols-[auto_minmax(0,1fr)] gap-6 items-center');
+            const own = role ? stats.byRole[role] : stats;
+            const big = el('div', 'text-center sm:pr-6 sm:border-r border-white/10 space-y-1');
+            big.appendChild(el('div', 'text-5xl font-black text-white', own.count ? own.average.toFixed(1).replace('.', ',') : '—'));
+            big.appendChild(starRow(own.average, 'text-base justify-center'));
+            big.appendChild(el('div', 'text-xs text-slate-400 font-semibold', own.count + ' ta baho'));
+            box.appendChild(big);
+            const right = el('div', 'space-y-3 min-w-0');
+            const bars = el('div', 'space-y-1.5');
+            own.distribution.slice().reverse().forEach(function (d) {
+                const row = el('div', 'flex items-center gap-3 text-xs text-slate-400');
+                row.appendChild(el('span', 'w-3 text-right font-bold', String(d.rating)));
+                row.appendChild(el('i', 'fa-solid fa-star text-amber-400 text-[10px]'));
+                const track = el('div', 'flex-1 h-2 rounded-full bg-white/10 overflow-hidden');
+                const fill = el('div', 'h-full rounded-full bg-amber-400 transition-all duration-700');
+                fill.style.width = (own.count ? Math.round(d.count / own.count * 100) : 0) + '%';
+                track.appendChild(fill);
+                row.appendChild(track);
+                row.appendChild(el('span', 'w-8 text-right', String(d.count)));
+                bars.appendChild(row);
+            });
+            right.appendChild(bars);
+            if (!role) {
+                const chips = el('div', 'flex flex-wrap gap-2 pt-1');
+                REVIEW_ROLES.forEach(function (r) {
+                    const g = stats.byRole[r];
+                                        const chip = el('span', ['text-[11px] font-bold px-3 py-1 rounded-full border', RP_THEME[r].soft, RP_THEME[r].text].join(' '));
+                    chip.appendChild(el('span', '', ROLE_META[r].label));
+                    chip.appendChild(document.createTextNode(': ' + (g.count ? g.average.toFixed(1).replace('.', ',') + ' (' + g.count + ')' : '—')));
+                    chips.appendChild(chip);
+                });
+                right.appendChild(chips);
+            }
+            box.appendChild(right);
+            return box;
+        }
+
+        // --- Asosiy sahifadagi jonli lenta ---
+        const reviewsLive = { ids: null, busy: false, timer: null };
+        let reviewsChannel = null;
+        try { reviewsChannel = new BroadcastChannel('agrargo-reviews'); } catch (e) {}
+
+        async function refreshLiveReviews(force) {
+            if (reviewsLive.busy) return;
+            if (!force && document.visibilityState === 'hidden') return;
+            const feed = document.getElementById('reviews-feed');
+            const sum = document.getElementById('reviews-summary');
+            if (!feed || !sum) return;
+            reviewsLive.busy = true;
+            try {
+                const data = await fetchReviews('', 6);
+                const firstLoad = reviewsLive.ids === null;
+                const known = reviewsLive.ids || new Set();
+                const cards = data.items.map(function (r) { return buildReviewCard(r, !firstLoad && !known.has(r.id)); });
+                reviewsLive.ids = new Set(data.items.map(function (r) { return r.id; }));
+                if (data.items.length) {
+                    feed.replaceChildren.apply(feed, cards);
+                    sum.replaceChildren(buildRatingSummary(data.stats, ''));
+                } else {
+                    const empty = el('div', 'md:col-span-2 lg:col-span-3 text-center glass rounded-3xl border border-white/10 p-10 space-y-2');
+                    empty.appendChild(el('i', 'fa-regular fa-comment-dots text-4xl text-slate-500'));
+                    empty.appendChild(el('p', 'text-slate-300 font-semibold', "Hali sharhlar yo'q. Birinchi bo'lib fikringizni qoldiring!"));
+                    feed.replaceChildren(empty);
+                    sum.replaceChildren();
+                }
+                if (rolePage.classList.contains('open') && rpRole) renderRoleReviews(rpRole);
+            } catch (e) { /* tarmoq xatosi: oldingi ko'rinish qoladi, keyingi urinishda yangilanadi */ }
+            finally { reviewsLive.busy = false; }
+        }
+        function startLiveReviews() {
+            refreshLiveReviews(true);
+            reviewsLive.timer = setInterval(function () { refreshLiveReviews(false); }, 15000);
+            document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') refreshLiveReviews(false); });
+            if (reviewsChannel) reviewsChannel.onmessage = function () { refreshLiveReviews(true); };
+        }
+
+        // --- Rol sahifasi ---
+        function openRolePage(role, toForm) {
+            if (!ROLE_PAGES[role]) return;
+            if (sidebar.classList.contains('open')) toggleSidebar();
+            rpRole = role;
+            rpReviewLimit = 6;
+            const pg = ROLE_PAGES[role], th = RP_THEME[role];
+
+            const chip = document.getElementById('rp-chip');
+            chip.replaceChildren(el('i', 'fa-solid ' + pg.icon), el('span', '', pg.badge));
+            const user = currentUser();
+            const own = !!user && user.role === role;
+            const cta = function () { roleCta(role); };
+            const topBtn = document.getElementById('rp-cta-top');
+            topBtn.textContent = own ? "Kabinetga o'tish" : "Ro'yxatdan o'tish / Kirish";
+            topBtn.onclick = cta;
+
+            const nodes = [];
+            // Hero
+            const hero = el('section', 'relative overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br ' + th.grad + ' to-transparent p-8 sm:p-14 text-center sm:text-left');
+            const hi = el('div', 'flex flex-col sm:flex-row items-center gap-8');
+            const ic = el('div', 'w-24 h-24 shrink-0 rounded-3xl border flex items-center justify-center text-5xl ' + th.soft + ' ' + th.text);
+            ic.appendChild(el('i', 'fa-solid ' + pg.icon));
+            hi.appendChild(ic);
+            const ht = el('div', 'space-y-4');
+            ht.appendChild(el('span', 'inline-block text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full border ' + th.soft + ' ' + th.text, pg.badge));
+            const h1 = el('h1', 'text-3xl sm:text-5xl font-extrabold tracking-tight text-white', pg.title);
+            h1.id = 'rp-title';
+            ht.appendChild(h1);
+            ht.appendChild(el('p', 'text-slate-300 text-lg max-w-2xl leading-relaxed', pg.lead));
+            const hb = el('button', 'px-7 py-3.5 rounded-2xl font-extrabold transition shadow-xl ' + th.btn, own ? "Kabinetga o'tish" : "Ro'yxatdan o'tish / Kirish");
+            hb.type = 'button';
+            hb.addEventListener('click', cta);
+            ht.appendChild(hb);
+            hi.appendChild(ht);
+            hero.appendChild(hi);
+            nodes.push(hero);
+
+            const section = function (icon, title, sub, tone, items, numbered) {
+                const sec = el('section', 'space-y-8');
+                const head = el('div', 'space-y-2 text-center sm:text-left');
+                const badge = el('div', 'inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest ' + tone.text);
+                badge.appendChild(el('i', 'fa-solid ' + icon));
+                badge.appendChild(el('span', '', sub));
+                head.appendChild(badge);
+                head.appendChild(el('h2', 'text-2xl sm:text-4xl font-extrabold text-white tracking-tight', title));
+                sec.appendChild(head);
+                const grid = el('div', 'grid grid-cols-1 ' + (items.length === 3 ? 'md:grid-cols-3' : 'md:grid-cols-2') + ' gap-5');
+                items.forEach(function (it, i) {
+                    const c = el('div', 'glass rounded-3xl border p-6 space-y-3 transition duration-300 hover:-translate-y-1 ' + tone.card);
+                    const row = el('div', 'flex items-center gap-3');
+                    const bi = el('div', 'w-11 h-11 rounded-2xl flex items-center justify-center text-lg shrink-0 ' + tone.icon);
+                    bi.appendChild(el('i', 'fa-solid ' + it[0]));
+                    row.appendChild(bi);
+                    row.appendChild(el('h3', 'font-extrabold text-white leading-snug', it[1]));
+                    if (numbered) row.appendChild(el('span', ['ml-auto text-xs font-black px-2.5 py-1 rounded-full', tone.icon].join(' '), String(i + 1)));
+                    c.appendChild(row);
+                    c.appendChild(el('p', 'text-sm text-slate-400 leading-relaxed', it[2]));
+                    grid.appendChild(c);
+                });
+                sec.appendChild(grid);
+                return sec;
+            };
+            nodes.push(section('fa-triangle-exclamation', 'Avval qanday edi?', 'Oldingi muammolar', { text: 'text-rose-400', card: 'border-rose-500/15 hover:border-rose-500/40', icon: 'bg-rose-500/15 text-rose-300' }, pg.problems));
+            nodes.push(section('fa-circle-check', 'AgrarGo foydalari va yechimlari', 'Endi esa', { text: th.text, card: 'border-emerald-500/15 hover:border-emerald-500/40', icon: 'bg-emerald-500/15 text-emerald-300' }, pg.solutions));
+            nodes.push(section('fa-rocket', 'Kelajak rejalari', 'Tez orada', { text: 'text-sky-400', card: 'border-sky-500/15 hover:border-sky-500/40', icon: 'bg-sky-500/15 text-sky-300' }, pg.future, true));
+
+            const rev = el('section', 'space-y-8 scroll-mt-24');
+            rev.id = 'rp-reviews';
+            const rh = el('div', 'space-y-2 text-center sm:text-left');
+            const rb = el('div', 'inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-purple-400');
+            rb.appendChild(el('i', 'fa-solid fa-star'));
+            rb.appendChild(el('span', '', 'Baholash va sharhlar'));
+            rh.appendChild(rb);
+            rh.appendChild(el('h2', 'text-2xl sm:text-4xl font-extrabold text-white tracking-tight', 'Foydalanuvchilar fikri'));
+            rev.appendChild(rh);
+            const list = el('div', 'space-y-6');
+            list.id = 'rp-review-list';
+            rev.appendChild(list);
+            const formBox = el('div');
+            formBox.id = 'rp-review-form';
+            rev.appendChild(formBox);
+            nodes.push(rev);
+
+            rpContent.replaceChildren.apply(rpContent, nodes);
+            rolePage.classList.add('open');
+            rolePage.setAttribute('aria-hidden', 'false');
+            rolePage.scrollTo({ top: 0 });
+            syncScrollLock();
+            if (location.hash !== '#role-' + pg.slug) { try { history.replaceState(null, '', '#role-' + pg.slug); } catch (e) {} }
+            renderRoleReviews(role);
+            renderReviewForm(role);
+            if (toForm) setTimeout(function () { const f = document.getElementById('rp-review-form'); if (f) f.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 450);
+        }
+
+        function closeRolePage() {
+            rolePage.classList.remove('open');
+            rolePage.setAttribute('aria-hidden', 'true');
+            rpRole = null;
+            syncScrollLock();
+            if (/^#role-/.test(location.hash)) { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {} }
+        }
+
+        // Rolga mos "Ro'yxatdan o'tish / Kirish" harakati (mavjud kirish oqimi)
+        function roleCta(role) {
+            closeRolePage();
+            chooseRole(role);
+        }
+
+        async function renderRoleReviews(role) {
+            const list = document.getElementById('rp-review-list');
+            if (!list || rpRole !== role) return;
+            let data;
+            try { data = await fetchReviews(role, rpReviewLimit); }
+            catch (e) { if (!list.childNodes.length) list.replaceChildren(el('p', 'text-sm text-rose-300', "Sharhlarni yuklab bo'lmadi. Keyinroq urinib ko'ring.")); return; }
+            if (rpRole !== role) return;
+            const nodes = [buildRatingSummary(data.stats, role)];
+            if (data.items.length) {
+                const grid = el('div', 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5');
+                data.items.forEach(function (r) { grid.appendChild(buildReviewCard(r, false)); });
+                nodes.push(grid);
+                if (data.stats.byRole[role].count > data.items.length) {
+                    const more = el('button', 'mx-auto block px-6 py-2.5 rounded-xl border border-white/15 text-slate-200 font-bold text-sm hover:bg-white/10 transition', "Yana ko'rsatish");
+                    more.type = 'button';
+                    more.addEventListener('click', function () { rpReviewLimit = Math.min(50, rpReviewLimit + 6); renderRoleReviews(role); });
+                    nodes.push(more);
+                }
+            } else nodes.push(el('p', 'text-center text-slate-400 text-sm', "Bu rol bo'yicha hali sharhlar yo'q. Birinchi bo'ling!"));
+            list.replaceChildren.apply(list, nodes);
+        }
+
+        // --- Baholash formasi ---
+        async function renderReviewForm(role) {
+            const box = document.getElementById('rp-review-form');
+            if (!box || rpRole !== role) return;
+            const user = currentUser();
+            const card = el('div', 'glass rounded-3xl border border-white/10 p-6 sm:p-8 space-y-5');
+            card.appendChild(el('h3', 'text-xl font-extrabold text-white', 'Fikringizni qoldiring'));
+            const info = function (text, btnText, fn) {
+                card.appendChild(el('p', 'text-sm text-slate-300', text));
+                if (btnText) {
+                    const b = el('button', 'px-6 py-3 rounded-xl font-extrabold transition ' + RP_THEME[role].btn, btnText);
+                    b.type = 'button';
+                    b.addEventListener('click', fn);
+                    card.appendChild(b);
+                }
+                box.replaceChildren(card);
+            };
+            if (!user) {
+                return info("Sharh qoldirish uchun shu rol sifatida tizimga kiring yoki ro'yxatdan o'ting.", "Kirish / Ro'yxatdan o'tish", function () {
+                    const known = isRoleKnown(role);
+                    closeRolePage();
+                    afterLoginAction = function () { openRolePage(role, true); };
+                    openAuthModal(known ? 'login' : 'register', role);
+                });
+            }
+            if (user.role !== role) {
+                const mine = REVIEW_ROLES.indexOf(user.role) !== -1;
+                return info(mine ? "Bu sahifada faqat shu rol vakillari sharh qoldira oladi. Siz boshqa rol sifatida kirgansiz." : "Sharhni faqat fermer, haydovchi va marketlar qoldira oladi.",
+                    mine ? "O'z sahifamga o'tish" : null, function () { openRolePage(user.role, true); });
+            }
+
+            // O'zining sharhini yuklash (tahrirlash uchun)
+            let existing = null;
+            const token = storageGet(TOKEN_KEY);
+            try { existing = (await apiRequest('GET', '/reviews/mine', undefined, token)).review; }
+            catch (err) { if (err.status === 401) return handleSessionExpired(function () { openRolePage(role, true); }); }
+            if (rpRole !== role) return;
+
+            let rating = existing ? existing.rating : 0;
+            const alertBox = el('div', 'hidden'); alertBox.setAttribute('role', 'alert');
+            card.appendChild(alertBox);
+            if (existing) {
+                card.appendChild(el('p', 'text-xs font-semibold ' + (existing.isApproved ? 'text-emerald-300' : 'text-amber-300'),
+                    existing.isApproved ? "Sizning sharhingiz saytda ko'rinib turibdi. Uni yangilashingiz mumkin." : 'Sharhingiz moderator tasdiqlashini kutmoqda.'));
+            }
+            const form = el('form', 'space-y-5');
+            form.noValidate = true;
+            const starsWrap = el('div', 'space-y-2');
+            starsWrap.appendChild(el('label', 'block text-xs font-bold text-slate-300 uppercase tracking-wider', 'Baho'));
+            const stars = el('div', 'flex gap-1.5 text-3xl');
+            stars.setAttribute('role', 'radiogroup');
+            stars.setAttribute('aria-label', 'Baho');
+            const starBtns = [];
+            const paintStars = function (hover) {
+                const v = hover || rating;
+                starBtns.forEach(function (b, i) {
+                    b.firstChild.className = 'fa-solid fa-star ' + (i < v ? 'text-amber-400' : 'text-slate-600');
+                    b.setAttribute('aria-checked', String(i + 1 === rating));
+                    b.tabIndex = (rating ? i + 1 === rating : i === 0) ? 0 : -1;
+                });
+            };
+            for (let i = 1; i <= 5; i++) {
+                const b = el('button', 'star-btn');
+                b.type = 'button';
+                b.setAttribute('role', 'radio');
+                b.setAttribute('aria-label', i + ' / 5');
+                b.appendChild(el('i', 'fa-solid fa-star'));
+                b.addEventListener('click', function () { rating = i; paintStars(); });
+                b.addEventListener('mouseenter', function () { paintStars(i); });
+                b.addEventListener('mouseleave', function () { paintStars(); });
+                b.addEventListener('keydown', function (e) {
+                    let next = null;
+                    if (e.key === 'ArrowRight' || e.key === 'ArrowUp') next = Math.min(5, (rating || 0) + 1);
+                    else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') next = Math.max(1, (rating || 2) - 1);
+                    if (next) { e.preventDefault(); rating = next; paintStars(); starBtns[next - 1].focus(); }
+                });
+                starBtns.push(b);
+                stars.appendChild(b);
+            }
+            paintStars();
+            starsWrap.appendChild(stars);
+            form.appendChild(starsWrap);
+
+            const cwrap = el('div');
+            const clab = el('label', 'block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5', 'Izohingiz');
+            clab.htmlFor = 'review-comment';
+            const ta = el('textarea', 'auth-input resize-none');
+            ta.id = 'review-comment'; ta.rows = 4; ta.maxLength = 500;
+            ta.placeholder = 'AgrarGo sizga qanday yordam berdi? Nimani yaxshilash mumkin?';
+            ta.value = existing ? existing.comment : '';
+            const counter = el('p', 'text-[11px] text-slate-500 mt-1.5 text-right');
+            const count = function () { counter.textContent = ta.value.length + ' / 500'; };
+            ta.addEventListener('input', count); count();
+            cwrap.append(clab, ta, counter);
+            form.appendChild(cwrap);
+
+            const submit = el('button', 'auth-submit w-full sm:w-auto sm:px-10 font-extrabold py-3.5 rounded-2xl transition shadow-xl flex items-center justify-center gap-2.5 disabled:opacity-60 ' + RP_THEME[role].btn);
+            submit.type = 'submit';
+            submit.appendChild(el('i', 'fa-solid fa-paper-plane'));
+            submit.appendChild(el('span', '', existing ? 'Sharhni yangilash' : 'Sharh yuborish'));
+            const actions = el('div', 'flex flex-wrap items-center gap-3');
+            actions.appendChild(submit);
+            if (existing) {
+                const del = el('button', 'px-5 py-3 rounded-2xl border border-rose-500/40 text-rose-300 font-bold text-sm hover:bg-rose-500/10 transition', "Sharhni o'chirish");
+                del.type = 'button';
+                del.addEventListener('click', async function () {
+                    if (!window.confirm(T("Sharhingizni o'chirasizmi?"))) return;
+                    try { await apiRequest('DELETE', '/reviews/mine', undefined, token); showToast("Sharh o'chirildi."); afterReviewChange(role); }
+                    catch (err) { if (err.status === 401) return handleSessionExpired(function () { openRolePage(role, true); }); showToast(err.raw || err.messages[0], 5000); }
+                });
+                actions.appendChild(del);
+            }
+            form.appendChild(actions);
+            form.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                hideAuthAlert(alertBox);
+                const comment = ta.value.trim();
+                const errors = [];
+                if (!rating) errors.push('Iltimos, yulduzchalar bilan baho bering.');
+                if (comment.length < 10) errors.push("Izoh kamida 10 ta belgidan iborat bo'lishi kerak.");
+                if (errors.length) return showAuthAlert(errors, 'error', alertBox);
+                setLoading(form, true);
+                try {
+                    const res = await apiRequest('POST', '/reviews', { rating: rating, comment: comment }, token);
+                    showToast(res.isApproved ? "Rahmat! Sharhingiz saytda paydo bo'ldi." : "Rahmat! Sharhingiz moderator tasdiqlagach ko'rinadi.", 4500);
+                    afterReviewChange(role);
+                } catch (err) {
+                    if (err.status === 401) return handleSessionExpired(function () { openRolePage(role, true); });
+                    showAuthAlert(err.status === 429 ? "Juda ko'p urinish. Birozdan keyin qayta urinib ko'ring." : err.messages, 'error', alertBox);
+                } finally { setLoading(form, false); }
+            });
+            card.appendChild(form);
+            box.replaceChildren(card);
+        }
+
+        function afterReviewChange(role) {
+            if (reviewsChannel) { try { reviewsChannel.postMessage('changed'); } catch (e) {} }
+            refreshLiveReviews(true);
+            renderRoleReviews(role);
+            renderReviewForm(role);
+        }
+
+        // Chuqur havola (#role-farmer) va Escape
+        function routeRoleHash() {
+            const m = /^#role-(farmer|driver|market)$/.exec(location.hash);
+            if (m) { const role = m[1].toUpperCase(); if (rpRole !== role) openRolePage(role); }
+            else if (rpRole) closeRolePage();
+        }
+        window.addEventListener('hashchange', routeRoleHash);
+        document.addEventListener('keydown', function (e) {
+            if (e.key !== 'Escape' || !rolePage.classList.contains('open')) return;
+            if (['auth-modal', 'wh-modal', 'booking-modal', 'payment-modal'].some(function (id) { return document.getElementById(id).classList.contains('open'); })) return;
+            closeRolePage();
+        });
+
+        // ===== PWA: o'rnatish, oflayn holat, yangilanish =====
+        let deferredInstall = null;
+        const isStandalone = function () { return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true; };
+        const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        const PWA_DISMISS_KEY = 'agrargo_pwa_dismissed';
+        const pwaDismissedRecently = function () { try { return Date.now() - Number(localStorage.getItem(PWA_DISMISS_KEY) || 0) < 7 * 86400000; } catch (e) { return false; } };
+
+        function pwaNotice(id, icon, text, buttons) {
+            const old = document.getElementById(id);
+            if (old) old.remove();
+            const box = el('div', 'fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:w-[24rem] z-[55] glass rounded-2xl border border-emerald-500/30 shadow-2xl shadow-black/50 p-4 space-y-3');
+            box.id = id;
+            box.setAttribute('role', 'status');
+            const row = el('div', 'flex items-start gap-3');
+            const ic = el('div', 'w-10 h-10 rounded-xl bg-emerald-500/15 text-emerald-300 flex items-center justify-center shrink-0');
+            ic.appendChild(el('i', 'fa-solid ' + icon));
+            row.appendChild(ic);
+            row.appendChild(el('p', 'text-sm text-slate-200 leading-relaxed', text));
+            box.appendChild(row);
+            const act = el('div', 'flex gap-2 justify-end');
+            buttons.forEach(function (b) {
+                const x = el('button', 'px-4 py-2 rounded-xl text-sm font-extrabold transition ' + (b.primary ? 'bg-emerald-500 text-slate-950 hover:bg-emerald-400' : 'border border-white/15 text-slate-300 hover:bg-white/10'), b.label);
+                x.type = 'button';
+                x.addEventListener('click', function () { box.remove(); if (b.fn) b.fn(); });
+                act.appendChild(x);
+            });
+            box.appendChild(act);
+            document.body.appendChild(box);
+        }
+
+        function updateInstallUi() {
+            const btn = document.getElementById('pwa-install-sidebar');
+            if (btn) btn.style.display = !isStandalone() && (deferredInstall || isIos) ? 'flex' : 'none';
+        }
+        function dismissInstall() { try { localStorage.setItem(PWA_DISMISS_KEY, String(Date.now())); } catch (e) {} }
+        function showInstallBanner() {
+            if (isStandalone() || pwaDismissedRecently() || !(deferredInstall || isIos) || document.getElementById('pwa-banner')) return;
+            pwaNotice('pwa-banner', 'fa-download', "AgrarGo ilovasini o'rnating: tezroq ochiladi va oflayn ham ishlaydi.", [
+                { label: 'Keyinroq', fn: dismissInstall },
+                { label: "O'rnatish", primary: true, fn: installApp }
+            ]);
+        }
+        async function installApp() {
+            if (sidebar.classList.contains('open')) toggleSidebar();
+            if (deferredInstall) {
+                const ev = deferredInstall;
+                deferredInstall = null;
+                try { ev.prompt(); const res = await ev.userChoice; if (res.outcome !== 'accepted') dismissInstall(); } catch (e) {}
+                updateInstallUi();
+            } else if (isIos) {
+                pwaNotice('pwa-ios-help', 'fa-arrow-up-from-bracket', "Safari'da pastdagi «Ulashish» tugmasini bosing, so'ng «Bosh ekranga qo'shish» ni tanlang.", [{ label: 'Tushunarli', primary: true }]);
+            } else showToast("Brauzer menyusidan «Ilovani o'rnatish» yoki «Bosh ekranga qo'shish» ni tanlang.", 5000);
+        }
+        window.addEventListener('beforeinstallprompt', function (e) {
+            e.preventDefault(); // brauzerning standart bannerini o'zimiz boshqaramiz
+            deferredInstall = e;
+            updateInstallUi();
+            setTimeout(showInstallBanner, 5000);
+        });
+        window.addEventListener('appinstalled', function () {
+            deferredInstall = null;
+            const b = document.getElementById('pwa-banner'); if (b) b.remove();
+            updateInstallUi();
+            showToast("AgrarGo ilovasi o'rnatildi!", 4000);
+        });
+        if (isIos && !isStandalone()) setTimeout(showInstallBanner, 8000);
+        updateInstallUi();
+
+        // Oflayn indikator
+        (function () {
+            const pill = el('div', 'fixed top-3 left-1/2 -translate-x-1/2 z-[70] px-4 py-2 rounded-full bg-amber-500 text-slate-950 text-xs font-extrabold shadow-xl items-center gap-2');
+            pill.id = 'offline-pill';
+            pill.setAttribute('role', 'status');
+            pill.appendChild(el('i', 'fa-solid fa-wifi'));
+            pill.appendChild(el('span', '', "Oflayn rejim: ma'lumotlar yangilanmaydi"));
+            pill.style.display = 'none';
+            document.body.appendChild(pill);
+            const sync = function () { pill.style.display = navigator.onLine ? 'none' : 'flex'; };
+            window.addEventListener('offline', sync);
+            window.addEventListener('online', function () { sync(); showToast('Aloqa tiklandi.', 2500); refreshLiveReviews(true); });
+            sync();
+        })();
+
+        // Service Worker (faqat https yoki localhost'da ishlaydi)
+        if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+            window.addEventListener('load', function () {
+                const hadController = !!navigator.serviceWorker.controller;
+                navigator.serviceWorker.register('sw.js').then(function (reg) {
+                    reg.addEventListener('updatefound', function () {
+                        const sw = reg.installing;
+                        if (!sw) return;
+                        sw.addEventListener('statechange', function () {
+                            if (sw.state === 'installed' && hadController) {
+                                pwaNotice('pwa-update', 'fa-rotate', 'AgrarGo yangi versiyasi tayyor. Yangilash uchun sahifani qayta yuklang.', [
+                                    { label: 'Keyinroq' }, { label: 'Yangilash', primary: true, fn: function () { location.reload(); } }
+                                ]);
+                            }
+                        });
+                    });
+                }).catch(function () { /* SW o'rnatilmasa sayt odatdagidek ishlaydi */ });
+            });
+        }
+
+        startLiveReviews();
+        routeRoleHash();
     </script>
 </body>
 </html>

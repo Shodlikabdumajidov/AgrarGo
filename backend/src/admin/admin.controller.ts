@@ -6,6 +6,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/current-user.decorator';
 import { Roles } from '../common/roles.decorator';
 import { RolesGuard } from '../common/roles.guard';
+import { AdminReviewsQuery, SetApprovalDto } from '../reviews/dto/review.dto';
+import { ReviewsService } from '../reviews/reviews.service';
 import { SettingsService } from '../settings/settings.service';
 import { UpdateSettingsDto } from '../settings/settings.dto';
 import { AdminService } from './admin.service';
@@ -26,6 +28,7 @@ export class AdminController {
     private readonly admin: AdminService,
     private readonly settings: SettingsService,
     private readonly audit: AuditService,
+    private readonly reviews: ReviewsService,
   ) {}
 
   @Get('stats')
@@ -79,6 +82,24 @@ export class AdminController {
     const changed = (Object.keys(dto) as (keyof UpdateSettingsDto)[]).filter((k) => JSON.stringify((before as any)[k]) !== JSON.stringify((row as any)[k]));
     await this.audit.log(me, 'settings.update', 'settings', '1', { changed });
     return row;
+  }
+
+  // ----- Sharhlar (moderatsiya) -----
+  @Get('reviews')
+  listReviews(@Query() q: AdminReviewsQuery) { return this.reviews.adminList(q); }
+
+  @Patch('reviews/:id')
+  async setReview(@CurrentUser() me: Actor, @Param('id', uuid) id: string, @Body() dto: SetApprovalDto) {
+    const r = await this.reviews.adminSetApproval(id, dto.isApproved);
+    await this.audit.log(me, dto.isApproved ? 'review.approve' : 'review.hide', 'review', id);
+    return r;
+  }
+
+  @Delete('reviews/:id')
+  async deleteReview(@CurrentUser() me: Actor, @Param('id', uuid) id: string) {
+    const r = await this.reviews.adminDelete(id);
+    await this.audit.log(me, 'review.delete', 'review', id);
+    return r;
   }
 
   // ----- Audit jurnali -----

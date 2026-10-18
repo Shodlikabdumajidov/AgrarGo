@@ -40,6 +40,7 @@ model User {
   market Market?
 
   passwordResets PasswordReset[]
+  review         Review?
 }
 
 model Farmer {
@@ -522,4 +523,21 @@ model AuditLog {
   @@index([createdAt])
   @@index([entity, entityId])
   @@index([actorId, createdAt])
+}
+
+// Foydalanuvchi sharhlari (platforma haqida). Har bir foydalanuvchi bittadan sharh qoldiradi (qayta yozsa yangilanadi).
+// Ochiq ro'yxatda faqat isApproved=true ko'rinadi; admin yashirishi/o'chirishi mumkin.
+model Review {
+  id         String   @id @default(uuid())
+  userId     String   @unique
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role       Role
+  rating     Int
+  comment    String
+  isApproved Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([isApproved, createdAt(sort: Desc)])
+  @@index([role, isApproved])
 }

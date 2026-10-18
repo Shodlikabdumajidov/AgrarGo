@@ -16,6 +16,7 @@ import { ProductModule } from './product/product.module';
 import { ProfileModule } from './profile/profile.module';
 import { AppThrottlerGuard } from './security/app-throttler.guard';
 import { buildThrottlers } from './security/throttling';
+import { ReviewsModule } from './reviews/reviews.module';
 import { ShipmentModule } from './shipment/shipment.module';
 import { SmsModule } from './sms/sms.module';
 import { TelegramModule } from './telegram/telegram.module';
@@ -43,6 +44,7 @@ import { WarehouseModule } from './warehouse/warehouse.module';
     PaymentModule,
     WarehouseModule,
     SettingsModule,
+    ReviewsModule,
     AdminModule,
   ],
   controllers: [HealthController],

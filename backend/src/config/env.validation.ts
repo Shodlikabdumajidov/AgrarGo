@@ -40,6 +40,9 @@ export interface AppEnv {
   TELEGRAM_POLLING: boolean;
   TELEGRAM_LINK_TTL_SECONDS: number;
   THROTTLE_TELEGRAM_LIMIT: number;
+  THROTTLE_REVIEW_LIMIT: number;
+  THROTTLE_REVIEW_READ_LIMIT: number;
+  REVIEWS_AUTO_APPROVE: boolean;
 }
 
 // Namuna (.env.example) va keng tarqalgan zaif qiymatlar production'da qabul qilinmaydi
@@ -161,8 +164,15 @@ export function validateEnv(raw: Record<string, unknown>): AppEnv & Record<strin
   const tgPollingRaw = String(raw.TELEGRAM_POLLING ?? (nodeEnv === 'test' ? 'false' : 'true')).toLowerCase();
   if (!['true', 'false'].includes(tgPollingRaw)) errors.push("TELEGRAM_POLLING true yoki false bo'lishi kerak");
 
+  const reviewsAutoRaw = String(raw.REVIEWS_AUTO_APPROVE ?? 'true').toLowerCase();
+  if (!['true', 'false'].includes(reviewsAutoRaw)) errors.push("REVIEWS_AUTO_APPROVE true yoki false bo'lishi kerak");
+
   const env = {
     NODE_ENV: nodeEnv as NodeEnv,
+    // true: yangi sharh darhol ochiq ko'rinadi (admin keyin yashirishi mumkin); false: admin tasdiqlaguncha ko'rinmaydi
+    REVIEWS_AUTO_APPROVE: reviewsAutoRaw === 'true',
+    THROTTLE_REVIEW_LIMIT: intInRange(raw.THROTTLE_REVIEW_LIMIT, 'THROTTLE_REVIEW_LIMIT', 5, 1, 100000, errors),
+    THROTTLE_REVIEW_READ_LIMIT: intInRange(raw.THROTTLE_REVIEW_READ_LIMIT, 'THROTTLE_REVIEW_READ_LIMIT', 60, 1, 100000, errors),
     TELEGRAM_BOT_TOKEN: tgToken,
     TELEGRAM_BOT_USERNAME: tgUsername,
     // Long polling: bir nechta nusxa (instance) ishlasa faqat bittasida yoqing (Telegram 409 qaytaradi)
