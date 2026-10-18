@@ -358,8 +358,8 @@ export class PaymentService {
       bookingId: null,
       warehouseOrderId: wo.id,
       amount: row.amount,
-      feeAmount: row.feeAmount,
-      farmerAmount: row.amount.sub(row.feeAmount),
+      // Market umumiy summani to'laydi; xizmat haqi va fermer ulushi fermer/dispetcher/admin uchun
+      ...(actor === 'MARKET' ? {} : { feeAmount: row.feeAmount, farmerAmount: row.amount.sub(row.feeAmount) }),
       currency: row.currency,
       status: row.status,
       provider: row.provider,

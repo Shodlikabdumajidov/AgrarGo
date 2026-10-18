@@ -2667,7 +2667,7 @@
                      ['warehouse', 'fa-warehouse', 'Omborxona'], ['whorders', 'fa-clipboard-list', 'Ombor buyurtmalari'],
                      ['catalog', 'fa-store', 'Katalog'], ['profile', 'fa-id-card', 'Profil']],
             DRIVER: [['overview', 'fa-gauge', 'Umumiy'], ['loads', 'fa-boxes-packing', 'Mavjud yuklar'],
-                     ['myloads', 'fa-truck-fast', 'Mening yuklarim'], ['eld', 'fa-clock-rotate-left', 'Harakat jurnali'], ['whorders', 'fa-dolly', "Ombor jo'natmalari"], ['profile', 'fa-id-card', 'Profil']],
+                     ['myloads', 'fa-truck-fast', 'Mening yuklarim'], ['eld', 'fa-clock-rotate-left', 'Harakat jurnali'], ['profile', 'fa-id-card', 'Profil']],
             DISPATCHER: [['whboard', 'fa-table-columns', 'Zonalar'], ['whunits', 'fa-temperature-half', 'Kameralar'],
                      ['whorders', 'fa-clipboard-list', 'Buyurtmalar'], ['whinventory', 'fa-chart-pie', 'Inventarizatsiya'], ['profile', 'fa-id-card', 'Profil']]
         };
@@ -3107,6 +3107,7 @@
 
         const money = function (n) { return formatNumber(Math.round(Number(n))) + " so'm"; };
         const kg = function (n) { return formatNumber(Number(n)) + ' kg'; };
+        const moneyExact = function (n) { return formatNumber(Number(n)) + " so'm"; }; // tiyin aniqligi (escrow summalari)
         function timeAgo(iso) {
             const s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
             if (s < 60) return 'hozirgina';
@@ -3116,6 +3117,147 @@
         }
         function whRefresh() { if (dashboardView.classList.contains('open')) selectDashTab(dashTab); }
         function whImg(url) { return /^\/uploads\//.test(url || '') ? API_URL + url : null; }
+
+        // ----- Shtrix-kod / QR (vendor/ ichida, kerak bo'lganda yuklanadi) -----
+        const BARCODE_LIBS = ['vendor/JsBarcode.code128.min.js', 'vendor/qrcode.js'];
+        let barcodePromise = null;
+        function loadScriptOnce(src) {
+            return new Promise(function (resolve, reject) {
+                const sc = document.createElement('script');
+                sc.src = src; sc.async = true;
+                sc.onload = resolve;
+                sc.onerror = function () { sc.remove(); reject(new Error('script')); };
+                document.head.appendChild(sc);
+            });
+        }
+        function loadBarcodeLibs() {
+            if (!barcodePromise) barcodePromise = Promise.all(BARCODE_LIBS.map(loadScriptOnce)).then(function () {
+                if (typeof window.JsBarcode !== 'function' || typeof window.qrcode !== 'function') throw new Error('libs');
+            }).catch(function (e) { barcodePromise = null; throw e; });
+            return barcodePromise;
+        }
+        // Skaner uchun oq fon va bo'sh chekka (quiet zone) shart: SVG'ning o'zida beriladi
+        function drawBarcodeSvg(code) {
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            window.JsBarcode(svg, code, { format: 'CODE128', width: 2, height: 80, displayValue: true, fontSize: 15, margin: 12, background: '#ffffff', lineColor: '#000000' });
+            svg.setAttribute('role', 'img');
+            svg.setAttribute('aria-label', 'Shtrix-kod ' + code);
+            svg.removeAttribute('style');
+            svg.style.width = '100%'; svg.style.height = 'auto'; svg.style.maxWidth = '24rem'; svg.style.display = 'block'; svg.style.marginLeft = 'auto'; svg.style.marginRight = 'auto';
+            return svg;
+        }
+        function drawQrSvg(code) {
+            const qr = window.qrcode(0, 'M');
+            qr.addData(code);
+            qr.make();
+            const svg = new DOMParser().parseFromString(qr.createSvgTag({ cellSize: 4, margin: 4, scalable: true }), 'image/svg+xml').documentElement;
+            svg.setAttribute('role', 'img');
+            svg.setAttribute('aria-label', 'QR kod ' + code);
+            svg.removeAttribute('width'); svg.removeAttribute('height');
+            svg.style.width = '100%'; svg.style.maxWidth = '13rem'; svg.style.height = 'auto'; svg.style.display = 'block'; svg.style.marginLeft = 'auto'; svg.style.marginRight = 'auto';
+            return document.importNode(svg, true);
+        }
+        function printCodeLabel(code, title, sub) {
+            const w = window.open('', '_blank', 'width=520,height=640');
+            if (!w) return showToast("Chop etish oynasini ochib bo'lmadi. Brauzerda qalqib chiquvchi oynaga ruxsat bering.", 5000);
+            const d = w.document;
+            d.open();
+            d.write('<!doctype html><meta charset="utf-8">');
+            d.close();
+            d.title = code;
+            const css = d.createElement('link');
+            css.rel = 'stylesheet'; css.href = new URL('vendor/label-print.css', location.href).href;
+            d.head.appendChild(css);
+            const lbl = d.createElement('div');
+            lbl.className = 'lbl';
+            const h = d.createElement('h1'); h.textContent = title;
+            const sp = d.createElement('p'); sp.textContent = sub;
+            const qr = d.createElement('div'); qr.className = 'qr';
+            qr.appendChild(d.importNode(drawQrSvg(code), true));
+            lbl.append(h, sp, d.importNode(drawBarcodeSvg(code), true), qr);
+            const bp = d.createElement('p'); bp.className = 'noprint';
+            const bb = d.createElement('button'); bb.textContent = T('Chop etish');
+            bb.addEventListener('click', function () { w.print(); });
+            bp.appendChild(bb);
+            d.body.append(lbl, bp);
+            css.onload = css.onerror = function () { setTimeout(function () { w.print(); }, 150); };
+        }
+        // Yuk yorlig'i: shtrix-kod va QR bitta ko'rinishda (dispetcher istalganini skanerlaydi)
+        function buildCodeVisual(code, title, sub) {
+            const box = el('div', 'space-y-3');
+            const stage = el('div', 'rounded-2xl bg-white p-3 min-h-[8rem] flex flex-col items-center justify-center gap-3');
+            stage.appendChild(el('span', 'text-xs text-slate-500', 'Yuklanmoqda...'));
+            box.appendChild(stage);
+            const tabs = el('div', 'flex gap-2 justify-center');
+            let mode = 'barcode';
+            const btns = {};
+            const paint = function () {
+                loadBarcodeLibs().then(function () {
+                    if (!stage.isConnected) return;
+                    stage.replaceChildren(mode === 'barcode' ? drawBarcodeSvg(code) : drawQrSvg(code));
+                }).catch(function () {
+                    stage.replaceChildren(el('span', 'text-xs text-rose-600 font-semibold', "Shtrix-kodni chizib bo'lmadi. Kodni matn ko'rinishida ishlating."));
+                });
+                Object.keys(btns).forEach(function (k) { btns[k].classList.toggle('active', k === mode); });
+            };
+            [['barcode', 'fa-barcode', 'Shtrix-kod'], ['qr', 'fa-qrcode', 'QR kod']].forEach(function (t) {
+                const b = el('button', 'mp-chip px-4 py-1.5 rounded-full border border-white/15 text-xs font-bold text-slate-300 transition hover:border-emerald-500/50 flex items-center gap-2');
+                b.type = 'button';
+                b.appendChild(el('i', 'fa-solid ' + t[1]));
+                b.appendChild(el('span', '', t[2]));
+                b.addEventListener('click', function () { mode = t[0]; paint(); });
+                btns[t[0]] = b; tabs.appendChild(b);
+            });
+            box.appendChild(tabs);
+            const row = el('div', 'flex items-center justify-center gap-2 flex-wrap');
+            row.appendChild(el('code', 'text-sm font-mono font-bold text-slate-200 bg-slate-950/60 border border-white/10 rounded-lg px-3 py-1.5 break-all', code));
+            const pr = el('button', 'flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-extrabold border border-white/15 text-slate-200 hover:bg-white/10 transition');
+            pr.type = 'button';
+            pr.appendChild(el('i', 'fa-solid fa-print'));
+            pr.appendChild(el('span', '', 'Yorliqni chop etish'));
+            pr.addEventListener('click', function () {
+                loadBarcodeLibs().then(function () { printCodeLabel(code, title || code, sub || ''); }).catch(function () { showToast("Kutubxonani yuklab bo'lmadi.", 4000); });
+            });
+            row.appendChild(pr);
+            box.appendChild(row);
+            paint();
+            return box;
+        }
+        function openCodeLabel(code, title, sub) {
+            openWhModal('Shtrix-kod / QR yorlig\'i', title || code, buildCodeVisual(code, title, sub), false);
+        }
+        // Kamera orqali skanerlash: faqat brauzer BarcodeDetector'ni qo'llasa ko'rsatiladi
+        const cameraScanSupported = function () { return 'BarcodeDetector' in window && !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia); };
+        async function openCameraScan() {
+            const box = el('div', 'space-y-3');
+            const video = el('video', 'w-full rounded-2xl bg-black');
+            video.setAttribute('playsinline', ''); video.muted = true;
+            const hint = el('p', 'text-xs text-slate-400 text-center', 'Shtrix-kod yoki QR kodni kameraga yaqinlashtiring.');
+            box.append(video, hint);
+            let stream = null, stopped = false;
+            const stop = function () { stopped = true; if (stream) stream.getTracks().forEach(function (t) { t.stop(); }); };
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+            } catch (e) { return showToast("Kameraga ruxsat berilmadi yoki kamera topilmadi. Kodni qo'lda kiriting.", 5000); }
+            video.srcObject = stream;
+            openWhModal('Kamera bilan skanerlash', '', box, false);
+            try { await video.play(); } catch (e) {}
+            let detector;
+            try { detector = new window.BarcodeDetector({ formats: ['code_128', 'qr_code'] }); } catch (e) { detector = new window.BarcodeDetector(); }
+            const tick = async function () {
+                if (stopped) return;
+                if (!video.isConnected) return stop(); // oyna yopilgan
+                try {
+                    const found = await detector.detect(video);
+                    if (found.length && found[0].rawValue) {
+                        stop(); closeWhModal();
+                        return whDetailDialog(String(found[0].rawValue).slice(0, 80));
+                    }
+                } catch (e) {}
+                setTimeout(tick, 250);
+            };
+            tick();
+        }
 
         // ----- Umumiy oyna va forma yordamchilari -----
         const whModal = document.getElementById('wh-modal');
@@ -3206,10 +3348,11 @@
                 if (errors.length) return showAuthAlert(errors, 'error', alertBox);
                 setLoading(form, true);
                 try {
-                    await o.onSubmit(values);
+                    const result = await o.onSubmit(values);
                     closeWhModal();
                     if (o.done) showToast(o.done, 3500);
                     whRefresh();
+                    if (o.after) o.after(result);
                 } catch (err) {
                     if (err.status !== 401) showAuthAlert(err.messages || [String(err.message || err)], 'error', alertBox);
                 } finally {
@@ -3372,7 +3515,14 @@
                 const st = WH_STATUS[it.status];
                 const row = el('div', 'flex flex-wrap items-center gap-2');
                 row.appendChild(whPill(st.label, st.cls));
-                if (it.code) row.appendChild(whPill(it.code, 'bg-slate-950/60 text-slate-300 border-white/15 font-mono', 'fa-barcode'));
+                if (it.code) {
+                    const cp = el('button', 'text-[11px] font-mono font-bold text-slate-300 bg-slate-950/60 border border-white/10 rounded-full px-3 py-1 flex items-center gap-1.5 hover:border-emerald-500/40 transition');
+                    cp.type = 'button'; cp.title = "Shtrix-kod / QR'ni ko'rish";
+                    cp.appendChild(el('i', 'fa-solid fa-barcode text-emerald-400'));
+                    cp.appendChild(document.createTextNode(it.code));
+                    cp.addEventListener('click', function () { openCodeLabel(it.code, it.name, it.farmer ? it.farmer.farmName : ''); });
+                    row.appendChild(cp);
+                }
                 body.appendChild(row);
                 const w = el('div', 'grid grid-cols-3 gap-2');
                 w.appendChild(whStat("E'lon qilingan", kg(it.declaredWeightKg)));
@@ -3615,6 +3765,42 @@
             card.appendChild(parties);
             if (o.note) card.appendChild(el('p', 'text-xs text-slate-400', 'Izoh: ' + o.note));
 
+            // Kafolatlangan to'lov (Escrow): market umumiy summani, fermer sof ulushini, dispetcher hammasini ko'radi
+            if (o.payment) {
+                const pr = el('div', 'rounded-xl bg-blue-500/5 border border-blue-500/20 px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-2');
+                const pl = el('div', 'min-w-0');
+                pl.appendChild(el('div', 'text-[10px] font-bold uppercase tracking-wider text-blue-300', "Kafolatlangan to'lov (Escrow)"));
+                const amt = o.payment.amount != null ? moneyExact(o.payment.amount) : '';
+                const line = viewer === 'farmer' ? 'Sizga: ' + moneyExact(o.payment.farmerAmount) + " · xizmat haqi: " + moneyExact(o.payment.feeAmount)
+                    : viewer === 'ops' ? amt + ' · fermerga: ' + moneyExact(o.payment.farmerAmount) + ' · omborxona haqi: ' + moneyExact(o.payment.feeAmount)
+                    : amt;
+                pl.appendChild(el('div', 'text-sm font-bold text-white', line));
+                pr.appendChild(pl);
+                pr.appendChild(paymentPill(o.payment.status, true));
+                card.appendChild(pr);
+            }
+            if (o.shipment) {
+                const sm = SHIPMENT_STATUS[o.shipment.status];
+                const sl = el('div', 'flex flex-wrap items-center gap-2 text-xs text-slate-400');
+                sl.appendChild(el('i', 'fa-solid fa-truck-fast text-emerald-400'));
+                sl.appendChild(document.createTextNode('Yuk tashish holati: '));
+                sl.appendChild(el('span', 'font-bold px-2.5 py-0.5 rounded-full border ' + sm.cls, sm.label));
+                card.appendChild(sl);
+            }
+            if (o.status === 'DISPATCHED' && o.shipment && viewer !== 'driver') card.appendChild(buildTrackPanel({ id: o.shipment.id }));
+            if (o.awaitingConfirmation) {
+                const ab = el('div', 'rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2.5 text-xs font-semibold text-amber-200 flex items-start gap-2');
+                ab.appendChild(el('i', 'fa-solid fa-hourglass-half mt-0.5'));
+                ab.appendChild(document.createTextNode(viewer === 'farmer'
+                    ? "Yuk yetkazildi. Xaridor yoki dispetcher tasdiqlagach pul hisobingizga o'tadi."
+                    : "Haydovchi yukni yetkazganini bildirdi. Qabul qilinganini tasdiqlang: shundan so'ng pul fermerga o'tkaziladi."));
+                card.appendChild(ab);
+            } else if (o.payment && o.payment.status === 'RELEASED') {
+                card.appendChild(el('p', 'text-xs font-semibold text-emerald-300 flex items-center gap-2', "✓ To'lov yakunlandi: mablag' fermerga o'tkazildi."));
+            } else if (o.payment && o.payment.status === 'REFUNDED') {
+                card.appendChild(el('p', 'text-xs font-semibold text-rose-300 flex items-center gap-2', "↩ Mablag' xaridorga qaytarildi."));
+            }
+
             const act = el('div', 'flex flex-wrap gap-2');
             const mk = function (icon, label, primary, fn) {
                 const b = el('button', 'flex-1 min-w-[9rem] flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-extrabold border transition disabled:opacity-50 ' + (primary
@@ -3632,14 +3818,16 @@
             if (viewer === 'ops') {
                 if (o.status === 'PENDING') act.appendChild(mk('fa-hand', "Yig'ishni boshlash", true, function () { return call('PATCH', '/warehouse/orders/' + o.id + '/picking', undefined, "Yig'ish boshlandi."); }));
                 if (o.status === 'PICKING') act.appendChild(mk('fa-check-double', "Yig'ildi", true, function () { return call('PATCH', '/warehouse/orders/' + o.id + '/picked', undefined, "Buyurtma yig'ildi."); }));
-                if (o.status === 'PICKED') act.appendChild(mk('fa-truck-fast', 'Haydovchiga yuklash', true, function () { return whDispatchDialog(o); }));
+                if (o.status === 'PICKED' && o.shipment && o.shipment.status === 'OPEN') act.appendChild(mk('fa-user-plus', 'Haydovchi biriktirish', true, function () { return whDispatchDialog(o); }));
+                if (o.status === 'PICKED' && o.shipment && o.shipment.status === 'LOADING') act.appendChild(mk('fa-truck-fast', "Yuklandi: jo'natish", true, function () {
+                    return window.confirm(T("Yuk haydovchiga yuklanganini tasdiqlaysizmi? Qoldiq kamayadi va yuk yo'lga chiqadi.")) ? call('PATCH', '/warehouse/orders/' + o.id + '/dispatch', undefined, "Yuk jo'natildi. GPS kuzatuv boshlandi.") : Promise.resolve();
+                }));
                 if (['PENDING', 'PICKING', 'PICKED'].indexOf(o.status) !== -1) act.appendChild(mk('fa-ban', 'Bekor qilish', false, function () { return window.confirm(T('Buyurtmani bekor qilasizmi?')) ? call('PATCH', '/warehouse/orders/' + o.id + '/cancel', undefined, 'Buyurtma bekor qilindi.') : Promise.resolve(); }));
-                if (o.status === 'DISPATCHED') act.appendChild(mk('fa-circle-check', 'Yetkazildi deb belgilash', false, function () { return call('PATCH', '/warehouse/orders/' + o.id + '/deliver', undefined, 'Yetkazildi.'); }));
+                if (o.status === 'DISPATCHED' || o.awaitingConfirmation) act.appendChild(mk('fa-circle-check', o.awaitingConfirmation ? "Tasdiqlash: pulni o'tkazish" : 'Yetkazildi deb tasdiqlash', o.awaitingConfirmation, function () { return call('PATCH', '/warehouse/orders/' + o.id + '/deliver', undefined, "Tasdiqlandi. Mablag' fermerga o'tkazildi."); }));
+                if (o.item.code) act.appendChild(mk('fa-barcode', 'Shtrix-kod / QR', false, function () { openCodeLabel(o.item.code, o.item.name, o.farmer.farmName); return Promise.resolve(); }));
             } else if (viewer === 'market') {
                 if (['PENDING', 'PICKING'].indexOf(o.status) !== -1) act.appendChild(mk('fa-ban', 'Bekor qilish', false, function () { return window.confirm(T('Buyurtmani bekor qilasizmi?')) ? call('PATCH', '/warehouse/orders/' + o.id + '/cancel', undefined, 'Buyurtma bekor qilindi.') : Promise.resolve(); }));
-                if (o.status === 'DISPATCHED') act.appendChild(mk('fa-circle-check', 'Qabul qildim', true, function () { return call('PATCH', '/warehouse/orders/' + o.id + '/deliver', undefined, 'Qabul qilindi. Rahmat!'); }));
-            } else if (viewer === 'driver') {
-                if (o.status === 'DISPATCHED') act.appendChild(mk('fa-circle-check', 'Yetkazdim', true, function () { return call('PATCH', '/warehouse/orders/' + o.id + '/deliver', undefined, 'Yetkazildi deb belgilandi.'); }));
+                if (o.status === 'DISPATCHED' || o.awaitingConfirmation) act.appendChild(mk('fa-circle-check', o.awaitingConfirmation ? "Qabul qildim: pulni o'tkazish" : 'Qabul qildim', true, function () { return call('PATCH', '/warehouse/orders/' + o.id + '/deliver', undefined, "Qabul qilindi. Mablag' fermerga o'tkazildi. Rahmat!"); }));
             }
             if (act.childNodes.length) card.appendChild(act);
             return card;
@@ -3650,11 +3838,11 @@
             try { drivers = await authed('GET', '/warehouse/drivers'); } catch (err) { if (err.status !== 401) showToast(err.messages[0], 5000); return; }
             if (!drivers.length) return showToast("Hali ro'yxatdan o'tgan haydovchi yo'q.", 5000);
             openWhForm({
-                title: 'Haydovchiga yuklash', sub: o.item.name + ' · ' + kg(o.quantityKg), icon: 'fa-truck-fast', submit: "Yuklab jo'natish",
+                title: 'Haydovchi biriktirish', sub: o.item.name + ' · ' + kg(o.quantityKg), icon: 'fa-user-plus', submit: 'Biriktirish',
                 fields: [{ name: 'driverId', label: 'Haydovchi', type: 'select', required: true,
                     options: drivers.map(function (d) { return [d.id, d.fullName + ' · ' + d.plateNumber + ' · ' + kg(d.capacityKg) + (Number(d.capacityKg) < Number(o.quantityKg) ? ' (sig\'im yetmaydi)' : '')]; }) }],
-                onSubmit: function (v) { return authed('PATCH', '/warehouse/orders/' + o.id + '/dispatch', { driverId: v.driverId }); },
-                done: "Buyurtma haydovchiga yuklandi va jo'natildi."
+                onSubmit: function (v) { return authed('PATCH', '/warehouse/orders/' + o.id + '/assign', { driverId: v.driverId }); },
+                done: "Haydovchi biriktirildi. Yuk uning kabinetida ko'rinadi."
             });
         }
 
@@ -3672,10 +3860,10 @@
             if (rid !== dashRenderId) return;
             const head = el('div', 'space-y-3');
             const row = el('div', 'flex items-center justify-between gap-3 flex-wrap');
-            row.appendChild(el('h2', 'text-2xl font-extrabold text-white', viewer === 'driver' ? "Ombor jo'natmalari" : 'Ombor buyurtmalari'));
+            row.appendChild(el('h2', 'text-2xl font-extrabold text-white', 'Ombor buyurtmalari'));
             row.appendChild(refreshButton(function () { renderWhOrders(user); }));
             head.appendChild(row);
-            const open = function (o) { return ['DELIVERED', 'CANCELLED'].indexOf(o.status) === -1; };
+            const open = function (o) { return ['DELIVERED', 'CANCELLED'].indexOf(o.status) === -1 || o.awaitingConfirmation; };
             const chips = el('div', 'flex flex-wrap gap-2');
             [['ALL', 'Hammasi', list.length], ['OPEN', 'Faol', list.filter(open).length], ['DONE', 'Yakunlangan', list.filter(function (o) { return !open(o); }).length]].forEach(function (f) {
                 const c = el('button', 'mp-chip px-4 py-1.5 rounded-full border border-white/15 text-xs font-bold text-slate-300 transition hover:border-emerald-500/50' + (whOrderFilter === f[0] ? ' active' : ''), f[1] + ' (' + f[2] + ')');
@@ -3713,7 +3901,8 @@
                     { name: 'rfidTag', label: 'RFID teg (ixtiyoriy)', hint: "Skaner bilan o'qing yoki qo'lda kiriting (4-64 belgi)." }
                 ],
                 onSubmit: function (v) { return authed('POST', '/warehouse/items/' + it.id + '/receive', { measuredWeightKg: v.measuredWeightKg, rfidTag: v.rfidTag }); },
-                done: 'Yuk qabul qilindi va shtrix-kod berildi.'
+                done: 'Yuk qabul qilindi va shtrix-kod berildi.',
+                after: function (res) { if (res && res.code) setTimeout(function () { openCodeLabel(res.code, it.name, it.farmer.farmName); }, 300); }
             });
         }
         function whInspectDialog(it) {
@@ -3783,6 +3972,10 @@
             try { full = await authed('GET', '/warehouse/items/' + it.id); } catch (err) { return; }
             const box = el('div', 'space-y-4');
             box.appendChild(buildWhOpsCard(full, true));
+            if (full.code) {
+                box.appendChild(sectionTitle('Shtrix-kod / QR'));
+                box.appendChild(buildCodeVisual(full.code, full.name, full.farmer.farmName));
+            }
             box.appendChild(sectionTitle('Harakatlar jurnali'));
             const list = el('div', 'rounded-2xl border border-white/10 divide-y divide-white/5 max-h-64 overflow-y-auto');
             const TYPE = { RECEIVE: 'Qabul qilindi', INSPECT_REJECT: 'Tekshiruvda chiqarildi', MOVE: "Zona o'zgardi", SORT_WASTE: 'Saralashda chiqit', DISPATCH: "Jo'natildi", ADJUST: 'Inventarizatsiya' };
@@ -3883,6 +4076,14 @@
             const sb = el('button', 'shrink-0 px-5 rounded-xl bg-emerald-500 text-slate-950 font-extrabold hover:bg-emerald-400 transition flex items-center gap-2');
             sb.type = 'submit'; sb.appendChild(el('i', 'fa-solid fa-barcode')); sb.appendChild(el('span', 'hidden sm:inline', 'Topish'));
             scan.append(sin, sb);
+            if (cameraScanSupported()) {
+                const cb2 = el('button', 'shrink-0 px-4 rounded-xl border border-white/15 text-slate-200 font-extrabold hover:bg-white/10 transition flex items-center gap-2');
+                cb2.type = 'button'; cb2.title = 'Kamera bilan skanerlash';
+                cb2.appendChild(el('i', 'fa-solid fa-camera'));
+                cb2.appendChild(el('span', 'hidden sm:inline', 'Kamera'));
+                cb2.addEventListener('click', openCameraScan);
+                scan.appendChild(cb2);
+            }
             scan.addEventListener('submit', function (e) { e.preventDefault(); const v = sin.value.trim(); if (v) { whDetailDialog(v); sin.value = ''; } });
             head.appendChild(scan);
             const arch = el('label', 'flex items-center gap-2 text-xs text-slate-400 cursor-pointer w-fit');
@@ -4134,7 +4335,7 @@
                 showAuthAlert("Omborxonadan foydalanish uchun tizimga kiring yoki ro'yxatdan o'ting.", 'info');
                 return;
             }
-            openDashboard(user.role === 'ADMIN' ? 'adm-dashboard' : isStaffRole(user) ? 'whboard' : user.role === 'DRIVER' ? 'whorders' : 'warehouse');
+            openDashboard(user.role === 'ADMIN' ? 'adm-dashboard' : isStaffRole(user) ? 'whboard' : user.role === 'DRIVER' ? 'loads' : 'warehouse');
         }
         function openStaffHub() {
             if (sidebar.classList.contains('open')) toggleSidebar();
@@ -4474,7 +4675,7 @@
             const nodes = [admHead('Yuk tashish', again)];
             nodes.push(admFilterBar([admSelect([['', 'Barcha holatlar']].concat(Object.keys(SHIPMENT_STATUS).map(function (k) { return [k, SHIPMENT_STATUS[k].label]; })), f.status, function (v) { f.status = v; f.page = 1; again(); })]));
             nodes.push(admTable([
-                ['Yuk', function (s) { return admName(s.cargoName, s.category + ' · ' + kg(s.weightKg)); }],
+                ['Yuk', function (s) { return admName(s.cargoName, s.category + ' · ' + kg(s.weightKg) + (s.source === 'WAREHOUSE' ? ' · Omborxona' : '')); }],
                 ["Yo'nalish", function (s) { return s.origin.region + ' → ' + s.destination.region; }],
                 ['Fermer → Market', function (s) { return s.farmName + ' → ' + s.companyName; }],
                 ['Haydovchi', function (s) { return s.driver ? admName(s.driver.fullName, s.driver.plateNumber) : '—'; }],
@@ -4515,7 +4716,7 @@
             const items = admState.payments === 'ALL' ? list : list.filter(function (p) { return p.status === admState.payments; });
             nodes.push(admFilterBar([admSelect([['ALL', 'Barcha holatlar']].concat(Object.keys(PAYMENT_STATUS).map(function (k) { return [k, PAYMENT_STATUS[k].short]; })), admState.payments, function (v) { admState.payments = v; again(); })]));
             nodes.push(admTable([
-                ['Buyurtma', function (p) { return admName(p.order.productName, kg(p.order.quantityKg) + ' × ' + money(p.order.pricePerKg)); }],
+                ['Buyurtma', function (p) { return admName(p.order.productName, kg(p.order.quantityKg) + ' × ' + money(p.order.pricePerKg) + (p.source === 'WAREHOUSE' ? ' · Omborxona' : '')); }],
                 ['Fermer → Market', function (p) { return (p.farmer ? p.farmer.name : '—') + ' → ' + (p.market ? p.market.name : '—'); }],
                 ['Summa', function (p) { return money(p.amount); }],
                 ['Holat', function (p) { return whPill(PAYMENT_STATUS[p.status].short, PAYMENT_STATUS[p.status].cls, PAYMENT_STATUS[p.status].icon); }],
@@ -4575,6 +4776,18 @@
             ['uz', 'ru', 'en'].forEach(function (l) { addField(grid, 'hours_' + l, l.toUpperCase(), (s.workingHours || {})[l], { max: 120 }); });
             grid = group('Manzil (har bir til uchun)');
             ['uz', 'ru', 'en'].forEach(function (l) { addField(grid, 'addr_' + l, l.toUpperCase(), (s.address || {})[l], { max: 120 }); });
+            grid = group('Omborxona joylashuvi (yuk tashish boshlanadigan nuqta)');
+            const regWrap = el('div');
+            regWrap.appendChild(el('label', 'block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5', 'Viloyat'));
+            const regSel = el('select', 'auth-input');
+            regSel.id = 'set-warehouseRegion';
+            REGIONS.forEach(function (r) { regSel.appendChild(new Option(r, r)); });
+            regSel.value = REGIONS.indexOf(s.warehouseRegion) !== -1 ? s.warehouseRegion : REGIONS[0];
+            regWrap.appendChild(regSel);
+            grid.appendChild(regWrap);
+            inputs.warehouseRegion = regSel;
+            addField(grid, 'warehouseDistrict', 'Tuman / shahar', s.warehouseDistrict, { max: 80 });
+            addField(grid, 'warehouseAddress', "Aniq manzil", s.warehouseAddress, { cls: 'sm:col-span-2', max: 150, hint: "Haydovchi omborxona yukini shu manzildan oladi. Yangi buyurtmalar uchun amal qiladi." });
 
             const submit = el('button', 'auth-submit w-full sm:w-auto sm:px-10 bg-emerald-500 hover:bg-emerald-400 active:scale-95 disabled:opacity-60 text-slate-950 font-extrabold py-3.5 rounded-2xl transition shadow-xl shadow-emerald-500/30 flex items-center justify-center gap-2.5');
             submit.type = 'submit'; submit.appendChild(el('i', 'fa-solid fa-floppy-disk')); submit.appendChild(el('span', '', 'Saqlash'));
@@ -4588,7 +4801,8 @@
                 const body = {
                     siteName: v('siteName'), callCenterPhones: phones, supportEmail: nullable('supportEmail'), telegramHandle: nullable('telegramHandle'),
                     telegramUrl: nullable('telegramUrl'), instagramUrl: nullable('instagramUrl'), facebookUrl: nullable('facebookUrl'), youtubeUrl: nullable('youtubeUrl'),
-                    workingHours: { uz: v('hours_uz'), ru: v('hours_ru'), en: v('hours_en') }, address: { uz: v('addr_uz'), ru: v('addr_ru'), en: v('addr_en') }
+                    workingHours: { uz: v('hours_uz'), ru: v('hours_ru'), en: v('hours_en') }, address: { uz: v('addr_uz'), ru: v('addr_ru'), en: v('addr_en') },
+                    warehouseRegion: v('warehouseRegion'), warehouseDistrict: v('warehouseDistrict'), warehouseAddress: nullable('warehouseAddress')
                 };
                 setLoading(form, true);
                 try {
@@ -5249,6 +5463,12 @@
             top.appendChild(title);
             const badges = el('div', 'shrink-0 flex flex-col items-end gap-1.5');
             badges.appendChild(el('span', 'text-xs font-bold px-3 py-1 rounded-full border ' + meta.cls, meta.label));
+            if (s.source === 'WAREHOUSE') {
+                const wb = el('span', 'inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-teal-500/30 bg-teal-500/10 text-teal-300');
+                wb.appendChild(el('i', 'fa-solid fa-warehouse'));
+                wb.appendChild(el('span', '', 'Omborxona'));
+                badges.appendChild(wb);
+            }
             if (s.paymentStatus && s.status !== 'CANCELLED') badges.appendChild(paymentPill(s.paymentStatus, true));
             top.appendChild(badges);
             card.appendChild(top);
@@ -5268,7 +5488,7 @@
             } else if (s.status === 'LOADING' && (viewer === 'farmer' || viewer === 'market')) {
                 const wait = el('p', 'text-xs text-slate-400 flex items-center gap-2');
                 wait.appendChild(el('i', 'fa-solid fa-map-location-dot text-emerald-400'));
-                wait.appendChild(document.createTextNode("Haydovchi yo'lga chiqqach, jonli xarita shu yerda paydo bo'ladi."));
+                wait.appendChild(document.createTextNode(s.source === 'WAREHOUSE' ? "Dispetcher yuklanganini tasdiqlab jo'natgach, jonli xarita shu yerda paydo bo'ladi." : "Haydovchi yo'lga chiqqach, jonli xarita shu yerda paydo bo'ladi."));
                 card.appendChild(wait);
             }
             // Kontaktlar: faqat backend ruxsat bergan bo'lsa to'ldiriladi
@@ -5278,7 +5498,7 @@
                 if (s.market) people.appendChild(partyBox('Yetkaziladigan joy', s.market.companyName, s.market.fullName, s.market.phone, s.destination.address));
             } else if (viewer === 'farmer' || viewer === 'market') {
                 if (viewer === 'farmer' && s.market) people.appendChild(partyBox('Xaridor', s.market.companyName, s.market.fullName, s.market.phone));
-                if (viewer === 'market' && s.farmer) people.appendChild(partyBox('Fermer', s.farmer.farmName, s.farmer.fullName, s.farmer.phone));
+                if (viewer === 'market' && s.farmer) people.appendChild(partyBox(s.source === 'WAREHOUSE' ? 'Omborxona' : 'Fermer', s.farmer.farmName, s.farmer.fullName, s.farmer.phone));
                 if (s.driver) people.appendChild(partyBox('Haydovchi', s.driver.fullName, s.driver.vehicleType + ' · ' + s.driver.plateNumber, s.driver.phone));
                 else {
                     const wait = el('p', 'text-xs text-slate-400 flex items-center gap-2');
@@ -5326,7 +5546,12 @@
                 if (s.fitsCapacity === false || s.paymentStatus !== 'HELD') take.disabled = true;
                 actions.appendChild(take);
             } else if (viewer === 'driver-own' && s.status === 'LOADING') {
-                actions.appendChild(btn('fa-truck-fast', "Yo'lga chiqdim", 'bg-emerald-500 border-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-lg shadow-emerald-500/25', 'advance'));
+                if (s.source === 'WAREHOUSE') {
+                    const note = el('p', 'w-full rounded-xl border border-teal-500/30 bg-teal-500/10 px-4 py-2.5 text-xs font-semibold text-teal-200 flex items-start gap-2');
+                    note.appendChild(el('i', 'fa-solid fa-warehouse mt-0.5'));
+                    note.appendChild(document.createTextNode("Omborxonaga boring: dispetcher yukni yuklab, jo'natishni tasdiqlaydi. Shundan so'ng GPS kuzatuv va harakat jurnali ishga tushadi."));
+                    actions.appendChild(note);
+                } else actions.appendChild(btn('fa-truck-fast', "Yo'lga chiqdim", 'bg-emerald-500 border-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-lg shadow-emerald-500/25', 'advance'));
                 actions.appendChild(btn('fa-rotate-left', 'Qaytarish', 'border-white/15 text-slate-300 hover:bg-white/10', 'release'));
             } else if (viewer === 'driver-own' && s.status === 'IN_TRANSIT') {
                 actions.appendChild(btn('fa-circle-check', 'Yetkazib berdim', 'bg-emerald-500 border-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-lg shadow-emerald-500/25', 'advance'));
@@ -5574,10 +5799,20 @@
             const top = el('div', 'flex items-start justify-between gap-3');
             const title = el('div', 'min-w-0');
             title.appendChild(el('h4', 'font-extrabold text-white text-lg truncate', p.order.productName));
+            if (p.source === 'WAREHOUSE') {
+                const wb = el('span', 'inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-teal-500/30 bg-teal-500/10 text-teal-300 mb-1');
+                wb.appendChild(el('i', 'fa-solid fa-warehouse'));
+                wb.appendChild(el('span', '', 'Omborxona buyurtmasi'));
+                title.appendChild(wb);
+            }
             title.appendChild(el('p', 'text-xs text-slate-400 font-semibold uppercase tracking-wider', p.order.category + ' · ' + formatNumber(p.order.quantityKg) + ' kg × ' + formatNumber(p.order.pricePerKg) + " so'm"));
             top.appendChild(title);
             const money = el('div', 'text-right shrink-0');
             money.appendChild(el('div', 'text-xl font-black text-emerald-400', formatNumber(p.amount) + ' so\'m'));
+            if (p.source === 'WAREHOUSE' && p.farmerAmount != null) {
+                money.appendChild(el('div', 'text-[11px] text-slate-400 font-semibold', "Fermerga: " + moneyExact(p.farmerAmount)));
+                money.appendChild(el('div', 'text-[11px] text-slate-500', "Xizmat haqi: " + moneyExact(p.feeAmount)));
+            }
             top.appendChild(money);
             card.appendChild(top);
 
@@ -5612,6 +5847,12 @@
             }
 
             const a = p.actions;
+            if (p.source === 'WAREHOUSE' && p.status === 'HELD') {
+                const hint = el('p', 'text-[11px] text-slate-400 flex items-start gap-1.5');
+                hint.appendChild(el('i', 'fa-solid fa-circle-info mt-0.5'));
+                hint.appendChild(document.createTextNode("Ombor buyurtmasi: pul yuk yetkazilib, xaridor yoki dispetcher tasdiqlagach chiqariladi (\"Ombor buyurtmalari\" bo'limida)."));
+                card.appendChild(hint);
+            }
             // Nega hozir chiqarib bo'lmaydi: tushuntirish (masalan, xaridor tasdiqlashi uchun kutish muddati)
             if (p.status === 'HELD' && !a.canRelease && a.releaseBlockedReason) {
                 const hint = el('p', 'text-[11px] text-slate-500 flex items-start gap-1.5');

@@ -242,3 +242,47 @@ Muddati yaqin yuklar yo'q. ‖ Грузов с близким сроком го�
 Omborxonadan foydalanish uchun tizimga kiring yoki ro'yxatdan o'ting. ‖ Чтобы пользоваться складом, войдите в систему или зарегистрируйтесь. ‖ Sign in or sign up to use the warehouse.
 Dispetcher kabineti faqat ombor xodimlari uchun. Akkauntlar administrator tomonidan yaratiladi. ‖ Кабинет диспетчера только для сотрудников склада. Аккаунты создаёт администратор. ‖ The dispatcher dashboard is for warehouse staff only. Accounts are created by an administrator.
 Dispetcher akkauntlari administrator tomonidan yaratiladi. Telefon va parolingiz bilan kiring. ‖ Аккаунты диспетчеров создаёт администратор. Войдите по номеру телефона и паролю. ‖ Dispatcher accounts are created by an administrator. Sign in with your phone and password.
+# --- Integratsiya: escrow + yuk tashish + shtrix-kod/QR ---
+QR kod ‖ QR-код ‖ QR code
+Shtrix-kod {0} ‖ Штрихкод {0} ‖ Barcode {0}
+QR kod {0} ‖ QR-код {0} ‖ QR code {0}
+Chop etish ‖ Печать ‖ Print
+Yorliqni chop etish ‖ Распечатать этикетку ‖ Print label
+Shtrix-kod / QR yorlig'i ‖ Штрихкод / QR-этикетка ‖ Barcode / QR label
+Shtrix-kod / QR ‖ Штрихкод / QR ‖ Barcode / QR
+Shtrix-kod / QR'ni ko'rish ‖ Показать штрихкод / QR ‖ Show barcode / QR
+Shtrix-kodni chizib bo'lmadi. Kodni matn ko'rinishida ishlating. ‖ Не удалось отрисовать штрихкод. Используйте код в текстовом виде. ‖ Could not draw the barcode. Use the code as text.
+Kutubxonani yuklab bo'lmadi. ‖ Не удалось загрузить библиотеку. ‖ Could not load the library.
+Chop etish oynasini ochib bo'lmadi. Brauzerda qalqib chiquvchi oynaga ruxsat bering. ‖ Не удалось открыть окно печати. Разрешите всплывающие окна в браузере. ‖ Could not open the print window. Allow pop-ups in your browser.
+Kamera bilan skanerlash ‖ Сканирование камерой ‖ Scan with camera
+Shtrix-kod yoki QR kodni kameraga yaqinlashtiring. ‖ Поднесите штрихкод или QR-код к камере. ‖ Hold the barcode or QR code up to the camera.
+Kameraga ruxsat berilmadi yoki kamera topilmadi. Kodni qo'lda kiriting. ‖ Нет доступа к камере или камера не найдена. Введите код вручную. ‖ Camera access denied or no camera found. Enter the code manually.
+Sizga: {0} · xizmat haqi: {1} ‖ Вам: {0} · комиссия: {1} ‖ To you: {0} · service fee: {1}
+{0} · fermerga: {1} · omborxona haqi: {2} ‖ {0} · фермеру: {1} · комиссия склада: {2} ‖ {0} · to farmer: {1} · warehouse fee: {2}
+Fermerga: {0} ‖ Фермеру: {0} ‖ To farmer: {0}
+Xizmat haqi: {0} ‖ Комиссия: {0} ‖ Service fee: {0}
+Yuk tashish holati: ‖ Статус перевозки: ‖ Shipping status:
+Yuk yetkazildi. Xaridor yoki dispetcher tasdiqlagach pul hisobingizga o'tadi. ‖ Груз доставлен. Деньги поступят вам после подтверждения покупателем или диспетчером. ‖ The cargo was delivered. The money reaches you once the buyer or dispatcher confirms.
+Haydovchi yukni yetkazganini bildirdi. Qabul qilinganini tasdiqlang: shundan so'ng pul fermerga o'tkaziladi. ‖ Водитель сообщил о доставке. Подтвердите получение: после этого деньги будут переведены фермеру. ‖ The driver reported delivery. Confirm receipt: the money is then released to the farmer.
+✓ To'lov yakunlandi: mablag' fermerga o'tkazildi. ‖ ✓ Платёж завершён: средства переведены фермеру. ‖ ✓ Payment completed: funds were released to the farmer.
+↩ Mablag' xaridorga qaytarildi. ‖ ↩ Средства возвращены покупателю. ‖ ↩ Funds were refunded to the buyer.
+Haydovchi biriktirish ‖ Назначить водителя ‖ Assign driver
+Biriktirish ‖ Назначить ‖ Assign
+Haydovchi biriktirildi. Yuk uning kabinetida ko'rinadi. ‖ Водитель назначен. Груз виден в его кабинете. ‖ Driver assigned. The cargo appears in their cabinet.
+Yuklandi: jo'natish ‖ Погружено: отправить ‖ Loaded: dispatch
+Yuk haydovchiga yuklanganini tasdiqlaysizmi? Qoldiq kamayadi va yuk yo'lga chiqadi. ‖ Подтвердить, что груз погружен водителю? Остаток уменьшится, и груз отправится в путь. ‖ Confirm the cargo is loaded onto the driver's vehicle? Stock will decrease and the cargo will leave.
+Yuk jo'natildi. GPS kuzatuv boshlandi. ‖ Груз отправлен. GPS-отслеживание началось. ‖ Cargo dispatched. GPS tracking has started.
+Tasdiqlash: pulni o'tkazish ‖ Подтвердить: перевести деньги ‖ Confirm: release the money
+Yetkazildi deb tasdiqlash ‖ Подтвердить доставку ‖ Confirm delivery
+Tasdiqlandi. Mablag' fermerga o'tkazildi. ‖ Подтверждено. Средства переведены фермеру. ‖ Confirmed. Funds were released to the farmer.
+Qabul qildim: pulni o'tkazish ‖ Получил: перевести деньги ‖ Received: release the money
+Qabul qilindi. Mablag' fermerga o'tkazildi. Rahmat! ‖ Принято. Средства переведены фермеру. Спасибо! ‖ Received. Funds were released to the farmer. Thank you!
+Omborxona buyurtmasi ‖ Заказ со склада ‖ Warehouse order
+{0} · Omborxona ‖ {0} · Склад ‖ {0} · Warehouse
+Omborxonaga boring: dispetcher yukni yuklab, jo'natishni tasdiqlaydi. Shundan so'ng GPS kuzatuv va harakat jurnali ishga tushadi. ‖ Подъезжайте на склад: диспетчер погрузит груз и подтвердит отправку. После этого запустятся GPS-отслеживание и журнал движения. ‖ Go to the warehouse: the dispatcher loads the cargo and confirms dispatch. GPS tracking and the driving log then start.
+Dispetcher yuklanganini tasdiqlab jo'natgach, jonli xarita shu yerda paydo bo'ladi. ‖ Живая карта появится здесь, когда диспетчер подтвердит погрузку и отправку. ‖ The live map appears here once the dispatcher confirms loading and dispatch.
+Ombor buyurtmasi: pul yuk yetkazilib, xaridor yoki dispetcher tasdiqlagach chiqariladi ("Ombor buyurtmalari" bo'limida). ‖ Заказ со склада: деньги выплачиваются после доставки и подтверждения покупателем или диспетчером (раздел «Заказы склада»). ‖ Warehouse order: the money is released after delivery once the buyer or dispatcher confirms (in the "Warehouse orders" section).
+Omborxona joylashuvi (yuk tashish boshlanadigan nuqta) ‖ Местоположение склада (точка начала перевозки) ‖ Warehouse location (shipping start point)
+Tuman / shahar ‖ Район / город ‖ District / city
+Aniq manzil ‖ Точный адрес ‖ Exact address
+Haydovchi omborxona yukini shu manzildan oladi. Yangi buyurtmalar uchun amal qiladi. ‖ Водитель заберёт груз склада по этому адресу. Действует для новых заказов. ‖ The driver picks up warehouse cargo at this address. Applies to new orders.

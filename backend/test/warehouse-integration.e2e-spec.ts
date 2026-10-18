@@ -85,10 +85,13 @@ describe('Warehouse integration: escrow + shipment + GPS (e2e)', () => {
         const list = (await api('get', who, '/payments')).body;
         expect(list).toHaveLength(1);
         expect(list[0]).toMatchObject({
-          source: 'WAREHOUSE', warehouseOrderId: o.id, bookingId: null, status: 'HELD', amount: '400000', feeAmount: '20000', farmerAmount: '380000',
+          source: 'WAREHOUSE', warehouseOrderId: o.id, bookingId: null, status: 'HELD', amount: '400000',
           order: { productName: 'Pomidor', quantityKg: '100' },
           actions: { canPay: false, canRelease: false, canRefund: false },
         });
+        // xizmat haqi va fermer ulushi marketdan yashirin
+        if (who === w.market) expect(list[0]).not.toHaveProperty('feeAmount');
+        else expect(list[0]).toMatchObject({ feeAmount: '20000', farmerAmount: '380000' });
       }
       const other = await registerMarket(t.http);
       expect((await api('get', other, '/payments')).body).toHaveLength(0);
