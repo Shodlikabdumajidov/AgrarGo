@@ -96,3 +96,15 @@ Holatlar: `PENDING` (kutilmoqda) → `HELD` (escrow'da) → `RELEASED` (fermerga
 Qoidalar `src/payment/payment.policy.ts` da (sof funksiyalar, unit testlangan). Pul harakati `PaymentProvider` adapteri orqali: hozir `SimulatedPaymentProvider` (haqiqiy pul yo'q). Provayder xatosida tranzaksiya qaytariladi (holat o'zgarmaydi, `502`). E'londa to'lov tarixi bo'lsa u o'chirilmaydi.
 
 **Administrator** API orqali ro'yxatdan o'tmaydi: `ADMIN_PASSWORD='...' npm run admin:create -- +998901234567 "Ism Familiya"` (parol kamida 12 belgi).
+
+## Parol: o'zgartirish va SMS orqali tiklash
+**Parol siyosati** (ro'yxatdan o'tish, o'zgartirish va tiklashda): kamida 8 belgi, kamida bitta harf va bitta raqam, 72 baytdan oshmasin (bcrypt chegarasi), ommabop zaif parollar (`Password123`, `qwerty123`...) rad etiladi. Mavjud foydalanuvchilarning eski parollari o'zgarmaydi.
+
+- `POST /auth/change-password` `{ currentPassword, newPassword }` (tizimga kirgan): joriy parol tekshiriladi (noto'g'ri bo'lsa `400`). Muvaffaqiyatda `tokenVersion` oshadi: **barcha boshqa qurilmalardagi tokenlar darhol yaroqsiz bo'ladi**; javobdagi yangi `accessToken` joriy qurilmani tizimda saqlaydi. Foydalanuvchiga xavfsizlik SMS'i yuboriladi.
+- `POST /auth/forgot-password` `{ phone }`: raqam mavjudligidan qat'i nazar **bir xil javob** (`200`), mavjud bo'lsa 6 xonali kod SMS qilinadi (SMS javobni kutmasdan yuboriladi). Kod 5 daqiqa amal qiladi, yangi kod eskisini bekor qiladi.
+- `POST /auth/verify-reset-code` `{ phone, code }`: to'g'ri kod bir martalik `resetToken` beradi (10 daqiqa). Har bir kodda ko'pi bilan 5 ta urinish (to'g'ri javob ham bitta urinish, parallel so'rovlar bilan ham oshib bo'lmaydi); xato sabablari (noto'g'ri, eskirgan, tugagan, raqam yo'q) bir xil xabar.
+- `POST /auth/reset-password` `{ resetToken, newPassword }`: token bir martalik; zaif parol tokenni "yoqmaydi". Muvaffaqiyatda barcha eski tokenlar yaroqsiz bo'ladi. Avtomatik kirish yo'q.
+
+**Saqlash**: kod HMAC-SHA256 (server kaliti va raqam bilan), token SHA-256 xeshi sifatida; ochiq ko'rinishda hech qachon.
+**Rate-limit** (`429` + `Retry-After`): kod so'rash: qayta yuborish kutishi (60 s) + raqamga soatiga 3 + IP'ga soatiga 5 (mavjud bo'lmagan raqamlar ham xuddi shunday sanaladi); kodni tekshirish: raqamga 15 daqiqada 10 (keyin 30 daqiqa blok) + IP'ga 20; yangi parol: IP'ga 10; parolni o'zgartirish: foydalanuvchiga 15 daqiqada 5 (token imzosi tekshirilib, soxta token bilan boshqa hisobni to'ldirib bo'lmaydi).
+**SMS**: `SmsProvider` adapteri; hozir `SimulatedSmsProvider` (SMS yuborilmaydi). Development/test'da `forgot-password` javobida `devCode` qaytadi (faqat shu rejimlarda); production'da simulyatsiya `SMS_ALLOW_SIMULATION=true`siz ishga tushmaydi va u yoqilganda ham kod jurnalga yozilmaydi.

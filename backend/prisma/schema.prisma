@@ -22,6 +22,8 @@ model User {
   role         Role     @default(FARMER)
   fullName     String
   avatarUrl    String?
+  // Parol o'zgarganda/tiklanganda oshiriladi: eski JWT tokenlar darhol yaroqsiz bo'ladi
+  tokenVersion Int      @default(0)
   isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -29,6 +31,8 @@ model User {
   farmer Farmer?
   driver Driver?
   market Market?
+
+  passwordResets PasswordReset[]
 }
 
 model Farmer {
@@ -230,4 +234,26 @@ model PaymentEvent {
   createdAt DateTime      @default(now())
 
   @@index([paymentId, createdAt])
+}
+
+// Parolni SMS orqali tiklash: bir martalik kod (OTP) -> tasdiqlangach bir martalik tiklash tokeni.
+// Kod ham, token ham bazada faqat xesh ko'rinishida saqlanadi.
+model PasswordReset {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  codeHash   String   // HMAC-SHA256 (server kaliti bilan): 6 xonali kodni bazadan tiklab bo'lmaydi
+  attempts   Int      @default(0) // kodni tekshirish urinishlari (to'g'ri yoki noto'g'ri, hammasi sanaladi)
+  expiresAt  DateTime
+  verifiedAt DateTime?
+
+  resetTokenHash      String?   @unique // kod tasdiqlangach beriladigan token (SHA-256)
+  resetTokenExpiresAt DateTime?
+  usedAt              DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([createdAt])
 }

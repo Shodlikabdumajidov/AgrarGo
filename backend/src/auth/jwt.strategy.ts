@@ -8,6 +8,7 @@ import { PrismaService } from '../prisma/prisma.service';
 export interface JwtPayload {
   sub: string;
   role: string;
+  tv?: number; // tokenVersion: parol o'zgarganda eski tokenlar yaroqsiz bo'ladi
 }
 
 @Injectable()
@@ -27,6 +28,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       include: { farmer: true, driver: true, market: true },
     });
     if (!user || !user.isActive) throw new UnauthorizedException();
+    // tv yo'q (eski) tokenlar 0 versiyaga teng hisoblanadi
+    if ((payload.tv ?? 0) !== user.tokenVersion) throw new UnauthorizedException();
     const { passwordHash, ...safe } = user;
     return safe;
   }

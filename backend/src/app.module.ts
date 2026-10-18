@@ -15,6 +15,7 @@ import { ProfileModule } from './profile/profile.module';
 import { AppThrottlerGuard } from './security/app-throttler.guard';
 import { buildThrottlers } from './security/throttling';
 import { ShipmentModule } from './shipment/shipment.module';
+import { SmsModule } from './sms/sms.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { ShipmentModule } from './shipment/shipment.module';
     // Qiymatlarni tekshirish AppEnvModule'da, ilova yig'ilayotganda bajariladi.
     ConfigModule.forRoot({ isGlobal: true, ignoreEnvFile: process.env.NODE_ENV === 'test' }),
     AppEnvModule,
+    SmsModule,
     ThrottlerModule.forRootAsync({
       inject: [APP_ENV],
       useFactory: (env: AppEnv) => ({ throttlers: buildThrottlers(env) }),

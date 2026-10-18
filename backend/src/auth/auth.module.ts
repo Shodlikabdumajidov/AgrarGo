@@ -5,6 +5,7 @@ import { APP_ENV } from '../config/app-env.module';
 import { AppEnv } from '../config/env.validation';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { PasswordService } from './password/password.service';
 import { JwtStrategy } from './jwt.strategy';
 
 @Module({
@@ -19,6 +20,6 @@ import { JwtStrategy } from './jwt.strategy';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, PasswordService, JwtStrategy],
 })
 export class AuthModule {}

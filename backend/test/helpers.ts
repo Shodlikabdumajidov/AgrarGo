@@ -20,6 +20,13 @@ const RELAXED_LIMITS = {
   THROTTLE_UPLOAD_LIMIT: '100000',
   THROTTLE_BOOKING_LIMIT: '100000',
   THROTTLE_PAYMENT_LIMIT: '100000',
+  THROTTLE_FORGOT_IP_LIMIT: '100000',
+  THROTTLE_FORGOT_PHONE_LIMIT: '100000',
+  THROTTLE_VERIFY_IP_LIMIT: '100000',
+  THROTTLE_VERIFY_PHONE_LIMIT: '100000',
+  THROTTLE_RESET_LIMIT: '100000',
+  THROTTLE_CHANGE_PASSWORD_LIMIT: '100000',
+  OTP_RESEND_COOLDOWN_SECONDS: '5', // testlarda kutish minimal; maxsus testlar o'zgartiradi
 };
 
 export interface TestApp {
@@ -38,6 +45,7 @@ export async function bootApp(env: Record<string, string | undefined> = {}): Pro
     JWT_EXPIRES_IN: '1h',
     CORS_ORIGINS: '',
     PAYMENT_ALLOW_SIMULATION: 'true', // testlarda pul harakati simulyatsiya qilinadi
+    SMS_ALLOW_SIMULATION: 'true', // testlarda SMS yuborilmaydi
     ...RELAXED_LIMITS,
     ...env,
   };

@@ -5,7 +5,7 @@ const base = {
   DATABASE_URL: 'postgresql://u:p@db:5432/agrargo',
   JWT_SECRET: STRONG,
 };
-const prod = { ...base, NODE_ENV: 'production', CORS_ORIGINS: 'https://agrargo.uz', PAYMENT_ALLOW_SIMULATION: 'true' };
+const prod = { ...base, NODE_ENV: 'production', CORS_ORIGINS: 'https://agrargo.uz', PAYMENT_ALLOW_SIMULATION: 'true', SMS_ALLOW_SIMULATION: 'true' };
 
 describe('validateEnv', () => {
   it('development uchun standart qiymatlarni beradi', () => {
@@ -85,6 +85,33 @@ describe('validateEnv', () => {
     });
   });
 
+  describe('SMS va parolni tiklash sozlamalari', () => {
+    const dev = { ...base, JWT_SECRET: 'dev-secret-123' };
+
+    it('standart qiymatlar', () => {
+      expect(validateEnv(dev)).toMatchObject({
+        SMS_PROVIDER: 'simulated', SMS_ALLOW_SIMULATION: false, OTP_TTL_SECONDS: 300, OTP_MAX_ATTEMPTS: 5,
+        OTP_RESEND_COOLDOWN_SECONDS: 60, RESET_TOKEN_TTL_SECONDS: 600,
+        THROTTLE_FORGOT_IP_LIMIT: 5, THROTTLE_FORGOT_PHONE_LIMIT: 3, THROTTLE_VERIFY_PHONE_LIMIT: 10, THROTTLE_CHANGE_PASSWORD_LIMIT: 5,
+      });
+    });
+
+    it("production'da simulyatsiya qilingan SMS ochiq ruxsatsiz rad etiladi", () => {
+      expect(() => validateEnv({ ...prod, SMS_ALLOW_SIMULATION: undefined })).toThrow(/simulyatsiya qilingan SMS/);
+      expect(() => validateEnv({ ...prod, SMS_ALLOW_SIMULATION: 'false' })).toThrow(/SMS_ALLOW_SIMULATION=true/);
+      expect(validateEnv(prod).SMS_ALLOW_SIMULATION).toBe(true);
+    });
+
+    it("noto'g'ri qiymatlarni rad etadi (OTP muddati, urinishlar soni, noma'lum provayder)", () => {
+      expect(() => validateEnv({ ...dev, SMS_PROVIDER: 'eskiz' })).toThrow(/SMS_PROVIDER/);
+      expect(() => validateEnv({ ...dev, OTP_TTL_SECONDS: '10' })).toThrow(/OTP_TTL_SECONDS/);
+      expect(() => validateEnv({ ...dev, OTP_TTL_SECONDS: '3600' })).toThrow(/OTP_TTL_SECONDS/);
+      expect(() => validateEnv({ ...dev, OTP_MAX_ATTEMPTS: '0' })).toThrow(/OTP_MAX_ATTEMPTS/);
+      expect(() => validateEnv({ ...dev, OTP_MAX_ATTEMPTS: '100' })).toThrow(/OTP_MAX_ATTEMPTS/);
+      expect(() => validateEnv({ ...dev, THROTTLE_FORGOT_PHONE_LIMIT: '0' })).toThrow(/THROTTLE_FORGOT_PHONE_LIMIT/);
+    });
+  });
+
   it("throttle chegaralarini sozlash mumkin va noto'g'ri qiymat rad etiladi", () => {
     expect(validateEnv({ ...base, JWT_SECRET: 'dev-secret-123', THROTTLE_LOGIN_PHONE_LIMIT: '3' }).THROTTLE_LOGIN_PHONE_LIMIT).toBe(3);
     expect(() => validateEnv({ ...base, JWT_SECRET: 'dev-secret-123', THROTTLE_LOGIN_PHONE_LIMIT: '0' })).toThrow(/THROTTLE_LOGIN_PHONE_LIMIT/);
@@ -94,12 +121,12 @@ describe('validateEnv', () => {
 describe('envWarnings', () => {
   it('namuna kalit va bo‘sh CORS uchun development’da ogohlantiradi', () => {
     const env = validateEnv({ ...base, JWT_SECRET: 'uzun-tasodifiy-sir-almashtiring' });
-    expect(envWarnings(env)).toHaveLength(3); // JWT, CORS va to'lov simulyatsiyasi
+    expect(envWarnings(env)).toHaveLength(4); // JWT, CORS, SMS va to'lov simulyatsiyasi
   });
 
-  it("production'da faqat to'lov simulyatsiyasi haqida ogohlantiradi", () => {
+  it("production'da faqat to'lov va SMS simulyatsiyasi haqida ogohlantiradi", () => {
     const warnings = envWarnings(validateEnv(prod));
-    expect(warnings).toHaveLength(1);
-    expect(warnings[0]).toMatch(/simulyatsiya/);
+    expect(warnings).toHaveLength(2);
+    expect(warnings.join(' ')).toMatch(/SMS simulyatsiya[\s\S]*To'lovlar simulyatsiya/);
   });
 });

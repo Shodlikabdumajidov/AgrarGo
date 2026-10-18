@@ -20,6 +20,18 @@ export interface AppEnv {
   PAYMENT_PROVIDER: 'simulated';
   PAYMENT_ALLOW_SIMULATION: boolean;
   PAYMENT_RELEASE_GRACE_HOURS: number;
+  SMS_PROVIDER: 'simulated';
+  SMS_ALLOW_SIMULATION: boolean;
+  OTP_TTL_SECONDS: number;
+  OTP_MAX_ATTEMPTS: number;
+  OTP_RESEND_COOLDOWN_SECONDS: number;
+  RESET_TOKEN_TTL_SECONDS: number;
+  THROTTLE_FORGOT_IP_LIMIT: number;
+  THROTTLE_FORGOT_PHONE_LIMIT: number;
+  THROTTLE_VERIFY_IP_LIMIT: number;
+  THROTTLE_VERIFY_PHONE_LIMIT: number;
+  THROTTLE_RESET_LIMIT: number;
+  THROTTLE_CHANGE_PASSWORD_LIMIT: number;
 }
 
 // Namuna (.env.example) va keng tarqalgan zaif qiymatlar production'da qabul qilinmaydi
@@ -116,6 +128,18 @@ export function validateEnv(raw: Record<string, unknown>): AppEnv & Record<strin
     errors.push("Production'da simulyatsiya qilingan to'lov taqiqlangan: haqiqiy to'lov provayderini ulang (faqat demo uchun PAYMENT_ALLOW_SIMULATION=true)");
   }
 
+  const smsProvider = String(raw.SMS_PROVIDER ?? 'simulated');
+  if (smsProvider !== 'simulated') {
+    errors.push(`SMS_PROVIDER "${smsProvider}" qo'llab-quvvatlanmaydi (hozircha faqat "simulated")`);
+  }
+  const smsAllowRaw = String(raw.SMS_ALLOW_SIMULATION ?? 'false').toLowerCase();
+  if (!['true', 'false'].includes(smsAllowRaw)) errors.push("SMS_ALLOW_SIMULATION true yoki false bo'lishi kerak");
+  const smsAllowSimulation = smsAllowRaw === 'true';
+  // Simulyatsiyada SMS yuborilmaydi: parolni tiklash kodlari kimgadir yetib bormaydi (yoki jurnalda qoladi)
+  if (prod && smsProvider === 'simulated' && !smsAllowSimulation) {
+    errors.push("Production'da simulyatsiya qilingan SMS taqiqlangan: haqiqiy SMS provayderini ulang (faqat demo uchun SMS_ALLOW_SIMULATION=true)");
+  }
+
   const env = {
     NODE_ENV: nodeEnv as NodeEnv,
     PORT: intInRange(raw.PORT, 'PORT', 3000, 1, 65535, errors),
@@ -132,6 +156,18 @@ export function validateEnv(raw: Record<string, unknown>): AppEnv & Record<strin
     THROTTLE_UPLOAD_LIMIT: intInRange(raw.THROTTLE_UPLOAD_LIMIT, 'THROTTLE_UPLOAD_LIMIT', 10, 1, 100000, errors),
     THROTTLE_BOOKING_LIMIT: intInRange(raw.THROTTLE_BOOKING_LIMIT, 'THROTTLE_BOOKING_LIMIT', 30, 1, 100000, errors),
     THROTTLE_PAYMENT_LIMIT: intInRange(raw.THROTTLE_PAYMENT_LIMIT, 'THROTTLE_PAYMENT_LIMIT', 20, 1, 100000, errors),
+    SMS_PROVIDER: 'simulated' as const,
+    SMS_ALLOW_SIMULATION: smsAllowSimulation,
+    OTP_TTL_SECONDS: intInRange(raw.OTP_TTL_SECONDS, 'OTP_TTL_SECONDS', 300, 60, 900, errors),
+    OTP_MAX_ATTEMPTS: intInRange(raw.OTP_MAX_ATTEMPTS, 'OTP_MAX_ATTEMPTS', 5, 1, 10, errors),
+    OTP_RESEND_COOLDOWN_SECONDS: intInRange(raw.OTP_RESEND_COOLDOWN_SECONDS, 'OTP_RESEND_COOLDOWN_SECONDS', 60, 5, 600, errors),
+    RESET_TOKEN_TTL_SECONDS: intInRange(raw.RESET_TOKEN_TTL_SECONDS, 'RESET_TOKEN_TTL_SECONDS', 600, 60, 1800, errors),
+    THROTTLE_FORGOT_IP_LIMIT: intInRange(raw.THROTTLE_FORGOT_IP_LIMIT, 'THROTTLE_FORGOT_IP_LIMIT', 5, 1, 100000, errors),
+    THROTTLE_FORGOT_PHONE_LIMIT: intInRange(raw.THROTTLE_FORGOT_PHONE_LIMIT, 'THROTTLE_FORGOT_PHONE_LIMIT', 3, 1, 100000, errors),
+    THROTTLE_VERIFY_IP_LIMIT: intInRange(raw.THROTTLE_VERIFY_IP_LIMIT, 'THROTTLE_VERIFY_IP_LIMIT', 20, 1, 100000, errors),
+    THROTTLE_VERIFY_PHONE_LIMIT: intInRange(raw.THROTTLE_VERIFY_PHONE_LIMIT, 'THROTTLE_VERIFY_PHONE_LIMIT', 10, 1, 100000, errors),
+    THROTTLE_RESET_LIMIT: intInRange(raw.THROTTLE_RESET_LIMIT, 'THROTTLE_RESET_LIMIT', 10, 1, 100000, errors),
+    THROTTLE_CHANGE_PASSWORD_LIMIT: intInRange(raw.THROTTLE_CHANGE_PASSWORD_LIMIT, 'THROTTLE_CHANGE_PASSWORD_LIMIT', 5, 1, 100000, errors),
     PAYMENT_PROVIDER: 'simulated' as const,
     PAYMENT_ALLOW_SIMULATION: allowSimulation,
     // Yetkazilgandan keyin xaridor tasdiqlamasa, fermer pulni shu soatdan keyin o'zi chiqarib ola oladi
@@ -150,6 +186,9 @@ export function envWarnings(env: AppEnv): string[] {
   if (env.NODE_ENV !== 'production') {
     if (WEAK_SECRETS.includes(env.JWT_SECRET.toLowerCase())) out.push("JWT_SECRET namuna qiymatda. Production'da almashtiring");
     if (env.CORS_ORIGINS.length === 0) out.push("CORS_ORIGINS bo'sh: barcha manzillarga ruxsat (faqat development uchun)");
+  }
+  if (env.SMS_PROVIDER === 'simulated') {
+    out.push("SMS simulyatsiya rejimida: kodlar yuborilmaydi (development'da javobda va jurnalda ko'rinadi)");
   }
   if (env.PAYMENT_PROVIDER === 'simulated') {
     out.push("To'lovlar simulyatsiya rejimida: haqiqiy pul harakati yo'q");

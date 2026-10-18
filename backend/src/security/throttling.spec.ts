@@ -1,7 +1,8 @@
 import { ExecutionContext } from '@nestjs/common';
 import { formatWait } from './app-throttler.guard';
 import { ThrottleProfile } from './throttle-profile';
-import { buildThrottlers, phoneTracker } from './throttling';
+import * as jwt from 'jsonwebtoken';
+import { buildThrottlers, phoneTracker, userTracker } from './throttling';
 
 const LIMITS = {
   THROTTLE_DEFAULT_LIMIT: 120,
@@ -11,10 +12,18 @@ const LIMITS = {
   THROTTLE_UPLOAD_LIMIT: 10,
   THROTTLE_BOOKING_LIMIT: 30,
   THROTTLE_PAYMENT_LIMIT: 20,
+  THROTTLE_FORGOT_IP_LIMIT: 5,
+  THROTTLE_FORGOT_PHONE_LIMIT: 3,
+  THROTTLE_VERIFY_IP_LIMIT: 20,
+  THROTTLE_VERIFY_PHONE_LIMIT: 10,
+  THROTTLE_RESET_LIMIT: 10,
+  THROTTLE_CHANGE_PASSWORD_LIMIT: 5,
+  OTP_RESEND_COOLDOWN_SECONDS: 60,
+  JWT_SECRET: 'unit-test-secret-unit-test-secret-123',
 };
 
 // Haqiqiy dekorator bilan belgilangan "marshrut" va uning ExecutionContext'i
-function contextWith(profile?: 'login' | 'register' | 'upload' | 'booking' | 'payment'): ExecutionContext {
+function contextWith(profile?: 'login' | 'register' | 'upload' | 'booking' | 'payment' | 'forgot' | 'verify' | 'reset' | 'pwchange'): ExecutionContext {
   class Ctrl {
     handler() {}
   }
@@ -25,7 +34,8 @@ function contextWith(profile?: 'login' | 'register' | 'upload' | 'booking' | 'pa
 describe('buildThrottlers', () => {
   const throttlers = buildThrottlers(LIMITS);
   const byName = (n: string) => throttlers.find((t) => t.name === n)!;
-  const skipped = (name: string, profile?: 'login' | 'register' | 'upload' | 'booking' | 'payment') =>
+  type Profile = 'login' | 'register' | 'upload' | 'booking' | 'payment' | 'forgot' | 'verify' | 'reset' | 'pwchange';
+  const skipped = (name: string, profile?: Profile) =>
     byName(name).skipIf!(contextWith(profile));
 
   it("umumiy chegara har doim ishlaydi, qattiq chegaralar faqat o'z marshrutida", () => {
@@ -56,6 +66,25 @@ describe('buildThrottlers', () => {
     const key = (h: string) => t.generateKey!({ getHandler: () => ({ name: h }) } as unknown as ExecutionContext, 'ip:1.1.1.1', 'payment');
     expect(key('init')).toBe(key('refund'));
     expect(t.limit).toBe(20);
+  });
+
+  it("parolni tiklash chegaralari faqat o'z marshrutlarida ishlaydi va raqam bo'yicha sanaladi", () => {
+    for (const name of ['forgot-ip', 'forgot-phone', 'forgot-cooldown']) {
+      expect(skipped(name, 'forgot')).toBe(false);
+      expect(skipped(name, 'login')).toBe(true);
+    }
+    for (const name of ['verify-ip', 'verify-phone']) {
+      expect(skipped(name, 'verify')).toBe(false);
+      expect(skipped(name, 'forgot')).toBe(true);
+    }
+    expect(skipped('reset-ip', 'reset')).toBe(false);
+    expect(skipped('pwchange', 'pwchange')).toBe(false);
+    expect(skipped('pwchange', 'reset')).toBe(true);
+    expect(byName('forgot-phone').getTracker).toBe(phoneTracker);
+    expect(byName('forgot-cooldown')).toMatchObject({ limit: 1, ttl: 60_000 });
+    expect(byName('forgot-phone')).toMatchObject({ limit: 3, ttl: 60 * 60_000 });
+    expect(byName('verify-phone')).toMatchObject({ limit: 10, blockDuration: 30 * 60_000 });
+    expect(byName('pwchange')).toMatchObject({ limit: 5, blockDuration: 30 * 60_000 });
   });
 
   it('login urinishlari limitdan oshsa vaqtincha bloklanadi', () => {
@@ -90,4 +119,27 @@ describe('formatWait', () => {
     [3601, '2 soat'],
     [0, '1 soniya'],
   ])('%s s -> %s', (s, text) => expect(formatWait(s)).toBe(text));
+});
+
+describe('userTracker', () => {
+  const SECRET = LIMITS.JWT_SECRET;
+  const track = userTracker(SECRET);
+  const req = (authorization?: string) => ({ headers: authorization ? { authorization } : {}, ip: '9.9.9.9' });
+
+  it("imzosi to'g'ri token bo'lsa foydalanuvchi bo'yicha sanaydi", () => {
+    const token = jwt.sign({ sub: 'user-1', role: 'FARMER' }, SECRET, { expiresIn: '1h' });
+    expect(track(req(`Bearer ${token}`))).toBe('user:user-1');
+  });
+
+  it("soxta imzo, boshqa kalit, 'none' algoritm va muddati o'tgan token IP bo'yicha sanaladi (boshqa hisobni to'ldirib bo'lmaydi)", () => {
+    const other = jwt.sign({ sub: 'victim' }, 'boshqa-kalit-boshqa-kalit-boshqa-kalit');
+    const expired = jwt.sign({ sub: 'victim' }, SECRET, { expiresIn: '-10s' });
+    const b64 = (o: object) => Buffer.from(JSON.stringify(o)).toString('base64url');
+    const none = `${b64({ alg: 'none', typ: 'JWT' })}.${b64({ sub: 'victim' })}.`;
+    const unsigned = `${b64({ alg: 'HS256', typ: 'JWT' })}.${b64({ sub: 'victim' })}.AAAA`;
+    for (const t of [other, expired, none, unsigned, 'abc', '']) {
+      expect(track(req(`Bearer ${t}`))).toBe('ip:9.9.9.9');
+    }
+    expect(track(req())).toBe('ip:9.9.9.9');
+  });
 });

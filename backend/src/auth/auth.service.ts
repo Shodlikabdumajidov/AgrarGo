@@ -83,9 +83,12 @@ export class AuthService {
     }
   }
 
+  signAccessToken(user: { id: string; role: Role; tokenVersion: number }) {
+    return this.jwt.sign({ sub: user.id, role: user.role, tv: user.tokenVersion });
+  }
+
   private buildResponse(user: Prisma.UserGetPayload<{ include: typeof USER_WITH_PROFILES }>) {
     const { passwordHash, ...safe } = user;
-    const accessToken = this.jwt.sign({ sub: user.id, role: user.role });
-    return { accessToken, user: safe };
+    return { accessToken: this.signAccessToken(user), user: safe };
   }
 }
