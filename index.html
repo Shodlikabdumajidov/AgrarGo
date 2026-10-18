@@ -801,7 +801,7 @@
             </div>
 
             <!-- Tabs -->
-            <div class="grid grid-cols-2 gap-1.5 p-1.5 mb-6 rounded-2xl bg-slate-950/60 border border-white/10" role="tablist">
+            <div id="auth-tabs" class="grid grid-cols-2 gap-1.5 p-1.5 mb-6 rounded-2xl bg-slate-950/60 border border-white/10" role="tablist">
                 <button type="button" id="tab-login" data-tab="login" onclick="switchAuthTab('login')" role="tab" class="auth-tab active py-2.5 rounded-xl text-sm font-bold text-slate-300 transition">Kirish</button>
                 <button type="button" id="tab-register" data-tab="register" onclick="switchAuthTab('register')" role="tab" class="auth-tab py-2.5 rounded-xl text-sm font-bold text-slate-300 transition">Ro'yxatdan o'tish</button>
             </div>
@@ -826,7 +826,10 @@
                     </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="login-password">Parol</label>
+                    <div class="flex items-center justify-between gap-3 mb-1.5">
+                        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider" for="login-password">Parol</label>
+                        <button type="button" onclick="openForgot()" class="text-xs font-bold text-emerald-400 hover:text-emerald-300 hover:underline">Parolni unutdingizmi?</button>
+                    </div>
                     <input id="login-password" name="password" type="password" autocomplete="current-password" placeholder="••••••••" class="auth-input">
                 </div>
                 <button type="submit" class="auth-submit w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed text-slate-950 font-extrabold py-3.5 rounded-2xl transition duration-200 shadow-xl shadow-emerald-500/30 flex items-center justify-center gap-2.5">
@@ -985,6 +988,52 @@
                     <i class="fa-solid fa-user-plus"></i> <span>Ro'yxatdan o'tish</span>
                 </button>
                 <p class="text-center text-sm text-slate-400">Hisobingiz bormi? <button type="button" onclick="switchAuthTab('login')" class="text-emerald-400 font-bold hover:underline">Kirish</button></p>
+            </form>
+            <!-- PAROLNI TIKLASH: 1) telefon -> 2) SMS kod -> 3) yangi parol -->
+            <form id="forgot-form" class="space-y-4 hidden" novalidate>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="forgot-phone">Telefon raqam</label>
+                    <div class="flex items-stretch gap-2">
+                        <span class="flex items-center px-3 rounded-[0.875rem] bg-slate-950/60 border border-white/15 text-emerald-400 font-bold text-sm">+998</span>
+                        <input id="forgot-phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="90 123 45 67" class="auth-input">
+                    </div>
+                </div>
+                <button type="submit" class="auth-submit w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed text-slate-950 font-extrabold py-3.5 rounded-2xl transition duration-200 shadow-xl shadow-emerald-500/30 flex items-center justify-center gap-2.5">
+                    <i class="fa-solid fa-message"></i> <span>Kod yuborish</span>
+                </button>
+                <p class="text-center text-sm text-slate-400"><button type="button" onclick="switchAuthTab('login')" class="text-emerald-400 font-bold hover:underline">← Kirishga qaytish</button></p>
+            </form>
+
+            <form id="verify-form" class="space-y-4 hidden" novalidate>
+                <div id="dev-code-note" class="hidden rounded-xl bg-amber-500/10 border border-amber-500/30 px-4 py-2.5 text-xs text-amber-200">
+                    <b>Test rejimi:</b> SMS yuborilmaydi. Tasdiqlash kodi: <b id="dev-code" class="text-base tracking-widest text-white"></b>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="verify-code">SMS kod</label>
+                    <input id="verify-code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="······" class="auth-input text-center text-2xl font-black tracking-[0.5em]">
+                </div>
+                <button type="submit" class="auth-submit w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed text-slate-950 font-extrabold py-3.5 rounded-2xl transition duration-200 shadow-xl shadow-emerald-500/30 flex items-center justify-center gap-2.5">
+                    <i class="fa-solid fa-circle-check"></i> <span>Tasdiqlash</span>
+                </button>
+                <div class="flex items-center justify-between gap-3 text-sm">
+                    <button type="button" id="resend-btn" class="font-bold text-emerald-400 hover:underline disabled:text-slate-500 disabled:no-underline disabled:cursor-not-allowed" disabled>Kodni qayta yuborish</button>
+                    <button type="button" onclick="showResetStep('forgot')" class="text-slate-400 hover:text-white">Raqamni o'zgartirish</button>
+                </div>
+            </form>
+
+            <form id="newpass-form" class="space-y-4 hidden" novalidate>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="np-password">Yangi parol</label>
+                    <input id="np-password" name="password" type="password" autocomplete="new-password" placeholder="Kamida 8 ta belgi" class="auth-input">
+                    <ul id="np-rules" class="mt-2 space-y-1"></ul>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="np-confirm">Yangi parolni takrorlang</label>
+                    <input id="np-confirm" name="confirm" type="password" autocomplete="new-password" placeholder="Yana bir bor kiriting" class="auth-input">
+                </div>
+                <button type="submit" class="auth-submit w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed text-slate-950 font-extrabold py-3.5 rounded-2xl transition duration-200 shadow-xl shadow-emerald-500/30 flex items-center justify-center gap-2.5">
+                    <i class="fa-solid fa-key"></i> <span>Parolni yangilash</span>
+                </button>
             </form>
         </div>
     </div>
@@ -1276,12 +1325,18 @@
 
         function closeAuthModal() {
             authModal.classList.remove('open');
+            if (typeof clearResetFlow === 'function') { clearResetFlow(); hideAllPasswords(); } // kod va token xotirada qolmasin
             syncScrollLock();
         }
 
         function switchAuthTab(tab) {
             const isLogin = tab === 'login';
             const meta = ROLE_META[authRole];
+            if (resetStep) {
+                // Parolni tiklash oqimidan chiqish: tablar qaytadi, holat tozalanadi
+                clearResetFlow();
+                document.getElementById('auth-tabs').classList.remove('hidden');
+            }
             loginForm.classList.toggle('hidden', !isLogin);
             Object.keys(REGISTER_FORM_IDS).forEach(function (r) {
                 document.getElementById(REGISTER_FORM_IDS[r]).classList.toggle('hidden', isLogin || r !== authRole);
@@ -1532,6 +1587,254 @@
             }
         });
 
+        // ===== PAROL: ko'rsatish/berkitish (ko'z), siyosat, tiklash =====
+        const EYE_SVG = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+        const EYE_OFF_SVG = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-6.5 0-10-7-10-7a18.5 18.5 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c6.5 0 10 7 10 7a18.5 18.5 0 0 1-2.16 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+
+        // Har bir parol maydoniga ko'z tugmasi qo'shadi (SVG: ikonka shrifti yuklanmasa ham ko'rinadi)
+        function attachPasswordToggle(input) {
+            if (input.dataset.pwToggle) return;
+            input.dataset.pwToggle = '1';
+            const wrap = document.createElement('div');
+            wrap.className = 'relative';
+            input.parentNode.insertBefore(wrap, input);
+            wrap.appendChild(input);
+            input.style.paddingRight = '3rem';
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'absolute right-1.5 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-lg text-slate-400 hover:text-emerald-400 transition';
+            btn.setAttribute('aria-label', "Parolni ko'rsatish");
+            btn.setAttribute('aria-pressed', 'false');
+            btn.tabIndex = 0;
+            btn.innerHTML = EYE_SVG;
+            btn.addEventListener('click', function () {
+                const show = input.type === 'password';
+                input.type = show ? 'text' : 'password';
+                btn.innerHTML = show ? EYE_OFF_SVG : EYE_SVG;
+                btn.setAttribute('aria-label', show ? 'Parolni berkitish' : "Parolni ko'rsatish");
+                btn.setAttribute('aria-pressed', show ? 'true' : 'false');
+                input.focus();
+            });
+            wrap.appendChild(btn);
+        }
+
+        // Modal yopilganda ochiq qolgan parollar yana berkitiladi
+        function hideAllPasswords() {
+            document.querySelectorAll('input[data-pw-toggle]').forEach(function (input) {
+                if (input.type === 'text') {
+                    input.type = 'password';
+                    const btn = input.parentNode.querySelector('button');
+                    if (btn) { btn.innerHTML = EYE_SVG; btn.setAttribute('aria-label', "Parolni ko'rsatish"); btn.setAttribute('aria-pressed', 'false'); }
+                }
+            });
+        }
+
+        // Parol siyosati serverniki bilan bir xil (server baribir tekshiradi): kamida 8 belgi, harf va raqam, 72 baytdan oshmasin
+        const COMMON_PASSWORDS = ['password1', 'password12', 'password123', 'password1234', 'qwerty123', 'qwerty1234', 'qwerty12345',
+            'abcd1234', 'abc12345', 'a1234567', 'a12345678', 'q1w2e3r4', 'iloveyou1', 'welcome1', 'admin123', 'admin1234', 'agrargo1', 'agrargo123'];
+
+        function passwordProblems(pw) {
+            const problems = [];
+            if (Array.from(pw).length < 8) problems.push("Parol kamida 8 ta belgidan iborat bo'lishi kerak");
+            if (new TextEncoder().encode(pw).length > 72) problems.push("Parol juda uzun (ko'pi bilan 72 bayt)");
+            if (!/\p{L}/u.test(pw)) problems.push("Parolda kamida bitta harf bo'lishi kerak");
+            if (!/\d/.test(pw)) problems.push("Parolda kamida bitta raqam bo'lishi kerak");
+            if (COMMON_PASSWORDS.indexOf(pw.toLowerCase()) !== -1) problems.push("Bu parol juda oddiy va ko'p ishlatiladi. Boshqasini tanlang");
+            if (Array.from(pw).length >= 8 && new Set(Array.from(pw)).size < 4) problems.push('Parolda juda kam xil belgi bor');
+            return problems;
+        }
+
+        // Yozayotganda yangilanadigan talablar ro'yxati
+        function buildPasswordRules(input, list) {
+            const rules = [
+                ['Kamida 8 ta belgi', function (v) { return Array.from(v).length >= 8; }],
+                ['Kamida bitta harf', function (v) { return /\p{L}/u.test(v); }],
+                ['Kamida bitta raqam', function (v) { return /\d/.test(v); }]
+            ];
+            const items = rules.map(function (r) {
+                const li = el('li', 'flex items-center gap-2 text-xs text-slate-500 transition');
+                const mark = el('span', 'w-4 h-4 rounded-full border border-white/20 flex items-center justify-center text-[10px]', '');
+                li.appendChild(mark);
+                li.appendChild(el('span', '', r[0]));
+                list.appendChild(li);
+                return { li: li, mark: mark, test: r[1] };
+            });
+            const update = function () {
+                items.forEach(function (it) {
+                    const ok = it.test(input.value);
+                    it.li.className = 'flex items-center gap-2 text-xs transition ' + (ok ? 'text-emerald-400' : 'text-slate-500');
+                    it.mark.textContent = ok ? '✓' : '';
+                    it.mark.className = 'w-4 h-4 rounded-full border flex items-center justify-center text-[10px] font-black ' + (ok ? 'border-emerald-400 bg-emerald-500/20' : 'border-white/20');
+                });
+            };
+            input.addEventListener('input', update);
+            update();
+        }
+
+        document.querySelectorAll('input[type="password"]').forEach(attachPasswordToggle);
+        buildPasswordRules(document.getElementById('np-password'), document.getElementById('np-rules'));
+
+        // ----- Parolni tiklash (SMS) -----
+        const forgotForm = document.getElementById('forgot-form');
+        const verifyForm = document.getElementById('verify-form');
+        const newpassForm = document.getElementById('newpass-form');
+        const RESET_FORMS = { forgot: forgotForm, verify: verifyForm, newpass: newpassForm };
+        const RESET_TEXT = {
+            forgot: ['Parolni tiklash', 'Telefon raqamingizga SMS orqali tasdiqlash kodi yuboramiz.'],
+            verify: ['Kodni tasdiqlang', ''],
+            newpass: ["Yangi parol o'rnating", 'Kod tasdiqlandi. Endi yangi parol tanlang.']
+        };
+        const resetFlow = { phone: '', token: '', resendAt: 0, timer: null };
+        let resetStep = null;
+
+        const maskPhone = function (p) { return p.replace(/^(\+998)(\d{2})\d{3}(\d{2})(\d{2})$/, '$1 $2 *** $3 $4'); };
+
+        function clearResetFlow() {
+            clearInterval(resetFlow.timer);
+            resetFlow.timer = null;
+            resetFlow.phone = ''; resetFlow.token = ''; resetFlow.resendAt = 0;
+            resetStep = null;
+            [forgotForm, verifyForm, newpassForm].forEach(function (f) { f.reset(); });
+            document.getElementById('dev-code-note').classList.add('hidden');
+        }
+
+        function showResetStep(step) {
+            resetStep = step;
+            loginForm.classList.add('hidden');
+            Object.keys(REGISTER_FORM_IDS).forEach(function (r) { document.getElementById(REGISTER_FORM_IDS[r]).classList.add('hidden'); });
+            document.getElementById('auth-tabs').classList.add('hidden');
+            document.getElementById('role-pills').classList.add('hidden');
+            Object.keys(RESET_FORMS).forEach(function (k) { RESET_FORMS[k].classList.toggle('hidden', k !== step); });
+            document.getElementById('auth-role-badge').innerText = 'Parolni tiklash';
+            document.getElementById('auth-role-icon').className = 'fa-solid fa-key';
+            document.getElementById('auth-title').innerText = RESET_TEXT[step][0];
+            document.getElementById('auth-subtitle').innerText = step === 'verify'
+                ? maskPhone(resetFlow.phone) + " raqamiga yuborilgan 6 xonali kodni kiriting."
+                : RESET_TEXT[step][1];
+            if (step !== 'verify') clearInterval(resetFlow.timer);
+            hideAuthAlert();
+            const focusId = { forgot: 'forgot-phone', verify: 'verify-code', newpass: 'np-password' }[step];
+            setTimeout(function () { const n = document.getElementById(focusId); if (n) n.focus(); }, 50);
+        }
+
+        function openForgot() {
+            const typed = loginForm.phone.value;
+            clearResetFlow();
+            forgotForm.phone.value = typed; // kirish oynasida terilgan raqam ko'chiriladi
+            showResetStep('forgot');
+        }
+
+        function tickResend() {
+            const btn = document.getElementById('resend-btn');
+            const left = Math.max(0, Math.ceil((resetFlow.resendAt - Date.now()) / 1000));
+            btn.disabled = left > 0;
+            btn.innerText = left > 0 ? 'Qayta yuborish: ' + left + ' s' : 'Kodni qayta yuborish';
+            if (left === 0) { clearInterval(resetFlow.timer); resetFlow.timer = null; }
+        }
+
+        // Kod so'raydi (birinchi marta yoki qayta); raqam ro'yxatdan o'tgan-o'tmaganidan qat'i nazar server bir xil javob beradi
+        async function requestResetCode(phone) {
+            const data = await authRequest('/auth/forgot-password', { phone: phone });
+            resetFlow.phone = phone;
+            resetFlow.resendAt = Date.now() + (data.resendAfterSeconds || 60) * 1000;
+            const note = document.getElementById('dev-code-note');
+            note.classList.toggle('hidden', !data.devCode); // faqat server test rejimida kodni qaytaradi
+            if (data.devCode) document.getElementById('dev-code').innerText = data.devCode;
+            return data;
+        }
+
+        forgotForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            hideAuthAlert();
+            const phone = normalizePhone(forgotForm.phone.value);
+            if (!/^\+998\d{9}$/.test(phone)) return showAuthAlert(PHONE_ERR);
+            setLoading(forgotForm, true);
+            try {
+                const data = await requestResetCode(phone);
+                showResetStep('verify');
+                verifyForm.code.value = '';
+                clearInterval(resetFlow.timer);
+                tickResend();
+                resetFlow.timer = setInterval(tickResend, 1000);
+                showAuthAlert(data.message, 'info');
+            } catch (err) {
+                showAuthAlert(err.messages);
+            } finally {
+                setLoading(forgotForm, false);
+            }
+        });
+
+        verifyForm.code.addEventListener('input', function () {
+            this.value = this.value.replace(/\D/g, '').slice(0, 6); // faqat raqam (SMS'dan joylashtirilganda ham)
+        });
+
+        verifyForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            hideAuthAlert();
+            const code = verifyForm.code.value.trim();
+            if (!/^\d{6}$/.test(code)) return showAuthAlert('Kodni to\'liq kiriting (6 ta raqam).');
+            setLoading(verifyForm, true);
+            try {
+                const data = await authRequest('/auth/verify-reset-code', { phone: resetFlow.phone, code: code });
+                resetFlow.token = data.resetToken;
+                showResetStep('newpass');
+            } catch (err) {
+                verifyForm.code.value = '';
+                showAuthAlert(err.messages);
+            } finally {
+                setLoading(verifyForm, false);
+            }
+        });
+
+        document.getElementById('resend-btn').addEventListener('click', async function () {
+            hideAuthAlert();
+            const btn = this;
+            btn.disabled = true;
+            try {
+                const data = await requestResetCode(resetFlow.phone);
+                verifyForm.code.value = '';
+                clearInterval(resetFlow.timer);
+                tickResend();
+                resetFlow.timer = setInterval(tickResend, 1000);
+                showAuthAlert(data.message, 'info');
+            } catch (err) {
+                showAuthAlert(err.messages);
+                // Kutish muddati tugamagan bo'lsa (429): tugma qisqa vaqtdan keyin qayta yoqiladi
+                resetFlow.resendAt = Date.now() + 5000;
+                tickResend();
+                resetFlow.timer = resetFlow.timer || setInterval(tickResend, 1000);
+            }
+        });
+
+        newpassForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            hideAuthAlert();
+            const pw = newpassForm.password.value;
+            const problems = passwordProblems(pw);
+            if (problems.length) return showAuthAlert(problems);
+            if (pw !== newpassForm.confirm.value) return showAuthAlert('Parollar bir xil emas.');
+            setLoading(newpassForm, true);
+            try {
+                await authRequest('/auth/reset-password', { resetToken: resetFlow.token, newPassword: pw });
+                const phone = resetFlow.phone;
+                clearResetFlow();
+                hideAllPasswords();
+                openAuthModal('login');
+                loginForm.phone.value = phone.slice(4); // +998 dan keyingi 9 raqam
+                loginForm.password.value = '';
+                showAuthAlert('Parol yangilandi. Yangi parol bilan tizimga kiring.', 'success');
+                loginForm.password.focus();
+            } catch (err) {
+                showAuthAlert(err.messages);
+                // Tiklash sessiyasi tugagan bo'lsa jarayon qaytadan boshlanadi
+                if (err.status === 400 && /sessiya/i.test(err.messages[0] || '')) {
+                    setTimeout(function () { resetFlow.token = ''; showResetStep('forgot'); showAuthAlert(err.messages); }, 1800);
+                }
+            } finally {
+                setLoading(newpassForm, false);
+            }
+        });
+
         const PHONE_ERR = "Telefon raqamni to'liq kiriting (9 ta raqam).";
         const PASSWORD_ERR = "Parol kamida 8 ta belgidan iborat bo'lishi kerak.";
 
@@ -1554,7 +1857,8 @@
                     if (!payload.region) errors.push('Viloyatni tanlang.');
                     if (!payload.district) errors.push('Tumanni kiriting.');
                     if (stir && !/^\d{9}$/.test(stir)) errors.push("STIR 9 ta raqamdan iborat bo'lishi kerak.");
-                    if (payload.password.length < 8) errors.push(PASSWORD_ERR);
+                    const pwProblem = passwordProblems(payload.password)[0];
+                    if (pwProblem) errors.push(pwProblem);
                     return { payload: payload, errors: errors };
                 }
             },
@@ -1575,7 +1879,8 @@
                     if (!/^[A-Za-z0-9 -]{5,12}$/.test(payload.plateNumber)) errors.push("Davlat raqamini to'g'ri kiriting (masalan, 01A123BC).");
                     if (!(payload.capacityKg > 0)) errors.push("Yuk sig'imini kiriting (kg).");
                     if (!payload.region) errors.push('Viloyatni tanlang.');
-                    if (payload.password.length < 8) errors.push(PASSWORD_ERR);
+                    const pwProblem = passwordProblems(payload.password)[0];
+                    if (pwProblem) errors.push(pwProblem);
                     return { payload: payload, errors: errors };
                 }
             },
@@ -1598,7 +1903,8 @@
                     if (!payload.region) errors.push('Viloyatni tanlang.');
                     if (!payload.district) errors.push('Tumanni kiriting.');
                     if (stir && !/^\d{9}$/.test(stir)) errors.push("STIR 9 ta raqamdan iborat bo'lishi kerak.");
-                    if (payload.password.length < 8) errors.push(PASSWORD_ERR);
+                    const pwProblem = passwordProblems(payload.password)[0];
+                    if (pwProblem) errors.push(pwProblem);
                     return { payload: payload, errors: errors };
                 }
             }
@@ -3226,7 +3532,7 @@
             }
             if (rid !== dashRenderId) return;
             saveUser(u);
-            dashContent.replaceChildren(buildAvatarCard(u), buildProfileForm(u));
+            dashContent.replaceChildren(buildAvatarCard(u), buildProfileForm(u), buildPasswordForm());
         }
 
         function buildAvatarCard(u) {
@@ -3364,6 +3670,77 @@
                     saveUser(updated);
                     showToast('Profil yangilandi.');
                     renderDashProfile();
+                } catch (err) {
+                    if (err.status !== 401) showAuthAlert(err.messages, 'error', alertBox);
+                } finally {
+                    setLoading(form, false);
+                }
+            });
+            return form;
+        }
+
+        function buildPasswordForm() {
+            const form = el('form', 'glass rounded-3xl border border-white/10 p-6 space-y-5');
+            form.noValidate = true;
+            form.setAttribute('autocomplete', 'off');
+            form.appendChild(sectionTitle("Parolni o'zgartirish", "Xavfsizlik uchun joriy parolingizni kiriting. O'zgartirgach, boshqa qurilmalardagi sessiyalar yopiladi."));
+            const alertBox = el('div', 'hidden', '');
+            alertBox.setAttribute('role', 'alert');
+            form.appendChild(alertBox);
+
+            const grid = el('div', 'grid grid-cols-1 sm:grid-cols-2 gap-4');
+            const inputs = {};
+            const addPw = function (name, label, autocomplete, span) {
+                const wrap = el('div', span ? 'sm:col-span-2' : '');
+                const lab = el('label', 'block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5', label);
+                lab.htmlFor = 'cp-' + name;
+                wrap.appendChild(lab);
+                const input = el('input', 'auth-input');
+                input.type = 'password';
+                input.id = 'cp-' + name;
+                input.autocomplete = autocomplete;
+                input.maxLength = 72;
+                wrap.appendChild(input);
+                attachPasswordToggle(input);
+                inputs[name] = input;
+                grid.appendChild(wrap);
+                return wrap;
+            };
+            addPw('current', 'Joriy parol', 'current-password', true);
+            const newWrap = addPw('next', 'Yangi parol', 'new-password', false);
+            addPw('confirm', 'Yangi parolni takrorlang', 'new-password', false);
+            const rules = el('ul', 'space-y-1 mt-2');
+            newWrap.appendChild(rules);
+            buildPasswordRules(inputs.next, rules);
+            form.appendChild(grid);
+
+            const submit = el('button', 'auth-submit w-full sm:w-auto sm:px-10 bg-emerald-500 hover:bg-emerald-400 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed text-slate-950 font-extrabold py-3.5 rounded-2xl transition duration-200 shadow-xl shadow-emerald-500/30 flex items-center justify-center gap-2.5');
+            submit.type = 'submit';
+            submit.appendChild(el('i', 'fa-solid fa-key'));
+            submit.appendChild(el('span', '', "Parolni yangilash"));
+            form.appendChild(submit);
+
+            form.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                hideAuthAlert(alertBox);
+                const cur = inputs.current.value, next = inputs.next.value;
+                const errors = [];
+                if (!cur) errors.push('Joriy parolni kiriting.');
+                const problems = passwordProblems(next);
+                if (problems.length) errors.push(problems[0]);
+                else if (next === cur) errors.push("Yangi parol joriy paroldan farq qilishi kerak.");
+                if (next !== inputs.confirm.value) errors.push('Yangi parollar mos kelmadi.');
+                if (errors.length) return showAuthAlert(errors, 'error', alertBox);
+
+                setLoading(form, true);
+                try {
+                    const data = await authed('POST', '/auth/change-password', { currentPassword: cur, newPassword: next });
+                    if (data && data.accessToken) storageSet(TOKEN_KEY, data.accessToken);
+                    form.reset();
+                    hideAllPasswords();
+                    inputs.next.dispatchEvent(new Event('input'));
+                    showAuthAlert("Parol muvaffaqiyatli o'zgartirildi. Boshqa qurilmalardagi sessiyalar yopildi.", 'success', alertBox);
+                    showToast("Parol yangilandi.");
                 } catch (err) {
                     if (err.status !== 401) showAuthAlert(err.messages, 'error', alertBox);
                 } finally {
