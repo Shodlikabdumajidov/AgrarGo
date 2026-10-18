@@ -106,6 +106,17 @@
         #auth-modal.open .auth-card, #product-modal.open .auth-card, #booking-modal.open .auth-card, #payment-modal.open .auth-card {
             transform: translateY(0) scale(1);
         }
+        /* Auth oynasida yashirin bo'limlar (parolni tiklash va h.k.) Tailwind yuklanishiga bog'liq bo'lmay yashirin turadi */
+        #auth-modal .hidden, #auth-modal [hidden] { display: none !important; }
+        /* Ingichka, dizaynga mos scrollbar (modal, kabinet, ro'yxatlar) */
+        html { color-scheme: dark; }
+        * { scrollbar-width: thin; scrollbar-color: rgba(16, 185, 129, 0.35) transparent; }
+        *::-webkit-scrollbar { width: 6px; height: 6px; }
+        *::-webkit-scrollbar-track { background: transparent; }
+        *::-webkit-scrollbar-thumb { background: rgba(16, 185, 129, 0.3); border-radius: 9999px; }
+        *::-webkit-scrollbar-thumb:hover { background: rgba(16, 185, 129, 0.6); }
+        .auth-card { scrollbar-width: none; }
+        .auth-card::-webkit-scrollbar { display: none; }
         /* Xarita (Leaflet) va belgilar */
         .trk-map { isolation: isolate; position: relative; z-index: 0; }
         .trk-map.leaflet-container { background: #0b1220; font-family: inherit; }
@@ -1430,6 +1441,7 @@
                     body: payload !== undefined ? JSON.stringify(payload) : undefined
                 });
             } catch (e) {
+                console.error('[API xato]', method, path, '-> tarmoq xatosi (server ishlamayapti yoki CORS)', e);
                 throw { status: 0, messages: ["Serverga ulanib bo'lmadi. Internetni tekshirib, qayta urinib ko'ring."] };
             }
             let data = null;
@@ -1443,7 +1455,14 @@
                 else if (res.status === 429) messages = [raw || "Juda ko'p urinish. Birozdan keyin qayta urinib ko'ring."];
                 else if (res.status === 404) messages = ["E'lon topilmadi. U allaqachon o'chirilgan bo'lishi mumkin."];
                 else if (res.status === 409) messages = [raw || "Bu telefon raqam allaqachon ro'yxatdan o'tgan."];
-                else messages = ["Kutilmagan xatolik yuz berdi. Keyinroq qayta urinib ko'ring."];
+                else if (typeof raw === 'string' && res.status < 500) messages = [raw];
+                else messages = ['Serverda xatolik yuz berdi (kod ' + res.status + "). Keyinroq qayta urinib ko'ring."];
+                // Dasturchi uchun: server aniq nima qaytargani konsolda (parol yashiriladi)
+                try {
+                    const sent = payload && typeof payload === 'object' ? Object.assign({}, payload) : payload;
+                    ['password', 'currentPassword', 'newPassword'].forEach(function (k) { if (sent && k in sent) sent[k] = '***'; });
+                    console.error('[API xato]', method, path, '->', res.status, { yuborildi: sent, javob: data });
+                } catch (e) {}
                 throw { status: res.status, messages: messages, raw: typeof raw === 'string' ? raw : null };
             }
             return data;
@@ -1704,7 +1723,8 @@
             resetFlow.timer = null;
             resetFlow.phone = ''; resetFlow.token = ''; resetFlow.resendAt = 0;
             resetStep = null;
-            [forgotForm, verifyForm, newpassForm].forEach(function (f) { f.reset(); });
+            // Tiklash bo'limlari faqat "Parolni unutdingizmi?" bosilganda ko'rinadi: chiqishda hammasi yashiriladi
+            [forgotForm, verifyForm, newpassForm].forEach(function (f) { f.reset(); f.classList.add('hidden'); });
             document.getElementById('dev-code-note').classList.add('hidden');
         }
 
