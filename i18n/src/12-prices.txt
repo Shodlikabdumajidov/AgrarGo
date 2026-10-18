@@ -28,3 +28,4 @@ Bugungi narxni butun son (so'm) ko'rinishida kiriting. ‖ Введите сег
 Narx kiritish faqat administrator va dispetcher uchun. ‖ Ввод цен доступен только администратору и диспетчеру. ‖ Only an administrator or dispatcher can enter prices.
 Bozorlar ro'yxatini yuklab bo'lmadi. ‖ Не удалось загрузить список рынков. ‖ Could not load the list of markets.
 Narxni saqlab bo'lmadi. ‖ Не удалось сохранить цену. ‖ Could not save the price.
+Obuna muddati ‖ Срок подписки ‖ Subscription term

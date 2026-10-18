@@ -533,6 +533,38 @@
         @media (max-width: 640px) { .tour-tip.dock { left: 1rem !important; right: 1rem; top: auto !important; bottom: 1rem; width: auto; } }
         @media (prefers-reduced-motion: reduce) { .empty-art, .nf-wheel, .nf-truck, .nf-twinkle, .empty-art .pulse { animation: none; } .tour-spot, .tour-tip { transition: none; } }
 
+        /* ===== Custom Dropdown (select o'rniga): quyuq emerald glass ===== */
+        .ds { position: relative; display: block; }
+        .ds.ds-hidden { display: none; }
+        .ds-native { position: absolute; left: 0; bottom: 0; width: 1px; height: 1px; min-height: 0 !important; opacity: 0; pointer-events: none; border: 0; padding: 0; }
+        .ds-trigger { display: flex; align-items: center; justify-content: space-between; gap: .6rem; text-align: left; cursor: pointer; background: linear-gradient(180deg, rgba(13,31,24,.92), rgba(13,31,24,.72)); border: 1px solid rgba(52,211,153,.28); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+        .ds-trigger:hover:not(:disabled) { border-color: rgba(52,211,153,.6); }
+        .ds-trigger:disabled { opacity: .55; cursor: not-allowed; }
+        .ds-trigger[aria-expanded="true"], .ds-trigger:focus-visible { border-color: #10B981; box-shadow: 0 0 0 3px rgba(16,185,129,.2); outline: none; }
+        .ds-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .ds-trigger.ds-empty .ds-label { color: #64748b; font-weight: 500; }
+        .ds-chev { flex: none; width: 1.05rem; height: 1.05rem; color: #6ee7b7; transition: transform .25s cubic-bezier(.16,1,.3,1); }
+        .ds-trigger[aria-expanded="true"] .ds-chev { transform: rotate(180deg); }
+        .ds-pop { position: fixed; z-index: 400; box-sizing: border-box; overflow-y: auto; overscroll-behavior: contain; padding: .4rem; border-radius: 1rem; background: rgba(10,26,20,.86); border: 1px solid rgba(52,211,153,.32); backdrop-filter: blur(18px) saturate(1.3); -webkit-backdrop-filter: blur(18px) saturate(1.3); box-shadow: 0 26px 60px -20px rgba(0,0,0,.85), 0 0 0 1px rgba(16,185,129,.08); scrollbar-width: thin; scrollbar-color: rgba(52,211,153,.55) transparent; animation: dsIn .18s cubic-bezier(.16,1,.3,1) both; transform-origin: top center; }
+        .ds-pop.up { transform-origin: bottom center; }
+        .ds-pop::-webkit-scrollbar { width: 8px; }
+        .ds-pop::-webkit-scrollbar-track { background: transparent; margin: .5rem 0; }
+        .ds-pop::-webkit-scrollbar-thumb { background: rgba(52,211,153,.45); border-radius: 9999px; border: 2px solid transparent; background-clip: content-box; }
+        .ds-pop::-webkit-scrollbar-thumb:hover { background: rgba(52,211,153,.75); background-clip: content-box; }
+        .ds-group { padding: .65rem .8rem .3rem; font-size: .68rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: rgba(110,231,183,.6); user-select: none; }
+        .ds-group:first-child { padding-top: .35rem; }
+        .ds-opt { display: flex; align-items: center; justify-content: space-between; gap: .75rem; min-height: 2.5rem; padding: .55rem .8rem; border-radius: .7rem; color: #e2e8f0; font-weight: 500; font-size: .95rem; cursor: pointer; user-select: none; position: relative; transition: background .12s, color .12s; }
+        .ds-opt.act { background: linear-gradient(90deg, rgba(16,185,129,.3), rgba(16,185,129,.08)); color: #fff; }
+        .ds-opt[aria-selected="true"] { color: #6ee7b7; font-weight: 700; }
+        .ds-opt[aria-selected="true"]::before { content: ''; position: absolute; left: 0; top: .5rem; bottom: .5rem; width: 3px; border-radius: 9999px; background: #34d399; }
+        .ds-opt.ds-ph { color: #94a3b8; }
+        .ds-opt[aria-disabled="true"] { opacity: .4; cursor: not-allowed; }
+        .ds-opt .ds-tick { flex: none; width: 1rem; height: 1rem; color: #34d399; }
+        .ds-opt-text { min-width: 0; overflow-wrap: anywhere; }
+        @media (pointer: coarse) { .ds-opt { min-height: 2.9rem; } }
+        @keyframes dsIn { from { opacity: 0; transform: translateY(-6px) scale(.97); } }
+        @media (prefers-reduced-motion: reduce) { .ds-pop { animation: none; } .ds-chev { transition: none; } }
+
         /* ===== Bozor narxlari ===== */
         #price-modal { opacity: 0; visibility: hidden; transition: opacity .3s ease, visibility .3s ease; }
         #price-modal.open { opacity: 1; visibility: visible; }
@@ -9067,27 +9099,28 @@
             // Muddat tanlash
             const pick = el('div', 'glass rounded-3xl border border-white/10 p-6 space-y-5');
             pick.appendChild(el('h4', 'font-extrabold text-white', 'Obunani uzaytirish'));
-            const grid = el('div', 'grid grid-cols-2 lg:grid-cols-4 gap-3');
+            const monthSel = el('select', 'auth-input');
+            monthSel.id = 'sub-months';
+            monthSel.setAttribute('aria-label', 'Obuna muddati');
+            SUB_MONTHS.forEach(function (m) {
+                const o = el('option', '', T('{0} oy', m) + ' — ' + subMoney(s.priceUzs * m));
+                o.value = String(m);
+                monthSel.appendChild(o);
+            });
             let months = 1;
             const total = el('div', 'text-3xl font-black text-emerald-300');
             const until = el('div', 'text-sm text-slate-400');
-            const plans = [];
             const base = s.accessEndsAt && new Date(s.accessEndsAt) > new Date() ? new Date(s.accessEndsAt) : new Date();
             const sync = function () {
-                plans.forEach(function (p) { p.btn.setAttribute('aria-pressed', String(p.m === months)); });
                 total.textContent = subMoney(s.priceUzs * months);
                 until.textContent = T('Yangi muddat: {0} gacha', formatDate(addDaysTo(base, 30 * months).toISOString()));
             };
-            SUB_MONTHS.forEach(function (m) {
-                const b = el('button', 'sub-plan');
-                b.type = 'button';
-                b.appendChild(el('div', 'font-black text-white', m === 12 ? T('{0} oy', 12) : T('{0} oy', m)));
-                b.appendChild(el('div', 'text-xs text-slate-400 mt-1', subMoney(s.priceUzs * m)));
-                b.addEventListener('click', function () { months = m; sync(); });
-                plans.push({ m: m, btn: b });
-                grid.appendChild(b);
-            });
-            pick.appendChild(grid);
+            monthSel.addEventListener('change', function () { months = Number(monthSel.value); sync(); });
+            const pickRow = el('div', 'max-w-sm');
+            pickRow.appendChild(el('label', 'block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5', 'Obuna muddati'));
+            pickRow.lastChild.htmlFor = 'sub-months';
+            pickRow.appendChild(monthSel);
+            pick.appendChild(pickRow);
             const foot = el('div', 'flex flex-wrap items-end justify-between gap-4');
             const sum = el('div', 'space-y-1');
             sum.appendChild(el('div', 'text-xs font-bold uppercase tracking-wider text-slate-400', 'Jami'));
@@ -9402,6 +9435,207 @@
             showSuccessCheck('Narx saqlandi!', data.productName + ': ' + formatNumber(data.priceYesterday) + ' → ' + formatNumber(data.priceToday));
             if (dashTab === 'prices') loadPrices();
         });
+
+        // ===== Custom Dropdown: barcha <select> avtomatik shu komponentga o'tadi =====
+        // Asl <select> DOM'da qoladi (yashirin): mavjud kod `.value`, `.options`, `change`, `form.reset()` bilan ishlashda davom etadi.
+        // Select'ga `data-native` qo'shilsa brauzerning standart menyusi saqlanadi.
+        const DS = { open: null, uid: 0 };
+        const DS_CHEV = '<svg class="ds-chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 7.5l5 5 5-5"/></svg>';
+        const DS_TICK = '<svg class="ds-tick" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 10.5l3.5 3.5 7.5-8"/></svg>';
+        const DS_SIZING = /^(sm:|md:|lg:|xl:)?!?(w-|min-w-|max-w-|flex-|grow|shrink)/;
+        const DS_VALUE = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value');
+        const DS_INDEX = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'selectedIndex');
+
+        function dsEnhance(select) {
+            if (select.__ds || select.hasAttribute('data-native') || select.multiple || select.size > 1 || !select.parentNode) return;
+            const id = ++DS.uid;
+            const classes = select.className.split(/\s+/).filter(Boolean);
+            const wrap = el('div', ['ds'].concat(classes.filter(function (c) { return DS_SIZING.test(c); })).join(' '));
+            const trig = el('button', ['ds-trigger'].concat(classes.filter(function (c) { return !DS_SIZING.test(c); })).join(' '));
+            trig.type = 'button';
+            trig.id = 'ds-t' + id;
+            trig.setAttribute('role', 'combobox');
+            trig.setAttribute('aria-haspopup', 'listbox');
+            trig.setAttribute('aria-expanded', 'false');
+            trig.setAttribute('aria-controls', 'ds-l' + id);
+            const lab = el('span', 'ds-label');
+            trig.appendChild(lab);
+            trig.insertAdjacentHTML('beforeend', DS_CHEV);
+            select.parentNode.insertBefore(wrap, select);
+            wrap.appendChild(select);
+            wrap.appendChild(trig);
+            select.className = 'ds-native';
+            select.tabIndex = -1;
+            select.setAttribute('aria-hidden', 'true');
+
+            let pop = null, items = [], active = -1, typed = '', typedAt = 0;
+
+            const sync = function () {
+                const o = select.options[select.selectedIndex];
+                lab.textContent = o ? o.textContent.trim() || ' ' : ' ';
+                trig.classList.toggle('ds-empty', !o || o.value === '');
+                trig.disabled = select.disabled;
+                wrap.classList.toggle('ds-hidden', select.hidden);
+                const al = select.getAttribute('aria-label');
+                if (al) trig.setAttribute('aria-label', al);
+            };
+            const place = function () {
+                if (!pop) return;
+                if (!trig.isConnected) return api.close();
+                const r = trig.getBoundingClientRect();
+                const vh = window.innerHeight, below = vh - r.bottom - 12, above = r.top - 12;
+                pop.style.maxHeight = '18rem';
+                const h = Math.min(pop.scrollHeight, 288);
+                const up = below < Math.min(h, 200) && above > below;
+                pop.classList.toggle('up', up);
+                pop.style.maxHeight = Math.max(120, Math.min(288, up ? above : below)) + 'px';
+                const w = Math.max(r.width, 180);
+                pop.style.width = w + 'px';
+                pop.style.left = Math.max(8, Math.min(r.left, window.innerWidth - w - 8)) + 'px';
+                if (up) { pop.style.top = 'auto'; pop.style.bottom = (vh - r.top + 6) + 'px'; }
+                else { pop.style.bottom = 'auto'; pop.style.top = (r.bottom + 6) + 'px'; }
+            };
+            const setActive = function (i, scroll) {
+                if (active >= 0 && items[active]) items[active].node.classList.remove('act');
+                active = i;
+                if (i < 0 || !items[i]) return trig.removeAttribute('aria-activedescendant');
+                items[i].node.classList.add('act');
+                trig.setAttribute('aria-activedescendant', items[i].node.id);
+                if (scroll) items[i].node.scrollIntoView({ block: 'nearest' });
+            };
+            const move = function (from, step) {
+                for (let i = from + step; i >= 0 && i < items.length; i += step) if (!items[i].opt.disabled) return i;
+                return from;
+            };
+            const choose = function (opt) {
+                if (opt.disabled) return;
+                const changed = select.selectedIndex !== opt.index;
+                select.selectedIndex = opt.index;
+                api.close(true);
+                if (changed) {
+                    select.dispatchEvent(new Event('input', { bubbles: true }));
+                    select.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            };
+            const render = function () {
+                pop.replaceChildren();
+                items = [];
+                const addOpt = function (opt) {
+                    const n = el('div', ['ds-opt', opt.value === '' ? 'ds-ph' : ''].join(' '));
+                    n.id = 'ds-o' + id + '-' + items.length;
+                    n.setAttribute('role', 'option');
+                    n.setAttribute('aria-selected', String(opt.selected));
+                    if (opt.disabled) n.setAttribute('aria-disabled', 'true');
+                    n.appendChild(el('span', 'ds-opt-text', opt.textContent.trim()));
+                    if (opt.selected) n.insertAdjacentHTML('beforeend', DS_TICK);
+                    const idx = items.length;
+                    n.addEventListener('click', function () { choose(opt); });
+                    n.addEventListener('pointermove', function () { if (active !== idx && !opt.disabled) setActive(idx, false); });
+                    items.push({ opt: opt, node: n });
+                    pop.appendChild(n);
+                };
+                Array.prototype.forEach.call(select.children, function (c) {
+                    if (c.tagName === 'OPTGROUP') {
+                        const g = el('div', 'ds-group', c.label);
+                        g.setAttribute('role', 'presentation');
+                        pop.appendChild(g);
+                        Array.prototype.forEach.call(c.children, addOpt);
+                    } else if (c.tagName === 'OPTION') addOpt(c);
+                });
+                setActive(items.findIndex(function (it) { return it.opt.selected; }), true);
+            };
+
+            const api = {
+                trig: trig, sync: sync, place: place,
+                get pop() { return pop; },
+                open: function () {
+                    if (trig.disabled || pop) return;
+                    if (DS.open) DS.open.close();
+                    pop = el('div', 'ds-pop');
+                    pop.id = 'ds-l' + id;
+                    pop.setAttribute('role', 'listbox');
+                    const al = trig.getAttribute('aria-label');
+                    if (al) pop.setAttribute('aria-label', al);
+                    pop.addEventListener('pointerdown', function (e) { e.preventDefault(); }); // fokus trigger'da qoladi
+                    document.body.appendChild(pop);
+                    render();
+                    trig.setAttribute('aria-expanded', 'true');
+                    DS.open = api;
+                    place();
+                    if (active >= 0) items[active].node.scrollIntoView({ block: 'nearest' });
+                },
+                close: function (refocus) {
+                    if (!pop) return;
+                    pop.remove();
+                    pop = null; items = []; active = -1;
+                    trig.setAttribute('aria-expanded', 'false');
+                    trig.removeAttribute('aria-activedescendant');
+                    if (DS.open === api) DS.open = null;
+                    if (refocus) trig.focus();
+                }
+            };
+            select.__ds = api;
+
+            trig.addEventListener('click', function () { if (pop) api.close(); else api.open(); });
+            trig.addEventListener('keydown', function (e) {
+                const k = e.key;
+                if (!pop) {
+                    if (k === 'ArrowDown' || k === 'ArrowUp' || k === 'Enter' || k === ' ') { e.preventDefault(); api.open(); }
+                    return;
+                }
+                if (k === 'Escape') { e.preventDefault(); e.stopPropagation(); return api.close(true); } // modal/kabinet yopilmasin
+                if (k === 'Tab') return api.close();
+                if (k === 'ArrowDown') setActive(move(active < 0 ? -1 : active, 1), true);
+                else if (k === 'ArrowUp') setActive(move(active < 0 ? items.length : active, -1), true);
+                else if (k === 'Home') setActive(move(-1, 1), true);
+                else if (k === 'End') setActive(move(items.length, -1), true);
+                else if (k === 'PageDown') setActive(move(Math.min(items.length - 1, active + 7), 1) , true);
+                else if (k === 'PageUp') setActive(move(Math.max(0, active - 7), -1), true);
+                else if (k === 'Enter' || k === ' ') { if (active >= 0) choose(items[active].opt); }
+                else if (k.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) { // harf bo'yicha qidirish
+                    const now = Date.now();
+                    typed = (now - typedAt > 600 ? '' : typed) + k.toLowerCase();
+                    typedAt = now;
+                    const from = typed.length === 1 ? active + 1 : active;
+                    for (let n = 0; n < items.length; n++) {
+                        const i = (from + n + items.length) % items.length;
+                        if (!items[i].opt.disabled && items[i].opt.textContent.trim().toLowerCase().indexOf(typed) === 0) { setActive(i, true); break; }
+                    }
+                    return;
+                } else return;
+                e.preventDefault();
+            });
+
+            // Dasturiy o'zgarishlar (select.value = ..., selectedIndex = ..., focus()) ham ko'rinishga yetib boradi
+            Object.defineProperty(select, 'value', { configurable: true, get: function () { return DS_VALUE.get.call(this); }, set: function (v) { DS_VALUE.set.call(this, v); sync(); } });
+            Object.defineProperty(select, 'selectedIndex', { configurable: true, get: function () { return DS_INDEX.get.call(this); }, set: function (v) { DS_INDEX.set.call(this, v); sync(); } });
+            select.focus = function (o) { trig.focus(o); };
+            if (select.id) document.querySelectorAll('label[for="' + select.id + '"]').forEach(function (l) { l.addEventListener('click', function () { trig.focus(); }); });
+            select.addEventListener('change', sync);
+            new MutationObserver(function () { sync(); if (pop) { render(); place(); } })
+                .observe(select, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['disabled', 'hidden', 'aria-label'] });
+            sync();
+        }
+
+        document.addEventListener('pointerdown', function (e) {
+            const o = DS.open;
+            if (o && !o.pop.contains(e.target) && !o.trig.contains(e.target)) o.close();
+        }, true);
+        window.addEventListener('scroll', function (e) { if (DS.open && !DS.open.pop.contains(e.target)) DS.open.place(); }, true);
+        window.addEventListener('resize', function () { if (DS.open) DS.open.place(); });
+        document.addEventListener('reset', function (e) {
+            setTimeout(function () { e.target.querySelectorAll && e.target.querySelectorAll('select.ds-native').forEach(function (s) { if (s.__ds) s.__ds.sync(); }); }, 0);
+        }, true);
+        new MutationObserver(function (recs) {
+            recs.forEach(function (r) {
+                r.addedNodes.forEach(function (n) {
+                    if (n.nodeType !== 1) return;
+                    if (n.tagName === 'SELECT') dsEnhance(n);
+                    else if (n.querySelectorAll) n.querySelectorAll('select').forEach(dsEnhance);
+                });
+            });
+        }).observe(document.body, { childList: true, subtree: true });
+        document.querySelectorAll('select').forEach(dsEnhance);
 
         startLiveReviews();
         routeRoleHash();
