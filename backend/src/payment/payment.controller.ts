@@ -1,5 +1,6 @@
-import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Query, UseGuards, UseInterceptors } from '@nestjs/common';
 import { Role } from '@prisma/client';
+import { StaffAuditInterceptor } from '../admin/audit.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/current-user.decorator';
 import { Roles } from '../common/roles.decorator';
@@ -10,6 +11,7 @@ import { PaymentService, PaymentUser } from './payment.service';
 
 @Controller('payments')
 @UseGuards(JwtAuthGuard, RolesGuard)
+@UseInterceptors(StaffAuditInterceptor)
 export class PaymentController {
   constructor(private readonly payments: PaymentService) {}
 

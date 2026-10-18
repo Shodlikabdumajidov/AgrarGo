@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { AdminModule } from './admin/admin.module';
+import { SettingsModule } from './settings/settings.module';
 import { AuthModule } from './auth/auth.module';
 import { BookingModule } from './booking/booking.module';
 import { APP_ENV, AppEnvModule } from './config/app-env.module';
@@ -38,6 +40,8 @@ import { WarehouseModule } from './warehouse/warehouse.module';
     ShipmentModule,
     PaymentModule,
     WarehouseModule,
+    SettingsModule,
+    AdminModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_GUARD, useClass: AppThrottlerGuard }],

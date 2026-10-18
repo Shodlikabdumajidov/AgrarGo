@@ -91,6 +91,14 @@ Holatlar: `OPEN` (haydovchi kutilmoqda) → `LOADING` (yuklanmoqda) → `IN_TRAN
 - `GET /shipments/eld?days=1..7` (DRIVER) — ELD jurnali: kunlar bo'yicha haydash/to'xtash daqiqalari, masofa, tezlik, to'xtashlar tarixi (≥3 daqiqa), 9 soatlik kunlik chegara belgisi. Kunlar Toshkent vaqti (UTC+5) bo'yicha. 5 daqiqadan uzoq signalsiz oraliq hisobga olinmaydi.
 - Jadvallar: `LocationLog` (har bir nuqta), `Shipment.last*` (oxirgi nuqta nusxasi). Eslatma: jurnal hozircha cheksiz saqlanadi — productionda eski yozuvlarni arxivlash/o'chirish ishini qo'shing.
 
+## Super Admin paneli (`ADMIN`) va sayt sozlamalari
+`/admin/*` — faqat ADMIN (dispetcher ham kira olmaydi). Omborxona (`/warehouse/*`) va to'lov (`/payments`, `release`, `refund`) endpointlari ham ADMIN'ga ochiq.
+- `GET /admin/stats` — foydalanuvchilar, e'lonlar, bronlar, yuklar, to'lovlar (aylanma, escrow), ombor, 14 kunlik ro'yxatdan o'tish.
+- Foydalanuvchilar: `GET /admin/users` (rol, holat, qidiruv, sahifalash), `GET|PATCH /admin/users/:id` (profil tahriri — foydalanuvchi profilidagi bir xil validatsiya), `PATCH /admin/users/:id/status` (bloklash/faollashtirish; bloklanganda sessiyalar darhol yopiladi; o'zini va oxirgi faol adminni bloklab bo'lmaydi), `POST /admin/users/:id/password`, `POST /admin/staff` (dispetcher/admin yaratish).
+- `GET /admin/products`, `PATCH|DELETE /admin/products/:id`, `GET /admin/shipments`.
+- Sozlamalar: `SystemSettings` (yagona qator, id=1). Ochiq: `GET /settings/public` (tokensiz, keshlanmaydi). Admin: `GET|PUT /admin/settings` — call-center telefonlari (1-5), email, Telegram, Instagram/Facebook/YouTube (faqat `https://`), ish vaqti va manzil (uz/ru/en). Sayt ochilganda va admin saqlaganda darhol yangilanadi.
+- Audit: `AuditLog`; admin amallari va xodimlar (admin/dispetcher) bajargan ombor/to'lov o'zgarishlari yoziladi: `GET /admin/audit`. Parollar yozilmaydi.
+
 ## Omborxona (Warehouse / WMS)
 Rollar: **FARMER** (e'lon qiladi, o'z yuklarini kuzatadi), **MARKET** (tayyor postlardan buyurtma beradi), **DISPATCHER** yoki **ADMIN** (ombor operatsiyalari). Dispetcher API orqali ro'yxatdan o'tmaydi:
 `ADMIN_PASSWORD='...' npm run admin:create -- --role=DISPATCHER +998901234567 "Ism Familiya"`

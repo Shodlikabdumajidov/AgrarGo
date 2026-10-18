@@ -457,3 +457,40 @@ model WarehouseOrder {
   @@index([status, createdAt])
   @@index([driverId, status])
 }
+
+// ===== TIZIM SOZLAMALARI va ADMIN AUDITI =====
+
+// Sayt bo'yicha yagona sozlamalar qatori (id doim 1): call-center, email, ijtimoiy tarmoqlar, ish vaqti, manzil.
+// Matnli maydonlar (ish vaqti, manzil) har bir til uchun alohida: { "uz": "...", "ru": "...", "en": "..." }
+model SystemSettings {
+  id               Int      @id @default(1)
+  siteName         String   @default("AgrarGo")
+  callCenterPhones String[]
+  supportEmail     String?
+  telegramHandle   String?
+  telegramUrl      String?
+  instagramUrl     String?
+  facebookUrl      String?
+  youtubeUrl       String?
+  workingHours     Json
+  address          Json
+  updatedById      String?
+  updatedAt        DateTime @updatedAt
+}
+
+// Administrator va xodimlarning o'zgartiruvchi amallari jurnali (kim, nima, qachon)
+model AuditLog {
+  id        String   @id @default(uuid())
+  actorId   String
+  actorName String
+  actorRole String
+  action    String
+  entity    String
+  entityId  String?
+  details   Json?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([entity, entityId])
+  @@index([actorId, createdAt])
+}

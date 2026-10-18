@@ -4,6 +4,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Role } from '@prisma/client';
 import { memoryStorage } from 'multer';
+import { StaffAuditInterceptor } from '../admin/audit.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/current-user.decorator';
 import { Roles } from '../common/roles.decorator';
@@ -21,6 +22,7 @@ const uuid = new ParseUUIDPipe();
 
 @Controller('warehouse')
 @UseGuards(JwtAuthGuard, RolesGuard)
+@UseInterceptors(StaffAuditInterceptor)
 export class WarehouseController {
   constructor(private readonly items: WarehouseService, private readonly orders: WarehouseOrderService) {}
 

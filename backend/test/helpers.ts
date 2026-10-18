@@ -88,7 +88,7 @@ export async function resetDb(prisma: PrismaClient) {
   const [{ db }] = await prisma.$queryRaw<{ db: string }[]>`SELECT current_database() AS db`;
   if (!db.endsWith('_test')) throw new Error(`resetDb "${db}" bazasida bajarilmaydi: faqat *_test`);
   // CASCADE: User'ga bog'liq barcha jadvallar (profillar, e'lon, bron, yuk) tozalanadi
-  await prisma.$executeRawUnsafe('TRUNCATE TABLE "User", "StorageUnit" CASCADE');
+  await prisma.$executeRawUnsafe('TRUNCATE TABLE "User", "StorageUnit", "AuditLog" CASCADE');
 }
 
 let phoneCounter = 0;
