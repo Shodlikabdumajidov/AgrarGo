@@ -473,6 +473,65 @@
             .marquee { overflow-x: auto; }
             .fx-card, .hover-glow, .partner, .contact-link { transition: none; }
         }
+
+        /* ===== UX: bo'sh holatlar, diagrammalar, 404, onboarding ===== */
+        .empty-state { position: relative; overflow: hidden; }
+        .empty-state::before { content: ''; position: absolute; left: 50%; top: -30%; width: 34rem; max-width: 140%; height: 20rem; transform: translateX(-50%); pointer-events: none;
+            background: radial-gradient(ellipse at center, rgba(16,185,129,.16), transparent 68%); }
+        .empty-art { width: 13.5rem; max-width: 70%; height: auto; margin: 0 auto; display: block; animation: empty-float 5.5s ease-in-out infinite; filter: drop-shadow(0 14px 24px rgba(16,185,129,.22)); }
+        .empty-compact .empty-art { width: 9.5rem; }
+        @keyframes empty-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        .empty-art .pulse { animation: empty-pulse 3.2s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+        @keyframes empty-pulse { 0%, 100% { opacity: .55; transform: scale(1); } 50% { opacity: 1; transform: scale(1.08); } }
+        .cta-big { display: inline-flex; align-items: center; justify-content: center; gap: .7rem; min-height: 56px; padding: 1rem 2.2rem; border-radius: 1.1rem; font-weight: 900; font-size: 1.05rem;
+            color: #022c22; background: linear-gradient(135deg, #34d399, #10B981); box-shadow: 0 14px 34px -12px rgba(16,185,129,.7); }
+        .cta-big:hover { filter: brightness(1.08); transform: translateY(-2px); box-shadow: 0 18px 40px -12px rgba(16,185,129,.85) !important; }
+        .cta-ghost { display: inline-flex; align-items: center; gap: .55rem; min-height: 44px; padding: .65rem 1.3rem; border-radius: 1rem; font-weight: 800; font-size: .9rem; color: #cbd5e1; border: 1px solid rgba(255,255,255,.16); }
+        .cta-ghost:hover { color: #34d399; border-color: rgba(16,185,129,.55); }
+
+        /* Diagrammalar */
+        .chart-card { display: flex; flex-direction: column; gap: .9rem; }
+        .chart-box { position: relative; height: 15rem; }
+        .chart-box.tall { height: 18rem; }
+        .chart-box canvas { max-width: 100%; }
+        .chart-empty { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .6rem; text-align: center; color: #64748b; font-size: .85rem; border: 1px dashed rgba(255,255,255,.12); border-radius: 1rem; padding: 1rem; }
+        .stat-num { font-variant-numeric: tabular-nums; }
+
+        /* 404 */
+        #not-found { opacity: 0; visibility: hidden; transform: translateY(14px); transition: opacity .3s ease, transform .4s cubic-bezier(.16,1,.3,1), visibility .3s ease; }
+        #not-found.open { opacity: 1; visibility: visible; transform: none; }
+        .nf-wheel { transform-box: view-box; transform-origin: 220px 106px; animation: nf-spin 6s linear infinite; }
+        .nf-truck { animation: nf-drive 9s ease-in-out infinite alternate; }
+        .nf-twinkle { animation: empty-pulse 2.6s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+        @keyframes nf-spin { to { transform: rotate(360deg); } }
+        @keyframes nf-drive { from { transform: translateX(-50px); } to { transform: translateX(50px); } }
+
+        /* Onboarding turi */
+        #tour-layer { position: fixed; inset: 0; z-index: 80; }
+        #tour-layer[hidden] { display: none; }
+        .tour-dim { position: fixed; inset: 0; }
+        .tour-spot { position: fixed; border-radius: 14px; pointer-events: none; box-shadow: 0 0 0 9999px rgba(2,6,23,.8), 0 0 0 2px rgba(52,211,153,.9), 0 0 32px 4px rgba(16,185,129,.55);
+            transition: top .45s cubic-bezier(.16,1,.3,1), left .45s cubic-bezier(.16,1,.3,1), width .45s cubic-bezier(.16,1,.3,1), height .45s cubic-bezier(.16,1,.3,1), opacity .3s ease; }
+        .tour-spot.center { box-shadow: 0 0 0 9999px rgba(2,6,23,.8); }
+        .tour-tip { position: fixed; width: min(22rem, calc(100vw - 2rem)); padding: 1.1rem 1.2rem 1rem; border-radius: 1.25rem; background: rgba(15,23,42,.96); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+            border: 1px solid rgba(16,185,129,.4); box-shadow: 0 24px 60px -16px rgba(0,0,0,.8), 0 0 40px -12px rgba(16,185,129,.5); color: #e2e8f0; opacity: 0; transform: translateY(8px) scale(.98);
+            transition: opacity .3s ease, transform .35s cubic-bezier(.16,1,.3,1), top .45s cubic-bezier(.16,1,.3,1), left .45s cubic-bezier(.16,1,.3,1); }
+        .tour-tip.show { opacity: 1; transform: none; }
+        .tour-tip h4 { font-weight: 900; font-size: 1.05rem; color: #fff; margin: .15rem 0 .4rem; }
+        .tour-tip p { font-size: .88rem; line-height: 1.55; color: #cbd5e1; }
+        .tour-step { font-size: .68rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: #34d399; }
+        .tour-dots { display: flex; gap: .3rem; margin-top: .9rem; }
+        .tour-dots i { width: 6px; height: 6px; border-radius: 99px; background: rgba(255,255,255,.2); transition: width .3s ease, background-color .3s ease; }
+        .tour-dots i.on { width: 18px; background: #34d399; }
+        .tour-actions { display: flex; align-items: center; justify-content: space-between; gap: .6rem; margin-top: 1rem; }
+        .tour-btn { min-height: 40px; padding: .5rem 1.1rem; border-radius: .8rem; font-weight: 800; font-size: .85rem; }
+        .tour-next { background: #10B981; color: #022c22; }
+        .tour-next:hover { background: #34d399; }
+        .tour-back { border: 1px solid rgba(255,255,255,.18); color: #cbd5e1; }
+        .tour-skip { color: #94a3b8; font-size: .78rem; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; min-height: 40px; padding: 0 .3rem; }
+        .tour-skip:hover { color: #fff; }
+        @media (max-width: 640px) { .tour-tip.dock { left: 1rem !important; right: 1rem; top: auto !important; bottom: 1rem; width: auto; } }
+        @media (prefers-reduced-motion: reduce) { .empty-art, .nf-wheel, .nf-truck, .nf-twinkle, .empty-art .pulse { animation: none; } .tour-spot, .tour-tip { transition: none; } }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans antialiased overflow-x-hidden selection:bg-emerald-500 selection:text-slate-950">
@@ -585,6 +644,9 @@
                         </button>
                         <button type="button" role="menuitem" onclick="closeAccountMenu(); openDashboard('profile')" class="w-full flex items-center gap-3 px-4 py-3.5 text-left text-slate-200 hover:bg-white/10 hover:text-emerald-400 font-semibold border-t border-white/5 transition">
                             <i class="fa-solid fa-id-card w-5 text-emerald-400"></i> Profil sozlamalari
+                        </button>
+                        <button type="button" role="menuitem" onclick="replayTour()" class="w-full flex items-center gap-3 px-4 py-3.5 text-left text-slate-200 hover:bg-white/10 hover:text-emerald-400 font-semibold border-t border-white/5 transition">
+                            <i class="fa-solid fa-circle-play w-5 text-emerald-400"></i> Qo'llanma
                         </button>
                         <button type="button" role="menuitem" onclick="logout()" class="w-full flex items-center gap-3 px-4 py-3.5 text-left text-slate-200 hover:bg-rose-500/10 hover:text-rose-400 font-semibold border-t border-white/5 transition">
                             <i class="fa-solid fa-right-from-bracket w-5 text-rose-400"></i> Chiqish
@@ -1600,6 +1662,55 @@
         <main id="rp-content" class="max-w-6xl mx-auto px-4 sm:px-6 py-10 space-y-16"></main>
     </div>
 
+    <!-- 404: mavjud bo'lmagan havola -->
+    <div id="not-found" class="fixed inset-0 z-[48] overflow-y-auto bg-slate-950" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="nf-title">
+        <div class="min-h-full flex items-center justify-center px-4 py-10">
+            <div class="glass rounded-[2rem] border border-white/10 w-full max-w-2xl text-center px-6 sm:px-10 py-10 space-y-5">
+                <div class="max-w-md mx-auto">
+<svg class="w-full h-auto" viewBox="0 0 440 230" role="img" aria-label="404" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="nf-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6ee7b7"/><stop offset="1" stop-color="#059669"/></linearGradient>
+    <radialGradient id="nf-glow" cx="50%" cy="45%" r="55%"><stop offset="0" stop-color="#10B981" stop-opacity=".32"/><stop offset="1" stop-color="#10B981" stop-opacity="0"/></radialGradient>
+  </defs>
+  <ellipse cx="220" cy="110" rx="210" ry="100" fill="url(#nf-glow)"/>
+  <g class="nf-twinkle" fill="#a7f3d0"><circle cx="40" cy="30" r="2.2"/><circle cx="410" cy="44" r="2.6"/><circle cx="340" cy="18" r="1.8"/><circle cx="86" cy="12" r="1.6"/></g>
+  <g fill="none" stroke="url(#nf-g)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M118 36 L36 128 H138 M118 36 V176"/>
+    <path d="M370 36 L288 128 H390 M370 36 V176"/>
+  </g>
+  <g>
+    <circle cx="220" cy="106" r="62" fill="rgba(15,23,42,.8)" stroke="url(#nf-g)" stroke-width="16"/>
+    <circle cx="220" cy="106" r="62" fill="none" stroke="rgba(2,6,23,.55)" stroke-width="16" stroke-dasharray="6 9"/>
+    <g class="nf-wheel" stroke="#34d399" stroke-width="5" stroke-linecap="round">
+      <path d="M220 106V62M220 106V150M220 106H176M220 106H264M220 106L189 75M220 106L251 137M220 106L251 75M220 106L189 137"/>
+    </g>
+    <circle cx="220" cy="106" r="14" fill="#10B981" stroke="#022c22" stroke-width="3"/>
+  </g>
+  <line x1="14" y1="198" x2="426" y2="198" stroke="rgba(148,163,184,.45)" stroke-width="3" stroke-dasharray="14 10" stroke-linecap="round"/>
+  <g class="nf-truck">
+    <rect x="150" y="168" width="52" height="26" rx="5" fill="rgba(255,255,255,.09)" stroke="rgba(255,255,255,.3)"/>
+    <path d="M202 174h16l11 11v9h-27z" fill="url(#nf-g)"/>
+    <path d="M208 178h8l6 7h-14z" fill="#022c22" opacity=".55"/>
+    <circle cx="166" cy="196" r="7" fill="#0f172a" stroke="#34d399" stroke-width="2.5"/>
+    <circle cx="216" cy="196" r="7" fill="#0f172a" stroke="#34d399" stroke-width="2.5"/>
+  </g>
+  <g transform="translate(396 150)">
+    <rect x="-3" y="0" width="6" height="48" rx="3" fill="rgba(148,163,184,.6)"/>
+    <rect x="-22" y="-6" width="44" height="26" rx="6" fill="rgba(16,185,129,.18)" stroke="#34d399" stroke-width="2"/>
+    <text x="0" y="14" text-anchor="middle" font-size="18" font-weight="800" fill="#6ee7b7" font-family="system-ui,sans-serif">?</text>
+  </g>
+</svg>
+                </div>
+                <h1 id="nf-title" class="text-2xl sm:text-4xl font-black text-white">Bu sahifa topilmadi</h1>
+                <p class="text-slate-400 max-w-md mx-auto leading-relaxed">Ehtimol, hosil hali pishmagandir yoki havola noto'g'ri yozilgan. Haydovchimiz ham bu manzilni xaritadan topa olmadi.</p>
+                <div class="flex flex-wrap justify-center gap-3 pt-1">
+                    <button type="button" id="nf-home" onclick="closeNotFound()" class="cta-big"><i class="fa-solid fa-house"></i><span>Bosh sahifaga qaytish</span></button>
+                    <button type="button" onclick="closeNotFound('#market')" class="cta-ghost"><i class="fa-solid fa-store"></i><span>Bozorga o'tish</span></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- BOOKING MODAL (B2B bron) -->
     <div id="booking-modal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="booking-title" onclick="if (event.target === this) closeBookingModal()">
         <div class="auth-card glass relative w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-3xl border border-emerald-500/25 shadow-2xl shadow-emerald-500/10 bg-gradient-to-b from-slate-900 to-emerald-950/30 p-6 sm:p-8">
@@ -1745,7 +1856,7 @@
 
         // Sahifa skrolli: biror modal/panel/kabinet ochiq bo'lsa qulflanadi
         function syncScrollLock() {
-            const open = ['auth-modal', 'product-modal', 'booking-modal', 'payment-modal', 'wh-modal', 'my-products-panel', 'dashboard-view', 'role-page'].some(function (id) {
+            const open = ['auth-modal', 'product-modal', 'booking-modal', 'payment-modal', 'wh-modal', 'my-products-panel', 'dashboard-view', 'role-page', 'not-found'].some(function (id) {
                 const node = document.getElementById(id);
                 return node && node.classList.contains('open');
             });
@@ -2657,7 +2768,7 @@
 
             if (!items.length) {
                 if (!total) {
-                    renderMpMessage('fa-seedling', "Hali e'lon qo'shmagansiz. Birinchi e'loningizni joylang!");
+                    mpList.replaceChildren(emptyState({ art: 'listings', compact: true, title: "Hali e'lon qo'shmagansiz", text: "Mahsulotingizni joylang: do'konlar uni darhol ko'rib, bron qila boshlaydi.", cta: { label: "Birinchi e'loningizni joylang", icon: 'fa-plus', fn: function () { openProductModal(); } } }));
                 } else {
                     renderMpMessage('fa-filter', "Bu holatdagi e'lonlar yo'q.");
                 }
@@ -2758,6 +2869,7 @@
 
         document.addEventListener('keydown', function (e) {
             if (e.key !== 'Escape') return;
+            if (tourState.active || notFoundView.classList.contains('open')) return; // tur va 404 o'z Escape'ini boshqaradi: kabinet yopilmasin
             if (whModal.classList.contains('open')) closeWhModal();
             else if (paymentModal.classList.contains('open')) closePaymentModal();
             else if (bookingModal.classList.contains('open')) closeBookingModal();
@@ -2877,7 +2989,7 @@
             marketGrid.replaceChildren();
             document.getElementById('market-pagination').replaceChildren();
             const box = el('div', 'col-span-full text-center py-16 space-y-4');
-            box.appendChild(el('i', 'fa-solid text-5xl text-emerald-400 ' + icon));
+            box.appendChild(icon.indexOf('fa-magnifying-glass') !== -1 ? emptyArt(actionLabel ? 'search' : 'listings') : el('i', 'fa-solid text-5xl text-emerald-400 ' + icon));
             box.appendChild(el('h3', 'text-xl font-bold text-white', title));
             box.appendChild(el('p', 'text-slate-400 text-sm max-w-md mx-auto', text));
             if (actionLabel) {
@@ -3123,6 +3235,7 @@
             dashboardView.setAttribute('aria-hidden', 'false');
             syncScrollLock();
             selectDashTab(tab || (user.role === 'ADMIN' ? 'adm-dashboard' : isStaffRole(user) ? 'whboard' : 'overview'));
+            setTimeout(function () { maybeStartTour(user); }, 1500); // birinchi kirishda interaktiv qo'llanma
         }
 
         function closeDashboard() {
@@ -3132,6 +3245,7 @@
         }
 
         function selectDashTab(tab) {
+            destroyCharts();
             if (tab === 'products') return openMyProducts();
             if (tab === 'catalog') { closeDashboard(); return scrollToMarket(); }
             const user = currentUser();
@@ -3203,7 +3317,9 @@
         function statCard(icon, label, value, tone) {
             const c = el('div', 'glass rounded-2xl border border-white/10 p-4 space-y-2');
             c.appendChild(el('i', 'fa-solid ' + icon + ' text-lg ' + tone));
-            c.appendChild(el('div', 'text-2xl font-black text-white break-words', value));
+            const v = el('div', 'text-2xl font-black text-white break-words');
+            countUp(v, value);
+            c.appendChild(v);
             c.appendChild(el('div', 'text-xs font-bold uppercase tracking-wider text-slate-400', label));
             return c;
         }
@@ -3252,14 +3368,21 @@
                     stats.appendChild(statCard('fa-circle-check', 'Tasdiqlangan', String(approved.length), 'text-emerald-400'));
                     nodes.push(stats);
                     const actions = el('div', 'flex flex-wrap gap-3');
-                    actions.appendChild(actionBtn('fa-plus', "Yangi e'lon qo'shish", true, function () { openProductModal(); }));
+                    const addBtn = actionBtn('fa-plus', "Yangi e'lon qo'shish", true, function () { openProductModal(); });
+                    addBtn.dataset.tour = 'primary';
+                    actions.appendChild(addBtn);
                     actions.appendChild(actionBtn('fa-boxes-stacked', "Mening e'lonlarim", false, openMyProducts));
                     actions.appendChild(actionBtn('fa-truck-ramp-box', 'Yuk tashish', false, function () { selectDashTab('shipments'); }));
                     actions.appendChild(actionBtn('fa-wallet', "To'lovlar", false, function () { selectDashTab('payments'); }));
                     nodes.push(actions);
+                    const farmerCharts = el('div');
+                    nodes.push(farmerCharts);
+                    buildRoleCharts('FARMER', bookings).then(function (c) { if (rid === dashRenderId) farmerCharts.appendChild(c); }).catch(function () {});
                     nodes.push(sectionTitle('Tasdiqlashni kutayotgan bronlar', "Tasdiqlagandan keyin xaridorning telefon raqami ochiladi."));
                     if (pending.length) pending.slice(0, 5).forEach(function (b) { nodes.push(buildBookingCard(b, 'farmer')); });
-                    else nodes.push(dashMessage('fa-inbox', "Hozircha yangi bron so'rovlari yo'q."));
+                    else nodes.push(emptyState({ art: 'bookings', compact: true, title: "Yangi bron so'rovlari yo'q",
+                        text: products.length ? "Do'konlar e'loningizni ko'rishi bilan bronlar shu yerda paydo bo'ladi." : "Hali e'lon qo'shmagansiz. Birinchi e'loningizni joylang: do'konlar bron qila boshlaydi.",
+                        cta: { label: products.length ? "Yangi e'lon qo'shish" : "Birinchi e'loningizni joylang", icon: 'fa-plus', fn: function () { openProductModal(); } } }));
                 } else if (user.role === 'MARKET') {
                     const bookings = await authed('GET', '/bookings/mine');
                     if (rid !== dashRenderId) return;
@@ -3273,14 +3396,20 @@
                     stats.appendChild(statCard('fa-ban', 'Rad / bekor', String(count('REJECTED') + count('CANCELLED')), 'text-rose-400'));
                     nodes.push(stats);
                     const actions = el('div', 'flex flex-wrap gap-3');
-                    actions.appendChild(actionBtn('fa-store', "Katalogga o'tish", true, function () { closeDashboard(); scrollToMarket(); }));
+                    const catBtn = actionBtn('fa-store', "Katalogga o'tish", true, function () { closeDashboard(); scrollToMarket(); });
+                    catBtn.dataset.tour = 'primary';
+                    actions.appendChild(catBtn);
                     actions.appendChild(actionBtn('fa-clipboard-list', 'Barcha bronlarim', false, function () { selectDashTab('bookings'); }));
                     actions.appendChild(actionBtn('fa-truck-ramp-box', 'Yuk tashish', false, function () { selectDashTab('shipments'); }));
                     actions.appendChild(actionBtn('fa-wallet', "To'lovlar", false, function () { selectDashTab('payments'); }));
                     nodes.push(actions);
+                    const marketCharts = el('div');
+                    nodes.push(marketCharts);
+                    buildRoleCharts('MARKET', bookings).then(function (c) { if (rid === dashRenderId) marketCharts.appendChild(c); }).catch(function () {});
                     nodes.push(sectionTitle("So'nggi bronlar"));
                     if (bookings.length) bookings.slice(0, 5).forEach(function (b) { nodes.push(buildBookingCard(b, 'market')); });
-                    else nodes.push(dashMessage('fa-store', "Hali bron qilmagansiz. Katalogdan mahsulot tanlang."));
+                    else nodes.push(emptyState({ art: 'bookings', compact: true, title: 'Hali bron qilmagansiz', text: "Katalogdan yangi mahsulot tanlab, fermerdan to'g'ridan-to'g'ri bron qiling.",
+                        cta: { label: "Katalogga o'tish", icon: 'fa-store', fn: goCatalog } }));
                 } else {
                     const res = await Promise.all([authed('GET', '/profile'), authed('GET', '/shipments/mine'), authed('GET', '/shipments/available'), authed('GET', '/shipments/eld?days=1').catch(function (e) { if (e.status === 401) throw e; return null; })]);
                     if (rid !== dashRenderId) return;
@@ -3298,7 +3427,9 @@
                     stats.appendChild(statCard('fa-weight-hanging', "Yuk sig'imi", d.capacityKg ? formatNumber(d.capacityKg) + ' kg' : '—', 'text-rose-400'));
                     nodes.push(stats);
                     const actions = el('div', 'flex flex-wrap gap-3');
-                    actions.appendChild(actionBtn('fa-boxes-packing', "Mavjud yuklarni ko'rish", true, function () { selectDashTab('loads'); }));
+                    const loadsBtn = actionBtn('fa-boxes-packing', "Mavjud yuklarni ko'rish", true, function () { selectDashTab('loads'); });
+                    loadsBtn.dataset.tour = 'primary';
+                    actions.appendChild(loadsBtn);
                     actions.appendChild(actionBtn('fa-id-card', 'Profilni tahrirlash', false, function () { selectDashTab('profile'); }));
                     nodes.push(actions);
                     if (res[3]) {
@@ -3307,7 +3438,8 @@
                     }
                     nodes.push(sectionTitle('Faol yuk'));
                     if (active.length) active.forEach(function (x) { nodes.push(buildShipmentCard(x, 'driver-own')); });
-                    else nodes.push(dashMessage('fa-truck', "Hozir faol yuk yo'q. \"Mavjud yuklar\" bo'limidan yuk tanlang."));
+                    else nodes.push(emptyState({ art: 'shipments', compact: true, title: "Hozir faol yuk yo'q", text: "To'lovi kafolatlangan yuklar ro'yxatidan o'zingizga mosini tanlang.",
+                        cta: { label: "Mavjud yuklarni ko'rish", icon: 'fa-boxes-packing', fn: function () { selectDashTab('loads'); } } }));
                 }
                 dashContent.replaceChildren.apply(dashContent, nodes);
             } catch (err) {
@@ -3450,7 +3582,11 @@
             const items = dashBookingFilter === 'ALL' ? list : list.filter(function (b) { return b.status === dashBookingFilter; });
             const nodes = [head];
             if (items.length) items.forEach(function (b) { nodes.push(buildBookingCard(b, side)); });
-            else nodes.push(dashMessage('fa-inbox', list.length ? "Bu holatdagi bronlar yo'q." : (side === 'farmer' ? "Hali bron so'rovlari kelmagan." : "Hali bron qilmagansiz. Katalogdan mahsulot tanlang.")));
+            else nodes.push(list.length
+                ? emptyState({ art: 'search', compact: true, title: "Bu holatdagi bronlar yo'q", text: 'Boshqa holatni tanlab ko\'ring.' })
+                : side === 'farmer'
+                    ? emptyState({ art: 'listings', title: "Hali bron so'rovlari kelmagan", text: "E'lon joylang: do'konlar uni ko'rib, bron qila boshlaydi.", cta: { label: "Birinchi e'loningizni joylang", icon: 'fa-plus', fn: function () { openProductModal(); } }, secondary: { label: "Mening e'lonlarim", icon: 'fa-boxes-stacked', fn: openMyProducts } })
+                    : emptyState({ art: 'bookings', title: 'Hali bron qilmagansiz', text: "Katalogdan yangi mahsulot tanlab, fermerdan to'g'ridan-to'g'ri bron qiling.", cta: { label: "Katalogga o'tish", icon: 'fa-store', fn: goCatalog } }));
             dashContent.replaceChildren.apply(dashContent, nodes);
         }
 
@@ -4042,7 +4178,9 @@
                 data.items.forEach(function (it) { grid.appendChild(buildWhPost(it, 'owner')); });
                 nodes.push(grid);
                 if (data.total > data.items.length) nodes.push(el('p', 'text-xs text-slate-500 text-center', 'Eng so\'nggi ' + data.items.length + ' ta yuk ko\'rsatildi (jami ' + data.total + ').'));
-            } else nodes.push(dashMessage('fa-warehouse', whFarmerZone === 'ALL' ? "Hali omborga yuk yubormagansiz. \"Yuk yuborish\" tugmasini bosing." : "Bu zonada yuklaringiz yo'q."));
+            } else nodes.push(whFarmerZone === 'ALL'
+                ? emptyState({ art: 'warehouse', title: "Omborxonada yukingiz yo'q", text: "Hosilingizni sifat nazorati va sovutgichli saqlash uchun omborga yuboring: narx ko'tarilganda soting.", cta: { label: 'Omborga yuk yuborish', icon: 'fa-paper-plane', fn: whAnnounceDialog } })
+                : emptyState({ art: 'search', compact: true, title: "Bu zonada yuklaringiz yo'q", text: 'Boshqa zonani tanlab ko\'ring.' }));
             dashContent.replaceChildren.apply(dashContent, nodes);
         }
 
@@ -4089,7 +4227,9 @@
                 pager.appendChild(el('span', 'text-xs font-bold text-slate-400', data.page + ' / ' + data.pages + ' · jami ' + data.total + ' ta'));
                 if (data.page < data.pages) { const b = actionBtn('fa-chevron-right', 'Keyingi', false, function () { whFeedState.page++; renderWhFeed(user); }); pager.appendChild(b); }
                 nodes.push(pager);
-            } else nodes.push(dashMessage('fa-warehouse', whFeedState.q || whFeedState.category || whFeedState.storageType ? 'Filtrga mos mahsulot topilmadi.' : "Hozircha jo'natishga tayyor mahsulot yo'q."));
+            } else nodes.push(whFeedState.q || whFeedState.category || whFeedState.storageType
+                ? emptyState({ art: 'search', compact: true, title: 'Filtrga mos mahsulot topilmadi', text: "So'rovni o'zgartirib ko'ring.", cta: { label: 'Filtrlarni tozalash', icon: 'fa-filter-circle-xmark', fn: function () { whFeedState = { q: '', category: '', storageType: '', page: 1 }; renderWhFeed(user); } } })
+                : emptyState({ art: 'warehouse', title: "Hozircha jo'natishga tayyor mahsulot yo'q", text: "Fermerlar yuk yuborib, u tekshiruvdan o'tgach mahsulotlar shu yerda ko'rinadi.", cta: { label: 'Yangilash', icon: 'fa-rotate', fn: function () { renderWhFeed(user); } } }));
             dashContent.replaceChildren.apply(dashContent, nodes);
             if (whFeedState.q) { const s = document.getElementById('wh-search'); if (s) { s.focus(); s.setSelectionRange(s.value.length, s.value.length); } }
         }
@@ -4268,8 +4408,11 @@
                 const grid = el('div', 'grid grid-cols-1 xl:grid-cols-2 gap-4');
                 items.forEach(function (o) { grid.appendChild(buildWhOrderCard(o, viewer)); });
                 nodes.push(grid);
-            } else nodes.push(dashMessage('fa-clipboard-list', list.length ? "Bu holatdagi buyurtmalar yo'q."
-                : (viewer === 'market' ? "Hali buyurtma bermagansiz. \"Omborxona\" bo'limidan mahsulot tanlang." : viewer === 'driver' ? "Sizga biriktirilgan ombor jo'natmalari yo'q." : "Hali buyurtmalar yo'q.")));
+            } else nodes.push(list.length
+                ? emptyState({ art: 'search', compact: true, title: "Bu holatdagi buyurtmalar yo'q", text: "Boshqa holatni tanlab ko'ring." })
+                : viewer === 'market'
+                    ? emptyState({ art: 'warehouse', title: 'Hali buyurtma bermagansiz', text: "Omborxonadan saralangan va sifat nazoratidan o'tgan mahsulotni buyurtma qiling.", cta: { label: "Omborxonaga o'tish", icon: 'fa-warehouse', fn: function () { selectDashTab('warehouse'); } } })
+                    : emptyState({ art: 'bookings', title: 'Hali buyurtmalar yo\'q', text: viewer === 'driver' ? "Sizga biriktirilgan ombor jo'natmalari yo'q." : "Marketlar buyurtma berganda ular shu yerda ko'rinadi." }));
             dashContent.replaceChildren.apply(dashContent, nodes);
         }
 
@@ -4604,13 +4747,11 @@
                 units.forEach(function (u) { grid.appendChild(whUnitCard(u)); });
                 nodes.push(grid);
             } else {
-                const empty = dashMessage('fa-temperature-half', "Hali kamera/ombor yaratilmagan.");
-                const b = actionBtn('fa-wand-magic-sparkles', 'Standart 4 ta joyni yaratish', true, async function () {
-                    try { await authed('POST', '/warehouse/units/defaults'); showToast('Standart kameralar yaratildi.'); renderWhUnits(user); }
-                    catch (err) { if (err.status !== 401) showToast(err.messages[0], 4000); }
-                });
-                empty.appendChild(b);
-                nodes.push(empty);
+                nodes.push(emptyState({ art: 'warehouse', title: 'Hali kamera/ombor yaratilmagan', text: "Quruq ombor va sovutgichli kameralarni bir bosishda yarating, keyin harorat/namlikni kuzating.",
+                    cta: { label: 'Standart 4 ta joyni yaratish', icon: 'fa-wand-magic-sparkles', fn: async function () {
+                        try { await authed('POST', '/warehouse/units/defaults'); showToast('Standart kameralar yaratildi.'); renderWhUnits(user); }
+                        catch (err) { if (err.status !== 401) showToast(err.messages[0], 4000); }
+                    } } }));
             }
             dashContent.replaceChildren.apply(dashContent, nodes);
         }
@@ -4881,6 +5022,7 @@
             stats.appendChild(statCard('fa-shield-halved', "Escrow'da", money(s.payments.heldAmount), 'text-blue-400'));
             stats.appendChild(statCard('fa-warehouse', 'Ombor qoldig\'i', kg(s.warehouse.totalKg), 'text-amber-400'));
             nodes.push(stats);
+            nodes.push(buildAdminCharts(s));
 
             const g = el('div', 'grid grid-cols-1 lg:grid-cols-2 gap-4');
             g.appendChild(admPanel('Foydalanuvchilar rollar bo\'yicha', admBars(Object.keys(ADM_ROLE_LABEL).map(function (r) { return [ADM_ROLE_LABEL[r], n(s.users.byRole, r)]; }))));
@@ -5726,7 +5868,7 @@
                     tb.appendChild(r);
                 });
                 t.appendChild(tb); tbl.appendChild(t); wrap.appendChild(tbl);
-            } else wrap.appendChild(dashMessage('fa-clock-rotate-left', "Hali harakat jurnali yo'q. Yukni yo'lga olib chiqqaningizda joylashuv yozib boriladi."));
+            } else wrap.appendChild(emptyState({ art: 'shipments', compact: true, title: "Hali harakat jurnali yo'q", text: "Yukni yo'lga olib chiqqaningizda joylashuv avtomatik yozib boriladi." }));
             if (eld.truncated) wrap.appendChild(el('p', 'text-xs text-amber-300', "Jurnal juda katta: eng so'nggi yozuvlar ko'rsatildi."));
             return wrap;
         }
@@ -6026,9 +6168,13 @@
             });
             const nodes = [head];
             if (items.length) items.forEach(function (s) { nodes.push(buildShipmentCard(s, viewer)); });
-            else nodes.push(dashMessage(driver ? 'fa-truck' : 'fa-truck-ramp-box', list.length
-                ? "Bu holatdagi yuklar yo'q."
-                : (driver ? "Hali yuk biriktirmagansiz. \"Mavjud yuklar\" bo'limidan tanlang." : "Hali yuk tashish buyurtmalari yo'q. Bron tasdiqlanganda avtomatik yaratiladi.")));
+            else nodes.push(list.length
+                ? emptyState({ art: 'search', compact: true, title: "Bu holatdagi yuklar yo'q", text: "Boshqa holatni tanlab ko'ring." })
+                : driver
+                    ? emptyState({ art: 'shipments', title: 'Hali yuk biriktirmagansiz', text: "To'lovi kafolatlangan yuklar ro'yxatidan o'zingizga mosini tanlang.", cta: { label: "Mavjud yuklarni ko'rish", icon: 'fa-boxes-packing', fn: function () { selectDashTab('loads'); } } })
+                    : user.role === 'FARMER'
+                        ? emptyState({ art: 'shipments', title: "Hali yuk tashish buyurtmalari yo'q", text: "Bronni tasdiqlaganingizda yuk tashish buyurtmasi avtomatik yaratiladi.", cta: { label: "Kelgan bronlarni ko'rish", icon: 'fa-inbox', fn: function () { selectDashTab('bookings'); } } })
+                        : emptyState({ art: 'shipments', title: "Hali yuk tashish buyurtmalari yo'q", text: "Fermer bronni tasdiqlaganda yuk tashish buyurtmasi avtomatik yaratiladi.", cta: { label: "Katalogga o'tish", icon: 'fa-store', fn: goCatalog } }));
             dashContent.replaceChildren.apply(dashContent, nodes);
         }
 
@@ -6063,7 +6209,9 @@
 
             const nodes = [head];
             if (list.length) list.forEach(function (s) { nodes.push(buildShipmentCard(s, 'driver-open')); });
-            else nodes.push(dashMessage('fa-boxes-packing', dashLoadsRegion ? "Bu hududdan bo'sh yuk yo'q. Boshqa hududni tanlab ko'ring." : "Hozircha bo'sh yuklar yo'q. Fermer bronni tasdiqlaganda yangi yuk paydo bo'ladi."));
+            else nodes.push(dashLoadsRegion
+                ? emptyState({ art: 'search', compact: true, title: "Bu hududdan bo'sh yuk yo'q", text: "Boshqa hududni tanlab ko'ring.", cta: { label: 'Barcha hududlar', icon: 'fa-globe', fn: function () { dashLoadsRegion = ''; renderDashLoads(user); } } })
+                : emptyState({ art: 'shipments', title: "Hozircha bo'sh yuklar yo'q", text: "Fermer bronni tasdiqlaganda yangi yuk shu yerda paydo bo'ladi.", cta: { label: 'Yangilash', icon: 'fa-rotate', fn: function () { renderDashLoads(user); } } }));
             dashContent.replaceChildren.apply(dashContent, nodes);
         }
 
@@ -6389,7 +6537,11 @@
 
             const items = groups[dashPayFilter] ? list.filter(function (p) { return groups[dashPayFilter].indexOf(p.status) !== -1; }) : list;
             if (items.length) items.forEach(function (p) { nodes.push(buildPaymentCard(p, viewer)); });
-            else nodes.push(dashMessage('fa-wallet', list.length ? "Bu holatdagi to'lovlar yo'q." : "Hali to'lovlar yo'q. Bron tasdiqlanganda to'lov avtomatik yaratiladi."));
+            else nodes.push(list.length
+                ? emptyState({ art: 'search', compact: true, title: "Bu holatdagi to'lovlar yo'q", text: "Boshqa holatni tanlab ko'ring." })
+                : viewer === 'farmer'
+                    ? emptyState({ art: 'payments', title: "Hali to'lovlar yo'q", text: "Bron tasdiqlanganda to'lov avtomatik yaratiladi va Escrow'da xavfsiz saqlanadi.", cta: { label: "Kelgan bronlarni ko'rish", icon: 'fa-inbox', fn: function () { selectDashTab('bookings'); } }, secondary: { label: "E'lon qo'shish", icon: 'fa-plus', fn: function () { openProductModal(); } } })
+                    : emptyState({ art: 'payments', title: "Hali to'lovlar yo'q", text: "Bron tasdiqlanganda to'lov avtomatik yaratiladi va Escrow'da xavfsiz saqlanadi.", cta: { label: "Katalogga o'tish", icon: 'fa-store', fn: goCatalog } }));
             dashContent.replaceChildren.apply(dashContent, nodes);
         }
 
@@ -7625,8 +7777,475 @@
 
         document.body.classList.add('page-ready');
 
+
+        // ===== UX: bo'sh holatlar, diagrammalar, 404 va onboarding =====
+
+        // ----- Bo'sh holatlar: qora-emerald illyustratsiyalar (SVG) -----
+        const EMPTY_DEFS = '<defs><linearGradient id="ea-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6ee7b7"/><stop offset="1" stop-color="#059669"/></linearGradient>'
+            + '<radialGradient id="ea-glow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#10B981" stop-opacity=".35"/><stop offset="1" stop-color="#10B981" stop-opacity="0"/></radialGradient></defs>'
+            + '<circle class="pulse" cx="110" cy="80" r="70" fill="url(#ea-glow)"/><ellipse cx="110" cy="152" rx="72" ry="8" fill="rgba(16,185,129,.18)"/>';
+        const GLASS = 'fill="rgba(255,255,255,.07)" stroke="rgba(255,255,255,.22)" stroke-width="1.5"';
+        const GLASS_ROUND = [GLASS, 'stroke-linejoin="round"'].join(' ');
+        const EMPTY_ART = {
+            listings: '<rect x="58" y="90" width="104" height="58" rx="11" ' + GLASS + '/><path d="M58 110h104M58 129h104" stroke="rgba(255,255,255,.14)" stroke-width="1.5"/>'
+                + '<path d="M110 90V58" stroke="url(#ea-g)" stroke-width="4" stroke-linecap="round"/><path d="M110 72c-24-2-32-17-32-28 19 0 32 9 32 28z" fill="url(#ea-g)"/><path d="M110 62c21 0 32-15 32-26-19 0-32 9-32 26z" fill="url(#ea-g)" opacity=".8"/>'
+                + '<circle cx="164" cy="64" r="15" fill="url(#ea-g)"/><path d="M164 56v16M156 64h16" stroke="#022c22" stroke-width="3.2" stroke-linecap="round"/>',
+            shipments: '<rect x="36" y="72" width="82" height="52" rx="9" ' + GLASS + '/><path d="M118 86h28l17 19v19h-45z" fill="url(#ea-g)"/><path d="M126 91h16l11 13h-27z" fill="#022c22" opacity=".5"/>'
+                + '<circle cx="66" cy="128" r="12" fill="#0f172a" stroke="#34d399" stroke-width="3"/><circle cx="66" cy="128" r="3.5" fill="#34d399"/><circle cx="143" cy="128" r="12" fill="#0f172a" stroke="#34d399" stroke-width="3"/><circle cx="143" cy="128" r="3.5" fill="#34d399"/>'
+                + '<path d="M24 146h172" stroke="rgba(148,163,184,.4)" stroke-width="2.5" stroke-dasharray="10 8" stroke-linecap="round"/><path d="M178 52c-10 0-17 7-17 16 0 12 17 26 17 26s17-14 17-26c0-9-7-16-17-16z" fill="url(#ea-g)"/><circle cx="178" cy="68" r="6" fill="#022c22"/>',
+            payments: '<rect x="48" y="66" width="112" height="76" rx="15" ' + GLASS + '/><path d="M48 86h112" stroke="rgba(255,255,255,.14)" stroke-width="1.5"/><rect x="124" y="98" width="46" height="26" rx="9" fill="rgba(16,185,129,.2)" stroke="#34d399" stroke-width="2"/><circle cx="138" cy="111" r="4.5" fill="#34d399"/>'
+                + '<circle cx="150" cy="56" r="22" fill="url(#ea-g)"/><circle cx="150" cy="56" r="15" fill="none" stroke="#022c22" stroke-width="2.5" opacity=".6"/><path d="M141 56l7 7 12-13" stroke="#022c22" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
+            warehouse: '<path d="M38 88L110 48l72 40v58H38z" ' + GLASS_ROUND + '/><path d="M38 88L110 48l72 40" fill="none" stroke="url(#ea-g)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>'
+                + '<rect x="84" y="102" width="52" height="44" rx="5" fill="rgba(16,185,129,.16)" stroke="#34d399" stroke-width="2"/><path d="M84 116h52M84 130h52" stroke="#34d399" stroke-width="1.6" opacity=".7"/>'
+                + '<rect x="148" y="124" width="22" height="22" rx="4" fill="url(#ea-g)" opacity=".9"/><rect x="50" y="128" width="22" height="18" rx="4" fill="url(#ea-g)" opacity=".7"/>',
+            bookings: '<rect x="68" y="42" width="84" height="106" rx="13" ' + GLASS + '/><rect x="94" y="33" width="32" height="18" rx="7" fill="url(#ea-g)"/>'
+                + '<path d="M82 74l6 6 10-11M82 100l6 6 10-11M82 126l6 6 10-11" fill="none" stroke="#34d399" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>'
+                + '<path d="M106 76h34M106 102h34M106 128h24" stroke="rgba(255,255,255,.3)" stroke-width="4" stroke-linecap="round"/>',
+            search: '<circle cx="100" cy="76" r="34" ' + GLASS + '/><circle cx="100" cy="76" r="34" fill="none" stroke="url(#ea-g)" stroke-width="8"/><path d="M126 102l34 34" stroke="url(#ea-g)" stroke-width="11" stroke-linecap="round"/>'
+                + '<path d="M86 70c4-8 14-10 22-5" stroke="rgba(255,255,255,.4)" stroke-width="3.5" stroke-linecap="round" fill="none"/>'
+        };
+        function emptyArt(kind) {
+            const svg = new DOMParser().parseFromString('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 165" class="empty-art" aria-hidden="true" focusable="false">' + EMPTY_DEFS + (EMPTY_ART[kind] || EMPTY_ART.search) + '</svg>', 'image/svg+xml').documentElement;
+            return document.importNode(svg, true);
+        }
+        // o: { art, title, text, cta: { label, icon, fn }, secondary: { label, icon, fn }, compact }
+        function emptyState(o) {
+            const box = el('div', ['empty-state glass rounded-3xl border border-white/10 text-center px-6 space-y-5', o.compact ? 'empty-compact py-9' : 'py-14'].join(' '));
+            box.appendChild(emptyArt(o.art));
+            const txt = el('div', 'relative space-y-2 max-w-md mx-auto');
+            txt.appendChild(el('h3', 'text-xl sm:text-2xl font-extrabold text-white', o.title));
+            if (o.text) txt.appendChild(el('p', 'text-sm text-slate-400 leading-relaxed', o.text));
+            box.appendChild(txt);
+            if (o.cta || o.secondary) {
+                const row = el('div', 'relative flex flex-wrap items-center justify-center gap-3 pt-1');
+                if (o.cta) {
+                    const b = el('button', 'cta-big');
+                    b.type = 'button';
+                    b.appendChild(el('i', 'fa-solid ' + (o.cta.icon || 'fa-plus')));
+                    b.appendChild(el('span', '', o.cta.label));
+                    b.addEventListener('click', o.cta.fn);
+                    row.appendChild(b);
+                }
+                if (o.secondary) {
+                    const s2 = el('button', 'cta-ghost');
+                    s2.type = 'button';
+                    s2.appendChild(el('i', 'fa-solid ' + (o.secondary.icon || 'fa-arrow-right')));
+                    s2.appendChild(el('span', '', o.secondary.label));
+                    s2.addEventListener('click', o.secondary.fn);
+                    row.appendChild(s2);
+                }
+                box.appendChild(row);
+            }
+            return box;
+        }
+        const goCatalog = function () { closeDashboard(); scrollToMarket(); };
+
+        // ----- Jonli raqamlar (statistika) -----
+        function countUp(node, value) {
+            const m = /^(\D*?)(\d[\d\s  ]*(?:[.,]\d+)?)(.*)$/.exec(String(value));
+            const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (!m || reduce) { node.textContent = value; return; }
+            const target = parseFloat(m[2].replace(/[\s  ]/g, '').replace(',', '.'));
+            if (!isFinite(target) || target === 0 || target > 1e13) { node.textContent = value; return; }
+            node.textContent = '';
+            const pre = document.createTextNode(m[1]);
+            const num = el('span', 'stat-num', formatNumber(0));
+            const post = document.createTextNode(m[3]);
+            node.append(pre, num, post);
+            const t0 = performance.now(), dur = 900;
+            const frac = /[.,]\d+$/.test(m[2]);
+            const step = function (now) {
+                if (!node.isConnected && now - t0 > 50) { return; }
+                const k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+                num.textContent = formatNumber(frac ? target * e : Math.round(target * e));
+                if (k < 1) requestAnimationFrame(step);
+                else node.textContent = value; // oxirida aniq asl matn
+            };
+            requestAnimationFrame(step);
+        }
+
+        // ----- Diagrammalar (Chart.js, lazy) -----
+        let chartLibPromise = null;
+        function loadChartLib() {
+            if (window.Chart) return Promise.resolve(window.Chart);
+            if (!chartLibPromise) chartLibPromise = loadScriptOnce('vendor/chart.umd.js').then(function () {
+                const C = window.Chart;
+                C.defaults.color = '#94a3b8';
+                C.defaults.font.family = "'Plus Jakarta Sans', system-ui, sans-serif";
+                C.defaults.font.weight = '600';
+                C.defaults.borderColor = 'rgba(255,255,255,.07)';
+                C.defaults.plugins.legend.labels.usePointStyle = true;
+                C.defaults.plugins.legend.labels.boxWidth = 8;
+                C.defaults.plugins.tooltip.backgroundColor = 'rgba(2,6,23,.94)';
+                C.defaults.plugins.tooltip.borderColor = 'rgba(16,185,129,.4)';
+                C.defaults.plugins.tooltip.borderWidth = 1;
+                C.defaults.plugins.tooltip.padding = 12;
+                C.defaults.plugins.tooltip.cornerRadius = 12;
+                C.defaults.plugins.tooltip.titleColor = '#fff';
+                return C;
+            }).catch(function (e) { chartLibPromise = null; throw e; });
+            return chartLibPromise;
+        }
+        let liveCharts = [];
+        function destroyCharts() { liveCharts.forEach(function (c) { try { c.destroy(); } catch (e) {} }); liveCharts = []; }
+        const CHART_COLORS = { emerald: '#10B981', teal: '#14b8a6', blue: '#3b82f6', amber: '#f59e0b', rose: '#f43f5e', purple: '#a855f7', slate: '#64748b', lime: '#84cc16' };
+        const chartLocale = function () { const l = (window.I18N && I18N.lang) || 'uz'; return l === 'ru' ? 'ru-RU' : l === 'en' ? 'en-US' : 'uz-UZ'; };
+        // Uzbek tilida brauzer oy nomini "M05" deb qaytaradi: o'zbekcha qisqa nomlar o'zimizda
+        const UZ_MONTHS = ['Yan', 'Fev', 'Mar', 'Apr', 'May', 'Iyn', 'Iyl', 'Avg', 'Sen', 'Okt', 'Noy', 'Dek'];
+        const monthShort = function (d) { return ((window.I18N && I18N.lang) || 'uz') === 'uz' ? UZ_MONTHS[d.getMonth()] : d.toLocaleDateString(chartLocale(), { month: 'short' }); };
+        function recentMonths(n) {
+            const out = [], now = new Date();
+            for (let i = n - 1; i >= 0; i--) {
+                const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                out.push({ key: d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'), label: monthShort(d) });
+            }
+            return out;
+        }
+        const monthKey = function (iso) { const d = new Date(iso); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); };
+        function barGradient(ctx, c1, c2) {
+            const a = ctx.chart.chartArea;
+            if (!a) return c1;
+            const g = ctx.chart.ctx.createLinearGradient(0, a.bottom, 0, a.top);
+            g.addColorStop(0, c2); g.addColorStop(1, c1);
+            return g;
+        }
+        // build(Chart) -> konfiguratsiya; hasData=false bo'lsa diagramma o'rniga qisqa izoh
+        function chartCard(title, sub, hasData, build, opts) {
+            opts = opts || {};
+            const card = el('div', ['chart-card glass rounded-3xl border border-white/10 p-5', opts.cls || ''].join(' '));
+            const head = el('div', 'space-y-0.5');
+            head.appendChild(el('h3', 'font-extrabold text-white', title));
+            if (sub) head.appendChild(el('p', 'text-xs text-slate-400', sub));
+            card.appendChild(head);
+            const box = el('div', 'chart-box' + (opts.tall ? ' tall' : ''));
+            card.appendChild(box);
+            if (!hasData) {
+                const e = el('div', 'chart-empty');
+                e.appendChild(el('i', 'fa-solid fa-chart-simple text-2xl text-emerald-400/60'));
+                e.appendChild(el('span', '', opts.emptyText || "Ma'lumot paydo bo'lishi bilan diagramma shu yerda ko'rinadi."));
+                box.appendChild(e);
+                return card;
+            }
+            const canvas = el('canvas');
+            canvas.setAttribute('role', 'img');
+            canvas.setAttribute('aria-label', title);
+            box.appendChild(canvas);
+            loadChartLib().then(function (Chart) {
+                setTimeout(function () {
+                    if (!canvas.isConnected) return;
+                    const cfg = build(Chart);
+                    cfg.options = Object.assign({ responsive: true, maintainAspectRatio: false }, cfg.options || {});
+                    liveCharts.push(new Chart(canvas, cfg));
+                }, 30);
+            }).catch(function () {
+                box.replaceChildren(el('div', 'chart-empty', "Diagrammani yuklab bo'lmadi."));
+            });
+            return card;
+        }
+        const moneyShort = function (v) {
+            v = Number(v);
+            if (Math.abs(v) >= 1e9) return (v / 1e9).toFixed(1).replace('.', ',') + ' mlrd';
+            if (Math.abs(v) >= 1e6) return (v / 1e6).toFixed(1).replace('.', ',') + ' mln';
+            if (Math.abs(v) >= 1e3) return Math.round(v / 1e3) + ' ming';
+            return String(Math.round(v));
+        };
+        function barChartCard(title, sub, labels, datasets, opts) {
+            opts = opts || {};
+            const has = datasets.some(function (d) { return d.data.some(function (v) { return v > 0; }); });
+            return chartCard(title, sub, has, function () {
+                return {
+                    type: 'bar',
+                    data: { labels: labels, datasets: datasets.map(function (d, i) {
+                        const col = d.color || CHART_COLORS.emerald;
+                        return { label: T(d.label), data: d.data, borderRadius: 8, borderSkipped: false, maxBarThickness: 38,
+                            backgroundColor: function (ctx) { return barGradient(ctx, col, col + '55'); }, hoverBackgroundColor: col };
+                    }) },
+                    options: {
+                        interaction: { mode: 'index', intersect: false },
+                        plugins: { legend: { display: datasets.length > 1 }, tooltip: { callbacks: { label: function (c) { return ' ' + c.dataset.label + ': ' + (opts.fmt ? opts.fmt(c.parsed.y) : formatNumber(c.parsed.y)); } } } },
+                        scales: { x: { stacked: !!opts.stacked, grid: { display: false } }, y: { stacked: !!opts.stacked, beginAtZero: true, ticks: { callback: function (v) { return opts.axis ? opts.axis(v) : formatNumber(v); }, maxTicksLimit: 6 } } }
+                    }
+                };
+            }, opts);
+        }
+        // Doughnut: items = [[yorliq, qiymat, rang]]
+        function doughnutCard(title, sub, items, opts) {
+            opts = opts || {};
+            const shown = items.filter(function (x) { return x[1] > 0; });
+            const total = shown.reduce(function (s, x) { return s + x[1]; }, 0);
+            return chartCard(title, sub, shown.length > 0, function () {
+                return {
+                    type: 'doughnut',
+                    data: { labels: shown.map(function (x) { return T(x[0]); }), datasets: [{ data: shown.map(function (x) { return x[1]; }), backgroundColor: shown.map(function (x) { return x[2]; }), borderColor: 'rgba(2,6,23,.9)', borderWidth: 3, hoverOffset: 10 }] },
+                    options: {
+                        cutout: '66%',
+                        plugins: { legend: { position: 'bottom', labels: { padding: 14 } },
+                            tooltip: { callbacks: { label: function (c) { return ' ' + c.label + ': ' + (opts.fmt ? opts.fmt(c.parsed) : formatNumber(c.parsed)) + ' (' + Math.round(c.parsed / total * 100) + '%)'; } } } }
+                    }
+                };
+            }, opts);
+        }
+        // Savdo/xarid oylik qatorlari (to'lovlardan): rol bo'yicha farmerAmount yoki amount
+        function monthlyFromPayments(list, statuses, dateField, pick) {
+            const months = recentMonths(6), sums = {};
+            list.forEach(function (p) {
+                if (statuses.indexOf(p.status) === -1 || !p[dateField]) return;
+                const k = monthKey(p[dateField]);
+                sums[k] = (sums[k] || 0) + Number(pick(p));
+            });
+            return { labels: months.map(function (m) { return m.label; }), data: months.map(function (m) { return sums[m.key] || 0; }) };
+        }
+        const BOOKING_COLORS = [['Kutilmoqda', 'PENDING', CHART_COLORS.amber], ['Tasdiqlangan', 'APPROVED', CHART_COLORS.emerald], ['Rad etilgan', 'REJECTED', CHART_COLORS.rose], ['Bekor qilingan', 'CANCELLED', CHART_COLORS.slate]];
+        const bookingSlices = function (counter) { return BOOKING_COLORS.map(function (b) { return [b[0], counter(b[1]), b[2]]; }); };
+        const WH_ORDER_COLORS = [['Kutilmoqda', 'PENDING', CHART_COLORS.amber], ["Yig'ilmoqda", 'PICKING', CHART_COLORS.blue], ["Yig'ildi", 'PICKED', CHART_COLORS.purple], ["Yo'lda", 'DISPATCHED', CHART_COLORS.teal], ['Yetkazildi', 'DELIVERED', CHART_COLORS.emerald], ['Bekor qilindi', 'CANCELLED', CHART_COLORS.slate]];
+
+        // Fermer / market kabinetidagi diagrammalar bloki
+        async function buildRoleCharts(role, bookings) {
+            const safe = function (p) { return p.catch(function (e) { if (e.status === 401) throw e; return null; }); };
+            const wrap = el('div', 'grid grid-cols-1 lg:grid-cols-3 gap-4');
+            const pays = (await safe(authed('GET', '/payments'))) || [];
+            if (role === 'FARMER') {
+                const items = (await safe(authed('GET', '/warehouse/items/mine?limit=50'))) || { items: [] };
+                const mo = monthlyFromPayments(pays, ['RELEASED'], 'releasedAt', function (p) { return p.farmerAmount != null ? p.farmerAmount : p.amount; });
+                wrap.appendChild(barChartCard('Oylik savdolar', "So'nggi 6 oy: hisobingizga o'tgan mablag'", mo.labels, [{ label: 'Savdo summasi', data: mo.data }], { fmt: money, axis: moneyShort, cls: 'lg:col-span-2', emptyText: "Birinchi savdo amalga oshgach oylik diagramma shu yerda ko'rinadi." }));
+                wrap.appendChild(doughnutCard('Bronlar taqsimoti', 'Holat bo\'yicha', bookingSlices(function (st) { return bookings.filter(function (b) { return b.status === st; }).length; })));
+                const zones = WH_ZONE_ORDER.map(function (z) { return [WH_ZONES[z].label, items.items.filter(function (it) { return it.zone === z && it.status !== 'REJECTED'; }).reduce(function (s, it) { return s + Number(it.weightKg || 0); }, 0), [CHART_COLORS.blue, CHART_COLORS.emerald, CHART_COLORS.amber, CHART_COLORS.purple][WH_ZONE_ORDER.indexOf(z)] || CHART_COLORS.teal]; });
+                wrap.appendChild(doughnutCard('Ombor qoldiqlari', 'Zonalar bo\'yicha, kg', zones, { fmt: kg, cls: 'lg:col-span-3', emptyText: "Omborga yuk yuborganingizda qoldiqlar shu yerda ko'rinadi." }));
+            } else {
+                const orders = (await safe(authed('GET', '/warehouse/orders/mine'))) || [];
+                const paid = monthlyFromPayments(pays, ['RELEASED'], 'releasedAt', function (p) { return p.amount; });
+                const held = monthlyFromPayments(pays, ['HELD'], 'heldAt', function (p) { return p.amount; });
+                wrap.appendChild(barChartCard('Oylik xaridlar', "So'nggi 6 oy: to'langan va Escrow'dagi summa", paid.labels, [{ label: "To'langan", data: paid.data, color: CHART_COLORS.emerald }, { label: "Escrow'da", data: held.data, color: CHART_COLORS.blue }], { fmt: money, axis: moneyShort, stacked: true, cls: 'lg:col-span-2', emptyText: "Birinchi xarid amalga oshgach oylik diagramma shu yerda ko'rinadi." }));
+                wrap.appendChild(doughnutCard('Bronlar taqsimoti', "Holat bo'yicha", bookingSlices(function (st) { return bookings.filter(function (b) { return b.status === st; }).length; })));
+                wrap.appendChild(doughnutCard('Ombor buyurtmalari', "Holat bo'yicha", WH_ORDER_COLORS.map(function (c) { return [c[0], orders.filter(function (o) { return o.status === c[1]; }).length, c[2]]; }), { cls: 'lg:col-span-3', emptyText: "Omborxonadan buyurtma berganingizda taqsimot shu yerda ko'rinadi." }));
+            }
+            return wrap;
+        }
+
+        // Admin: platforma bo'yicha diagrammalar
+        function buildAdminCharts(s) {
+            const wrap = el('div', 'grid grid-cols-1 lg:grid-cols-3 gap-4');
+            const months = recentMonths(6);
+            const monthly = (s.monthly || []).map(function (m, i) { return { label: months[i] ? months[i].label : m.month, sales: Number(m.sales), bookings: m.bookings }; });
+            const has = monthly.some(function (m) { return m.sales > 0 || m.bookings > 0; });
+            wrap.appendChild(chartCard('Oylik savdolar va bronlar', "Chiqarilgan to'lovlar (ustun) va yangi bronlar soni (chiziq)", has, function () {
+                return {
+                    data: {
+                        labels: monthly.map(function (m) { return m.label; }),
+                        datasets: [
+                            { type: 'bar', label: T('Savdo summasi'), data: monthly.map(function (m) { return m.sales; }), borderRadius: 8, borderSkipped: false, maxBarThickness: 42, yAxisID: 'y',
+                                backgroundColor: function (ctx) { return barGradient(ctx, CHART_COLORS.emerald, CHART_COLORS.emerald + '44'); } },
+                            { type: 'line', label: T('Bronlar soni'), data: monthly.map(function (m) { return m.bookings; }), yAxisID: 'y1', borderColor: CHART_COLORS.amber, backgroundColor: CHART_COLORS.amber, tension: .35, pointRadius: 4, pointHoverRadius: 7, borderWidth: 3 }
+                        ]
+                    },
+                    options: {
+                        interaction: { mode: 'index', intersect: false },
+                        plugins: { tooltip: { callbacks: { label: function (c) { return ' ' + c.dataset.label + ': ' + (c.dataset.yAxisID === 'y' ? money(c.parsed.y) : formatNumber(c.parsed.y)); } } } },
+                        scales: { x: { grid: { display: false } }, y: { beginAtZero: true, position: 'left', ticks: { callback: moneyShort, maxTicksLimit: 6 } }, y1: { beginAtZero: true, position: 'right', grid: { display: false }, ticks: { precision: 0, maxTicksLimit: 6 } } }
+                    }
+                };
+            }, { cls: 'lg:col-span-2', tall: true }));
+            const n = function (o, k) { return (o && o[k]) || 0; };
+            wrap.appendChild(doughnutCard('Bronlar taqsimoti', "Holat bo'yicha", bookingSlices(function (st) { return n(s.bookings, st); }), { tall: true }));
+            wrap.appendChild(barChartCard("Ombor qoldig'i", 'Zonalar bo\'yicha, kg', s.warehouse.byZone.map(function (z) { return T(WH_ZONES[z.zone].label); }), [{ label: 'Qoldiq (kg)', data: s.warehouse.byZone.map(function (z) { return Number(z.weightKg); }), color: CHART_COLORS.teal }], { fmt: kg, cls: 'lg:col-span-2', emptyText: "Omborga yuk qabul qilinganda qoldiqlar shu yerda ko'rinadi." }));
+            wrap.appendChild(doughnutCard('Foydalanuvchilar', "Rollar bo'yicha", Object.keys(ADM_ROLE_LABEL).map(function (r, i) { return [ADM_ROLE_LABEL[r], n(s.users.byRole, r), [CHART_COLORS.emerald, CHART_COLORS.amber, CHART_COLORS.blue, CHART_COLORS.purple, CHART_COLORS.rose][i]]; })));
+            return wrap;
+        }
+
+        // ----- 404: mavjud bo'lmagan havola -----
+        const notFoundView = document.getElementById('not-found');
+        function showNotFound() {
+            if (notFoundView.classList.contains('open')) return;
+            notFoundView.classList.add('open');
+            notFoundView.setAttribute('aria-hidden', 'false');
+            syncScrollLock();
+            const b = document.getElementById('nf-home');
+            if (b) setTimeout(function () { b.focus({ preventScroll: true }); }, 350);
+        }
+        function closeNotFound(toHash) {
+            notFoundView.classList.remove('open');
+            notFoundView.setAttribute('aria-hidden', 'true');
+            syncScrollLock();
+            // Noto'g'ri yo'l/hash olib tashlanadi (qayta 404 chiqmasligi uchun)
+            try { history.replaceState(null, '', (location.pathname.replace(/[^\/]*$/, '') || '/') + location.search); } catch (e) {}
+            if (toHash) scrollToSection(toHash); // ikki silliq skrollni aralashtirmaslik uchun faqat bittasi
+            else window.scrollTo({ top: 0 });
+        }
+        // Noma'lum #havola yoki noto'g'ri yo'l (SPA qayta yo'naltirish bo'lgan hostingda) 404 ko'rsatadi
+        function isUnknownRoute() {
+            const path = location.pathname;
+            if (!/(\/|\/index\.html)$/.test(path)) return true;
+            const h = location.hash;
+            if (!h || h === '#') return false;
+            if (/^#role-(farmer|driver|market)$/.test(h)) return false;
+            let id; try { id = decodeURIComponent(h.slice(1)); } catch (e) { return true; }
+            return !document.getElementById(id);
+        }
+        function routeNotFound() {
+            if (isUnknownRoute()) showNotFound();
+            else if (notFoundView.classList.contains('open')) { notFoundView.classList.remove('open'); notFoundView.setAttribute('aria-hidden', 'true'); syncScrollLock(); }
+        }
+        window.addEventListener('hashchange', routeNotFound);
+        document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && notFoundView.classList.contains('open')) closeNotFound(); });
+
+        // ----- Onboarding: birinchi kirishdagi interaktiv tur -----
+        const TOUR_KEY = 'agrargo_tour_v1_';
+        const tabStep = function (tab, title, text) { return { sel: '.dash-tab[data-tab="' + tab + '"]', title: title, text: text }; };
+        const TOUR_STEPS = {
+            FARMER: [
+                { sel: '#dash-content [data-tour="primary"]', title: "1. Bu yerdan e'lon qo'shasiz", text: "Mahsulot turi, miqdori va narxini kiriting: do'konlar e'loningizni darhol ko'radi." },
+                tabStep('bookings', "2. Bronlarni shu yerda tasdiqlaysiz", "Market bron qilganda xabar keladi. Tasdiqlagach yuk tashish buyurtmasi avtomatik yaratiladi."),
+                tabStep('shipments', '3. Bu yerdan yuklaringizni kuzatasiz', "Haydovchi, yuk holati va jonli xarita shu bo'limda."),
+                tabStep('payments', "4. To'lovlar va Escrow", "Xaridor puli xavfsiz saqlanadi va yuk yetkazilgach hisobingizga o'tadi."),
+                tabStep('warehouse', '5. Omborxona', "Hosilni sifat nazorati bilan saqlang va narx ko'tarilganda soting."),
+                tabStep('profile', '6. Profil va Telegram', "Ma'lumotlaringizni yangilang va Telegram botni ulab, xabarnomalarni oling.")
+            ],
+            MARKET: [
+                { sel: '#dash-content [data-tour="primary"]', title: '1. Bu yerdan mahsulot tanlaysiz', text: "Katalogda fermerlarning e'lonlarini ko'ring, filtrlang va bron qiling." },
+                tabStep('bookings', '2. Bronlaringiz shu yerda', "Barcha bronlar, ularning holati va fermer aloqa ma'lumotlari."),
+                tabStep('shipments', '3. Bu yerdan yuklarni kuzatasiz', "Yuk yo'lga chiqqach jonli xaritada ko'rasiz."),
+                tabStep('payments', '4. Xavfsiz to\'lov (Escrow)', "Pul yuk yetkazilguncha muzlatiladi va qabul qilganingizdan keyin fermerga o'tadi."),
+                tabStep('warehouse', '5. Omborxonadan buyurtma', "Saralangan va shtrix-kodli mahsulotlarni to'g'ridan-to'g'ri ombordan oling."),
+                tabStep('profile', '6. Profil va Telegram', "Telegram botni ulab, bron va yuk holati xabarlarini oling.")
+            ],
+            DRIVER: [
+                { sel: '#dash-content [data-tour="primary"]', title: "1. Bu yerdan yuklarni ko'rasiz", text: "Hududingizdagi to'lovi kafolatlangan yuklar ro'yxati." },
+                tabStep('myloads', "2. Mening yuklarim", "Qabul qilgan yuklaringiz, yo'lga chiqish va yetkazish tugmalari shu yerda."),
+                tabStep('eld', '3. Harakat jurnali (ELD)', "GPS orqali yozilgan haydash va dam olish vaqtlari."),
+                tabStep('profile', '4. Profil', "Transport ma'lumotlari va Telegram xabarnomalar.")
+            ],
+            DISPATCHER: [
+                tabStep('whboard', '1. Ombor zonalari', "Yukni qabul qilish, tekshirish, saqlash va jo'natish zonalari bo'yicha boshqaring."),
+                tabStep('whunits', '2. Kameralar', "Harorat va namlik ko'rsatkichlarini kuzating."),
+                tabStep('whorders', '3. Buyurtmalar', "Market buyurtmalarini yig'ing, haydovchi biriktiring va jo'nating."),
+                tabStep('whinventory', '4. Inventarizatsiya', "Qoldiq va muddati yaqin yuklar hisobi.")
+            ],
+            ADMIN: [
+                tabStep('adm-dashboard', '1. Boshqaruv paneli', "Platforma bo'yicha statistika va diagrammalar."),
+                tabStep('adm-users', '2. Foydalanuvchilar', "Akkauntlarni qidirish, tahrirlash va bloklash."),
+                tabStep('adm-reviews', '3. Sharhlar', "Spam yoki nomaqbul sharhlarni yashirish va o'chirish."),
+                tabStep('adm-settings', '4. Sayt sozlamalari', "Aloqa, ijtimoiy tarmoqlar va omborxona joylashuvi.")
+            ]
+        };
+        const tourState = { steps: [], i: 0, user: null, active: false };
+        const tourSeen = function (u) { try { return localStorage.getItem(TOUR_KEY + u.id) === '1'; } catch (e) { return true; } };
+        const tourMark = function (u) { try { localStorage.setItem(TOUR_KEY + u.id, '1'); } catch (e) {} };
+        function maybeStartTour(user) {
+            if (!user || tourSeen(user) || tourState.active || !dashboardView.classList.contains('open')) return;
+            startTour(user);
+        }
+        function replayTour() {
+            const user = currentUser();
+            if (!user) return;
+            closeAccountMenu();
+            if (!dashboardView.classList.contains('open')) openDashboard();
+            setTimeout(function () { startTour(user); }, 900);
+        }
+        function tourVisible(sel) {
+            const n = document.querySelector(sel);
+            if (!n) return null;
+            const r = n.getBoundingClientRect();
+            return r.width > 0 && r.height > 0 ? n : null;
+        }
+        function startTour(user) {
+            if (tourState.active) return;
+            const list = TOUR_STEPS[user.role] || [];
+            const steps = [{ title: T('Xush kelibsiz, {0}!', user.fullName.split(' ')[0]), text: T("AgrarGo kabinetiga xush kelibsiz. 1 daqiqada asosiy bo'limlarni ko'rsatamiz."), raw: true }]
+                .concat(list.filter(function (s) { return tourVisible(s.sel); }))
+                .concat([{ title: T('Hammasi tayyor!'), text: T("Qo'llanmani istalgan payt hisob menyusidagi \"Qo'llanma\" tugmasi orqali qayta ko'rishingiz mumkin."), raw: true }]);
+            tourState.steps = steps; tourState.i = 0; tourState.user = user; tourState.active = true;
+            let layer = document.getElementById('tour-layer');
+            if (!layer) {
+                layer = el('div'); layer.id = 'tour-layer'; layer.setAttribute('role', 'dialog'); layer.setAttribute('aria-modal', 'true'); layer.setAttribute('aria-label', 'Qo\'llanma');
+                layer.innerHTML = '<div class="tour-dim"></div><div class="tour-spot center"></div><div class="tour-tip" aria-live="polite"></div>';
+                document.body.appendChild(layer);
+                window.addEventListener('resize', tourReposition);
+                dashboardView.addEventListener('scroll', tourReposition, { passive: true });
+                document.addEventListener('keydown', tourKeys);
+            }
+            layer.hidden = false;
+            showTourStep(0);
+        }
+        function finishTour(skipped) {
+            if (!tourState.active) return;
+            tourMark(tourState.user);
+            tourState.active = false;
+            const layer = document.getElementById('tour-layer');
+            if (layer) layer.hidden = true;
+            const tip = layer && layer.querySelector('.tour-tip'); if (tip) tip.classList.remove('show');
+            if (!skipped) showToast('Qo\'llanma yakunlandi. Muvaffaqiyatlar!', 3000);
+        }
+        function tourKeys(e) {
+            if (!tourState.active) return;
+            if (e.key === 'Escape') { e.preventDefault(); finishTour(true); }
+            else if (e.key === 'ArrowRight' || e.key === 'Enter') { if (e.target.closest && e.target.closest('.tour-back, .tour-skip')) return; e.preventDefault(); showTourStep(tourState.i + 1); }
+            else if (e.key === 'ArrowLeft') { e.preventDefault(); showTourStep(tourState.i - 1); }
+        }
+        function showTourStep(i) {
+            const steps = tourState.steps;
+            if (i >= steps.length) return finishTour(false);
+            if (i < 0) i = 0;
+            tourState.i = i;
+            const s = steps[i];
+            const layer = document.getElementById('tour-layer');
+            const tip = layer.querySelector('.tour-tip');
+            tip.classList.remove('show');
+            const last = i === steps.length - 1;
+            tip.replaceChildren();
+            tip.appendChild(el('div', 'tour-step', T('{0} / {1}', i + 1, steps.length)));
+            tip.appendChild(el('h4', '', s.raw ? s.title : T(s.title)));
+            tip.appendChild(el('p', '', s.raw ? s.text : T(s.text)));
+            const dots = el('div', 'tour-dots');
+            steps.forEach(function (_, k) { dots.appendChild(el('i', k === i ? 'on' : '')); });
+            tip.appendChild(dots);
+            const act = el('div', 'tour-actions');
+            const skip = el('button', 'tour-skip', last ? '' : 'O\'tkazib yuborish'); skip.type = 'button';
+            if (last) skip.style.visibility = 'hidden';
+            skip.addEventListener('click', function () { finishTour(true); });
+            const right = el('div', 'flex gap-2');
+            if (i > 0) { const back = el('button', 'tour-btn tour-back', 'Orqaga'); back.type = 'button'; back.addEventListener('click', function () { showTourStep(i - 1); }); right.appendChild(back); }
+            const next = el('button', 'tour-btn tour-next', last ? 'Boshladik!' : 'Keyingi'); next.type = 'button';
+            next.addEventListener('click', function () { showTourStep(i + 1); });
+            right.appendChild(next);
+            act.append(skip, right);
+            tip.appendChild(act);
+            const target = s.sel ? tourVisible(s.sel) : null;
+            if (target) target.scrollIntoView({ block: 'center', inline: 'center', behavior: 'smooth' });
+            setTimeout(function () { tourReposition(); tip.classList.add('show'); next.focus({ preventScroll: true }); }, target ? 380 : 60);
+        }
+        function tourReposition() {
+            if (!tourState.active) return;
+            const s = tourState.steps[tourState.i];
+            const layer = document.getElementById('tour-layer');
+            const spot = layer.querySelector('.tour-spot'), tip = layer.querySelector('.tour-tip');
+            const target = s.sel ? tourVisible(s.sel) : null;
+            const vw = window.innerWidth, vh = window.innerHeight;
+            const dock = vw <= 640;
+            tip.classList.toggle('dock', dock);
+            if (!target) {
+                spot.classList.add('center');
+                spot.style.cssText = 'top:' + (vh / 2) + 'px;left:' + (vw / 2) + 'px;width:0;height:0';
+                if (!dock) { tip.style.top = Math.max(16, vh / 2 - tip.offsetHeight / 2) + 'px'; tip.style.left = Math.max(16, vw / 2 - tip.offsetWidth / 2) + 'px'; }
+                return;
+            }
+            const r = target.getBoundingClientRect(), pad = 8;
+            spot.classList.remove('center');
+            spot.style.top = (r.top - pad) + 'px'; spot.style.left = (r.left - pad) + 'px';
+            spot.style.width = (r.width + pad * 2) + 'px'; spot.style.height = (r.height + pad * 2) + 'px';
+            if (dock) return;
+            const tw = tip.offsetWidth, th = tip.offsetHeight;
+            let top = r.bottom + pad + 14;
+            if (top + th > vh - 12) top = Math.max(12, r.top - pad - 14 - th);
+            let left = r.left + r.width / 2 - tw / 2;
+            left = Math.min(Math.max(12, left), vw - tw - 12);
+            // yon tomonda joylashgan (vertikal menyu) elementlar: tooltip o'ng tomonga
+            if (r.left < 260 && r.width < 280 && r.height < 80 && vw > 900) { left = r.right + pad + 16; top = Math.min(Math.max(12, r.top + r.height / 2 - th / 2), vh - th - 12); }
+            tip.style.top = top + 'px'; tip.style.left = left + 'px';
+        }
+
         startLiveReviews();
         routeRoleHash();
+        routeNotFound();
     </script>
 </body>
 </html>

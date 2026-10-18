@@ -83,6 +83,14 @@ describe('Admin panel (e2e)', () => {
       expect(s.payments.heldAmount).toBe('4500000');
       expect(s.signups).toHaveLength(14);
       expect(s.signups[13]).toMatchObject({ farmers: 1, markets: 1, drivers: 1, total: 4 }); // bugun (admin ham hisobda)
+      // oylik qatorlar: 6 oy, oxirgisi joriy oy; escrow'da turgan pul savdo hisoblanmaydi
+      expect(s.monthly).toHaveLength(6);
+      expect(s.monthly[5]).toMatchObject({ sales: '0', payments: 0, bookings: 1 });
+      expect(s.monthly[0]).toMatchObject({ sales: '0', bookings: 0 });
+      const rel = await t.http().post('/payments/release').set('Authorization', bearer(w.admin)).send({ bookingId: b.id });
+      expect(rel.status).toBe(200);
+      const after = (await api('get', w.admin, '/stats')).body;
+      expect(after.monthly[5]).toMatchObject({ sales: '4500000', payments: 1 });
     });
   });
 

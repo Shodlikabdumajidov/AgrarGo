@@ -30,7 +30,10 @@ export class AdminService {
 
   async stats() {
     const since = new Date(Date.now() - 13 * DAY);
-    const [users, usersActive, products, bookings, shipments, payments, whByZone, whItems, whOrders, units, signups, lastAudit] = await Promise.all([
+    const monthStart = new Date(Date.now() + 5 * 3600_000);
+    monthStart.setUTCDate(1); monthStart.setUTCHours(0, 0, 0, 0);
+    monthStart.setUTCMonth(monthStart.getUTCMonth() - 5); // so'nggi 6 oy (Toshkent vaqti, joriy oy bilan)
+    const [users, usersActive, products, bookings, shipments, payments, whByZone, whItems, whOrders, units, signups, lastAudit, monthlyPay, monthlyBookings] = await Promise.all([
       this.prisma.user.groupBy({ by: ['role'], _count: true }),
       this.prisma.user.groupBy({ by: ['role', 'isActive'], _count: true }),
       this.prisma.product.groupBy({ by: ['status'], _count: true }),
@@ -45,7 +48,23 @@ export class AdminService {
         SELECT to_char(("createdAt" AT TIME ZONE 'Asia/Tashkent')::date, 'YYYY-MM-DD') AS d, role, count(*) AS c
         FROM "User" WHERE "createdAt" >= ${since} GROUP BY 1, 2`,
       this.prisma.auditLog.count({ where: { createdAt: { gte: new Date(Date.now() - DAY) } } }),
+      this.prisma.$queryRaw<{ m: string; amount: Prisma.Decimal; c: bigint }[]>`
+        SELECT to_char(date_trunc('month', "releasedAt" AT TIME ZONE 'Asia/Tashkent'), 'YYYY-MM') AS m, COALESCE(sum(amount), 0) AS amount, count(*) AS c
+        FROM "Payment" WHERE status = 'RELEASED' AND "releasedAt" >= ${new Date(monthStart.getTime() - 5 * 3600_000)} GROUP BY 1`,
+      this.prisma.$queryRaw<{ m: string; c: bigint }[]>`
+        SELECT to_char(date_trunc('month', "createdAt" AT TIME ZONE 'Asia/Tashkent'), 'YYYY-MM') AS m, count(*) AS c
+        FROM "Booking" WHERE "createdAt" >= ${new Date(monthStart.getTime() - 5 * 3600_000)} GROUP BY 1`,
     ]);
+    // Oylik qatorlar: bo'sh oylar ham nol bilan chiqadi (diagramma uzluksiz bo'lishi uchun)
+    const zeroD = new Prisma.Decimal(0);
+    const months: { month: string; sales: Prisma.Decimal; payments: number; bookings: number }[] = [];
+    for (let i = 0; i < 6; i++) {
+      const d = new Date(monthStart);
+      d.setUTCMonth(monthStart.getUTCMonth() + i);
+      const m = d.toISOString().slice(0, 7);
+      const pr = monthlyPay.find((r) => r.m === m);
+      months.push({ month: m, sales: pr ? new Prisma.Decimal(pr.amount.toString()) : zeroD, payments: Number(pr?.c ?? 0), bookings: Number(monthlyBookings.find((r) => r.m === m)?.c ?? 0) });
+    }
 
     const zero = D(0);
     const counts = <T extends { _count: number }>(rows: T[], key: keyof T) => Object.fromEntries(rows.map((r) => [String(r[key]), r._count]));
@@ -80,6 +99,7 @@ export class AdminService {
         ordersByStatus: Object.fromEntries(whOrders.map((r) => [r.status, { count: r._count, amount: r._sum.totalPrice ?? zero }])),
       },
       signups: days,
+      monthly: months,
       auditLast24h: lastAudit,
     };
   }

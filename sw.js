@@ -6,7 +6,7 @@
  *   (shaxsiy ma'lumotlar, to'lov va GPS har doim yangi bo'lishi shart).
  * Versiyani o'zgartirsangiz eski keshlar o'chiriladi.
  */
-const VERSION = 'v3';
+const VERSION = 'v4';
 const SHELL = `agrargo-shell-${VERSION}`;
 const RUNTIME = `agrargo-runtime-${VERSION}`;
 const RUNTIME_MAX = 80;
@@ -15,7 +15,7 @@ const SHELL_FILES = [
   './', './index.html', './offline.html', './manifest.json', './logo.png',
   './icons/icon-192.png', './icons/icon-512.png',
   './i18n/uz.js', './i18n/ru.js', './i18n/en.js', './i18n/engine.js',
-  './vendor/JsBarcode.code128.min.js', './vendor/qrcode.js', './vendor/label-print.css',
+  './vendor/JsBarcode.code128.min.js', './vendor/qrcode.js', './vendor/chart.umd.js', './404.html', './vendor/label-print.css',
 ];
 
 const CDN_HOSTS = ['cdn.tailwindcss.com', 'cdnjs.cloudflare.com', 'unpkg.com', 'fonts.googleapis.com', 'fonts.gstatic.com'];
@@ -62,6 +62,11 @@ async function networkFirstPage(request) {
   try {
     const res = await fetch(request);
     if (res && res.ok) { const c = await caches.open(SHELL); c.put('./index.html', res.clone()); }
+    // Mavjud bo'lmagan sahifa: serverning quruq 404'i o'rniga AgrarGo'ning 404 sahifasi (status 404 saqlanadi)
+    if (res && res.status === 404) {
+      const nf = await caches.match('./404.html');
+      if (nf) return new Response(nf.body, { status: 404, statusText: 'Not Found', headers: nf.headers });
+    }
     return res;
   } catch (e) {
     return (await caches.match('./index.html')) || (await caches.match('./')) || (await caches.match('./offline.html')) || Response.error();
