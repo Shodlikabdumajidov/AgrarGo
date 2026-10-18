@@ -6,7 +6,7 @@
  *   (shaxsiy ma'lumotlar, to'lov va GPS har doim yangi bo'lishi shart).
  * Versiyani o'zgartirsangiz eski keshlar o'chiriladi.
  */
-const VERSION = 'v9';
+const VERSION = 'v10';
 const SHELL = `agrargo-shell-${VERSION}`;
 const RUNTIME = `agrargo-runtime-${VERSION}`;
 const RUNTIME_MAX = 80;
@@ -35,6 +35,13 @@ self.addEventListener('activate', (event) => {
       .then((keys) => Promise.all(keys.filter((k) => k.startsWith('agrargo-') && k !== SHELL && k !== RUNTIME).map((k) => caches.delete(k))))
       .then(() => self.clients.claim()),
   );
+});
+
+// Background Sync: aloqa tiklanganda ochiq oynalarga oflayn navbatni yuborishni buyuradi
+// (so'rovlar tokenli bo'lgani uchun navbatni sahifaning o'zi yuboradi; token SW'ga berilmaydi).
+self.addEventListener('sync', (event) => {
+  if (event.tag !== 'agrargo-flush') return;
+  event.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => list.forEach((c) => c.postMessage({ type: 'flush-queue' }))));
 });
 
 self.addEventListener('message', (event) => {

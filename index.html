@@ -565,6 +565,48 @@
         @keyframes dsIn { from { opacity: 0; transform: translateY(-6px) scale(.97); } }
         @media (prefers-reduced-motion: reduce) { .ds-pop { animation: none; } .ds-chev { transition: none; } }
 
+        /* ===== Toast bildirishnomalar ===== */
+        .toast-stack { position: fixed; z-index: 500; right: 1.25rem; bottom: 1.25rem; display: flex; flex-direction: column; gap: .6rem; width: min(24rem, calc(100vw - 2rem)); pointer-events: none; }
+        .toast-item { --c: 52,211,153; position: relative; overflow: hidden; pointer-events: auto; display: flex; align-items: center; gap: .75rem; padding: .8rem .9rem .95rem .8rem; border-radius: 1rem; color: #f1f5f9; font-size: .9rem; font-weight: 600; line-height: 1.35; background: linear-gradient(135deg, rgba(var(--c), .2), rgba(15,23,42,.82) 55%); border: 1px solid rgba(var(--c), .45); backdrop-filter: blur(16px) saturate(1.3); -webkit-backdrop-filter: blur(16px) saturate(1.3); box-shadow: 0 18px 40px -16px rgba(0,0,0,.8), 0 0 0 1px rgba(var(--c), .08); animation: toastIn .45s cubic-bezier(.16,1,.3,1) both; }
+        .toast-item.error { --c: 251,113,133; }
+        .toast-item.warning { --c: 251,191,36; }
+        .toast-item.info { --c: 125,211,252; }
+        .toast-item.out { animation: toastOut .3s ease-in both; }
+        .toast-ic { flex: none; width: 2rem; height: 2rem; border-radius: .7rem; display: flex; align-items: center; justify-content: center; color: rgb(var(--c)); background: rgba(var(--c), .16); }
+        .toast-msg { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+        .toast-x { flex: none; width: 1.75rem; height: 1.75rem; border-radius: .5rem; color: #94a3b8; display: flex; align-items: center; justify-content: center; transition: color .2s, background .2s; }
+        .toast-x:hover { color: #fff; background: rgba(255,255,255,.1); }
+        .toast-bar { position: absolute; left: 0; bottom: 0; height: 3px; width: 100%; background: rgb(var(--c)); transform-origin: left; animation: toastBar linear forwards; }
+        .toast-item.paused .toast-bar { animation-play-state: paused; }
+        @keyframes toastIn { from { opacity: 0; transform: translateX(28px) scale(.96); } }
+        @keyframes toastOut { to { opacity: 0; transform: translateX(28px) scale(.96); } }
+        @keyframes toastBar { to { transform: scaleX(0); } }
+        @media (max-width: 640px) { .toast-stack { right: 1rem; left: 1rem; bottom: 1rem; width: auto; } @keyframes toastIn { from { opacity: 0; transform: translateY(22px) scale(.97); } } @keyframes toastOut { to { opacity: 0; transform: translateY(22px) scale(.97); } } }
+        @media (prefers-reduced-motion: reduce) { .toast-item, .toast-item.out { animation-duration: .01s; } .toast-bar { display: none; } }
+        /* Oflayn navbat belgisi */
+        .oq-pill { position: fixed; z-index: 480; left: 1rem; bottom: 1rem; display: none; align-items: center; gap: .55rem; padding: .55rem .9rem; border-radius: 9999px; font-size: .8rem; font-weight: 700; color: #fde68a; background: rgba(66,48,6,.78); border: 1px solid rgba(251,191,36,.5); backdrop-filter: blur(12px); box-shadow: 0 12px 30px -14px rgba(0,0,0,.8); }
+        .oq-pill.show { display: inline-flex; animation: toastIn .4s cubic-bezier(.16,1,.3,1) both; }
+        .oq-pill.sync { color: #a7f3d0; background: rgba(6,60,40,.8); border-color: rgba(52,211,153,.5); }
+        @media (max-width: 640px) { .oq-pill { bottom: 4.5rem; } }
+        /* Ob-havo vidjeti */
+        .wx { border-radius: 1.5rem; border: 1px solid rgba(255,255,255,.14); background: linear-gradient(160deg, rgba(14,40,32,.72), rgba(15,23,42,.72)); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); padding: 1.25rem; box-shadow: 0 24px 60px -34px rgba(16,185,129,.6); }
+        .wx-days { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .6rem; }
+        .wx-day { text-align: center; padding: .8rem .35rem; border-radius: 1rem; border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.04); transition: transform .25s, border-color .25s; }
+        .wx-day:hover { transform: translateY(-3px); border-color: rgba(52,211,153,.5); }
+        .wx-day.today { border-color: rgba(52,211,153,.55); background: linear-gradient(180deg, rgba(16,185,129,.18), rgba(255,255,255,.03)); }
+        .wx-day.risk { border-color: rgba(251,191,36,.5); }
+        .wx-ic { font-size: 1.6rem; margin: .45rem 0; display: block; }
+        .wx-adv { display: flex; align-items: flex-start; gap: .65rem; padding: .7rem .85rem; border-radius: .9rem; font-size: .88rem; font-weight: 600; border: 1px solid rgba(251,191,36,.4); background: rgba(251,191,36,.1); color: #fde68a; }
+        .wx-adv.danger { border-color: rgba(251,113,133,.45); background: rgba(244,63,94,.1); color: #fecdd3; }
+        .wx-adv.ok { border-color: rgba(52,211,153,.4); background: rgba(16,185,129,.1); color: #a7f3d0; }
+        @media (max-width: 560px) {
+            .wx-days { grid-template-columns: 1fr; gap: .45rem; }
+            .wx-day { display: flex; align-items: center; gap: .75rem; text-align: left; padding: .5rem .8rem; }
+            .wx-day > :first-child { width: 3rem; flex: none; }
+            .wx-day .wx-ic { margin: 0; font-size: 1.3rem; width: 2rem; text-align: center; }
+            .wx-day > :nth-child(4) { margin-left: auto; }
+        }
+
         /* ===== Bozor narxlari ===== */
         #price-modal { opacity: 0; visibility: hidden; transition: opacity .3s ease, visibility .3s ease; }
         #price-modal.open { opacity: 1; visibility: visible; }
@@ -1247,6 +1289,16 @@
     </section>
 
     <!-- LOGISTIKA TARIFLARI -->
+    <!-- OB-HAVO (mintaqaviy agro-ob-havo vidjeti) -->
+    <section id="weather" class="sec-anchor py-20 px-6 max-w-5xl mx-auto relative border-t border-white/10">
+        <div class="text-center space-y-3 mb-10" data-aos="fade-up">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 text-xs font-semibold uppercase tracking-widest"><i class="fa-solid fa-cloud-sun"></i> Agro ob-havo</div>
+            <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight">Viloyatlar bo'yicha ob-havo va logistika maslahatlari</h2>
+            <p class="text-slate-400 max-w-2xl mx-auto">Yomg'ir, qor yoki muzlama kutilsa, yukni qanday tashish kerakligini oldindan ko'rsatamiz.</p>
+        </div>
+        <div id="weather-landing" class="min-h-[30rem]" aria-live="polite"></div>
+    </section>
+
     <section id="tariffs" class="sec-anchor py-24 px-6 max-w-7xl mx-auto relative border-t border-white/10">
         <div class="text-center mb-14 space-y-4" data-aos="fade-up">
             <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold uppercase tracking-widest">
@@ -1882,6 +1934,7 @@
                 </div>
                 <div class="flex items-center gap-3">
                     <span id="dash-user-chip" class="flex items-center gap-2 text-sm font-bold text-slate-200 max-w-[9rem] sm:max-w-[14rem]"></span>
+                    <button type="button" data-sfx-toggle="1" class="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-emerald-400 hover:bg-white/5 transition text-lg" onclick="sfx.set(!sfx.on)"><i class="fa-solid fa-volume-high"></i></button>
                     <button type="button" onclick="logout()" title="Chiqish" aria-label="Chiqish" class="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-rose-400 hover:bg-white/5 transition text-lg"><i class="fa-solid fa-right-from-bracket"></i></button>
                 </div>
             </div>
@@ -2030,7 +2083,7 @@
         </div>
     </aside>
 
-    <div id="toast" role="status" class="fixed bottom-6 left-1/2 z-[70] px-5 py-3 rounded-2xl glass border border-emerald-500/30 text-sm font-semibold text-emerald-300 shadow-2xl"></div>
+    <div id="toast-stack" class="toast-stack" aria-live="polite"></div>
 
     <!-- AOS & Custom Dropdown/Sidebar JS -->
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
@@ -2231,7 +2284,7 @@
             return apiRequest('POST', path, payload, token);
         }
 
-        async function apiRequest(method, path, payload, token) {
+        async function apiRequest(method, path, payload, token, opts) {
             let res;
             try {
                 const headers = {};
@@ -2243,6 +2296,8 @@
                     body: payload !== undefined ? JSON.stringify(payload) : undefined
                 });
             } catch (e) {
+                // Oflayn navbat: tanlangan amallar IndexedDB'ga saqlanadi va aloqa tiklangach yuboriladi
+                if (token && !(opts && opts.noQueue)) { const queued = await oqEnqueue(method, path, payload); if (queued) return queued; }
                 console.error('[API xato]', method, path, '-> tarmoq xatosi (server ishlamayapti yoki CORS)', e);
                 throw { status: 0, messages: ["Serverga ulanib bo'lmadi. Internetni tekshirib, qayta urinib ko'ring."] };
             }
@@ -2374,12 +2429,106 @@
         window.addEventListener('click', closeAccountMenu);
 
         let toastTimer = null;
-        function showToast(message, duration) {
-            const t = document.getElementById('toast');
-            t.textContent = message;
-            t.classList.add('show');
-            clearTimeout(toastTimer);
-            toastTimer = setTimeout(function () { t.classList.remove('show'); }, duration || 2600);
+        // ===== Tovush effektlari (Web Audio API): qisqa, yoqimli signallar; sozlamalardan o'chiriladi =====
+        const SFX_KEY = 'agrargo_sound';
+        const sfx = {
+            ctx: null,
+            on: storageGet(SFX_KEY) !== 'off',
+            ensure: function () {
+                if (!this.ctx) {
+                    const AC = window.AudioContext || window.webkitAudioContext;
+                    if (!AC) return null;
+                    try { this.ctx = new AC(); } catch (e) { return null; }
+                }
+                if (this.ctx.state === 'suspended') this.ctx.resume().catch(function () {});
+                return this.ctx;
+            },
+            tone: function (freq, at, dur, o) {
+                const c = this.ctx, opt = o || {};
+                const osc = c.createOscillator(), g = c.createGain();
+                osc.type = opt.type || 'sine';
+                osc.frequency.setValueAtTime(freq, at);
+                if (opt.to) osc.frequency.exponentialRampToValueAtTime(opt.to, at + dur);
+                const vol = opt.vol || 0.14;
+                g.gain.setValueAtTime(0.0001, at);
+                g.gain.exponentialRampToValueAtTime(vol, at + 0.012);
+                g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
+                osc.connect(g); g.connect(c.destination);
+                osc.start(at); osc.stop(at + dur + 0.03);
+            },
+            play: function (name) {
+                if (!this.on) return;
+                const c = this.ensure();
+                if (!c) return;
+                const t = c.currentTime + 0.02, s = this;
+                const seq = function (notes, step, dur, o) { notes.forEach(function (f, i) { s.tone(f, t + i * step, dur, o); }); };
+                if (name === 'success') seq([523.25, 659.25, 783.99], 0.085, 0.22);
+                else if (name === 'booking') seq([587.33, 880], 0.1, 0.26, { type: 'triangle', vol: 0.16 });
+                else if (name === 'price') { s.tone(987.77, t, 0.14, { type: 'square', vol: 0.05 }); s.tone(1318.5, t + 0.09, 0.3, { type: 'square', vol: 0.05 }); }
+                else if (name === 'subscription') { seq([523.25, 659.25, 783.99, 1046.5], 0.08, 0.34, { vol: 0.12 }); s.tone(1568, t + 0.3, 0.5, { vol: 0.05 }); }
+                else if (name === 'warn') seq([440, 440], 0.16, 0.12, { type: 'triangle', vol: 0.12 });
+                else if (name === 'error') s.tone(220, t, 0.28, { type: 'sawtooth', to: 150, vol: 0.07 });
+                else if (name === 'sync') seq([659.25, 880, 1174.66], 0.07, 0.18, { type: 'triangle', vol: 0.12 });
+                else s.tone(1200, t, 0.07, { vol: 0.08 });
+            },
+            set: function (on) {
+                this.on = !!on;
+                storageSet(SFX_KEY, on ? 'on' : 'off');
+                document.querySelectorAll('[data-sfx-toggle]').forEach(function (b) { syncSoundToggle(b); });
+                if (on) this.play('tick');
+            }
+        };
+        function syncSoundToggle(b) {
+            b.setAttribute('aria-pressed', String(sfx.on));
+            b.title = sfx.on ? "Tovushni o'chirish" : 'Tovushni yoqish';
+            b.setAttribute('aria-label', b.title);
+            const i = b.querySelector('i');
+            if (i) i.className = ['fa-solid', sfx.on ? 'fa-volume-high' : 'fa-volume-xmark'].join(' ');
+        }
+
+        // ===== Toast bildirishnomalar: glassmorphism, burchakda, o'zi yo'qoladi =====
+        // type: 'success' (yashil) | 'error' (qizil) | 'warning' (sariq) | 'info'. Berilmasa matndan aniqlanadi.
+        const TOAST_ICON = { success: 'fa-circle-check', error: 'fa-circle-xmark', warning: 'fa-triangle-exclamation', info: 'fa-circle-info' };
+        function toastType(msg) {
+            const m = String(msg).toLowerCase();
+            if (/xato|bo'lmadi|noto'g'ri|ulanib bo'lmadi|rad etildi|bloklan|ruxsat yo'q|topilmadi|muvaffaqiyatsiz|tugadi|yaroqsiz|oshmasligi|faqat .* yuklang/.test(m)) return 'error';
+            if (/ehtiyot|diqqat|oflayn|internet uzildi|kutilmoqda|ogohlantir|tavsiya/.test(m)) return 'warning';
+            if (/saqlandi|yangilandi|tasdiqlandi|joylandi|qo'shildi|o'chirildi|olib tashlandi|nusxalandi|muvaffaqiyatli|yuborildi|yuklab olindi|sinxronlash|bajarildi|uzaytirildi|tayyor/.test(m)) return 'success';
+            return 'info';
+        }
+        function showToast(message, duration, type) {
+            const stack = document.getElementById('toast-stack');
+            if (!stack) return;
+            const kind = type || toastType(message);
+            const t = el('div', ['toast-item', kind].join(' '));
+            t.setAttribute('role', kind === 'error' ? 'alert' : 'status');
+            const ic = el('span', 'toast-ic');
+            ic.appendChild(el('i', ['fa-solid', TOAST_ICON[kind]].join(' ')));
+            t.appendChild(ic);
+            t.appendChild(el('span', 'toast-msg', message));
+            const x = el('button', 'toast-x');
+            x.type = 'button'; x.setAttribute('aria-label', 'Yopish');
+            x.appendChild(el('i', 'fa-solid fa-xmark'));
+            t.appendChild(x);
+            const life = duration || (kind === 'error' ? 5200 : 3400);
+            const bar = el('i', 'toast-bar');
+            bar.style.animationDuration = life + 'ms';
+            t.appendChild(bar);
+            let timer = null;
+            const close = function () {
+                clearTimeout(timer);
+                t.classList.add('out');
+                setTimeout(function () { t.remove(); }, 320);
+            };
+            const arm = function () { clearTimeout(timer); t.classList.remove('paused'); timer = setTimeout(close, life); };
+            t.addEventListener('pointerenter', function () { clearTimeout(timer); t.classList.add('paused'); });
+            t.addEventListener('pointerleave', arm);
+            x.addEventListener('click', close);
+            stack.appendChild(t);
+            while (stack.children.length > 4) stack.firstChild.remove();
+            arm();
+            if (kind === 'error') sfx.play('error');
+            else if (kind === 'warning') sfx.play('warn');
         }
 
         function onAuthSuccess(data, message) {
@@ -2902,8 +3051,8 @@
 
             setLoading(productForm, true);
             try {
-                if (editing) await apiRequest('PUT', '/products/' + editing.id, payload, token);
-                else await apiRequest('POST', '/products', payload, token);
+                const saved = editing ? await apiRequest('PUT', '/products/' + editing.id, payload, token) : await apiRequest('POST', '/products', payload, token);
+                if (saved && saved.__queued) { closeProductModal(); return; } // oflayn saqlandi: xabar allaqachon ko'rsatilgan
                 showAuthAlert(editing ? "E'lon yangilandi!" : "E'lon muvaffaqiyatli joylandi!", 'success', productAlert);
                 setTimeout(function () {
                     closeProductModal();
@@ -3656,6 +3805,7 @@
                     const farmerCharts = el('div');
                     farmerCharts.appendChild(chartSkeletonGrid());
                     nodes.push(farmerCharts);
+                    nodes.push(buildWeatherWidget({ role: 'FARMER', user: user }));
                     buildRoleCharts('FARMER', bookings).then(function (c) { if (rid === dashRenderId) farmerCharts.replaceChildren(c); }).catch(function () { farmerCharts.replaceChildren(); });
                     nodes.push(sectionTitle('Tasdiqlashni kutayotgan bronlar', "Tasdiqlagandan keyin xaridorning telefon raqami ochiladi."));
                     if (pending.length) pending.slice(0, 5).forEach(function (b) { nodes.push(buildBookingCard(b, 'farmer')); });
@@ -3712,6 +3862,7 @@
                     actions.appendChild(loadsBtn);
                     actions.appendChild(actionBtn('fa-id-card', 'Profilni tahrirlash', false, function () { selectDashTab('profile'); }));
                     nodes.push(actions);
+                    nodes.push(buildWeatherWidget({ role: 'DRIVER', user: user }));
                     if (res[3]) {
                         nodes.push(buildEldSummary(res[3], true));
                         nodes.push(actionBtn('fa-clock-rotate-left', "To'liq harakat jurnali", false, function () { selectDashTab('eld'); }));
@@ -3823,7 +3974,8 @@
         async function bookingAction(id, kind, button) {
             button.disabled = true;
             try {
-                await authed('PATCH', '/bookings/' + id + '/' + kind);
+                const done = await authed('PATCH', '/bookings/' + id + '/' + kind);
+                if (done && done.__queued) return;
                 if (kind === 'approve') showSuccessCheck('Bron tasdiqlandi!', "Yuk tashish buyurtmasi yaratildi");
                 else showToast(BOOKING_DONE_MSG[kind], 3500);
             } catch (err) {
@@ -5411,7 +5563,7 @@
             const d = await admLoad(user, '', '/admin/users' + qs, null, function () { renderAdmUsers(user); });
             if (!d) return;
             const again = function () { renderAdmUsers(user); };
-            const nodes = [admHead('Foydalanuvchilar', again, [actionBtn('fa-user-plus', "Xodim qo'shish", true, admStaffDialog)])];
+            const nodes = [admHead('Foydalanuvchilar', again, [excelButton('/reports/admin.xlsx', XLSX_NAME('admin', new Date().toISOString().slice(0, 10))), actionBtn('fa-user-plus', "Xodim qo'shish", true, admStaffDialog)])];
             nodes.push(admFilterBar([
                 admSearch(f.q, 'Ism, telefon, xo\'jalik yoki davlat raqami...', function (v) { f.q = v; f.page = 1; again(); }),
                 admSelect([['', 'Barcha rollar']].concat(Object.keys(ADM_ROLE_LABEL).map(function (r) { return [r, ADM_ROLE_LABEL[r]]; })), f.role, function (v) { f.role = v; f.page = 1; again(); }),
@@ -5520,7 +5672,7 @@
             if (!list) return;
             const again = function () { renderAdmPayments(user); };
             const sum = function (st) { return list.filter(function (p) { return p.status === st; }).reduce(function (s, p) { return s + Number(p.amount); }, 0); };
-            const nodes = [admHead("To'lov tranzaksiyalari", again)];
+            const nodes = [admHead("To'lov tranzaksiyalari", again, [excelButton('/reports/admin.xlsx', XLSX_NAME('admin', new Date().toISOString().slice(0, 10)))])];
             const stats = el('div', 'grid grid-cols-2 lg:grid-cols-4 gap-4');
             stats.appendChild(statCard('fa-hourglass-half', "To'lov kutilmoqda", money(sum('PENDING')), 'text-amber-400'));
             stats.appendChild(statCard('fa-shield-halved', "Escrow'da", money(sum('HELD')), 'text-blue-400'));
@@ -6278,8 +6430,8 @@
         async function shipmentAction(s, kind, button) {
             button.disabled = true;
             try {
-                if (kind === 'advance') await authed('PATCH', '/shipments/' + s.id + '/advance');
-                else await authed('POST', '/shipments/' + s.id + '/' + kind);
+                const done = kind === 'advance' ? await authed('PATCH', '/shipments/' + s.id + '/advance') : await authed('POST', '/shipments/' + s.id + '/' + kind);
+                if (done && done.__queued) { button.disabled = false; return; }
                 showToast(SHIPMENT_DONE_MSG[kind === 'advance' ? s.status : kind], 3500);
                 if (kind === 'accept') { dashShipFilter = 'ALL'; return selectDashTab('myloads'); }
                 if (kind === 'advance' && s.status === 'LOADING') startTracker(s.id, 'gps'); // yo'lga chiqdi: joylashuv yuborish boshlanadi
@@ -6400,6 +6552,7 @@
                 actions.appendChild(btn('fa-circle-check', 'Yetkazib berdim', 'bg-emerald-500 border-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-lg shadow-emerald-500/25', 'advance'));
             }
             if (actions.childNodes.length) card.appendChild(actions);
+            if (viewer !== 'driver-open' && s.status !== 'CANCELLED') card.appendChild(buildDocActions(s));
             return card;
         }
 
@@ -6791,6 +6944,7 @@
             head.appendChild(el('h2', 'text-2xl font-extrabold text-white', "To'lovlar"));
             head.appendChild(refreshButton(function () { renderDashPayments(user); }));
             nodes.push(head);
+            if (viewer === 'market') nodes.push(marketReportBar());
 
             const info = el('div', 'rounded-2xl bg-blue-500/10 border border-blue-500/25 px-4 py-3 flex items-start gap-3 text-sm text-blue-200');
             info.appendChild(el('i', 'fa-solid fa-shield-halved mt-0.5 text-blue-300'));
@@ -6848,7 +7002,7 @@
             }
             if (rid !== dashRenderId) return;
             saveUser(u);
-            dashContent.replaceChildren(buildAvatarCard(u), buildProfileForm(u), buildTelegramCard(), buildPasswordForm());
+            dashContent.replaceChildren(buildAvatarCard(u), buildProfileForm(u), buildSoundCard(), buildTelegramCard(), buildPasswordForm());
         }
 
         function buildAvatarRow(u) {
@@ -7224,7 +7378,8 @@
             try {
                 await apiRequest('POST', '/bookings', payload, token);
                 closeBookingModal();
-                showToast("Bron so'rovi yuborildi. Fermer tasdiqlagach telefon raqamlar ochiladi.", 4500);
+                showToast("Bron so'rovi yuborildi. Fermer tasdiqlagach telefon raqamlar ochiladi.", 4500, 'success');
+                sfx.play('booking');
                 loadMarket(); // qoldiq kamaygan holda yangilanadi
             } catch (err) {
                 if (err.status === 401) return handleSessionExpired(function () { onBookClick(p); });
@@ -8737,7 +8892,8 @@
         })();
 
         // ----- Muvaffaqiyat animatsiyasi (check) -----
-        function showSuccessCheck(title, sub) {
+        function showSuccessCheck(title, sub, sound) {
+            sfx.play(sound || 'success');
             const old = document.getElementById('success-burst');
             if (old) old.remove();
             const root = el('div');
@@ -9139,7 +9295,7 @@
                 try {
                     const r = await authed('POST', '/subscription/pay', { months: months });
                     subState = Object.assign({}, subState, r.subscription);
-                    showSuccessCheck('Obuna uzaytirildi!', T('{0} gacha faol', formatDate(r.subscription.accessEndsAt)));
+                    showSuccessCheck('Obuna uzaytirildi!', T('{0} gacha faol', formatDate(r.subscription.accessEndsAt)), 'subscription');
                     renderDashSubscription(currentUser());
                 } catch (err) {
                     if (err.status !== 401) showToast(err.messages[0]);
@@ -9435,7 +9591,7 @@
                 return showAuthAlert(msg, 'error', priceAlert);
             }
             closePriceModal();
-            showSuccessCheck('Narx saqlandi!', data.productName + ': ' + formatNumber(data.priceYesterday) + ' → ' + formatNumber(data.priceToday));
+            showSuccessCheck('Narx saqlandi!', data.productName + ': ' + formatNumber(data.priceYesterday) + ' → ' + formatNumber(data.priceToday), 'price');
             if (dashTab === 'prices') loadPrices();
         });
 
@@ -9640,6 +9796,408 @@
         }).observe(document.body, { childList: true, subtree: true });
         document.querySelectorAll('select').forEach(dsEnhance);
 
+        // ===== Fayl yuklab olish (PDF / XLSX): tokenli so'rov -> blob =====
+        async function downloadFile(path, fallbackName, btn) {
+            const token = storageGet(TOKEN_KEY);
+            if (!token) return handleSessionExpired(reopenDash);
+            if (btn) btn.disabled = true;
+            try {
+                let res;
+                try { res = await fetch(API_URL + path, { headers: { Authorization: 'Bearer ' + token } }); }
+                catch (e) { throw { status: 0, message: "Serverga ulanib bo'lmadi. Internet aloqasini tekshiring." }; }
+                if (res.status === 401) return handleSessionExpired(reopenDash);
+                if (!res.ok) {
+                    let msg = res.status === 404 ? 'Hujjat topilmadi (to\'lov hali boshlanmagan bo\'lishi mumkin).' : "Faylni yuklab bo'lmadi.";
+                    try { const j = await res.json(); if (j && j.message) msg = [].concat(j.message)[0]; } catch (e) {}
+                    throw { status: res.status, message: msg };
+                }
+                const blob = await res.blob();
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = fallbackName;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+                showToast('Fayl yuklab olindi', 2800, 'success');
+            } catch (err) {
+                showToast(err.message || "Faylni yuklab bo'lmadi.", 4800, 'error');
+            } finally {
+                if (btn) btn.disabled = false;
+            }
+        }
+        function docButton(icon, label, cls, path, name) {
+            const b = el('button', ['flex-1 min-w-[8.5rem] flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-extrabold border transition disabled:opacity-50', cls].join(' '));
+            b.type = 'button';
+            b.appendChild(el('i', ['fa-solid', icon].join(' ')));
+            b.appendChild(el('span', '', label));
+            b.addEventListener('click', function () { downloadFile(path, name, b); });
+            return b;
+        }
+        // TTN va chek tugmalari (yuk kartochkasi uchun)
+        function buildDocActions(s) {
+            const row = el('div', 'flex flex-wrap gap-2 pt-1 border-t border-white/10');
+            const code = s.id.slice(0, 8).toUpperCase();
+            row.appendChild(docButton('fa-file-pdf', 'TTN yuklab olish (PDF)', 'border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10', '/documents/ttn/' + s.id, 'TTN-' + code + '.pdf'));
+            if (s.paymentStatus) row.appendChild(docButton('fa-receipt', 'Chek (PDF)', 'border-sky-500/40 text-sky-300 hover:bg-sky-500/10', '/documents/receipt/' + s.id, 'Chek-' + code + '.pdf'));
+            return row;
+        }
+        const XLSX_NAME = function (kind, suffix) { return 'AgrarGo-' + kind + '-' + suffix + '.xlsx'; };
+        function excelButton(path, name) {
+            const b = actionBtn('fa-file-excel', "Excel'ga yuklash (.xlsx)", false, function () { downloadFile(path, name, b); });
+            b.classList.add('!border-emerald-500/40', '!text-emerald-300');
+            return b;
+        }
+        // Market: oy tanlab hisobot yuklash
+        function marketReportBar() {
+            const wrap = el('div', 'flex flex-wrap items-end gap-3 glass rounded-2xl border border-white/10 p-4');
+            const sel = el('select', 'auth-input');
+            sel.id = 'rep-month';
+            sel.setAttribute('aria-label', 'Hisobot davri');
+            const now = new Date();
+            for (let i = 0; i < 12; i++) {
+                const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i, 1));
+                const v = d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0');
+                const o = el('option', '', v); o.value = v; sel.appendChild(o);
+            }
+            const all = el('option', '', 'Barcha vaqt'); all.value = 'all'; sel.appendChild(all);
+            const f = el('div', 'min-w-[11rem]');
+            f.appendChild(el('label', 'block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5', 'Hisobot davri'));
+            f.lastChild.htmlFor = 'rep-month';
+            f.appendChild(sel);
+            wrap.appendChild(f);
+            const btn = excelButton('/reports/market.xlsx', 'AgrarGo-market.xlsx');
+            btn.addEventListener('click', function (e) { e.stopImmediatePropagation(); downloadFile('/reports/market.xlsx?month=' + encodeURIComponent(sel.value), XLSX_NAME('market', sel.value), btn); }, true);
+            wrap.appendChild(btn);
+            wrap.appendChild(el('p', 'text-xs text-slate-400 basis-full', "Fayl: xulosa, bronlar, to'lovlar (Escrow holati bilan) va ombor buyurtmalari."));
+            return wrap;
+        }
+
+        // ===== Mintaqaviy agro-ob-havo vidjeti (Open-Meteo; tarmoq bo'lmasa keshdan / zaxira ma'lumotdan) =====
+        const WX_COORDS = {
+            'Toshkent shahri': [41.31, 69.24], 'Toshkent viloyati': [41.47, 69.58], 'Andijon': [40.78, 72.34], 'Buxoro': [39.77, 64.42],
+            "Farg'ona": [40.38, 71.78], 'Jizzax': [40.12, 67.83], 'Namangan': [41.0, 71.67], 'Navoiy': [40.1, 65.37],
+            'Qashqadaryo': [38.86, 65.79], "Qoraqalpog'iston": [42.46, 59.61], 'Samarqand': [39.65, 66.96], 'Sirdaryo': [40.49, 68.78],
+            'Surxondaryo': [37.22, 67.28], 'Xorazm': [41.55, 60.63]
+        };
+        const WX_TTL = 3 * 3600 * 1000, WX_STALE = 24 * 3600 * 1000;
+        const WX_KIND = function (code) {
+            if (code >= 95) return { k: 'storm', ic: 'fa-cloud-bolt', t: 'Momaqaldiroq' };
+            if (code >= 85 || (code >= 71 && code <= 77)) return { k: 'snow', ic: 'fa-snowflake', t: 'Qor' };
+            if ((code >= 80 && code <= 82) || (code >= 61 && code <= 67)) return { k: 'rain', ic: 'fa-cloud-showers-heavy', t: "Yomg'ir" };
+            if (code >= 51 && code <= 57) return { k: 'rain', ic: 'fa-cloud-rain', t: "Mayda yomg'ir" };
+            if (code === 45 || code === 48) return { k: 'fog', ic: 'fa-smog', t: 'Tuman' };
+            if (code === 3) return { k: 'cloud', ic: 'fa-cloud', t: 'Bulutli' };
+            if (code === 1 || code === 2) return { k: 'part', ic: 'fa-cloud-sun', t: 'Qisman bulutli' };
+            return { k: 'clear', ic: 'fa-sun', t: 'Ochiq' };
+        };
+        // Zaxira (tarmoq ham, kesh ham bo'lmaganda): oy bo'yicha o'rtacha iqlim, yog'in yo'q deb olinadi
+        function wxFallback(region, now) {
+            const HIGH = [4, 8, 15, 22, 28, 34, 36, 34, 29, 21, 13, 6];
+            const off = { 'Surxondaryo': 3, 'Qashqadaryo': 2, 'Buxoro': 2, 'Xorazm': 0, "Qoraqalpog'iston": -2, 'Samarqand': -1, 'Namangan': 0, "Farg'ona": 1, 'Andijon': 0, 'Jizzax': 1, 'Navoiy': 1, 'Sirdaryo': 1 }[region] || 0;
+            const days = [];
+            for (let i = 0; i < 5; i++) {
+                const d = new Date(now.getTime() + i * 86400000);
+                const wob = [0, 1, -1, 2, 0][i];
+                const hi = HIGH[d.getMonth()] + off + wob;
+                days.push({ date: d.toISOString().slice(0, 10), code: 1, tmax: hi, tmin: hi - 11, precip: 0, snow: 0, wind: 14 });
+            }
+            return days;
+        }
+        function wxParse(j) {
+            const d = j && j.daily;
+            if (!d || !d.time) throw new Error('bad');
+            return d.time.map(function (t, i) {
+                return { date: t, code: d.weather_code[i], tmax: d.temperature_2m_max[i], tmin: d.temperature_2m_min[i], precip: d.precipitation_sum[i] || 0, snow: d.snowfall_sum[i] || 0, wind: d.wind_speed_10m_max[i] || 0 };
+            }).slice(0, 5);
+        }
+        // Natija: { days, source: 'live' | 'cache' | 'fallback' }
+        async function loadWeather(region) {
+            const key = 'agrargo_wx_' + region;
+            let cached = null;
+            try { cached = JSON.parse(storageGet(key)); } catch (e) {}
+            if (cached && Date.now() - cached.at < WX_TTL && navigator.onLine !== false) return { days: cached.days, source: 'live' };
+            const c = WX_COORDS[region] || WX_COORDS['Toshkent shahri'];
+            try {
+                const ctl = new AbortController();
+                const to = setTimeout(function () { ctl.abort(); }, 7000);
+                const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + c[0] + '&longitude=' + c[1]
+                    + '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,snowfall_sum,wind_speed_10m_max&timezone=Asia%2FTashkent&forecast_days=5&wind_speed_unit=kmh';
+                const res = await fetch(url, { signal: ctl.signal });
+                clearTimeout(to);
+                if (!res.ok) throw new Error('http');
+                const days = wxParse(await res.json());
+                storageSet(key, JSON.stringify({ at: Date.now(), days: days }));
+                return { days: days, source: 'live' };
+            } catch (e) {
+                if (cached && Date.now() - cached.at < WX_STALE) return { days: cached.days, source: 'cache' };
+                return { days: wxFallback(region, new Date()), source: 'fallback' };
+            }
+        }
+
+        // Agro-logistik maslahatlar (sof funksiya: kunlar + rol -> ro'yxat). role: 'FARMER' | 'DRIVER' | boshqa
+        function wxAdvice(days, role, dayLabel) {
+            const groups = {};
+            days.forEach(function (d, i) {
+                const kind = WX_KIND(d.code).k;
+                const lab = dayLabel(d, i);
+                const add = function (key, extra) { (groups[key] = groups[key] || { days: [], extra: extra }).days.push(lab); };
+                if (kind === 'storm') add('storm');
+                if (kind === 'snow' || d.snow > 0.2) add('snow');
+                else if (kind === 'rain' || d.precip >= 1) add('rain');
+                if (d.tmin <= 0) add('frost', Math.round(d.tmin));
+                if (d.tmax >= 36) add('heat', Math.round(d.tmax));
+                if (d.wind >= 45) add('wind');
+            });
+            const out = [];
+            const days_ = function (g) { return g.days.join(', '); };
+            if (groups.storm) out.push({ level: 'danger', icon: 'fa-cloud-bolt', text: T("{0}: momaqaldiroq kutilmoqda. Yo'lga chiqishni kechiktirish yoki xavfsiz joyda to'xtash tavsiya etiladi.", days_(groups.storm)) });
+            if (groups.snow) out.push({ level: 'danger', icon: 'fa-snowflake', text: T("{0}: qor kutilmoqda. Yukni yopiq kuzovda tashish tavsiya etiladi, yo'llarda ehtiyot bo'ling.", days_(groups.snow)) });
+            if (groups.rain) out.push({ level: 'warn', icon: 'fa-cloud-rain', text: T("{0}: yomg'ir kutilmoqda. Yukni yopiq kuzovda tashish tavsiya etiladi.", days_(groups.rain)) });
+            if (groups.frost) {
+                out.push({ level: 'danger', icon: 'fa-temperature-arrow-down', text: T("{0}: muzlama xavfi ({1}°C gacha). Yo'llarda muzlama xavfi bor, tezlikni kamaytiring.", days_(groups.frost), groups.frost.extra) });
+                if (role === 'FARMER') out.push({ level: 'warn', icon: 'fa-seedling', text: T("Sovuqda nozik ekin va mahsulotlarni himoya qiling, tashishda izolyatsiyalangan kuzovdan foydalaning.") });
+            }
+            if (groups.heat) out.push({ level: 'warn', icon: 'fa-temperature-arrow-up', text: T("{0}: jazirama ({1}°C). Tez buziladigan mahsulotlarni sovutgichli yoki soyali kuzovda tashing.", days_(groups.heat), groups.heat.extra) });
+            if (groups.wind) out.push({ level: 'warn', icon: 'fa-wind', text: T("{0}: kuchli shamol kutilmoqda. Ochiq kuzovdagi yukni mahkam bog'lang.", days_(groups.wind)) });
+            if (!out.length) out.push({ level: 'ok', icon: 'fa-circle-check', text: T("Yaqin kunlarda xavfli ob-havo kutilmayapti. Yuk tashish uchun qulay.") });
+            return out;
+        }
+
+        function wxRegionFor(user) {
+            const saved = storageGet('agrargo_wx_region');
+            if (saved && WX_COORDS[saved]) return saved;
+            const u = user || getStoredUser() || {};
+            const p = u.farmer || u.driver || u.market;
+            if (p && p.region && WX_COORDS[p.region]) return p.region;
+            return 'Toshkent shahri';
+        }
+
+        function buildWeatherWidget(opts) {
+            const o = opts || {};
+            const role = o.role || null;
+            const box = el('section', 'wx space-y-4');
+            box.setAttribute('aria-label', 'Ob-havo');
+            const head = el('div', 'flex flex-wrap items-center justify-between gap-3');
+            const ttl = el('div', 'space-y-0.5');
+            ttl.appendChild(el('h3', 'text-lg font-extrabold text-white flex items-center gap-2', ''));
+            ttl.firstChild.appendChild(el('i', 'fa-solid fa-cloud-sun text-amber-300'));
+            ttl.firstChild.appendChild(el('span', '', 'Agro ob-havo: 5 kunlik prognoz'));
+            const src = el('p', 'text-xs text-slate-400');
+            ttl.appendChild(src);
+            head.appendChild(ttl);
+            const sel = el('select', 'auth-input sm:!w-auto sm:min-w-[13rem]');
+            sel.setAttribute('aria-label', 'Viloyat');
+            Object.keys(WX_COORDS).forEach(function (r) { const op = el('option', '', r); op.value = r; sel.appendChild(op); });
+            const region = wxRegionFor(o.user);
+            sel.value = region;
+            head.appendChild(sel);
+            box.appendChild(head);
+            const body = el('div', 'space-y-4');
+            box.appendChild(body);
+
+            const locale = { uz: 'uz', ru: 'ru', en: 'en' }[(window.I18N && I18N.lang) || 'uz'] || 'uz';
+            const dayName = function (d, i) {
+                if (i === 0) return T('Bugun');
+                if (i === 1) return T('Ertaga');
+                const wd = new Date(d.date + 'T12:00:00').getDay();
+                if (locale === 'uz') return ['Yak', 'Dush', 'Sesh', 'Chor', 'Pay', 'Jum', 'Shan'][wd]; // ICU'da 'uz' bo'lmasa ham to'g'ri chiqadi
+                try { return new Date(d.date + 'T12:00:00').toLocaleDateString(locale, { weekday: 'short' }); } catch (e) { return d.date.slice(5); }
+            };
+            let seq = 0;
+            const load = async function () {
+                const my = ++seq;
+                body.replaceChildren(el('div', 'sk-card h-72'));
+                const r = await loadWeather(sel.value);
+                if (my !== seq) return;
+                src.textContent = r.source === 'live' ? T("Open-Meteo: jonli ma'lumot") : r.source === 'cache' ? T("Oxirgi saqlangan ma'lumot (tarmoq yo'q)") : T("Taxminiy zaxira ma'lumot (tarmoq yo'q)");
+                const advice = wxAdvice(r.days, role, dayName);
+                const grid = el('div', 'wx-days');
+                r.days.forEach(function (d, i) {
+                    const k = WX_KIND(d.code);
+                    const risky = d.tmin <= 0 || d.precip >= 1 || d.snow > 0.2 || d.tmax >= 36 || d.wind >= 45 || k.k === 'storm';
+                    const c = el('div', ['wx-day', i === 0 ? 'today' : '', risky ? 'risk' : ''].join(' '));
+                    c.appendChild(el('div', 'text-xs font-bold uppercase tracking-wider text-slate-300', dayName(d, i)));
+                    const ic = el('span', 'wx-ic');
+                    ic.title = T(k.t);
+                    ic.appendChild(el('i', ['fa-solid', k.ic, k.k === 'clear' ? 'text-amber-300' : k.k === 'snow' ? 'text-sky-200' : k.k === 'rain' || k.k === 'storm' ? 'text-sky-400' : 'text-slate-300'].join(' ')));
+                    c.appendChild(ic);
+                    c.appendChild(el('div', 'text-base font-black text-white', Math.round(d.tmax) + '°'));
+                    c.appendChild(el('div', 'text-xs font-semibold text-slate-400', Math.round(d.tmin) + '°'));
+                    c.appendChild(el('div', 'text-[11px] text-sky-300 mt-1 min-h-[1rem]', d.precip >= 0.1 ? T('{0} mm', d.precip.toFixed(1)) : ''));
+                    grid.appendChild(c);
+                });
+                const list = el('div', 'space-y-2');
+                advice.forEach(function (a) {
+                    const row = el('div', ['wx-adv', a.level === 'danger' ? 'danger' : a.level === 'ok' ? 'ok' : ''].join(' '));
+                    row.appendChild(el('i', ['fa-solid', a.icon, 'mt-0.5'].join(' ')));
+                    row.appendChild(el('span', 'min-w-0', a.text));
+                    list.appendChild(row);
+                });
+                body.replaceChildren(grid, list);
+            };
+            sel.addEventListener('change', function () { storageSet('agrargo_wx_region', sel.value); load(); });
+            box.__load = load;
+            load();
+            return box;
+        }
+        // Bosh sahifa: bo'lim ko'ringanda yuklanadi (keraksiz tarmoq so'rovi bo'lmasin)
+        (function () {
+            const host = document.getElementById('weather-landing');
+            if (!host) return;
+            const start = function () { host.replaceChildren(buildWeatherWidget({ role: (getStoredUser() || {}).role })); };
+            if (!('IntersectionObserver' in window)) return start();
+            const io = new IntersectionObserver(function (es) { if (es.some(function (e) { return e.isIntersecting; })) { io.disconnect(); start(); } }, { rootMargin: '300px' });
+            io.observe(host);
+        })();
+
+        // ===== PWA oflayn so'rovlar navbati (IndexedDB) =====
+        // Internet yo'q (dalada) bo'lsa fermer/haydovchi amallari qotmasdan mahalliy saqlanadi va aloqa tiklangach serverga yuboriladi.
+        const OQ_ROUTES = [
+            ['POST', /^\/products$/, "E'lon yaratish"], ['PUT', /^\/products\/[\w-]+$/, "E'lonni tahrirlash"], ['DELETE', /^\/products\/[\w-]+$/, "E'lonni o'chirish"],
+            ['PATCH', /^\/bookings\/[\w-]+\/(approve|reject)$/, 'Bronga javob'],
+            ['POST', /^\/shipments\/[\w-]+\/(accept|release)$/, 'Yuk amali'], ['PATCH', /^\/shipments\/[\w-]+\/advance$/, 'Yuk holati'],
+            ['POST', /^\/shipments\/[\w-]+\/location$/, 'GPS nuqtasi'], ['POST', /^\/warehouse\/items$/, 'Omborga yuk e\'loni']
+        ];
+        const OQ_MAX_GPS = 200;
+        const oq = { db: null, busy: false, count: 0 };
+        function oqRoute(method, path) {
+            return OQ_ROUTES.find(function (r) { return r[0] === method && r[1].test(path); }) || null;
+        }
+        function oqDb() {
+            if (oq.db) return Promise.resolve(oq.db);
+            return new Promise(function (resolve) {
+                if (!window.indexedDB) return resolve(null);
+                let rq;
+                try { rq = indexedDB.open('agrargo-offline', 1); } catch (e) { return resolve(null); }
+                rq.onupgradeneeded = function () { rq.result.createObjectStore('queue', { keyPath: 'id', autoIncrement: true }); };
+                rq.onsuccess = function () { oq.db = rq.result; resolve(oq.db); };
+                rq.onerror = rq.onblocked = function () { resolve(null); };
+            });
+        }
+        function oqTx(mode, fn) {
+            return oqDb().then(function (db) {
+                if (!db) return null;
+                return new Promise(function (resolve) {
+                    let out;
+                    const tx = db.transaction('queue', mode);
+                    const st = tx.objectStore('queue');
+                    out = fn(st);
+                    tx.oncomplete = function () { resolve(out && 'result' in out ? out.result : out); };
+                    tx.onerror = tx.onabort = function () { resolve(null); };
+                });
+            });
+        }
+        const oqAll = function () { return oqTx('readonly', function (s) { return s.getAll(); }).then(function (r) { return r || []; }); };
+        const oqDel = function (id) { return oqTx('readwrite', function (s) { return s.delete(id); }); };
+        function oqRefresh() {
+            return oqAll().then(function (items) {
+                const u = currentUser();
+                oq.count = items.filter(function (i) { return u && i.userId === u.id; }).length;
+                oqPill();
+                return items;
+            });
+        }
+        function oqPill(state) {
+            let p = document.getElementById('oq-pill');
+            if (!p) {
+                p = el('div', 'oq-pill');
+                p.id = 'oq-pill';
+                p.setAttribute('role', 'status');
+                document.body.appendChild(p);
+            }
+            const offline = navigator.onLine === false;
+            p.classList.toggle('sync', state === 'sync');
+            if (state === 'sync') { p.replaceChildren(el('i', 'fa-solid fa-rotate fa-spin'), el('span', '', 'Sinxronlanmoqda...')); p.classList.add('show'); return; }
+            if (!offline && !oq.count) { p.classList.remove('show'); return; }
+            const parts = [el('i', ['fa-solid', offline ? 'fa-wifi' : 'fa-cloud-arrow-up'].join(' '))];
+            parts.push(el('span', '', offline ? T('Oflayn rejim') : T('Yuborilmoqda')));
+            if (oq.count) parts.push(el('span', 'opacity-80', T('· {0} ta amal kutmoqda', oq.count)));
+            p.replaceChildren.apply(p, parts);
+            p.classList.add('show');
+        }
+        // apiRequest tarmoq xatosida chaqiradi: amalni saqlab, marker qaytaradi (yo'q bo'lsa null)
+        async function oqEnqueue(method, path, payload) {
+            const route = oqRoute(method, path), u = currentUser();
+            if (!route || !u) return null;
+            const gps = /\/location$/.test(path);
+            if (gps) {
+                const items = await oqAll();
+                const mine = items.filter(function (i) { return /\/location$/.test(i.path) && i.userId === u.id; });
+                if (mine.length >= OQ_MAX_GPS) await oqDel(mine[0].id); // GPS: eng eskilari tashlab yuboriladi
+            }
+            const ok = await oqTx('readwrite', function (s) { return s.add({ method: method, path: path, payload: payload === undefined ? null : payload, userId: u.id, label: route[2], createdAt: Date.now(), gps: gps }); });
+            if (ok === null) return null;
+            await oqRefresh();
+            if (!gps) showToast(T("Oflayn saqlandi: «{0}». Internet tiklanganda avtomatik yuboriladi.", route[2]), 4800, 'warning');
+            try { navigator.serviceWorker.ready.then(function (r) { if (r.sync) r.sync.register('agrargo-flush'); }); } catch (e) {}
+            return { __queued: true };
+        }
+        async function oqFlush() {
+            if (oq.busy || navigator.onLine === false) return;
+            const token = storageGet(TOKEN_KEY), u = currentUser();
+            if (!token || !u) return;
+            oq.busy = true;
+            let synced = 0, dropped = 0;
+            try {
+                const items = (await oqAll()).filter(function (i) { return i.userId === u.id; }).sort(function (a, b) { return a.id - b.id; });
+                if (!items.length) return;
+                oqPill('sync');
+                for (const it of items) {
+                    try {
+                        await apiRequest(it.method, it.path, it.payload === null ? undefined : it.payload, token, { noQueue: true });
+                        await oqDel(it.id);
+                        if (!it.gps) synced++;
+                    } catch (err) {
+                        if (err.status === 0 || err.status >= 500 || err.status === 401 || err.status === 429) break; // keyinroq qayta uriniladi
+                        await oqDel(it.id); // 4xx: ma'lumot eskirgan (masalan, bron allaqachon hal qilingan)
+                        if (!it.gps) dropped++;
+                    }
+                }
+            } finally {
+                oq.busy = false;
+                await oqRefresh();
+            }
+            if (synced) {
+                showToast("Oflayn saqlangan ma'lumotlar server bilan sinxronlashtirildi", 4200, 'success');
+                sfx.play('sync');
+                if (dashboardView.classList.contains('open')) selectDashTab(dashTab);
+                if (typeof loadMarket === 'function') loadMarket();
+            }
+            if (dropped) showToast(T("{0} ta oflayn amal bajarilmadi (ma'lumot allaqachon o'zgargan).", dropped), 5200, 'warning');
+        }
+        window.addEventListener('online', function () { showToast('Internet aloqasi tiklandi', 2600, 'info'); oqPill(); oqFlush(); });
+        window.addEventListener('offline', function () { showToast("Internet uzildi. Amallar oflayn saqlanadi va keyin yuboriladi.", 4200, 'warning'); oqPill(); });
+        if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', function (e) { if (e.data && e.data.type === 'flush-queue') oqFlush(); });
+        setInterval(function () { if (oq.count) oqFlush(); }, 30000);
+        setTimeout(function () { oqRefresh().then(function () { if (oq.count) oqFlush(); }); }, 2500);
+
+        // ----- Tovush sozlamasi (profil) -----
+        function buildSoundCard() {
+            const card = el('div', 'glass rounded-3xl border border-white/10 p-6 flex flex-wrap items-center justify-between gap-4');
+            const l = el('div', 'space-y-1 min-w-0');
+            l.appendChild(el('h4', 'font-extrabold text-white flex items-center gap-2', ''));
+            l.firstChild.appendChild(el('i', 'fa-solid fa-music text-emerald-400'));
+            l.firstChild.appendChild(el('span', '', 'Tovush effektlari'));
+            l.appendChild(el('p', 'text-sm text-slate-400', "Muhim amallar (bron, narx, obuna to'lovi) bajarilganda qisqa signal chalinadi."));
+            card.appendChild(l);
+            const r = el('div', 'flex items-center gap-3');
+            const test = el('button', 'px-4 py-2 rounded-xl border border-white/15 text-slate-300 text-sm font-bold hover:border-emerald-500/50 hover:text-emerald-400 transition', 'Tinglab ko\'rish');
+            test.type = 'button';
+            test.addEventListener('click', function () { const was = sfx.on; sfx.on = true; sfx.play('success'); sfx.on = was; if (!was) showToast("Tovush hozir o'chirilgan", 2400, 'info'); });
+            r.appendChild(test);
+            const sw = el('button', 'w-12 h-12 rounded-2xl border border-emerald-500/40 text-emerald-300 text-lg hover:bg-emerald-500/10 transition');
+            sw.type = 'button';
+            sw.dataset.sfxToggle = '1';
+            sw.appendChild(el('i', 'fa-solid fa-volume-high'));
+            syncSoundToggle(sw);
+            sw.addEventListener('click', function () { sfx.set(!sfx.on); });
+            r.appendChild(sw);
+            card.appendChild(r);
+            return card;
+        }
+
+        document.querySelectorAll('[data-sfx-toggle]').forEach(syncSoundToggle);
         startLiveReviews();
         routeRoleHash();
         routeNotFound();

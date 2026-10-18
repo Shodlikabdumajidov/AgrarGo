@@ -9,6 +9,7 @@ import { BookingModule } from './booking/booking.module';
 import { APP_ENV, AppEnvModule } from './config/app-env.module';
 import { AppEnv } from './config/env.validation';
 import { HealthController } from './health/health.controller';
+import { DocumentsModule } from './documents/documents.module';
 import { MarketPriceModule } from './market-price/market-price.module';
 import { MarketplaceModule } from './marketplace/marketplace.module';
 import { PaymentModule } from './payment/payment.module';
@@ -17,6 +18,7 @@ import { ProductModule } from './product/product.module';
 import { ProfileModule } from './profile/profile.module';
 import { AppThrottlerGuard } from './security/app-throttler.guard';
 import { buildThrottlers } from './security/throttling';
+import { ReportsModule } from './reports/reports.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { ShipmentModule } from './shipment/shipment.module';
 import { SubscriptionModule } from './subscription/subscription.module';
@@ -46,6 +48,8 @@ import { WarehouseModule } from './warehouse/warehouse.module';
     PaymentModule,
     SubscriptionModule,
     MarketPriceModule,
+    DocumentsModule,
+    ReportsModule,
     WarehouseModule,
     SettingsModule,
     ReviewsModule,
