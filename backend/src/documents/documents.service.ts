@@ -101,7 +101,12 @@ export class DocumentsService {
     ]);
     sectionTitle(doc, "To'lov");
     rows(doc, [
-      ['Yuk summasi', payment ? som(String(payment.amount)) : null],
+      ['Mahsulot summasi (fermerga)', payment ? som(String(payment.amount)) : null],
+      ...(payment && Number(payment.deliveryFee) > 0 ? [
+        ["Yetkazib berish haqi (haydovchiga)", som(String(payment.deliveryFee))] as [string, string],
+        ['Xizmat haqi (platforma)', som(String(payment.serviceFee))] as [string, string],
+        ["Jami (market to'laydi)", som(String(Number(payment.amount) + Number(payment.deliveryFee) + Number(payment.serviceFee)))] as [string, string],
+      ] : []),
       ["To'lov holati", payment ? PAY_UZ[payment.status] ?? payment.status : "To'lov hali boshlanmagan"],
     ]);
 
@@ -130,7 +135,12 @@ export class DocumentsService {
     sectionTitle(doc, "To'lov");
     rows(doc, [
       ["To'lov ID", payment.id],
-      ['Summa', som(String(payment.amount))],
+      ['Mahsulot summasi (fermerga)', som(String(payment.amount))],
+      ...(Number(payment.deliveryFee) > 0 ? [
+        ["Yetkazib berish haqi (haydovchiga)", som(String(payment.deliveryFee))] as [string, string],
+        ['Xizmat haqi (platforma)', som(String(payment.serviceFee))] as [string, string],
+      ] : []),
+      ["Jami (market to'ladi)", som(String(Number(payment.amount) + Number(payment.deliveryFee) + Number(payment.serviceFee)))],
       ...(Number(payment.feeAmount) > 0 ? [['Omborxona xizmat haqi (summaga kiradi)', som(String(payment.feeAmount))] as [string, string]] : []),
       ['Holati', PAY_UZ[payment.status] ?? payment.status],
       ['Provayder', payment.provider + (payment.providerRef ? ` (${payment.providerRef})` : '')],

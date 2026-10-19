@@ -3,6 +3,8 @@ import { BookingStatus, Prisma, ProductStatus } from '@prisma/client';
 import { NotificationService } from '../telegram/notification.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { createPaymentForBooking } from '../payment/payment.factory';
+import { PricingService } from '../pricing/pricing.service';
+import { breakdownOf } from '../pricing/pricing';
 import { createShipmentForBooking } from '../shipment/shipment.factory';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { ListBookingsQuery } from './dto/list-bookings.query';
@@ -23,14 +25,14 @@ const BOOKING_INCLUDE = {
   market: {
     select: { companyName: true, region: true, district: true, user: { select: { fullName: true, phone: true } } },
   },
-  payment: { select: { id: true, status: true, amount: true, currency: true, provider: true } },
+  payment: { select: { id: true, status: true, amount: true, currency: true, provider: true, deliveryFee: true, serviceFee: true, distanceKm: true } },
 } satisfies Prisma.BookingInclude;
 
 type BookingRow = Prisma.BookingGetPayload<{ include: typeof BOOKING_INCLUDE }>;
 
 @Injectable()
 export class BookingService {
-  constructor(private readonly prisma: PrismaService, private readonly notify: NotificationService) {}
+  constructor(private readonly prisma: PrismaService, private readonly notify: NotificationService, private readonly pricing: PricingService) {}
 
   /** Supermarket e'londan kerakli miqdorni bron qiladi; e'lon qoldig'i darhol kamayadi. */
   async create(marketId: string, dto: CreateBookingDto) {
@@ -98,7 +100,7 @@ export class BookingService {
     // Tasdiqlangach shu tranzaksiyada yuk tashish buyurtmasi ham yaratiladi
     await this.decide(id, { product: { farmerId } }, BookingStatus.APPROVED, false, async (tx) => {
       await createShipmentForBooking(tx, id);
-      await createPaymentForBooking(tx, id); // kutilayotgan (PENDING) escrow to'lovi
+      await createPaymentForBooking(tx, id, this.pricing); // kutilayotgan (PENDING) escrow to'lovi
     });
     this.notify.bookingApproved(id);
     return this.reload(id, 'farmer');
@@ -159,7 +161,17 @@ export class BookingService {
       decidedAt: b.decidedAt,
       product: { id: b.product.id, name: b.product.name, category: b.product.category, status: b.product.status },
       payment: b.payment,
+      // To'lov tarkibi (fermer / haydovchi / xizmat haqi). To'lov yaratilgan bo'lsa u, aks holda taxminiy hisob (estimated: true).
+      // Eslatma: yuqoridagi totalPrice — faqat mahsulot summasi (eski maydon); market to'laydigan umumiy summa breakdown.totalPrice.
+      breakdown: this.breakdown(b),
     };
+  }
+
+  private breakdown(b: BookingRow) {
+    const productPrice = b.quantityKg.mul(b.pricePerKg);
+    if (b.payment) return { ...breakdownOf({ productPrice: b.payment.amount, deliveryFee: b.payment.deliveryFee, serviceFee: b.payment.serviceFee, distanceKm: b.payment.distanceKm, currency: b.payment.currency }), estimated: false };
+    const q = this.pricing.quote(b.product.farmer.region, b.market.region, productPrice, b.quantityKg);
+    return { ...breakdownOf({ ...q, productPrice: q.productPrice }), estimated: true };
   }
 
   /** Supermarket ko'radi: fermer ma'lumoti (tasdiqlangach telefon bilan). */

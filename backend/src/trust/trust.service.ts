@@ -74,7 +74,7 @@ export class TrustService {
       if (reefer) m.driver.reefer = Math.max(0, rows.length - damagedShipments);
       // ELD: GPS jurnalida kunlik kamida 5 nuqta bo'lgan ketma-ket kunlar
       const days = await this.prisma.$queryRaw<{ d: Date }[]>(Prisma.sql`
-        SELECT (date_trunc('day', "recordedAt" AT TIME ZONE 'Asia/Tashkent'))::date AS d FROM "LocationLog" WHERE "driverId" = ${d.id}
+        SELECT (date_trunc('day', "recordedAt" AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Tashkent'))::date AS d FROM "LocationLog" WHERE "driverId" = ${d.id}
         GROUP BY 1 HAVING count(*) >= 5 ORDER BY 1`);
       let run = 0, best = 0, last = 0;
       days.forEach((r) => { const t = Date.UTC(r.d.getUTCFullYear(), r.d.getUTCMonth(), r.d.getUTCDate()); run = last && t - last === DAY ? run + 1 : 1; last = t; best = Math.max(best, run); });

@@ -56,7 +56,9 @@ export class SubscriptionService {
 
   private present(p: { id: string; months: number; amount: unknown; provider: string; providerRef: string; periodStart: Date; periodEnd: Date; createdAt: Date }) {
     return {
-      id: p.id, months: p.months, amountUzs: Number(p.amount), provider: p.provider, providerRef: p.providerRef,
+      id: p.id, months: p.months, amountUzs: Number(p.amount),
+      // Obuna to'lovi to'liq platformaga tegishli: fermer/haydovchi ulushi yo'q
+      breakdown: { productPrice: 0, deliveryFee: 0, serviceFee: Number(p.amount), totalPrice: Number(p.amount), currency: 'UZS' }, provider: p.provider, providerRef: p.providerRef,
       periodStart: p.periodStart, periodEnd: p.periodEnd, createdAt: p.createdAt,
     };
   }

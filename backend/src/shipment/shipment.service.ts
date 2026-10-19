@@ -3,6 +3,7 @@ import { PaymentStatus, Prisma, Role, ShipmentStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { SettingsService } from '../settings/settings.service';
 import { TrustService } from '../trust/trust.service';
+import { breakdownOf } from '../pricing/pricing';
 import { NotificationService } from '../telegram/notification.service';
 import { AvailableShipmentsQuery, ListShipmentsQuery } from './dto/list-shipments.query';
 
@@ -16,8 +17,8 @@ const SHIPMENT_INCLUDE = {
   driver: {
     select: { userId: true, vehicleType: true, plateNumber: true, capacityKg: true, user: { select: { fullName: true, phone: true } } },
   },
-  booking: { select: { id: true, payment: { select: { status: true } } } },
-  warehouseOrder: { select: { id: true, status: true, payment: { select: { status: true } } } },
+  booking: { select: { id: true, payment: { select: { status: true, amount: true, feeAmount: true, deliveryFee: true, serviceFee: true, distanceKm: true, currency: true } } } },
+  warehouseOrder: { select: { id: true, status: true, payment: { select: { status: true, amount: true, feeAmount: true, deliveryFee: true, serviceFee: true, distanceKm: true, currency: true } } } },
   farmer: { select: { farmName: true, user: { select: { fullName: true, phone: true } } } },
   market: { select: { companyName: true, user: { select: { fullName: true, phone: true } } } },
 } satisfies Prisma.ShipmentInclude;
@@ -182,6 +183,19 @@ export class ShipmentService {
     if (s) this.trust.invalidate(s.farmer.userId, s.market.userId, ...(s.driver ? [s.driver.userId] : []));
   }
 
+  /**
+   * To'lov tarkibi. Haydovchi faqat o'z yetkazib berish haqi va masofani ko'radi (mahsulot summasi yashirin);
+   * fermer va market mahsulot / yetkazib berish / xizmat haqi / jami taqsimotini ko'radi.
+   */
+  private priceOf(s: ShipmentRow, viewer: Viewer) {
+    const p = s.booking?.payment ?? s.warehouseOrder?.payment;
+    if (!p) return null;
+    const base = { deliveryFee: Number(p.deliveryFee), distanceKm: p.distanceKm, currency: p.currency };
+    if (viewer === 'driver-open' || viewer === 'driver-own') return base;
+    const b = breakdownOf({ productPrice: p.amount, deliveryFee: p.deliveryFee, serviceFee: p.serviceFee, distanceKm: p.distanceKm, currency: p.currency });
+    return { ...b, warehouseFee: Number(p.feeAmount), farmerShare: b.productPrice - Number(p.feeAmount), driverShare: b.deliveryFee, platformShare: b.serviceFee + Number(p.feeAmount) };
+  }
+
   /** Haydovchi kartochkasiga ommaviy ishonch ma'lumoti (tasdiqlangan belgi, status, top badjlar) qo'shadi */
   private async withTrust<T extends { driver: { userId: string } | null }>(items: T[]) {
     const map = await this.trust.summaries(items.flatMap((i) => (i.driver ? [i.driver.userId] : [])));
@@ -236,6 +250,7 @@ export class ShipmentService {
       deliveredAt: s.deliveredAt,
       events: s.events.map((e) => ({ status: e.status, createdAt: e.createdAt })),
       paymentStatus: s.booking?.payment?.status ?? s.warehouseOrder?.payment?.status ?? null, // haydovchi uchun: to'lov kafolatlanganmi
+      price: this.priceOf(s, viewer),
       ...(viewer === 'driver-open' && capacityKg ? { fitsCapacity: s.weightKg.lte(capacityKg) } : {}),
       farmer: viewer === 'driver-own' || viewer === 'market'
         ? { farmName: farmer.farmName, fullName: farmer.user.fullName, phone: farmer.user.phone }

@@ -2,6 +2,7 @@ import { BadRequestException, ConflictException, Injectable, NotFoundException }
 import { Prisma, Role } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { roleTakenMessage } from '../common/role-labels';
+import { breakdownOf } from '../pricing/pricing';
 import { PrismaService } from '../prisma/prisma.service';
 import { publicUser } from '../common/public-user';
 import { ProfileService } from '../profile/profile.service';
@@ -45,14 +46,14 @@ export class AdminService {
       this.prisma.warehouseOrder.groupBy({ by: ['status'], _count: true, _sum: { totalPrice: true } }),
       this.prisma.storageUnit.count(),
       this.prisma.$queryRaw<{ d: string; role: Role; c: bigint }[]>`
-        SELECT to_char(("createdAt" AT TIME ZONE 'Asia/Tashkent')::date, 'YYYY-MM-DD') AS d, role, count(*) AS c
+        SELECT to_char(("createdAt" AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Tashkent')::date, 'YYYY-MM-DD') AS d, role, count(*) AS c
         FROM "User" WHERE "createdAt" >= ${since} GROUP BY 1, 2`,
       this.prisma.auditLog.count({ where: { createdAt: { gte: new Date(Date.now() - DAY) } } }),
       this.prisma.$queryRaw<{ m: string; amount: Prisma.Decimal; c: bigint }[]>`
-        SELECT to_char(date_trunc('month', "releasedAt" AT TIME ZONE 'Asia/Tashkent'), 'YYYY-MM') AS m, COALESCE(sum(amount), 0) AS amount, count(*) AS c
+        SELECT to_char(date_trunc('month', "releasedAt" AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Tashkent'), 'YYYY-MM') AS m, COALESCE(sum(amount), 0) AS amount, count(*) AS c
         FROM "Payment" WHERE status = 'RELEASED' AND "releasedAt" >= ${new Date(monthStart.getTime() - 5 * 3600_000)} GROUP BY 1`,
       this.prisma.$queryRaw<{ m: string; c: bigint }[]>`
-        SELECT to_char(date_trunc('month', "createdAt" AT TIME ZONE 'Asia/Tashkent'), 'YYYY-MM') AS m, count(*) AS c
+        SELECT to_char(date_trunc('month', "createdAt" AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Tashkent'), 'YYYY-MM') AS m, count(*) AS c
         FROM "Booking" WHERE "createdAt" >= ${new Date(monthStart.getTime() - 5 * 3600_000)} GROUP BY 1`,
     ]);
     // Oylik qatorlar: bo'sh oylar ham nol bilan chiqadi (diagramma uzluksiz bo'lishi uchun)
@@ -264,8 +265,8 @@ export class AdminService {
         where, orderBy: { updatedAt: 'desc' }, skip: (page - 1) * limit, take: limit,
         include: {
           driver: { select: { plateNumber: true, vehicleType: true, user: { select: { fullName: true, phone: true } } } },
-          booking: { select: { payment: { select: { status: true, amount: true } } } },
-          warehouseOrder: { select: { payment: { select: { status: true, amount: true } } } },
+          booking: { select: { payment: { select: { status: true, amount: true, feeAmount: true, deliveryFee: true, serviceFee: true, distanceKm: true, currency: true } } } },
+          warehouseOrder: { select: { payment: { select: { status: true, amount: true, feeAmount: true, deliveryFee: true, serviceFee: true, distanceKm: true, currency: true } } } },
           farmer: { select: { farmName: true } },
           market: { select: { companyName: true } },
         },
@@ -279,6 +280,7 @@ export class AdminService {
         source: s.warehouseOrderId ? 'WAREHOUSE' : 'BOOKING',
         farmName: s.farmer.farmName, companyName: s.market.companyName,
         paymentStatus: (s.booking?.payment ?? s.warehouseOrder?.payment)?.status ?? null, amount: (s.booking?.payment ?? s.warehouseOrder?.payment)?.amount ?? null,
+        price: (() => { const p = s.booking?.payment ?? s.warehouseOrder?.payment; if (!p) return null; const b = breakdownOf({ productPrice: p.amount, deliveryFee: p.deliveryFee, serviceFee: p.serviceFee, distanceKm: p.distanceKm, currency: p.currency }); return { ...b, warehouseFee: Number(p.feeAmount), farmerShare: b.productPrice - Number(p.feeAmount), driverShare: b.deliveryFee, platformShare: b.serviceFee + Number(p.feeAmount) }; })(),
         driver: s.driver ? { fullName: s.driver.user.fullName, phone: s.driver.user.phone, plateNumber: s.driver.plateNumber, vehicleType: s.driver.vehicleType } : null,
       })),
       total, page, pages: Math.max(1, Math.ceil(total / limit)),

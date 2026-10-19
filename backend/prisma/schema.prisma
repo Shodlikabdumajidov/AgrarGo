@@ -286,7 +286,11 @@ model Payment {
   warehouseOrderId String?         @unique
   warehouseOrder   WarehouseOrder? @relation(fields: [warehouseOrderId], references: [id], onDelete: Restrict)
   feeAmount        Decimal         @default(0) @db.Decimal(20, 2) // omborxona xizmat haqi (summaning ichida): fermerga amount - feeAmount o'tadi
-  amount           Decimal         @db.Decimal(20, 2) // server hisoblaydi: miqdor x bron narxi
+  amount           Decimal         @db.Decimal(20, 2) // server hisoblaydi: miqdor x bron narxi (= mahsulot summasi, fermerga tegishli)
+  // To'lov tarkibi: market jami = amount + deliveryFee + serviceFee. Eski yozuvlarda 0 (jami = amount).
+  deliveryFee      Decimal         @default(0) @db.Decimal(20, 2) // haydovchiga: yetkazib berish haqi
+  serviceFee       Decimal         @default(0) @db.Decimal(20, 2) // platforma xizmat haqi (komissiya)
+  distanceKm       Int             @default(0) // hisoblangan marshrut masofasi
   currency         String          @default("UZS")
   status           PaymentStatus   @default(PENDING)
   provider         String

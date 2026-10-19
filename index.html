@@ -666,6 +666,35 @@
         .rate-star:hover { transform: scale(1.18); }
         @media (prefers-reduced-motion: reduce) { .bdg.unlocked::before, .bdg.unlocked .bdg-ico, .face-stage.scan .face-line { animation: none; } }
 
+        /* ===== To'lov tarkibi (fermer / haydovchi / xizmat haqi) ===== */
+        #bd-modal { opacity: 0; visibility: hidden; transition: opacity .3s ease, visibility .3s ease; }
+        #bd-modal.open { opacity: 1; visibility: visible; }
+        #bd-modal .auth-card { transform: translateY(20px) scale(.96); transition: transform .4s cubic-bezier(.16,1,.3,1); }
+        #bd-modal.open .auth-card { transform: none; }
+        .bd-chips { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; }
+        .bd-chip { display: inline-flex; align-items: center; gap: .35rem; padding: .25rem .65rem; border-radius: 9999px; font-size: .74rem; font-weight: 800; border: 1px solid transparent; white-space: nowrap; cursor: help; }
+        .bd-chip.farm { color: #86efac; background: rgba(34,197,94,.13); border-color: rgba(74,222,128,.35); }
+        .bd-chip.drv { color: #7dd3fc; background: rgba(14,165,233,.13); border-color: rgba(56,189,248,.35); }
+        .bd-chip.svc { color: #fcd34d; background: rgba(245,158,11,.12); border-color: rgba(251,191,36,.35); }
+        .bd-chip.tot { color: #f1f5f9; background: rgba(255,255,255,.09); border-color: rgba(255,255,255,.22); }
+        .bd-chip.big { font-size: .9rem; padding: .35rem .8rem; }
+        .bd-chip.est { border-style: dashed; }
+        .bd-link { font-size: .74rem; font-weight: 800; color: #6ee7b7; text-decoration: underline; text-underline-offset: 3px; transition: color .2s; }
+        .bd-link:hover { color: #a7f3d0; }
+        .bd-card { border-radius: 1.25rem; border: 1px solid rgba(255,255,255,.14); background: linear-gradient(160deg, rgba(255,255,255,.08), rgba(15,23,42,.7)); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); padding: 1rem 1.1rem; box-shadow: 0 20px 50px -30px rgba(16,185,129,.55); }
+        .bd-bar { display: flex; height: .7rem; border-radius: 9999px; overflow: hidden; background: rgba(255,255,255,.08); margin: .6rem 0 .9rem; }
+        .bd-bar i { display: block; height: 100%; transition: width .9s cubic-bezier(.16,1,.3,1); }
+        .bd-bar .farm { background: linear-gradient(90deg, #22c55e, #4ade80); }
+        .bd-bar .drv { background: linear-gradient(90deg, #0ea5e9, #38bdf8); }
+        .bd-bar .svc { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+        .bd-row { display: flex; align-items: flex-start; justify-content: space-between; gap: .8rem; padding: .55rem .6rem; border-radius: .8rem; }
+        .bd-row + .bd-row { margin-top: .15rem; }
+        .bd-row .ic { width: 2rem; height: 2rem; border-radius: .7rem; display: flex; align-items: center; justify-content: center; flex: none; font-size: .95rem; background: rgba(255,255,255,.08); }
+        .bd-row.hi { background: linear-gradient(90deg, rgba(34,197,94,.2), rgba(34,197,94,.04)); border: 1px solid rgba(74,222,128,.35); }
+        .bd-row.hi-drv { background: linear-gradient(90deg, rgba(14,165,233,.2), rgba(14,165,233,.04)); border: 1px solid rgba(56,189,248,.35); }
+        .bd-total { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: .6rem; padding-top: .8rem; border-top: 1px dashed rgba(255,255,255,.25); }
+        .bd-receipt { font-variant-numeric: tabular-nums; }
+
         /* ===== Bozor narxlari ===== */
         #price-modal { opacity: 0; visibility: hidden; transition: opacity .3s ease, visibility .3s ease; }
         #price-modal.open { opacity: 1; visibility: visible; }
@@ -1989,6 +2018,19 @@
         </div>
     </div>
 
+    <!-- TO'LOV TAFSILOTLARI / CHEK (to'lov tarkibi) -->
+    <div id="bd-modal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="bd-title" onclick="if (event.target === this) closeBdModal()">
+        <div class="auth-card glass relative w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-3xl border border-emerald-500/25 shadow-2xl shadow-emerald-500/10 bg-gradient-to-b from-slate-900 to-emerald-950/30 p-6 sm:p-7">
+            <button type="button" onclick="closeBdModal()" aria-label="Yopish" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl p-1 transition hover:rotate-90 duration-300"><i class="fa-solid fa-xmark"></i></button>
+            <div class="mb-4 pr-8">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[11px] font-bold uppercase tracking-widest mb-2"><i class="fa-solid fa-receipt"></i> <span>To'lov cheki</span></div>
+                <h2 id="bd-title" class="text-xl sm:text-2xl font-extrabold tracking-tight break-words"></h2>
+                <p id="bd-sub" class="text-slate-400 text-sm mt-1 break-words"></p>
+            </div>
+            <div id="bd-body" class="space-y-4 bd-receipt"></div>
+        </div>
+    </div>
+
     <!-- PAYMENT MODAL (xaridor to'laydi, escrow) -->
     <div id="payment-modal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="payment-title" onclick="if (event.target === this) closePaymentModal()">
         <div class="auth-card glass relative w-full max-w-md max-h-[92vh] overflow-y-auto rounded-3xl border border-blue-500/25 shadow-2xl shadow-blue-500/10 bg-gradient-to-b from-slate-900 to-blue-950/30 p-6 sm:p-8">
@@ -2252,7 +2294,7 @@
 
         // Sahifa skrolli: biror modal/panel/kabinet ochiq bo'lsa qulflanadi
         function syncScrollLock() {
-            const open = ['auth-modal', 'product-modal', 'booking-modal', 'payment-modal', 'wh-modal', 'price-modal', 'rate-modal', 'face-modal', 'my-products-panel', 'dashboard-view', 'role-page', 'not-found'].some(function (id) {
+            const open = ['auth-modal', 'product-modal', 'booking-modal', 'payment-modal', 'wh-modal', 'price-modal', 'rate-modal', 'face-modal', 'bd-modal', 'my-products-panel', 'dashboard-view', 'role-page', 'not-found'].some(function (id) {
                 const node = document.getElementById(id);
                 return node && node.classList.contains('open');
             });
@@ -3365,7 +3407,8 @@
         document.addEventListener('keydown', function (e) {
             if (e.key !== 'Escape') return;
             if (tourState.active || notFoundView.classList.contains('open')) return; // tur va 404 o'z Escape'ini boshqaradi: kabinet yopilmasin
-            if (document.getElementById('face-modal').classList.contains('open')) closeFaceModal();
+            if (document.getElementById('bd-modal').classList.contains('open')) closeBdModal();
+            else if (document.getElementById('face-modal').classList.contains('open')) closeFaceModal();
             else if (document.getElementById('rate-modal').classList.contains('open')) closeRateModal();
             else if (document.getElementById('price-modal').classList.contains('open')) closePriceModal();
             else if (whModal.classList.contains('open')) closeWhModal();
@@ -4023,6 +4066,7 @@
                 grid.appendChild(cell);
             });
             card.appendChild(grid);
+            if (b.breakdown && b.status !== 'REJECTED' && b.status !== 'CANCELLED') card.appendChild(bdChips(b.breakdown, side === 'farmer' ? 'FARMER' : 'MARKET', function () { openBdModal({ title: b.product.name, sub: b.product.category + ' · ' + T('{0} kg × {1}', formatNumber(b.quantityKg), bdMoney(Number(b.pricePerKg))), src: b.breakdown, role: side === 'farmer' ? 'FARMER' : 'MARKET', ctx: { quantityKg: b.quantityKg, pricePerKg: b.pricePerKg }, shipmentId: null }); }));
 
             const info = el('div', 'space-y-1.5 text-sm text-slate-300');
             const row = function (icon, text) {
@@ -5762,6 +5806,7 @@
                 ["Yo'nalish", function (s) { return s.origin.region + ' → ' + s.destination.region; }],
                 ['Fermer → Market', function (s) { return s.farmName + ' → ' + s.companyName; }],
                 ['Haydovchi', function (s) { return s.driver ? admName(s.driver.fullName, s.driver.plateNumber) : '—'; }],
+                ['Summa', function (s) { return s.price ? bdChips(s.price, 'ADMIN', function () { openShipmentPrice(s, 'ADMIN'); }) : '—'; }],
                 ["To'lov", function (s) { return s.paymentStatus ? whPill(PAYMENT_STATUS[s.paymentStatus].short, PAYMENT_STATUS[s.paymentStatus].cls) : '—'; }],
                 ['Holat', function (s) { return whPill(SHIPMENT_STATUS[s.status].label, SHIPMENT_STATUS[s.status].cls); }],
                 ['Yangilangan', function (s) { return admDate(s.lastLocationAt || s.deliveredAt || s.createdAt); }]
@@ -5801,12 +5846,12 @@
             nodes.push(admTable([
                 ['Buyurtma', function (p) { return admName(p.order.productName, kg(p.order.quantityKg) + ' × ' + money(p.order.pricePerKg) + (p.source === 'WAREHOUSE' ? ' · Omborxona' : '')); }],
                 ['Fermer → Market', function (p) { return (p.farmer ? p.farmer.name : '—') + ' → ' + (p.market ? p.market.name : '—'); }],
-                ['Summa', function (p) { return money(p.amount); }],
+                ['Summa', function (p) { return bdChips(p.breakdown, 'ADMIN', function () { openPaymentDetail(p, 'ADMIN'); }); }],
                 ['Holat', function (p) { return whPill(PAYMENT_STATUS[p.status].short, PAYMENT_STATUS[p.status].cls, PAYMENT_STATUS[p.status].icon); }],
                 ['Yuk', function (p) { return p.shipmentStatus ? SHIPMENT_STATUS[p.shipmentStatus].label : '—'; }],
                 ['Yangilangan', function (p) { return admDate(p.updatedAt); }],
                 ['Amallar', function (p) {
-                    const b = [];
+                    const b = [admBtn('fa-receipt', 'Chek', function () { openPaymentDetail(p, 'ADMIN'); })];
                     if (p.actions.canRelease) b.push(admBtn('fa-hand-holding-dollar', "Fermerga o'tkazish", function () { admPaymentAction(p, 'release'); }, 'ok'));
                     if (p.actions.canRefund) b.push(admBtn('fa-rotate-left', p.status === 'PENDING' ? 'Bekor qilish' : 'Qaytarish', function () { admPaymentAction(p, 'refund'); }, 'danger'));
                     return b.length ? admActions(b) : '—';
@@ -6592,6 +6637,7 @@
             card.appendChild(top);
 
             card.appendChild(shipmentRoute(s));
+            if (s.price && s.status !== 'CANCELLED') card.appendChild(buildPriceStrip(s, viewer));
             if (s.status === 'CANCELLED') {
                 const banner = el('div', 'rounded-xl border border-slate-500/30 bg-slate-500/10 px-4 py-3 text-sm text-slate-300 flex items-center gap-3');
                 banner.appendChild(el('i', 'fa-solid fa-ban text-slate-400'));
@@ -6936,13 +6982,16 @@
             title.appendChild(el('p', 'text-xs text-slate-400 font-semibold uppercase tracking-wider', p.order.category + ' · ' + formatNumber(p.order.quantityKg) + ' kg × ' + formatNumber(p.order.pricePerKg) + " so'm"));
             top.appendChild(title);
             const money = el('div', 'text-right shrink-0');
-            money.appendChild(el('div', 'text-xl font-black text-emerald-400', formatNumber(p.amount) + ' so\'m'));
+            // Rolga mos asosiy summa: fermer — o'z ulushi (mahsulot), market — jami to'lov
+            money.appendChild(el('div', 'text-xl font-black text-emerald-400', viewer === 'farmer' ? bdMoney(p.productPrice - (p.feeAmount ? Number(p.feeAmount) : 0)) : bdMoney(p.totalPrice)));
+            money.appendChild(el('div', 'text-[10px] uppercase tracking-wider text-slate-500 font-bold', viewer === 'farmer' ? 'Sizning ulushingiz' : "Jami to'lov"));
             if (p.source === 'WAREHOUSE' && p.farmerAmount != null) {
                 money.appendChild(el('div', 'text-[11px] text-slate-400 font-semibold', "Fermerga: " + moneyExact(p.farmerAmount)));
                 money.appendChild(el('div', 'text-[11px] text-slate-500', "Xizmat haqi: " + moneyExact(p.feeAmount)));
             }
             top.appendChild(money);
             card.appendChild(top);
+            card.appendChild(bdChips(p.breakdown, viewer === 'farmer' ? 'FARMER' : 'MARKET', function () { openPaymentDetail(p, viewer === 'farmer' ? 'FARMER' : 'MARKET'); }));
 
             const party = viewer === 'farmer' ? p.market : p.farmer;
             const line = el('div', 'flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-slate-300');
@@ -10806,6 +10855,160 @@
                 try { await authed('POST', '/kyc/' + u.id + (on ? '/revoke' : '/approve')); showToast(on ? 'Tasdiq bekor qilindi' : 'Tasdiqlandi', 2400, 'success'); selectDashTab(dashTab); }
                 catch (e) { showToast(e.messages[0], 4000, 'error'); }
             }, on ? 'danger' : 'ok');
+        }
+
+        // ===== To'lov tarkibi: fermer ulushi / haydovchi ulushi / xizmat haqi / jami =====
+        // src: API'dan kelgan tarkib ({productPrice, deliveryFee, serviceFee, totalPrice, distanceKm, ...}) yoki haydovchi uchun {deliveryFee, distanceKm}
+        function bdNorm(src) {
+            if (!src) return null;
+            const n = function (v) { return v === undefined || v === null ? null : Number(v); };
+            const bd = {
+                product: n(src.productPrice), delivery: n(src.deliveryFee) || 0, service: n(src.serviceFee) || 0, distance: n(src.distanceKm) || 0,
+                warehouse: n(src.warehouseFee) || 0, estimated: !!src.estimated, driverOnly: src.productPrice === undefined
+            };
+            bd.total = n(src.totalPrice) !== null ? n(src.totalPrice) : (bd.product || 0) + bd.delivery + bd.service;
+            bd.legacy = !bd.driverOnly && bd.delivery === 0 && bd.service === 0; // to'lov tarkibi joriy qilinishidan oldingi yozuv
+            return bd;
+        }
+        const bdMoney = function (v) { return T("{0} so'm", formatNumber(Math.round(v))); };
+        function bdTip(bd, role) {
+            if (bd.driverOnly || role === 'DRIVER') return T("Yo'l haqi: {0}", bdMoney(bd.delivery)) + (bd.distance ? ' · ' + T('{0} km', formatNumber(bd.distance)) : '');
+            return [T('Fermer ulushi: {0}', bdMoney(bd.product)), T('Haydovchi ulushi: {0}', bdMoney(bd.delivery)), T('Xizmat haqi: {0}', bdMoney(bd.service)), T('Jami: {0}', bdMoney(bd.total))].join('\n');
+        }
+        function bdChip(kind, icon, text, big, tip, est) {
+            const c = el('span', ['bd-chip', kind, big ? 'big' : '', est ? 'est' : ''].join(' '));
+            c.title = tip;
+            c.appendChild(el('span', '', icon));
+            c.appendChild(el('span', '', text));
+            return c;
+        }
+        // Jadval va kartochkalar uchun ixcham teglar (rolga mos): fermer — o'z ulushi; haydovchi — yo'l haqi va masofa; market/admin — jami va taqsimot
+        function bdChips(src, role, onDetail) {
+            const bd = bdNorm(src);
+            const box = el('div', 'bd-chips');
+            if (!bd) return box;
+            const tip = bdTip(bd, role), est = bd.estimated;
+            if (bd.driverOnly || role === 'DRIVER') {
+                if (bd.delivery > 0) {
+                    box.appendChild(bdChip('drv', '🚚', T("Yo'l haqi: {0}", bdMoney(bd.delivery)), true, tip, est));
+                    if (bd.distance) box.appendChild(bdChip('tot', '📏', T('{0} km', formatNumber(bd.distance)), false, tip));
+                } else box.appendChild(bdChip('tot', '🚚', T('Belgilanmagan'), false, tip));
+            } else if (role === 'FARMER') {
+                box.appendChild(bdChip('farm', '🌾', T('Sizga: {0}', bdMoney(bd.product - bd.warehouse)), true, tip, est));
+                if (!bd.legacy) box.appendChild(bdChip('tot', '💳', T('Jami: {0}', bdMoney(bd.total)), false, tip, est));
+            } else if (bd.legacy) {
+                box.appendChild(bdChip('tot', '💳', T('Jami: {0}', bdMoney(bd.total)), true, tip, est));
+            } else {
+                box.appendChild(bdChip('tot', '💳', T('Jami: {0}', bdMoney(bd.total)), true, tip, est));
+                box.appendChild(bdChip('farm', '🌾', bdMoney(bd.product), false, tip, est));
+                box.appendChild(bdChip('drv', '🚚', bdMoney(bd.delivery), false, tip, est));
+                box.appendChild(bdChip('svc', '🧾', bdMoney(bd.service), false, tip, est));
+            }
+            if (onDetail) {
+                const l = el('button', 'bd-link', "Tafsilot");
+                l.type = 'button';
+                l.addEventListener('click', function (e) { e.stopPropagation(); onDetail(); });
+                box.appendChild(l);
+            }
+            return box;
+        }
+        // To'liq taqsimot bloki (glassmorphism). ctx: { quantityKg, pricePerKg }
+        function bdCard(src, role, ctx) {
+            const bd = bdNorm(src);
+            const card = el('div', 'bd-card');
+            if (!bd) return card;
+            const head = el('div', 'flex items-center justify-between gap-2');
+            head.appendChild(el('div', 'text-xs font-extrabold uppercase tracking-wider text-slate-300', "To'lov tarkibi"));
+            if (bd.estimated) head.appendChild(el('span', 'bd-chip svc est', T('Taxminiy')));
+            card.appendChild(head);
+            const driverView = bd.driverOnly || role === 'DRIVER';
+            const row = function (cls, icon, title, sub, value, valueCls) {
+                const r = el('div', ['bd-row', cls].join(' '));
+                r.appendChild(el('span', 'ic', icon));
+                const mid = el('div', 'min-w-0 flex-1');
+                mid.appendChild(el('div', 'text-sm font-bold text-white', title));
+                if (sub) mid.appendChild(el('div', 'text-xs text-slate-400 break-words', sub));
+                r.appendChild(mid);
+                r.appendChild(el('div', ['text-sm sm:text-base font-black text-right whitespace-nowrap', valueCls].join(' '), value));
+                return r;
+            };
+            if (driverView) {
+                card.appendChild(row('hi-drv', '🚚', T('Haydovchi ulushi'), (bd.distance ? T("Yo'l haqi · {0} km", formatNumber(bd.distance)) : T("Yo'l haqi")), bd.delivery > 0 ? bdMoney(bd.delivery) : T('Belgilanmagan'), 'text-sky-300'));
+                return card;
+            }
+            if (!bd.legacy) {
+                const bar = el('div', 'bd-bar');
+                [['farm', bd.product], ['drv', bd.delivery], ['svc', bd.service]].forEach(function (s) { const i = el('i', s[0]); i.style.width = '0%'; i.dataset.w = String(bd.total ? (s[1] / bd.total) * 100 : 0); bar.appendChild(i); });
+                requestAnimationFrame(function () { requestAnimationFrame(function () { bar.querySelectorAll('i').forEach(function (i) { i.style.width = i.dataset.w + '%'; }); }); });
+                card.appendChild(bar);
+            }
+            const calc = ctx && ctx.quantityKg ? T('{0} kg × {1}', formatNumber(ctx.quantityKg), bdMoney(Number(ctx.pricePerKg))) : '';
+            card.appendChild(row(role === 'FARMER' ? 'hi' : '', '🌾', T('Fermer ulushi'), (T('Mahsulot') + (calc ? ' · ' + calc : '')), bdMoney(bd.product), 'text-emerald-300'));
+            if (!bd.legacy) {
+                card.appendChild(row('', '🚚', T('Haydovchi ulushi'), (bd.distance ? T("Yo'l haqi · {0} km", formatNumber(bd.distance)) : T("Yo'l haqi")), bdMoney(bd.delivery), 'text-sky-300'));
+                card.appendChild(row('', '🧾', T('Platforma xizmat haqi'), bd.warehouse > 0 ? T("Shu jumladan omborxona haqi: {0}", bdMoney(bd.warehouse)) : '', bdMoney(bd.service), 'text-amber-300'));
+            }
+            const tot = el('div', 'bd-total');
+            tot.appendChild(el('span', 'text-sm font-extrabold text-white flex items-center gap-2', ''));
+            tot.firstChild.appendChild(el('span', '', '💳'));
+            tot.firstChild.appendChild(el('span', '', role === 'FARMER' ? 'Market to\'lagan jami' : 'Jami'));
+            tot.appendChild(el('span', 'text-xl sm:text-2xl font-black text-white', bdMoney(bd.total)));
+            card.appendChild(tot);
+            return card;
+        }
+
+        // Tafsilot oynasi (chek): o = { title, sub, src, role, ctx, status, shipmentId, events, id }
+        const bdModal = document.getElementById('bd-modal');
+        function openBdModal(o) {
+            const role = o.role || (currentUser() || {}).role;
+            document.getElementById('bd-title').textContent = o.title;
+            document.getElementById('bd-sub').textContent = o.sub || '';
+            const body = document.getElementById('bd-body');
+            const nodes = [];
+            if (o.status || o.id) {
+                const meta = el('div', 'flex flex-wrap items-center justify-between gap-2');
+                if (o.status && PAYMENT_STATUS[o.status]) meta.appendChild(paymentPill(o.status, true));
+                if (o.id) meta.appendChild(el('span', 'text-[11px] font-bold text-slate-500', '№ ' + String(o.id).slice(0, 8).toUpperCase()));
+                nodes.push(meta);
+            }
+            nodes.push(bdCard(o.src, role, o.ctx));
+            if (o.events && o.events.length) {
+                const ev = el('div', 'space-y-1.5');
+                ev.appendChild(el('div', 'text-xs font-extrabold uppercase tracking-wider text-slate-400', 'Tranzaksiya tarixi'));
+                o.events.slice().reverse().forEach(function (e) {
+                    const r = el('div', 'flex items-start gap-2 text-xs text-slate-300');
+                    r.appendChild(el('i', 'fa-solid fa-circle text-[6px] text-emerald-400 mt-1.5'));
+                    r.appendChild(el('span', 'min-w-0 break-words', formatDateTime(e.createdAt) + ' — ' + (PAYMENT_STATUS[e.status] ? T(PAYMENT_STATUS[e.status].short) : e.status) + (e.note ? ': ' + e.note : '')));
+                    ev.appendChild(r);
+                });
+                nodes.push(ev);
+            }
+            if (o.shipmentId && role !== 'DISPATCHER') {
+                const code = o.shipmentId.slice(0, 8).toUpperCase();
+                const docs = el('div', 'flex flex-wrap gap-2 pt-1');
+                docs.appendChild(docButton('fa-file-pdf', 'TTN yuklab olish (PDF)', 'border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10', '/documents/ttn/' + o.shipmentId, 'TTN-' + code + '.pdf'));
+                docs.appendChild(docButton('fa-receipt', 'Chek (PDF)', 'border-sky-500/40 text-sky-300 hover:bg-sky-500/10', '/documents/receipt/' + o.shipmentId, 'Chek-' + code + '.pdf'));
+                nodes.push(docs);
+            }
+            body.replaceChildren.apply(body, nodes);
+            bdModal.classList.add('open');
+            syncScrollLock();
+        }
+        function closeBdModal() { bdModal.classList.remove('open'); syncScrollLock(); }
+        // Yuk va to'lov obyektlaridan chek ochuvchilar
+        function openPaymentDetail(p, viewerRole) {
+            openBdModal({ title: p.order.productName, sub: p.order.category + ' · ' + T('{0} kg × {1}', formatNumber(p.order.quantityKg), bdMoney(Number(p.order.pricePerKg))), src: p.breakdown, role: viewerRole, ctx: { quantityKg: p.order.quantityKg, pricePerKg: p.order.pricePerKg }, status: p.status, id: p.id, events: p.events, shipmentId: p.shipmentId });
+        }
+        function openShipmentPrice(s, viewerRole) {
+            openBdModal({ title: s.cargoName, sub: s.origin.region + ' → ' + s.destination.region + ' · ' + formatNumber(s.weightKg) + ' kg', src: s.price, role: viewerRole, ctx: null, status: s.paymentStatus, id: s.id, shipmentId: s.status === 'CANCELLED' ? null : s.id });
+        }
+        // Yuk kartochkasidagi narx qatori
+        function buildPriceStrip(s, viewer) {
+            const role = viewer === 'farmer' ? 'FARMER' : viewer === 'market' ? 'MARKET' : 'DRIVER';
+            const wrap = el('div', 'rounded-xl bg-slate-950/50 border border-white/10 px-4 py-3 space-y-1.5');
+            wrap.appendChild(el('div', 'text-[10px] uppercase tracking-wider text-slate-500 font-bold', role === 'DRIVER' ? "Yo'l haqi" : "To'lov"));
+            wrap.appendChild(bdChips(s.price, role, role === 'DRIVER' && viewer === 'driver-open' ? null : function () { openShipmentPrice(s, role); }));
+            return wrap;
         }
 
         startLiveReviews();

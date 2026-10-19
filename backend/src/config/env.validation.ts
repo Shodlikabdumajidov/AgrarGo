@@ -21,6 +21,10 @@ export interface AppEnv {
   PAYMENT_ALLOW_SIMULATION: boolean;
   PAYMENT_RELEASE_GRACE_HOURS: number;
   WAREHOUSE_FEE_PERCENT: number;
+  DELIVERY_BASE_FEE: number;
+  DELIVERY_FEE_PER_KM: number;
+  DELIVERY_FEE_PER_TON_KM: number;
+  SERVICE_FEE_PERCENT: number;
   SMS_PROVIDER: 'simulated';
   SMS_ALLOW_SIMULATION: boolean;
   OTP_TTL_SECONDS: number;
@@ -219,6 +223,11 @@ export function validateEnv(raw: Record<string, unknown>): AppEnv & Record<strin
     // Yetkazilgandan keyin xaridor tasdiqlamasa, fermer pulni shu soatdan keyin o'zi chiqarib ola oladi
     // Omborxona xizmat haqi (foiz): ombor buyurtmasi yetkazilganda fermer o'rniga omborxona hisobiga o'tadi
     WAREHOUSE_FEE_PERCENT: intInRange(raw.WAREHOUSE_FEE_PERCENT, 'WAREHOUSE_FEE_PERCENT', 2, 0, 30, errors),
+    // To'lov tarkibi: yetkazib berish haqi (haydovchiga) va platforma xizmat haqi
+    DELIVERY_BASE_FEE: intInRange(raw.DELIVERY_BASE_FEE, 'DELIVERY_BASE_FEE', 20000, 0, 10_000_000, errors),
+    DELIVERY_FEE_PER_KM: intInRange(raw.DELIVERY_FEE_PER_KM, 'DELIVERY_FEE_PER_KM', 400, 0, 100_000, errors),
+    DELIVERY_FEE_PER_TON_KM: intInRange(raw.DELIVERY_FEE_PER_TON_KM, 'DELIVERY_FEE_PER_TON_KM', 150, 0, 100_000, errors),
+    SERVICE_FEE_PERCENT: intInRange(raw.SERVICE_FEE_PERCENT, 'SERVICE_FEE_PERCENT', 1, 0, 30, errors),
     PAYMENT_RELEASE_GRACE_HOURS: intInRange(raw.PAYMENT_RELEASE_GRACE_HOURS, 'PAYMENT_RELEASE_GRACE_HOURS', 72, 0, 720, errors),
   };
 

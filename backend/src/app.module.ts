@@ -12,6 +12,7 @@ import { HealthController } from './health/health.controller';
 import { DocumentsModule } from './documents/documents.module';
 import { KycModule } from './kyc/kyc.module';
 import { TrustModule } from './trust/trust.module';
+import { PricingModule } from './pricing/pricing.module';
 import { MarketPriceModule } from './market-price/market-price.module';
 import { MarketplaceModule } from './marketplace/marketplace.module';
 import { PaymentModule } from './payment/payment.module';
@@ -53,6 +54,7 @@ import { WarehouseModule } from './warehouse/warehouse.module';
     DocumentsModule,
     ReportsModule,
     TrustModule,
+    PricingModule,
     KycModule,
     WarehouseModule,
     SettingsModule,

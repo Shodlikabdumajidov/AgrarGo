@@ -51,6 +51,7 @@ export class ReportsService {
     ]);
 
     const sum = (st: PaymentStatus[]) => payments.filter((p) => st.includes(p.status)).reduce((a, p) => a + n(p.amount), 0);
+    const fee = (k: 'deliveryFee' | 'serviceFee', st: PaymentStatus[]) => payments.filter((p) => st.includes(p.status)).reduce((a, p) => a + n(p[k]), 0);
     const wb = newWorkbook();
     summarySheet(wb, `Market hisoboti: ${user.market.companyName}`, [
       ['Davr', r.label],
@@ -62,6 +63,9 @@ export class ReportsService {
       ["Fermerga o'tkazilgan, so'm", sum([PaymentStatus.RELEASED])],
       ["Qaytarilgan, so'm", sum([PaymentStatus.REFUNDED])],
       ["Kutilayotgan to'lovlar, so'm", sum([PaymentStatus.PENDING])],
+      ["Yetkazib berish haqi (haydovchilarga), so'm", fee('deliveryFee', [PaymentStatus.PENDING, PaymentStatus.HELD, PaymentStatus.RELEASED])],
+      ["Xizmat haqi (platforma), so'm", fee('serviceFee', [PaymentStatus.PENDING, PaymentStatus.HELD, PaymentStatus.RELEASED])],
+      ["Jami to'lanadigan (mahsulot + yetkazish + xizmat), so'm", sum([PaymentStatus.PENDING, PaymentStatus.HELD, PaymentStatus.RELEASED]) + fee('deliveryFee', [PaymentStatus.PENDING, PaymentStatus.HELD, PaymentStatus.RELEASED]) + fee('serviceFee', [PaymentStatus.PENDING, PaymentStatus.HELD, PaymentStatus.RELEASED])],
       ['Ombor buyurtmalari soni', orders.length],
       ["Ombor buyurtmalari summasi (bekor qilinmagan), so'm", orders.filter((o) => o.status !== 'CANCELLED').reduce((a, o) => a + n(o.totalPrice), 0)],
     ]);
@@ -71,12 +75,12 @@ export class ReportsService {
     ], bookings.map((b) => ({ d: b.createdAt, p: b.product.name, f: b.product.farmer.farmName, q: n(b.quantityKg), pr: n(b.pricePerKg), s: n(b.quantityKg) * n(b.pricePerKg), st: BOOK_UZ[b.status] ?? b.status })));
     addSheet(wb, "To'lovlar", [
       { header: 'Sana', key: 'd', fmt: 'date', width: 18 }, { header: 'Manba', key: 'src', width: 14 }, { header: 'Mahsulot', key: 'p', width: 22 }, { header: 'Fermer', key: 'f', width: 24 },
-      { header: 'Miqdor (kg)', key: 'q', fmt: 'kg' }, { header: "Narx (so'm/kg)", key: 'pr', fmt: 'money' }, { header: "Summa (so'm)", key: 's', fmt: 'money' }, { header: "Xizmat haqi (so'm)", key: 'fee', fmt: 'money' },
+      { header: 'Miqdor (kg)', key: 'q', fmt: 'kg' }, { header: "Narx (so'm/kg)", key: 'pr', fmt: 'money' }, { header: "Mahsulot — fermerga (so'm)", key: 's', fmt: 'money' }, { header: "Yetkazib berish — haydovchiga (so'm)", key: 'dl', fmt: 'money' }, { header: "Xizmat haqi — platforma (so'm)", key: 'sv', fmt: 'money' }, { header: "Jami to'lov (so'm)", key: 'tt', fmt: 'money' }, { header: "Omborxona haqi (so'm)", key: 'fee', fmt: 'money' },
       { header: 'Holati', key: 'st', width: 22 }, { header: "Escrow'ga o'tgan", key: 'h', fmt: 'date' }, { header: "Fermerga o'tkazilgan", key: 'rl', fmt: 'date' },
     ], payments.map((p) => {
       const src = p.booking ?? p.warehouseOrder;
       const prod = p.booking?.product ?? p.warehouseOrder?.item;
-      return { d: p.createdAt, src: p.booking ? 'Bron' : 'Ombor', p: prod?.name, f: prod?.farmer.farmName, q: n(src?.quantityKg), pr: n(src?.pricePerKg), s: n(p.amount), fee: n(p.feeAmount), st: PAY_UZ[p.status] ?? p.status, h: p.heldAt, rl: p.releasedAt };
+      return { d: p.createdAt, src: p.booking ? 'Bron' : 'Ombor', p: prod?.name, f: prod?.farmer.farmName, q: n(src?.quantityKg), pr: n(src?.pricePerKg), s: n(p.amount), dl: n(p.deliveryFee), sv: n(p.serviceFee), tt: n(p.amount) + n(p.deliveryFee) + n(p.serviceFee), fee: n(p.feeAmount), st: PAY_UZ[p.status] ?? p.status, h: p.heldAt, rl: p.releasedAt };
     }));
     addSheet(wb, 'Ombor buyurtmalari', [
       { header: 'Sana', key: 'd', fmt: 'date', width: 18 }, { header: 'Mahsulot', key: 'p', width: 22 }, { header: 'Fermer', key: 'f', width: 24 },
@@ -109,17 +113,19 @@ export class ReportsService {
       ["Escrow'dagi mablag', so'm", total([PaymentStatus.HELD])],
       ["Fermerlarga o'tkazilgan, so'm", total([PaymentStatus.RELEASED])],
       ["Qaytarilgan, so'm", total([PaymentStatus.REFUNDED])],
+      ["Haydovchilarga yetkazib berish haqi (qaytarilmagan), so'm", payments.filter((p) => p.status !== PaymentStatus.REFUNDED && p.status !== PaymentStatus.CANCELLED).reduce((a, p) => a + n(p.deliveryFee), 0)],
+      ["Platforma xizmat haqi (qaytarilmagan), so'm", payments.filter((p) => p.status !== PaymentStatus.REFUNDED && p.status !== PaymentStatus.CANCELLED).reduce((a, p) => a + n(p.serviceFee), 0)],
       ['Foydalanuvchilar soni', users.length],
       ['Obuna to\'lovlari soni', subs.length],
       ["Obuna to'lovlari summasi, so'm", subs.reduce((a, s) => a + n(s.amount), 0)],
     ]);
     addSheet(wb, 'Tranzaksiyalar', [
       { header: 'Sana', key: 'd', fmt: 'date', width: 18 }, { header: 'ID', key: 'id', width: 14 }, { header: 'Manba', key: 'src', width: 10 }, { header: 'Market', key: 'm', width: 24 }, { header: 'Fermer', key: 'f', width: 24 },
-      { header: 'Mahsulot', key: 'p', width: 20 }, { header: 'Miqdor (kg)', key: 'q', fmt: 'kg' }, { header: "Summa (so'm)", key: 's', fmt: 'money' }, { header: "Xizmat haqi (so'm)", key: 'fee', fmt: 'money' },
+      { header: 'Mahsulot', key: 'p', width: 20 }, { header: 'Miqdor (kg)', key: 'q', fmt: 'kg' }, { header: "Mahsulot — fermerga (so'm)", key: 's', fmt: 'money' }, { header: "Yetkazib berish — haydovchiga (so'm)", key: 'dl', fmt: 'money' }, { header: "Xizmat haqi — platforma (so'm)", key: 'sv', fmt: 'money' }, { header: "Jami (so'm)", key: 'tt', fmt: 'money' }, { header: "Omborxona haqi (so'm)", key: 'fee', fmt: 'money' },
       { header: 'Holati', key: 'st', width: 20 }, { header: 'Provayder', key: 'pv', width: 12 }, { header: "Escrow'ga o'tgan", key: 'h', fmt: 'date' }, { header: "Fermerga o'tkazilgan", key: 'rl', fmt: 'date' }, { header: 'Qaytarilgan', key: 'rf', fmt: 'date' },
     ], payments.map((p) => {
       const src = p.booking ?? p.warehouseOrder; const prod = p.booking?.product ?? p.warehouseOrder?.item;
-      return { d: p.createdAt, id: p.id.slice(0, 8).toUpperCase(), src: p.booking ? 'Bron' : 'Ombor', m: src?.market.companyName, f: prod?.farmer.farmName, p: prod?.name, q: n(src?.quantityKg), s: n(p.amount), fee: n(p.feeAmount), st: PAY_UZ[p.status] ?? p.status, pv: p.provider, h: p.heldAt, rl: p.releasedAt, rf: p.refundedAt };
+      return { d: p.createdAt, id: p.id.slice(0, 8).toUpperCase(), src: p.booking ? 'Bron' : 'Ombor', m: src?.market.companyName, f: prod?.farmer.farmName, p: prod?.name, q: n(src?.quantityKg), s: n(p.amount), dl: n(p.deliveryFee), sv: n(p.serviceFee), tt: n(p.amount) + n(p.deliveryFee) + n(p.serviceFee), fee: n(p.feeAmount), st: PAY_UZ[p.status] ?? p.status, pv: p.provider, h: p.heldAt, rl: p.releasedAt, rf: p.refundedAt };
     }));
     addSheet(wb, 'Tranzaksiya tarixi', [
       { header: 'To\'lov ID', key: 'id', width: 14 }, { header: 'Sana', key: 'd', fmt: 'date', width: 18 }, { header: 'Holat', key: 'st', width: 20 }, { header: 'Kim', key: 'a', width: 12 }, { header: 'Izoh', key: 'n', width: 40 },

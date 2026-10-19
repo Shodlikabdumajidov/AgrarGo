@@ -1,0 +1,26 @@
+# --- To'lov tarkibi ---
+To'lov tarkibi ‖ Состав платежа ‖ Payment breakdown
+Taxminiy ‖ Ориентировочно ‖ Estimated
+Belgilanmagan ‖ Не определено ‖ Not set
+Yo'l haqi: {0} ‖ Оплата за доставку: {0} ‖ Delivery fee: {0}
+{0} km ‖ {0} км ‖ {0} km
+Sizga: {0} ‖ Вам: {0} ‖ To you: {0}
+Jami: {0} ‖ Итого: {0} ‖ Total: {0}
+Fermer ulushi: {0} ‖ Доля фермера: {0} ‖ Farmer's share: {0}
+Haydovchi ulushi: {0} ‖ Доля водителя: {0} ‖ Driver's share: {0}
+Fermer ulushi ‖ Доля фермера ‖ Farmer's share
+Haydovchi ulushi ‖ Доля водителя ‖ Driver's share
+Mahsulot ‖ Продукция ‖ Produce
+{0} kg × {1} ‖ {0} кг × {1} ‖ {0} kg × {1}
+Yo'l haqi ‖ Оплата за доставку ‖ Delivery fee
+Platforma xizmat haqi ‖ Сервисный сбор платформы ‖ Platform service fee
+Shu jumladan omborxona haqi: {0} ‖ В том числе плата склада: {0} ‖ Including warehouse fee: {0}
+Market to'lagan jami ‖ Всего оплатил магазин ‖ Total paid by the market
+Jami ‖ Итого ‖ Total
+To'lov cheki ‖ Платёжный чек ‖ Payment receipt
+Tranzaksiya tarixi ‖ История транзакций ‖ Transaction history
+Sizning ulushingiz ‖ Ваша доля ‖ Your share
+Jami to'lov ‖ Всего к оплате ‖ Total payment
+Chek ‖ Чек ‖ Receipt
+Summa ‖ Сумма ‖ Amount
+Yo'l haqi · {0} km ‖ Оплата за доставку · {0} км ‖ Delivery fee · {0} km

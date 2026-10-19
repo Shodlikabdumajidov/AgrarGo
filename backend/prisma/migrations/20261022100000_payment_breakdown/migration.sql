@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "Payment" ADD COLUMN     "deliveryFee" DECIMAL(20,2) NOT NULL DEFAULT 0,
+ADD COLUMN     "distanceKm" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "serviceFee" DECIMAL(20,2) NOT NULL DEFAULT 0;
+

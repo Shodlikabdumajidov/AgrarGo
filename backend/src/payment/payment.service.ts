@@ -7,6 +7,8 @@ import { AppEnv } from '../config/env.validation';
 import { NotificationService } from '../telegram/notification.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ListPaymentsQuery } from './dto/payment.dto';
+import { PricingService } from '../pricing/pricing.service';
+import { breakdownOf } from '../pricing/pricing';
 import {
   Decision, PaymentActor, PolicyContext, payDecision, refundDecision, releaseDecision,
 } from './payment.policy';
@@ -24,7 +26,7 @@ const PAYMENT_INCLUDE = {
       productId: true,
       product: { select: { name: true, category: true, farmerId: true, farmer: { select: { farmName: true, region: true } } } },
       market: { select: { companyName: true, region: true } },
-      shipment: { select: { id: true, status: true, deliveredAt: true } },
+      shipment: { select: { id: true, status: true, deliveredAt: true, driverId: true } },
     },
   },
   warehouseOrder: {
@@ -36,7 +38,7 @@ const PAYMENT_INCLUDE = {
       pricePerKg: true,
       item: { select: { name: true, category: true, farmerId: true, farmer: { select: { farmName: true, region: true } } } },
       market: { select: { companyName: true, region: true } },
-      shipment: { select: { id: true, status: true, deliveredAt: true } },
+      shipment: { select: { id: true, status: true, deliveredAt: true, driverId: true } },
     },
   },
 } satisfies Prisma.PaymentInclude;
@@ -59,10 +61,22 @@ export class PaymentService {
     @Inject(PAYMENT_PROVIDER) private readonly provider: PaymentProvider,
     @Inject(APP_ENV) private readonly env: AppEnv,
     private readonly notify: NotificationService,
+    private readonly pricing: PricingService,
   ) {}
 
   // ---------- Ombor buyurtmalari (escrow) ----------
   // Bu amallar WarehouseOrderService'ning tranzaksiyasi ichida chaqiriladi: provayder xatosi butun amalni (zaxira ham) qaytaradi.
+
+  /** Market to'laydigan jami summa: mahsulot + yetkazib berish + xizmat haqi (eski yozuvlarda faqat mahsulot) */
+  private total(row: { amount: Prisma.Decimal; deliveryFee: Prisma.Decimal; serviceFee: Prisma.Decimal }) {
+    return row.amount.add(row.deliveryFee).add(row.serviceFee);
+  }
+
+  /** Haydovchiga yetkazib berish haqi o'tkaziladi (yuk yetkazilgach, fermer ulushi bilan birga) */
+  private async payDriver(row: { id: string; deliveryFee: Prisma.Decimal; currency: string }, driverId: string | null | undefined) {
+    if (!driverId || row.deliveryFee.lte(0)) return null;
+    return this.callProvider("Mablag' haydovchiga o'tkazilmadi", () => this.provider.payout({ paymentId: `${row.id}:driver`, amount: row.deliveryFee.toFixed(2), currency: row.currency }));
+  }
 
   /** Omborxona xizmat haqi: summaning WAREHOUSE_FEE_PERCENT foizi (tiyingacha yaxlitlanadi). */
   warehouseFee(amount: Prisma.Decimal): Prisma.Decimal {
@@ -70,16 +84,17 @@ export class PaymentService {
   }
 
   /** Buyurtma berilganda mablag' darhol muzlatiladi: to'g'ridan-to'g'ri HELD (xaridor to'lovni buyurtma bilan birga amalga oshiradi). */
-  async holdForWarehouseOrder(tx: Prisma.TransactionClient, order: { id: string; quantityKg: Prisma.Decimal; pricePerKg: Prisma.Decimal }) {
+  async holdForWarehouseOrder(tx: Prisma.TransactionClient, order: { id: string; quantityKg: Prisma.Decimal; pricePerKg: Prisma.Decimal }, route?: { originRegion: string; destRegion: string }) {
     const amount = computeAmount(order.quantityKg, order.pricePerKg);
     const fee = this.warehouseFee(amount);
+    const q = route ? this.pricing.quote(route.originRegion, route.destRegion, amount, order.quantityKg) : null;
     const payment = await tx.payment.create({
       data: {
-        warehouseOrderId: order.id, amount, feeAmount: fee, currency: 'UZS', status: PaymentStatus.HELD,
+        warehouseOrderId: order.id, amount, feeAmount: fee, deliveryFee: q?.deliveryFee ?? 0, serviceFee: q?.serviceFee ?? 0, distanceKm: q?.distanceKm ?? 0, currency: 'UZS', status: PaymentStatus.HELD,
         heldAt: new Date(), provider: this.provider.name,
       },
     });
-    const res = await this.callProvider("Mablag' yechilmadi", () => this.provider.charge({ paymentId: payment.id, amount: amount.toFixed(2), currency: payment.currency }));
+    const res = await this.callProvider("Mablag' yechilmadi", () => this.provider.charge({ paymentId: payment.id, amount: this.total(payment).toFixed(2), currency: payment.currency }));
     await tx.payment.update({ where: { id: payment.id }, data: { providerRef: res.ref } });
     await this.event(tx, payment.id, PaymentStatus.HELD, 'MARKET', `Mablag' escrow'ga o'tkazildi (${res.ref})`);
     return payment;
@@ -93,8 +108,10 @@ export class PaymentService {
     if (claimed.count === 0) throw new ConflictException("To'lov holati o'zgargan. Sahifani yangilang");
     const farmerNet = row.amount.sub(row.feeAmount);
     const res = await this.callProvider("Mablag' fermerga o'tkazilmadi", () => this.provider.payout({ paymentId: row.id, amount: farmerNet.toFixed(2), currency: row.currency }));
+    const ship = await tx.shipment.findFirst({ where: { warehouseOrderId: orderId }, select: { driverId: true } });
+    const drv = await this.payDriver(row, ship?.driverId);
     await this.event(tx, row.id, PaymentStatus.RELEASED, actor,
-      `Mablag' fermerga (${farmerNet.toFixed(2)}) va omborxonaga (${row.feeAmount.toFixed(2)}) o'tkazildi (${res.ref})`);
+      `Mablag' fermerga (${farmerNet.toFixed(2)}) va omborxonaga (${row.feeAmount.toFixed(2)}) o'tkazildi (${res.ref})` + (drv ? `; haydovchiga ${row.deliveryFee.toFixed(2)} (${drv.ref})` : ''));
     return row.id;
   }
 
@@ -104,7 +121,7 @@ export class PaymentService {
     if (!row) return null; // to'lov integratsiyasidan oldin yaratilgan eski buyurtma
     const claimed = await tx.payment.updateMany({ where: { id: row.id, status: PaymentStatus.HELD }, data: { status: PaymentStatus.REFUNDED, refundedAt: new Date() } });
     if (claimed.count === 0) throw new ConflictException("To'lov holati o'zgargan. Sahifani yangilang");
-    const res = await this.callProvider("Mablag' qaytarilmadi", () => this.provider.refund({ paymentId: row.id, amount: row.amount.toFixed(2), currency: row.currency }));
+    const res = await this.callProvider("Mablag' qaytarilmadi", () => this.provider.refund({ paymentId: row.id, amount: this.total(row).toFixed(2), currency: row.currency }));
     await this.event(tx, row.id, PaymentStatus.REFUNDED, actor, `${reason?.trim() || "Mablag' xaridorga qaytarildi"} (${res.ref})`);
     return row.id;
   }
@@ -152,8 +169,9 @@ export class PaymentService {
         data: { status: PaymentStatus.RELEASED, releasedAt: new Date() },
       });
       if (claimed.count === 0) throw new ConflictException("To'lov holati o'zgargan. Sahifani yangilang");
-      const res = await this.callProvider("Mablag' fermerga o'tkazilmadi", () => this.provider.payout(this.providerRequest(row)));
-      await this.event(tx, row.id, PaymentStatus.RELEASED, actor, `Mablag' fermerga o'tkazildi (${res.ref})`);
+      const res = await this.callProvider("Mablag' fermerga o'tkazilmadi", () => this.provider.payout(this.providerRequest(row, row.amount)));
+      const drv = await this.payDriver(row, this.bookingOf(row).shipment?.driverId);
+      await this.event(tx, row.id, PaymentStatus.RELEASED, actor, `Mablag' fermerga o'tkazildi (${res.ref})` + (drv ? `; haydovchiga ${row.deliveryFee.toFixed(2)} o'tkazildi (${drv.ref})` : ''));
       return row.id;
     });
     return this.reload(id, user);
@@ -291,8 +309,9 @@ export class PaymentService {
     }
   }
 
-  private providerRequest(row: PaymentRow) {
-    return { paymentId: row.id, amount: row.amount.toFixed(2), currency: row.currency };
+  /** Provayderga so'rov: charge/refund — jami summa (market to'laydigan), farmer payout — mahsulot summasi */
+  private providerRequest(row: PaymentRow, amount: Prisma.Decimal = this.total(row)) {
+    return { paymentId: row.id, amount: amount.toFixed(2), currency: row.currency };
   }
 
   private event(tx: Prisma.TransactionClient, paymentId: string, status: PaymentStatus, actor: string, note?: string) {
@@ -302,6 +321,12 @@ export class PaymentService {
   private async reload(id: string, user: PaymentUser) {
     const row = await this.prisma.payment.findUniqueOrThrow({ where: { id }, include: PAYMENT_INCLUDE });
     return this.view(row, user);
+  }
+
+  /** To'lov tarkibi maydonlari: productPrice (fermer), deliveryFee (haydovchi), serviceFee (platforma), totalPrice (market jami) */
+  private parts(row: PaymentRow) {
+    const b = breakdownOf({ productPrice: row.amount, deliveryFee: row.deliveryFee, serviceFee: row.serviceFee, distanceKm: row.distanceKm, currency: row.currency });
+    return { productPrice: b.productPrice, deliveryFee: b.deliveryFee, serviceFee: b.serviceFee, totalPrice: b.totalPrice, distanceKm: b.distanceKm, breakdown: { ...b, warehouseFee: Number(row.feeAmount), farmerShare: b.productPrice - Number(row.feeAmount), driverShare: b.deliveryFee, platformShare: b.serviceFee + Number(row.feeAmount) } };
   }
 
   /** Javob: holat, summa, tarix va foydalanuvchi uchun mumkin bo'lgan amallar (frontend qoidalarni takrorlamaydi). */
@@ -321,8 +346,10 @@ export class PaymentService {
       id: row.id,
       source: 'BOOKING' as const,
       bookingId: row.bookingId,
+      shipmentId: bk.shipment?.id ?? null,
       feeAmount: row.feeAmount,
       amount: row.amount,
+      ...this.parts(row),
       currency: row.currency,
       status: row.status,
       provider: row.provider,
@@ -361,8 +388,10 @@ export class PaymentService {
       id: row.id,
       source: 'WAREHOUSE' as const,
       bookingId: null,
+      shipmentId: wo.shipment?.id ?? null,
       warehouseOrderId: wo.id,
       amount: row.amount,
+      ...this.parts(row),
       // Market umumiy summani to'laydi; xizmat haqi va fermer ulushi fermer/dispetcher/admin uchun
       ...(actor === 'MARKET' ? {} : { feeAmount: row.feeAmount, farmerAmount: row.amount.sub(row.feeAmount) }),
       currency: row.currency,

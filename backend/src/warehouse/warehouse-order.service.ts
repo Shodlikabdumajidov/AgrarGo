@@ -22,7 +22,7 @@ const ORDER_INCLUDE = {
   },
   market: { select: { companyName: true, region: true, district: true, address: true, user: { select: { fullName: true, phone: true } } } },
   driver: { select: { id: true, vehicleType: true, plateNumber: true, capacityKg: true, user: { select: { fullName: true, phone: true } } } },
-  payment: { select: { status: true, amount: true, feeAmount: true } },
+  payment: { select: { status: true, amount: true, feeAmount: true, deliveryFee: true, serviceFee: true, distanceKm: true } },
   shipment: { select: { id: true, status: true, driverId: true, deliveredAt: true } },
 } satisfies Prisma.WarehouseOrderInclude;
 
@@ -52,6 +52,9 @@ export class WarehouseOrderService {
     if (openCount >= MAX_OPEN_ORDERS_PER_MARKET) {
       throw new ConflictException(`Ochiq buyurtmalar soni chegarasiga (${MAX_OPEN_ORDERS_PER_MARKET}) yetdingiz. Avval mavjudlari yakunlansin`);
     }
+    // To'lov tarkibi uchun marshrut: omborxona -> market viloyati
+    const [wh, mk] = await Promise.all([this.warehouseLocation(), this.prisma.market.findUnique({ where: { id: marketId }, select: { region: true } })]);
+    const route = mk ? { originRegion: wh.region, destRegion: mk.region } : undefined;
     const orderId = await this.prisma.$transaction(async (tx) => {
       const item = await tx.warehouseItem.findUnique({ where: { id: dto.itemId }, select: { pricePerKg: true, zone: true, status: true } });
       if (!item || item.zone !== WarehouseZone.OUTBOUND || item.status !== WarehouseItemStatus.ACTIVE) {
@@ -66,7 +69,7 @@ export class WarehouseOrderService {
       const order = await tx.warehouseOrder.create({
         data: { itemId: dto.itemId, marketId, quantityKg: qty, pricePerKg: item.pricePerKg, totalPrice: item.pricePerKg.mul(qty), note: dto.note || null },
       });
-      await this.payments.holdForWarehouseOrder(tx, order);
+      await this.payments.holdForWarehouseOrder(tx, order, route);
       return order.id;
     });
     this.notify.escrowHeld({ warehouseOrderId: orderId });
@@ -282,6 +285,10 @@ export class WarehouseOrderService {
           amount: viewer === 'driver' ? undefined : pay.amount,
           feeAmount: viewer === 'market' || viewer === 'driver' ? undefined : pay.feeAmount,
           farmerAmount: viewer === 'market' || viewer === 'driver' ? undefined : pay.amount.sub(pay.feeAmount),
+          // To'lov tarkibi: haydovchi faqat o'z yo'l haqini ko'radi; boshqalar to'liq taqsimotni
+          deliveryFee: pay.deliveryFee,
+          distanceKm: pay.distanceKm,
+          ...(viewer === 'driver' ? {} : { serviceFee: pay.serviceFee, totalPrice: pay.amount.add(pay.deliveryFee).add(pay.serviceFee) }),
         }
       : null;
     return {
