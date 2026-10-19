@@ -150,7 +150,7 @@ describe('GPS tracking & ELD (e2e)', () => {
       const sends = [0, 1, 2, 3].map((i) => send(driver, id, { lat: 39.65 + i * 0.0005, lng: 66.96, timestamp: iso(4000 - i * 1000) }));
       const [adv1, ...rest] = await Promise.all([adv(), ...sends]);
       expect(adv1.status).toBe(200);
-      for (const r of rest) expect([200, 409]).toContain(r.status);
+      for (const r of rest) expect([200, 409, 422]).toContain(r.status); // 422: bir vaqtdagi nuqtalar orasida mantiqsiz sakrash; asosiysi — 500 yo'q
       const after = await send(driver, id, { lat: 39.66, lng: 66.96 });
       expect(after.status).toBe(409);
     });
@@ -322,7 +322,8 @@ describe('GPS tracking & ELD (e2e)', () => {
     it("days davridan eski nuqtalar kirmaydi", async () => {
       const { driver, id } = await setup();
       const dId = (await t.prisma.driver.findFirstOrThrow()).id;
-      const old = Date.now() - 5 * 86_400_000;
+      // Sutka chegarasiga (Toshkent vaqti bilan yarim tunga) tushib qolmasligi uchun kun o'rtasiga (12:00 Toshkent = 07:00 UTC) tekislanadi
+      const old = new Date(Date.now() - 5 * 86_400_000).setUTCHours(7, 0, 0, 0);
       await t.prisma.locationLog.createMany({
         data: [0, 1, 2].map((m) => ({ shipmentId: id, driverId: dId, lat: 41 + m * 0.01, lng: 69, recordedAt: new Date(old + m * 60_000) })),
       });
