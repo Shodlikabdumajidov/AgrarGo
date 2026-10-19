@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { SettingsService } from '../settings/settings.service';
 import { TrustService } from '../trust/trust.service';
 import { breakdownOf } from '../pricing/pricing';
+import { PricingService } from '../pricing/pricing.service';
 import { NotificationService } from '../telegram/notification.service';
 import { AvailableShipmentsQuery, ListShipmentsQuery } from './dto/list-shipments.query';
 
@@ -28,7 +29,7 @@ type Viewer = 'driver-open' | 'driver-own' | 'farmer' | 'market';
 
 @Injectable()
 export class ShipmentService {
-  constructor(private readonly prisma: PrismaService, private readonly settings: SettingsService, private readonly notify: NotificationService, private readonly trust: TrustService) {}
+  constructor(private readonly prisma: PrismaService, private readonly settings: SettingsService, private readonly notify: NotificationService, private readonly trust: TrustService, private readonly pricing: PricingService) {}
 
   // ---------- Haydovchi ----------
 
@@ -190,10 +191,12 @@ export class ShipmentService {
   private priceOf(s: ShipmentRow, viewer: Viewer) {
     const p = s.booking?.payment ?? s.warehouseOrder?.payment;
     if (!p) return null;
-    const base = { deliveryFee: Number(p.deliveryFee), distanceKm: p.distanceKm, currency: p.currency };
+    // Haq qanday hisoblangani: baza + masofa + og'irlik (qabul qilishdan oldin ham ko'rinadi)
+    const formula = this.pricing.formula(p.distanceKm, s.weightKg, p.deliveryFee);
+    const base = { deliveryFee: Number(p.deliveryFee), distanceKm: p.distanceKm, currency: p.currency, formula };
     if (viewer === 'driver-open' || viewer === 'driver-own') return base;
     const b = breakdownOf({ productPrice: p.amount, deliveryFee: p.deliveryFee, serviceFee: p.serviceFee, distanceKm: p.distanceKm, currency: p.currency });
-    return { ...b, warehouseFee: Number(p.feeAmount), farmerShare: b.productPrice - Number(p.feeAmount), driverShare: b.deliveryFee, platformShare: b.serviceFee + Number(p.feeAmount) };
+    return { ...b, formula, warehouseFee: Number(p.feeAmount), farmerShare: b.productPrice - Number(p.feeAmount), driverShare: b.deliveryFee, platformShare: b.serviceFee + Number(p.feeAmount) };
   }
 
   /** Haydovchi kartochkasiga ommaviy ishonch ma'lumoti (tasdiqlangan belgi, status, top badjlar) qo'shadi */

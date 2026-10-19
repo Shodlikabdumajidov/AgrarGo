@@ -1,0 +1,14 @@
+# --- Haydovchi daromadi va formula ---
+Nima uchun bu narx? ‖ Почему такая цена? ‖ Why this price?
+Sizning daromadingiz: ‖ Ваш доход: ‖ Your earnings:
+Baza tarifi ‖ Базовый тариф ‖ Base fee
+Masofa ({0} km) ‖ Расстояние ({0} км) ‖ Distance ({0} km)
+{0} km × {1} ‖ {0} км × {1} ‖ {0} km × {1}
+Og'irlik ({0} t) ‖ Вес ({0} т) ‖ Weight ({0} t)
+{0} t × {1} km × {2} ‖ {0} т × {1} км × {2} ‖ {0} t × {1} km × {2}
+Yaxlitlash / tarif tuzatishi ‖ Округление / корректировка тарифа ‖ Rounding / tariff adjustment
+Jami ‖ Итого ‖ Total
+Ushbu narx joriy yoqilg'i xarajatlari va masofa uchun adolatli o'rtacha bozor stavkasi bo'yicha hisoblangan. ‖ Эта цена рассчитана по справедливой средней рыночной ставке с учётом текущих расходов на топливо и расстояния. ‖ This price is calculated at a fair average market rate based on current fuel costs and distance.
+Yo'l haqi formulasi ‖ Формула платы за рейс ‖ Delivery fee formula
+Taxminiy yo'l haqi ({0} km) ‖ Ориентировочная плата за рейс ({0} км) ‖ Estimated delivery fee ({0} km)
+Taxminiy jami ‖ Ориентировочный итог ‖ Estimated total

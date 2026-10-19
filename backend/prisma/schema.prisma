@@ -92,6 +92,7 @@ model Driver {
   shipments       Shipment[]
   locationLogs    LocationLog[]
   warehouseOrders WarehouseOrder[]
+  posts           DriverPost[]
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
 }
@@ -639,4 +640,57 @@ model ShipmentRating {
 
   @@unique([shipmentId, raterId, targetId])
   @@index([targetId, stars])
+}
+
+enum DriverPostStatus {
+  AVAILABLE
+  ON_ROUTE
+}
+
+enum TrailerType {
+  DRY_VAN
+  REEFER
+  FLATBED
+  DROP_DECK
+  TENT
+  BOX_TRUCK
+  TIPPER
+  OTHER
+}
+
+enum DriverExtra {
+  LOADERS
+  TEMP_CONTROL
+  STRAPS_TARPS
+  LIFTGATE
+  GPS_247
+}
+
+/// Haydovchining bo'sh sig'im / xizmat e'loni (ommaviy katalog)
+model DriverPost {
+  id       String @id @default(uuid())
+  driverId String
+  driver   Driver @relation(fields: [driverId], references: [id], onDelete: Cascade)
+
+  status           DriverPostStatus @default(AVAILABLE)
+  trailerType      TrailerType
+  capacityKg       Int
+  routes           String[]
+  workHours        String?
+  currentLocation  String
+  pickupEtaMinutes Int?
+  pricePerKm       Int?
+  priceNote        String?
+  extras           DriverExtra[]
+  description      String?
+  photos           String[]
+  deliveryEtaAt    DateTime?
+  returnPickupAt   DateTime?
+  wantsBackhaul    Boolean          @default(false)
+  isActive         Boolean          @default(true)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@index([isActive, status, createdAt])
+  @@index([driverId])
 }

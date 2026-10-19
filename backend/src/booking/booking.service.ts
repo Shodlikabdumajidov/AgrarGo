@@ -169,9 +169,9 @@ export class BookingService {
 
   private breakdown(b: BookingRow) {
     const productPrice = b.quantityKg.mul(b.pricePerKg);
-    if (b.payment) return { ...breakdownOf({ productPrice: b.payment.amount, deliveryFee: b.payment.deliveryFee, serviceFee: b.payment.serviceFee, distanceKm: b.payment.distanceKm, currency: b.payment.currency }), estimated: false };
+    if (b.payment) return { ...breakdownOf({ productPrice: b.payment.amount, deliveryFee: b.payment.deliveryFee, serviceFee: b.payment.serviceFee, distanceKm: b.payment.distanceKm, currency: b.payment.currency }), formula: this.pricing.formula(b.payment.distanceKm, b.quantityKg, b.payment.deliveryFee), estimated: false };
     const q = this.pricing.quote(b.product.farmer.region, b.market.region, productPrice, b.quantityKg);
-    return { ...breakdownOf({ ...q, productPrice: q.productPrice }), estimated: true };
+    return { ...breakdownOf({ ...q, productPrice: q.productPrice }), formula: this.pricing.formula(q.distanceKm, b.quantityKg, q.deliveryFee), estimated: true };
   }
 
   /** Supermarket ko'radi: fermer ma'lumoti (tasdiqlangach telefon bilan). */

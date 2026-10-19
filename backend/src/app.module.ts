@@ -13,6 +13,8 @@ import { DocumentsModule } from './documents/documents.module';
 import { KycModule } from './kyc/kyc.module';
 import { TrustModule } from './trust/trust.module';
 import { PricingModule } from './pricing/pricing.module';
+import { DriverPostModule } from './driver-post/driver-post.module';
+import { GuideModule } from './guide/guide.module';
 import { MarketPriceModule } from './market-price/market-price.module';
 import { MarketplaceModule } from './marketplace/marketplace.module';
 import { PaymentModule } from './payment/payment.module';
@@ -51,6 +53,8 @@ import { WarehouseModule } from './warehouse/warehouse.module';
     PaymentModule,
     SubscriptionModule,
     MarketPriceModule,
+    DriverPostModule,
+    GuideModule,
     DocumentsModule,
     ReportsModule,
     TrustModule,

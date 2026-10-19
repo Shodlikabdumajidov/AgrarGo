@@ -5279,11 +5279,42 @@
         function updateBookingTotal() {
             const qty = Number(document.getElementById('booking-qty').value);
             document.getElementById('booking-total').innerText = formatNumber(qty > 0 && bookingProduct ? qty * Number(bookingProduct.pricePerKg) : 0) + " so'm";
+            scheduleBookingEstimate(qty);
+        }
+        // Taxminiy yo'l haqi va formulasi (market uchun) — miqdor o'zgarganda 400 ms kutib so'raladi
+        let bookingEstTimer = null, bookingEstSeq = 0;
+        function scheduleBookingEstimate(qty) {
+            const box = document.getElementById('booking-est');
+            clearTimeout(bookingEstTimer);
+            const p = bookingProduct, u = currentUser();
+            if (!p || !u || u.role !== 'MARKET' || !(qty > 0) || qty > Number(p.quantityKg)) { box.classList.add('hidden'); return; }
+            const seq = ++bookingEstSeq;
+            bookingEstTimer = setTimeout(async function () {
+                try {
+                    const r = await authed('GET', '/pricing/estimate?productId=' + encodeURIComponent(p.id) + '&quantityKg=' + encodeURIComponent(qty));
+                    if (seq !== bookingEstSeq || bookingProduct !== p) return;
+                    const row = function (label, value, extra) {
+                        const d = el('div', 'flex items-center justify-between gap-2 text-sm');
+                        const l = el('span', 'text-slate-300 flex items-center gap-2', label);
+                        if (extra) l.appendChild(extra);
+                        d.appendChild(l);
+                        d.appendChild(el('span', 'font-extrabold text-white whitespace-nowrap', value));
+                        return d;
+                    };
+                    box.replaceChildren(
+                        row('🚚 ' + T("Taxminiy yo'l haqi ({0} km)", formatNumber(r.distanceKm)), bdMoney(r.deliveryFee), formulaButton(r.formula)),
+                        row('🧾 ' + T('Platforma xizmat haqi'), bdMoney(r.serviceFee)),
+                        row('💳 ' + T('Taxminiy jami'), bdMoney(r.totalPrice))
+                    );
+                    box.classList.remove('hidden');
+                } catch (e) { if (seq === bookingEstSeq) box.classList.add('hidden'); }
+            }, 400);
         }
 
         function openBookingModal(p) {
             bookingProduct = p;
             bookingForm.reset();
+            document.getElementById('booking-est').classList.add('hidden');
             hideAuthAlert(bookingAlert);
             const summary = document.getElementById('booking-summary');
             summary.replaceChildren(
@@ -8706,8 +8737,9 @@
                 r.appendChild(el('div', ['text-sm sm:text-base font-black text-right whitespace-nowrap', valueCls].join(' '), value));
                 return r;
             };
+            const withQ = function (r) { if (src && src.formula) { const b = formulaButton(src.formula); b.classList.add('ml-2'); r.querySelector('div.min-w-0').firstChild.after(b); } return r; };
             if (driverView) {
-                card.appendChild(row('hi-drv', '🚚', T('Haydovchi ulushi'), (bd.distance ? T("Yo'l haqi · {0} km", formatNumber(bd.distance)) : T("Yo'l haqi")), bd.delivery > 0 ? bdMoney(bd.delivery) : T('Belgilanmagan'), 'text-sky-300'));
+                card.appendChild(withQ(row('hi-drv', '🚚', T('Haydovchi ulushi'), (bd.distance ? T("Yo'l haqi · {0} km", formatNumber(bd.distance)) : T("Yo'l haqi")), bd.delivery > 0 ? bdMoney(bd.delivery) : T('Belgilanmagan'), 'text-sky-300')));
                 return card;
             }
             if (!bd.legacy) {
@@ -8719,7 +8751,7 @@
             const calc = ctx && ctx.quantityKg ? T('{0} kg × {1}', formatNumber(ctx.quantityKg), bdMoney(Number(ctx.pricePerKg))) : '';
             card.appendChild(row(role === 'FARMER' ? 'hi' : '', '🌾', T('Fermer ulushi'), (T('Mahsulot') + (calc ? ' · ' + calc : '')), bdMoney(bd.product), 'text-emerald-300'));
             if (!bd.legacy) {
-                card.appendChild(row('', '🚚', T('Haydovchi ulushi'), (bd.distance ? T("Yo'l haqi · {0} km", formatNumber(bd.distance)) : T("Yo'l haqi")), bdMoney(bd.delivery), 'text-sky-300'));
+                card.appendChild(withQ(row('', '🚚', T('Haydovchi ulushi'), (bd.distance ? T("Yo'l haqi · {0} km", formatNumber(bd.distance)) : T("Yo'l haqi")), bdMoney(bd.delivery), 'text-sky-300')));
                 card.appendChild(row('', '🧾', T('Platforma xizmat haqi'), bd.warehouse > 0 ? T("Shu jumladan omborxona haqi: {0}", bdMoney(bd.warehouse)) : '', bdMoney(bd.service), 'text-amber-300'));
             }
             const tot = el('div', 'bd-total');
@@ -8776,12 +8808,96 @@
         function openShipmentPrice(s, viewerRole) {
             openBdModal({ title: s.cargoName, sub: s.origin.region + ' → ' + s.destination.region + ' · ' + formatNumber(s.weightKg) + ' kg', src: s.price, role: viewerRole, ctx: null, status: s.paymentStatus, id: s.id, shipmentId: s.status === 'CANCELLED' ? null : s.id });
         }
+
+        // ===== "Nima uchun bu narx?" — yo'l haqi formulasi popover'i =====
+        let fpPop = null;
+        function closeFormulaPopover() { if (fpPop) { fpPop.remove(); fpPop = null; } }
+        document.addEventListener('click', function (e) { if (fpPop && !fpPop.contains(e.target) && !e.target.closest('.fp-q')) closeFormulaPopover(); });
+        document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeFormulaPopover(); });
+        window.addEventListener('scroll', function () { closeFormulaPopover(); }, true);
+        function openFormulaPopover(anchor, f) {
+            if (!f) return;
+            const same = fpPop && fpPop.dataset.for === anchor.dataset.fid;
+            closeFormulaPopover();
+            if (same) return;
+            const pop = el('div', 'fp-pop');
+            pop.setAttribute('role', 'dialog');
+            pop.dataset.for = anchor.dataset.fid || '';
+            const head = el('div', 'flex items-center justify-between gap-2 mb-2');
+            head.appendChild(el('div', 'text-sm font-extrabold text-white', 'Nima uchun bu narx?'));
+            const x = el('button', 'text-slate-400 hover:text-white text-sm', '✕');
+            x.type = 'button';
+            x.setAttribute('aria-label', T('Yopish'));
+            x.addEventListener('click', closeFormulaPopover);
+            head.appendChild(x);
+            pop.appendChild(head);
+            const line = function (label, sub, value) {
+                const r = el('div', 'fp-row');
+                const l = el('div', 'min-w-0 text-sm text-slate-200 font-semibold', label);
+                if (sub) l.appendChild(el('small', '', sub));
+                r.appendChild(l);
+                r.appendChild(el('div', 'text-sm font-extrabold text-white whitespace-nowrap', value));
+                return r;
+            };
+            pop.appendChild(line(T('Baza tarifi'), '', bdMoney(f.base)));
+            pop.appendChild(line(T('Masofa ({0} km)', formatNumber(f.distanceKm)), T('{0} km × {1}', formatNumber(f.distanceKm), bdMoney(f.perKm)), bdMoney(f.distanceCost)));
+            pop.appendChild(line(T("Og'irlik ({0} t)", String(Math.round(f.weightTons * 100) / 100)), T('{0} t × {1} km × {2}', String(Math.round(f.weightTons * 100) / 100), formatNumber(f.distanceKm), bdMoney(f.perTonKm)), bdMoney(f.weightCost)));
+            if (f.adjustment) pop.appendChild(line(T('Yaxlitlash / tarif tuzatishi'), '', (f.adjustment > 0 ? '+' : '−') + bdMoney(Math.abs(f.adjustment))));
+            const tot = el('div', 'fp-total');
+            tot.appendChild(el('span', '', '= ' + T('Jami')));
+            tot.appendChild(el('span', '', bdMoney(f.total)));
+            pop.appendChild(tot);
+            pop.appendChild(el('p', 'mt-3 text-xs leading-relaxed text-slate-400', "Ushbu narx joriy yoqilg'i xarajatlari va masofa uchun adolatli o'rtacha bozor stavkasi bo'yicha hisoblangan."));
+            document.body.appendChild(pop);
+            const r = anchor.getBoundingClientRect(), w = pop.offsetWidth, hgt = pop.offsetHeight;
+            pop.style.left = Math.max(12, Math.min(window.innerWidth - w - 12, r.right - w)) + 'px';
+            const below = r.bottom + 8;
+            pop.style.top = (below + hgt > window.innerHeight - 8 ? Math.max(8, r.top - hgt - 8) : below) + 'px';
+            fpPop = pop;
+        }
+        let fpSeq = 0;
+        function formulaButton(f) {
+            const b = el('button', 'fp-q', '?');
+            b.type = 'button';
+            b.dataset.fid = String(++fpSeq);
+            b.title = T('Nima uchun bu narx?');
+            b.setAttribute('aria-label', T('Nima uchun bu narx?'));
+            b.addEventListener('click', function (e) { e.stopPropagation(); openFormulaPopover(b, f); });
+            return b;
+        }
+        // Haydovchi uchun yirik "Sizning daromadingiz" bloki (qabul qilishdan oldin ham ko'rinadi)
+        function earningsBlock(price) {
+            const bd = bdNorm(price);
+            const box = el('div', 'earn-card');
+            const left = el('div', 'min-w-0');
+            left.appendChild(el('div', 'text-xs font-bold text-sky-200', '🚚 ' + T('Sizning daromadingiz:')));
+            left.appendChild(el('div', 'earn-amt', bd && bd.delivery > 0 ? bdMoney(bd.delivery) : T('Belgilanmagan')));
+            box.appendChild(left);
+            const right = el('div', 'flex items-center gap-2');
+            if (bd && bd.distance) right.appendChild(el('span', 'text-xs font-bold text-slate-300 bg-white/10 rounded-full px-2.5 py-1', '📏 ' + T('{0} km', formatNumber(bd.distance))));
+            if (price && price.formula) right.appendChild(formulaButton(price.formula));
+            box.appendChild(right);
+            return box;
+        }
         // Yuk kartochkasidagi narx qatori
         function buildPriceStrip(s, viewer) {
             const role = viewer === 'farmer' ? 'FARMER' : viewer === 'market' ? 'MARKET' : 'DRIVER';
+            if (role === 'DRIVER') {
+                const wrap = el('div', 'space-y-2');
+                wrap.appendChild(earningsBlock(s.price));
+                return wrap;
+            }
             const wrap = el('div', 'rounded-xl bg-slate-950/50 border border-white/10 px-4 py-3 space-y-1.5');
-            wrap.appendChild(el('div', 'text-[10px] uppercase tracking-wider text-slate-500 font-bold', role === 'DRIVER' ? "Yo'l haqi" : "To'lov"));
-            wrap.appendChild(bdChips(s.price, role, role === 'DRIVER' && viewer === 'driver-open' ? null : function () { openShipmentPrice(s, role); }));
+            const top = el('div', 'flex items-center justify-between gap-2');
+            top.appendChild(el('div', 'text-[10px] uppercase tracking-wider text-slate-500 font-bold', "To'lov"));
+            if (s.price && s.price.formula) {
+                const fx = el('div', 'flex items-center gap-1.5 text-[11px] text-slate-400');
+                fx.appendChild(el('span', '', T("Yo'l haqi formulasi")));
+                fx.appendChild(formulaButton(s.price.formula));
+                top.appendChild(fx);
+            }
+            wrap.appendChild(top);
+            wrap.appendChild(bdChips(s.price, role, function () { openShipmentPrice(s, role); }));
             return wrap;
         }
 

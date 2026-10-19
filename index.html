@@ -690,6 +690,17 @@
         .bd-chip.est { border-style: dashed; }
         .bd-link { font-size: .74rem; font-weight: 800; color: #6ee7b7; text-decoration: underline; text-underline-offset: 3px; transition: color .2s; }
         .bd-link:hover { color: #a7f3d0; }
+        /* Haydovchi daromadi bloki va "Nima uchun bu narx?" popover */
+        .earn-card { display: flex; align-items: center; justify-content: space-between; gap: .75rem; flex-wrap: wrap; border-radius: 1rem; padding: .85rem 1rem; border: 1px solid rgba(56,189,248,.4); background: linear-gradient(135deg, rgba(14,165,233,.22), rgba(16,185,129,.14)); box-shadow: 0 14px 34px -22px rgba(14,165,233,.8); }
+        .earn-card .earn-amt { font-size: 1.5rem; line-height: 1.1; font-weight: 900; color: #fff; }
+        .fp-q { display: inline-flex; align-items: center; justify-content: center; width: 1.7rem; height: 1.7rem; border-radius: 9999px; border: 1px solid rgba(255,255,255,.3); background: rgba(255,255,255,.1); color: #e2e8f0; font-weight: 800; font-size: .8rem; cursor: pointer; transition: background .2s, transform .2s; }
+        .fp-q:hover { background: rgba(255,255,255,.22); transform: scale(1.08); }
+        .fp-pop { position: fixed; z-index: 120; width: min(22rem, calc(100vw - 1.5rem)); border-radius: 1.1rem; padding: 1rem; border: 1px solid rgba(255,255,255,.18); background: rgba(15,23,42,.94); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: 0 24px 60px -20px rgba(0,0,0,.8); animation: fpIn .22s cubic-bezier(.16,1,.3,1); }
+        @keyframes fpIn { from { opacity: 0; transform: translateY(8px) scale(.97); } to { opacity: 1; transform: none; } }
+        .fp-row { display: flex; align-items: baseline; justify-content: space-between; gap: .75rem; padding: .35rem 0; border-bottom: 1px dashed rgba(255,255,255,.1); }
+        .fp-row small { display: block; color: #94a3b8; font-size: .68rem; }
+        .fp-total { display: flex; justify-content: space-between; align-items: center; padding-top: .6rem; font-weight: 900; color: #38bdf8; font-size: 1.05rem; }
+        @media (max-width: 520px) { .fp-pop { left: .75rem !important; right: .75rem; bottom: .75rem; top: auto !important; width: auto; } }
         .bd-card { border-radius: 1.25rem; border: 1px solid rgba(255,255,255,.14); background: linear-gradient(160deg, rgba(255,255,255,.08), rgba(15,23,42,.7)); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); padding: 1rem 1.1rem; box-shadow: 0 20px 50px -30px rgba(16,185,129,.55); }
         .bd-bar { display: flex; height: .7rem; border-radius: 9999px; overflow: hidden; background: rgba(255,255,255,.08); margin: .6rem 0 .9rem; }
         .bd-bar i { display: block; height: 100%; transition: width .9s cubic-bezier(.16,1,.3,1); }
@@ -2257,6 +2268,7 @@
                     <span class="text-sm font-semibold text-slate-300">Jami summa</span>
                     <span id="booking-total" class="text-lg font-black text-emerald-400">0 so'm</span>
                 </div>
+                <div id="booking-est" class="hidden rounded-2xl bg-sky-500/10 border border-sky-500/30 px-4 py-3 space-y-1.5"></div>
                 <label class="flex items-center gap-3 rounded-xl border border-rose-500/30 bg-rose-500/5 px-4 py-3 text-sm font-semibold text-slate-200 cursor-pointer hover:border-rose-500/60"><input id="booking-urgent" name="urgent" type="checkbox" class="w-4 h-4 accent-rose-500"> <span>🚀</span> <span>Shoshilinch bron</span> <span class="text-slate-500 font-medium">(yuk tezroq yetkazilishi kerak)</span></label>
                 <div>
                     <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="booking-message">Izoh <span class="text-slate-500 normal-case font-medium">(ixtiyoriy)</span></label>

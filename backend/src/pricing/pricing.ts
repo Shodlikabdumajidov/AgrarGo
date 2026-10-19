@@ -54,3 +54,25 @@ export function breakdownOf(row: { productPrice: Prisma.Decimal.Value; deliveryF
   const productPrice = Number(row.productPrice), deliveryFee = Number(row.deliveryFee), serviceFee = Number(row.serviceFee);
   return { productPrice, deliveryFee, serviceFee, totalPrice: productPrice + deliveryFee + serviceFee, currency: row.currency ?? 'UZS', distanceKm: row.distanceKm };
 }
+
+/** Yetkazib berish haqi qanday hisoblangani (foydalanuvchiga tushuntirish uchun): baza + masofa + og'irlik (+ yaxlitlash) */
+export interface DeliveryFormula {
+  base: number;
+  perKm: number; distanceKm: number; distanceCost: number;
+  perTonKm: number; weightTons: number; weightCost: number;
+  /** Yaxlitlash yoki tarif o'zgarishi hisobiga farq (saqlangan haq bilan nazariy yig'indi orasida) */
+  adjustment: number;
+  total: number;
+}
+
+export function deliveryFormula(cfg: PricingConfig, km: number, weightKg: Prisma.Decimal.Value, storedFee?: Prisma.Decimal.Value): DeliveryFormula {
+  const tons = D(weightKg).div(1000);
+  const distanceCost = Math.round(D(cfg.deliveryPerKm).mul(km).toNumber());
+  const weightCost = Math.round(tons.mul(km).mul(cfg.deliveryPerTonKm).toNumber());
+  const total = storedFee !== undefined ? Number(storedFee) : computeDeliveryFee(cfg, km, weightKg).toNumber();
+  return {
+    base: cfg.deliveryBase, perKm: cfg.deliveryPerKm, distanceKm: km, distanceCost,
+    perTonKm: cfg.deliveryPerTonKm, weightTons: Math.round(tons.toNumber() * 1000) / 1000, weightCost,
+    adjustment: total - (cfg.deliveryBase + distanceCost + weightCost), total,
+  };
+}

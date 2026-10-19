@@ -53,8 +53,12 @@ describe("To'lov tarkibi: fermer / haydovchi / xizmat haqi (e2e)", () => {
     const { farmer, market, driver, bk } = await setup();
     await approve(t.http, farmer, bk.id);
     const open = (await get('/shipments/available', driver)).body[0];
-    expect(Object.keys(open.price).sort()).toEqual(['currency', 'deliveryFee', 'distanceKm']);
+    expect(Object.keys(open.price).sort()).toEqual(['currency', 'deliveryFee', 'distanceKm', 'formula']);
     expect(open.price.deliveryFee).toBeGreaterThan(0);
+    const f = open.price.formula;
+    expect(f.base + f.distanceCost + f.weightCost + f.adjustment).toBe(open.price.deliveryFee);
+    expect(f.total).toBe(open.price.deliveryFee);
+    expect(f.distanceKm).toBe(open.price.distanceKm);
     expect(JSON.stringify(open)).not.toContain('890400');
     await pay(t.http, market, bk.id); // to'lov kafolatlangach haydovchi qabul qila oladi
     await t.http().post(`/shipments/${open.id}/accept`).set('Authorization', bearer(driver));
@@ -65,6 +69,20 @@ describe("To'lov tarkibi: fermer / haydovchi / xizmat haqi (e2e)", () => {
       expect(s.price).toMatchObject({ productPrice: 890400, deliveryFee: open.price.deliveryFee, driverShare: open.price.deliveryFee });
       expect(s.price.totalPrice).toBe(s.price.productPrice + s.price.deliveryFee + s.price.serviceFee);
     }
+  });
+
+  it("/pricing/estimate: market uchun formula bilan taxmin; boshqa rol 403, noto'g'ri parametr 400", async () => {
+    const { farmer, market, driver } = await setup();
+    const product = (await t.prisma.product.findFirst())!;
+    const ok = await get(`/pricing/estimate?productId=${product.id}&quantityKg=159`, market);
+    expect(ok.status).toBe(200);
+    expect(ok.body).toMatchObject({ estimated: true, productPrice: 890400 });
+    const f = ok.body.formula;
+    expect(f.base + f.distanceCost + f.weightCost + f.adjustment).toBe(ok.body.deliveryFee);
+    expect((await get(`/pricing/estimate?productId=${product.id}&quantityKg=159`, driver)).status).toBe(403);
+    expect((await get(`/pricing/estimate?productId=${product.id}&quantityKg=0`, market)).status).toBe(400);
+    expect((await get('/pricing/estimate?productId=00000000-0000-0000-0000-000000000000&quantityKg=5', market)).status).toBe(404);
+    void farmer;
   });
 
   it("escrow: market jami summani to'laydi; yetkazilgach fermerga mahsulot, haydovchiga yo'l haqi; qaytarishda jami qaytariladi", async () => {
