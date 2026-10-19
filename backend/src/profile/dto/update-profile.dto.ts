@@ -14,6 +14,15 @@ class BaseProfileDto {
   @IsString()
   @MinLength(2, { message: "Ism kamida 2 ta belgidan iborat bo'lishi kerak" })
   fullName?: string;
+
+  /** Ommaviy Telegram username: "@" bilan yoki "@"siz, 5-32 belgi (lotin, raqam, _) */
+  @IsOptional()
+  @Transform(({ value }: { value: unknown }) => {
+    const v = typeof value === 'string' ? value.trim().replace(/^@/, '').replace(/^https?:\/\/t\.me\//i, '') : value;
+    return v === '' ? null : v;
+  })
+  @Matches(/^[A-Za-z][A-Za-z0-9_]{4,31}$/, { message: "Telegram username 5-32 belgi bo'lsin: lotin harflari, raqam va _ (masalan, agrargo_user)" })
+  telegramUsername?: string | null;
 }
 
 export class UpdateFarmerProfileDto extends BaseProfileDto {

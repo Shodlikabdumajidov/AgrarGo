@@ -201,3 +201,8 @@ Frontend ildizida: `manifest.json`, `sw.js` (Service Worker), `offline.html`, `i
 - Bozor stavkasi = oxirgi 30 yoki 60 kunda yakunlangan (`DELIVERED`, to'lov HELD/RELEASED) yuklarning jami yo'l haqi / jami masofa, yo'nalish bo'yicha (yo'nalishga bog'liq emas). Natija 10 daqiqa keshlanadi (dinamik kalkulyator). Yo'nalishda kamida 3 ta reys bo'lmasa solishtirilmaydi (`null`).
 - `GET /rates/routes?days=30|60`, `GET /rates/compare?route=|origin&dest&ratePerKm=` (foizli farq va `HOT` ≥ +3%, `LOW` ≤ −3%, aks holda `FAIR`), `GET /rates/product?name=&pricePerKg=` (Bozor narxlari moduli bilan mahsulot narxi).
 - `marketRate` maydoni: haydovchi uchun yuk kartochkalarida, `driver-posts` e'lonlarida va `/pricing/estimate` javobida.
+
+## Haydovchi bilan aloqa va yuk taklifi
+- `GET /driver-posts/:id/contact` (FARMER/MARKET/DISPATCHER/ADMIN) — telefon, ism va `telegramUsername` (profilda ixtiyoriy kiritiladi, `PATCH /profile { telegramUsername }`; "@" olib tashlanadi, 5–32 belgi).
+- `GET /driver-posts/offerable?postId=` (FARMER/MARKET) — o'z ochiq (haydovchisiz) yuklari: mahsulot, hajm, yo'nalish, yo'l haqi, `ready` (to'lov kafolatlangan), `fits` (e'longa sig'adimi), `alreadyOffered`.
+- `POST /driver-posts/:id/offers { shipmentId, pickupAt?, note? }` — taklif yuborish: haydovchi kabinetida (`GET /driver-posts/offers/mine`, `POST /driver-posts/offers/:id/read`) va ulangan bo'lsa Telegramda xabar (mahsulot, hajm, olish vaqti, viloyat/tuman, yo'l haqi; aniq manzil yuk biriktirilgach ochiladi). Takror, begona/band yuk, sig'maydigan yuk — 409/404; kuniga 20 tagacha.

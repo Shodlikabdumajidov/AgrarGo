@@ -130,4 +130,42 @@ export class NotificationService {
       await this.sendTo([s.farmer.userId, s.market.userId, ...dispatchers], text);
     });
   }
+
+  // ---------- Haydovchiga yuk taklifi ----------
+
+  driverOffer(offerId: string) {
+    this.run(async () => {
+      const o = await this.prisma.driverOffer.findUnique({
+        where: { id: offerId },
+        select: {
+          pickupAt: true, note: true,
+          post: { select: { routes: true, driver: { select: { userId: true } } } },
+          fromUser: { select: { fullName: true, farmer: { select: { farmName: true } }, market: { select: { companyName: true } } } },
+          shipment: {
+            select: {
+              cargoName: true, weightKg: true, originRegion: true, originDistrict: true, destRegion: true, destDistrict: true,
+              booking: { select: { payment: { select: { deliveryFee: true } } } }, warehouseOrder: { select: { payment: { select: { deliveryFee: true } } } },
+            },
+          },
+        },
+      });
+      if (!o) return;
+      const s = o.shipment, fee = s.booking?.payment?.deliveryFee ?? s.warehouseOrder?.payment?.deliveryFee;
+      const from = o.fromUser.farmer?.farmName ?? o.fromUser.market?.companyName ?? o.fromUser.fullName;
+      const when = o.pickupAt ? o.pickupAt.toISOString().replace('T', ' ').slice(0, 16) + ' UTC' : null;
+      const lines = [
+        `📦 <b>Sizga yuk taklif qilindi</b>`,
+        `${h(from)} «${h(o.post.routes[0] ?? "e'loningiz")}» e'loningiz bo'yicha taklif yubordi:`,
+        `• Mahsulot: <b>${h(s.cargoName)}</b>`,
+        `• Hajmi: <b>${num(s.weightKg)} kg</b>`,
+        `• Qayerdan: ${h(s.originRegion)}, ${h(s.originDistrict)}`,
+        `• Qayerga: ${h(s.destRegion)}, ${h(s.destDistrict)}`,
+        when ? `• Olish vaqti: ${when}` : null,
+        fee ? `• Yo'l haqi: <b>${som(fee)}</b>` : null,
+        o.note ? `• Izoh: ${h(o.note)}` : null,
+        `Aniq manzil yukni biriktirgandan keyin ochiladi. Kabinetda «Mavjud yuklar» bo'limidan oling.`,
+      ].filter(Boolean);
+      await this.sendTo([o.post.driver.userId], lines.join('\n'));
+    });
+  }
 }

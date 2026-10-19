@@ -192,7 +192,7 @@ export class DriverPostService {
   async contact(id: string, role: Role) {
     const p = await this.prisma.driverPost.findUnique({ where: { id }, include });
     if (!p || !p.isActive) throw new NotFoundException("E'lon topilmadi");
-    return { phone: p.driver.user.phone, fullName: p.driver.user.fullName };
+    return { phone: p.driver.user.phone, fullName: p.driver.user.fullName, telegramUsername: p.driver.user.telegramUsername };
   }
 
   private async removeFile(url: string) {

@@ -1,7 +1,7 @@
 import { DriverExtra, DriverPostStatus, LoadMode, TrailerType } from '@prisma/client';
 import { RadiusQuery } from '../../common/geo-search';
 import { Transform, Type } from 'class-transformer';
-import { ArrayMaxSize, ArrayUnique, IsArray, IsBoolean, IsDate, IsEnum, IsInt, IsNumber, IsOptional, IsString, Length, Max, Min } from 'class-validator';
+import { ArrayMaxSize, ArrayUnique, IsArray, IsBoolean, IsDate, IsEnum, IsInt, IsNumber, IsOptional, IsString, IsUUID, Length, Max, Min } from 'class-validator';
 
 const clean = ({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim().replace(/\s+/g, ' ') : value);
 const cleanList = ({ value }: { value: unknown }) => (Array.isArray(value) ? value.map((v) => (typeof v === 'string' ? v.trim().replace(/\s+/g, ' ') : v)) : value);
@@ -106,4 +106,16 @@ export class ListDriverPostsQuery extends RadiusQuery {
   @IsOptional() @Transform(clean) @IsString() @Length(0, 60) region?: string;
   /** vergul bilan ajratilgan: LOADERS,LIFTGATE */
   @IsOptional() @IsString() @Length(0, 120) extras?: string;
+}
+
+export class CreateOfferDto {
+  @IsUUID('all', { message: "Yuk identifikatori noto'g'ri" })
+  shipmentId!: string;
+
+  /** Yukni olish vaqti (ixtiyoriy) */
+  @IsOptional() @Transform(emptyToUndef) @Type(() => Date) @IsDate()
+  pickupAt?: Date;
+
+  @IsOptional() @Transform(clean) @IsString() @Length(0, 300)
+  note?: string;
 }

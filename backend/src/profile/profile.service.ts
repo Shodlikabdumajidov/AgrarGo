@@ -47,20 +47,24 @@ export class ProfileService {
 
   async update(userId: string, role: Role, body: unknown) {
     const data: Prisma.UserUpdateInput = {};
+    const tg = (dto: { telegramUsername?: string | null }) => { if (dto.telegramUsername !== undefined) data.telegramUsername = dto.telegramUsername; };
     const set = <T extends object>(dto: T, keys: (keyof T)[]) =>
       Object.fromEntries(keys.filter((k) => dto[k] !== undefined).map((k) => [k, dto[k]]));
 
     if (role === Role.FARMER) {
       const dto = await parseDto(UpdateFarmerProfileDto, body);
+      tg(dto);
       if (dto.fullName !== undefined) data.fullName = dto.fullName;
       data.farmer = { update: set(dto, ['farmName', 'region', 'district', 'address', 'latitude', 'longitude', 'stir']) };
     } else if (role === Role.DRIVER) {
       const dto = await parseDto(UpdateDriverProfileDto, body);
+      tg(dto);
       if (dto.fullName !== undefined) data.fullName = dto.fullName;
       if (dto.plateNumber !== undefined) dto.plateNumber = dto.plateNumber.replace(/[\s-]/g, '').toUpperCase();
       data.driver = { update: set(dto, ['vehicleType', 'plateNumber', 'capacityKg', 'region', 'licenseNumber']) };
     } else if (role === Role.MARKET) {
       const dto = await parseDto(UpdateMarketProfileDto, body);
+      tg(dto);
       if (dto.fullName !== undefined) data.fullName = dto.fullName;
       data.market = { update: set(dto, ['companyName', 'region', 'district', 'address', 'stir']) };
     } else {

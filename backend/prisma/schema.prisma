@@ -43,6 +43,8 @@ model User {
   telegramAuthToken          String?   @unique
   telegramAuthTokenExpiresAt DateTime?
   telegramLinkedAt           DateTime?
+  // Ommaviy Telegram username (@ siz): mijozlar to'g'ridan-to'g'ri yozishi uchun; ixtiyoriy
+  telegramUsername           String?
   createdAt                  DateTime  @default(now())
   updatedAt                  DateTime  @updatedAt
 
@@ -56,6 +58,7 @@ model User {
   kycDocuments         KycDocument[]
   ratingsGiven         ShipmentRating[]      @relation("RatingRater")
   ratingsReceived      ShipmentRating[]      @relation("RatingTarget")
+  offersSent           DriverOffer[]
 }
 
 model Farmer {
@@ -238,6 +241,8 @@ model Shipment {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  offers DriverOffer[]
 
   @@index([status, createdAt])
   @@index([originLat, originLng])
@@ -718,7 +723,28 @@ model DriverPost {
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
 
+  offers DriverOffer[]
+
   @@index([isActive, status, createdAt])
   @@index([driverId])
   @@index([lat, lng])
+}
+
+/// Fermer/market haydovchiga yuk taklifi: haydovchi kabinetida va Telegramda ko'rinadi
+model DriverOffer {
+  id         String     @id @default(uuid())
+  postId     String
+  post       DriverPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  shipmentId String
+  shipment   Shipment   @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  fromUserId String
+  fromUser   User       @relation(fields: [fromUserId], references: [id], onDelete: Cascade)
+  pickupAt   DateTime?
+  note       String?
+  readAt     DateTime?
+  createdAt  DateTime   @default(now())
+
+  @@unique([postId, shipmentId])
+  @@index([postId, createdAt])
+  @@index([fromUserId])
 }
