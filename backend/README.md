@@ -23,7 +23,7 @@ E2E testlar `TEST_DATABASE_URL` (standart: `postgresql://postgres:parol@localhos
    - `TRUST_PROXY=1`: Nginx/balancer ortida bo'lsangiz (aks holda barcha mijozlar bitta IP bo'lib ko'rinadi va rate-limit hamma uchun bir vaqtda ishlaydi). Proksisiz `0` qoldiring.
 2. `npx prisma migrate deploy && npm run build && npm run start:prod`
 3. `GET /health` — balancer/monitoring uchun (bazani tekshiradi, hech narsa oshkor qilmaydi).
-4. Frontend (`index.html`) dagi `API_URL` ni backend manziliga almashtiring.
+4. Frontend (`js/app.js`) dagi `API_URL` ni backend manziliga almashtiring.
 
 ### Himoya choralari
 - **Rate-limit** (`@nestjs/throttler`, javob `429` + `Retry-After`): umumiy 120 so'rov/daq/IP; login: telefon raqam bo'yicha 5 urinish/15 daq (keyin 30 daq blok) va IP bo'yicha 20 urinish/15 daq; ro'yxatdan o'tish: 10/soat/IP (uch rol uchun umumiy); avatar yuklash 10/daq; bron 30/daq. Chegaralar `THROTTLE_*` orqali sozlanadi. Hisoblagichlar xotirada saqlanadi: bir nechta nusxada (instance) ishlatilsa, Redis storage ulang.
@@ -171,4 +171,4 @@ Qoidalar `src/payment/payment.policy.ts` da (sof funksiyalar, unit testlangan). 
 
 ## PWA
 
-Frontend ildizida: `manifest.json`, `sw.js` (Service Worker), `offline.html`, `icons/`. Service Worker faqat `https://` yoki `localhost` da ishlaydi. App shell oldindan keshlanadi, statik fayllar va CDN stale-while-revalidate; backend API va Authorization'li so'rovlar hech qachon keshlanmaydi. Keshni yangilash uchun `sw.js` dagi `VERSION` ni oshiring.
+Frontend ildizida: `manifest.json`, `sw.js` (Service Worker), `offline.html`, `images/icons/`. Service Worker faqat `https://` yoki `localhost` da ishlaydi. App shell oldindan keshlanadi, statik fayllar va CDN stale-while-revalidate; backend API va Authorization'li so'rovlar hech qachon keshlanmaydi. Keshni yangilash uchun `sw.js` dagi `VERSION` ni oshiring.

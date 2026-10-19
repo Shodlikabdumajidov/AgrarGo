@@ -1,5 +1,5 @@
 // Tarjima qamrovini tekshiradi:  node i18n/check.js
-//  - index.html'dagi matnlar (HTML va JS satrlari) i18n/src/*.txt da bormi
+//  - index.html va js/app.js dagi matnlar (HTML va JS satrlari) i18n/src/*.txt da bormi
 //  - ru/en lug'atlari bir xil kalitlarga egami
 // Eslatma: o'zgaruvchan matnlar ({0}) andoza sifatida kalitda; faqat foydalanuvchiga ko'rinadigan matnlar hisobga olinadi.
 const fs = require('fs'), path = require('path');
@@ -14,10 +14,10 @@ const keyList = [...keys];
 // Yig'ma matn bo'laklari (masalan, "Oxirgi signal: " + x) to'liq andoza ichida bo'lsa, qamrab olingan hisoblanadi
 const covered = (s) => keys.has(s.trim()) || patterns.some((re) => re.test(s.trim())) || (s.trim().length > 3 && keyList.some((k) => k.includes(s.trim())));
 
+// JS endi js/app.js da; HTML'dan skript va uslublar olib tashlanadi
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-const si = html.lastIndexOf('<script>');
-const js = html.slice(si + 8, html.indexOf('</script>', si));
-const head = html.slice(0, si).replace(/<style[\s\S]*?<\/style>/g, '').replace(/<!--[\s\S]*?-->/g, '').replace(/<script[\s\S]*?<\/script>/g, '');
+const js = fs.readFileSync(path.join(root, 'js', 'app.js'), 'utf8');
+const head = html.replace(/<style[\s\S]*?<\/style>/g, '').replace(/<!--[\s\S]*?-->/g, '').replace(/<script[\s\S]*?<\/script>/g, '');
 const found = new Set();
 for (const m of head.matchAll(/>([^<>]+)</g)) found.add(m[1].replace(/&copy;/g, '©').replace(/\s+/g, ' ').trim());
 for (const m of head.matchAll(/\b(?:placeholder|title|aria-label|alt)="([^"]*)"/g)) found.add(m[1].trim());

@@ -2,9 +2,9 @@ name: i18n check
 
 on:
   push:
-    paths: ['index.html', 'i18n/**', '.github/workflows/i18n-check.yml']
+    paths: ['index.html', 'js/**', 'i18n/**', '.github/workflows/i18n-check.yml']
   pull_request:
-    paths: ['index.html', 'i18n/**', '.github/workflows/i18n-check.yml']
+    paths: ['index.html', 'js/**', 'i18n/**', '.github/workflows/i18n-check.yml']
 
 jobs:
   i18n:
