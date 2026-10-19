@@ -172,3 +172,17 @@ Qoidalar `src/payment/payment.policy.ts` da (sof funksiyalar, unit testlangan). 
 ## PWA
 
 Frontend ildizida: `manifest.json`, `sw.js` (Service Worker), `offline.html`, `images/icons/`. Service Worker faqat `https://` yoki `localhost` da ishlaydi. App shell oldindan keshlanadi, statik fayllar va CDN stale-while-revalidate; backend API va Authorization'li so'rovlar hech qachon keshlanmaydi. Keshni yangilash uchun `sw.js` dagi `VERSION` ni oshiring.
+
+## Yo'l haqi formulasi (shaffoflik)
+- Yuk (`/shipments/available`, `/shipments/mine`) va bron (`breakdown`) javoblarida `formula` bor: `{ base, perKm, distanceKm, distanceCost, perTonKm, weightTons, weightCost, adjustment, total }`. `adjustment` — yaxlitlash yoki tarif o'zgargani uchun farq (jami har doim saqlangan `deliveryFee` ga teng). Haydovchi mahsulot summasini ko'rmaydi, faqat yo'l haqi va formulani.
+- `GET /pricing/estimate?productId=&quantityKg=` (MARKET) — bron qilishdan oldin taxminiy yo'l haqi, xizmat haqi, jami va formula.
+
+## Haydovchi e'lonlari katalogi (`/driver-posts`)
+- `GET /driver-posts` (barcha kirgan rollar; filtrlar: `q`, `status`, `trailerType`, `region`, `extras=LOADERS,LIFTGATE`) — telefon yashirin (`+998 90 *** ** 12`), ishonch ma'lumoti (reyting, verified, badjlar) bilan.
+- `GET /driver-posts/mine`, `POST /driver-posts` (DRIVER + obuna; bir vaqtda 3 ta faol e'lon), `PATCH/DELETE /driver-posts/:id` (egasi yoki ADMIN), `POST /driver-posts/:id/photos` (`file`, 4 MB, 6 tagacha, magic-byte tekshiruvi), `DELETE /driver-posts/:id/photos/:index`.
+- `GET /driver-posts/:id/contact` (FARMER/MARKET/DISPATCHER/ADMIN) — to'liq telefonni ochadi.
+- Holatlar: `AVAILABLE` (bo'sh) va `ON_ROUTE` (yo'lda: `deliveryEtaAt`, `returnPickupAt`). Platformada yuk taklif qilish jarayoni yo'q — «Yuk taklif qilish» telefon/SMS orqali.
+
+## O'quv qo'llanma (`/guide`)
+- `GET /guide?lang=uz|ru|en[&role=FARMER|DRIVER|MARKET|DISPATCHER]` — ommaviy JSON (rollar → mavzular → qadamlar).
+- `GET /guide/pdf?lang=&role=` — brendlangan PDF (muqova, mundarija, qadam kartochkalari, Escrow sxemasi).

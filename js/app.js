@@ -63,7 +63,7 @@
 
         // Sahifa skrolli: biror modal/panel/kabinet ochiq bo'lsa qulflanadi
         function syncScrollLock() {
-            const open = ['auth-modal', 'product-modal', 'booking-modal', 'payment-modal', 'wh-modal', 'price-modal', 'rate-modal', 'face-modal', 'bd-modal', 'my-products-panel', 'dashboard-view', 'role-page', 'not-found'].some(function (id) {
+            const open = ['auth-modal', 'product-modal', 'booking-modal', 'payment-modal', 'wh-modal', 'price-modal', 'dp-modal', 'rate-modal', 'face-modal', 'bd-modal', 'my-products-panel', 'dashboard-view', 'role-page', 'not-found'].some(function (id) {
                 const node = document.getElementById(id);
                 return node && node.classList.contains('open');
             });
@@ -1179,11 +1179,13 @@
 
         document.addEventListener('keydown', function (e) {
             if (e.key !== 'Escape') return;
+            if (fpPop) { closeFormulaPopover(); return; } // popover ochiq bo'lsa faqat u yopiladi
             if (tourState.active || notFoundView.classList.contains('open')) return; // tur va 404 o'z Escape'ini boshqaradi: kabinet yopilmasin
             if (document.getElementById('bd-modal').classList.contains('open')) closeBdModal();
             else if (document.getElementById('face-modal').classList.contains('open')) closeFaceModal();
             else if (document.getElementById('rate-modal').classList.contains('open')) closeRateModal();
             else if (document.getElementById('price-modal').classList.contains('open')) closePriceModal();
+            else if (document.getElementById('dp-modal').classList.contains('open')) closeDpModal();
             else if (whModal.classList.contains('open')) closeWhModal();
             else if (paymentModal.classList.contains('open')) closePaymentModal();
             else if (bookingModal.classList.contains('open')) closeBookingModal();
@@ -1494,20 +1496,20 @@
             FARMER: [['overview', 'fa-gauge', 'Umumiy'], ['bookings', 'fa-inbox', 'Kelgan bronlar'],
                      ['shipments', 'fa-truck-ramp-box', 'Yuk tashish'], ['payments', 'fa-wallet', "To'lovlar"],
                      ['warehouse', 'fa-warehouse', 'Omborxona'], ['whorders', 'fa-clipboard-list', 'Ombor buyurtmalari'],
-                     ['products', 'fa-boxes-stacked', "E'lonlarim"], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'], ['badges', 'fa-trophy', 'Ishonch badjlari'], ['subscription', 'fa-crown', 'Obuna'], ['profile', 'fa-id-card', 'Profil']],
+                     ['products', 'fa-boxes-stacked', "E'lonlarim"], ['guide', 'fa-book-open', "Qo'llanma"], ['drivers', 'fa-truck-field', 'Haydovchilar'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'], ['badges', 'fa-trophy', 'Ishonch badjlari'], ['subscription', 'fa-crown', 'Obuna'], ['profile', 'fa-id-card', 'Profil']],
             MARKET: [['overview', 'fa-gauge', 'Umumiy'], ['bookings', 'fa-clipboard-list', 'Mening bronlarim'],
                      ['shipments', 'fa-truck-ramp-box', 'Yuk tashish'], ['payments', 'fa-wallet', "To'lovlar"],
                      ['warehouse', 'fa-warehouse', 'Omborxona'], ['whorders', 'fa-clipboard-list', 'Ombor buyurtmalari'],
-                     ['catalog', 'fa-store', 'Katalog'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'], ['badges', 'fa-trophy', 'Ishonch badjlari'], ['subscription', 'fa-crown', 'Obuna'], ['profile', 'fa-id-card', 'Profil']],
+                     ['catalog', 'fa-store', 'Katalog'], ['guide', 'fa-book-open', "Qo'llanma"], ['drivers', 'fa-truck-field', 'Haydovchilar'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'], ['badges', 'fa-trophy', 'Ishonch badjlari'], ['subscription', 'fa-crown', 'Obuna'], ['profile', 'fa-id-card', 'Profil']],
             DRIVER: [['overview', 'fa-gauge', 'Umumiy'], ['loads', 'fa-boxes-packing', 'Mavjud yuklar'],
-                     ['myloads', 'fa-truck-fast', 'Mening yuklarim'], ['eld', 'fa-clock-rotate-left', 'Harakat jurnali'], ['verify', 'fa-id-card-clip', 'Shaxsni tasdiqlash'], ['badges', 'fa-trophy', 'Darajalar va mukofotlar'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'], ['subscription', 'fa-crown', 'Obuna'], ['profile', 'fa-id-card', 'Profil']],
+                     ['myloads', 'fa-truck-fast', 'Mening yuklarim'], ['eld', 'fa-clock-rotate-left', 'Harakat jurnali'], ['verify', 'fa-id-card-clip', 'Shaxsni tasdiqlash'], ['badges', 'fa-trophy', 'Darajalar va mukofotlar'], ['guide', 'fa-book-open', "Qo'llanma"], ['drivers', 'fa-truck-field', 'Haydovchilar'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'], ['subscription', 'fa-crown', 'Obuna'], ['profile', 'fa-id-card', 'Profil']],
             DISPATCHER: [['whboard', 'fa-table-columns', 'Zonalar'], ['whunits', 'fa-temperature-half', 'Kameralar'],
-                     ['whorders', 'fa-clipboard-list', 'Buyurtmalar'], ['whinventory', 'fa-chart-pie', 'Inventarizatsiya'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'], ['profile', 'fa-id-card', 'Profil']]
+                     ['whorders', 'fa-clipboard-list', 'Buyurtmalar'], ['whinventory', 'fa-chart-pie', 'Inventarizatsiya'], ['guide', 'fa-book-open', "Qo'llanma"], ['drivers', 'fa-truck-field', 'Haydovchilar'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'], ['profile', 'fa-id-card', 'Profil']]
         };
         DASH_TABS.ADMIN = [['adm-dashboard', 'fa-chart-line', 'Boshqaruv paneli'], ['adm-users', 'fa-users', 'Foydalanuvchilar'],
                      ['adm-products', 'fa-boxes-stacked', "E'lonlar"], ['adm-shipments', 'fa-truck-fast', 'Yuk tashish'], ['adm-payments', 'fa-wallet', "To'lovlar"],
                      ['whboard', 'fa-warehouse', 'Ombor: zonalar'], ['whunits', 'fa-temperature-half', 'Kameralar'], ['whorders', 'fa-clipboard-list', 'Ombor buyurtmalari'],
-                     ['whinventory', 'fa-chart-pie', 'Inventarizatsiya'], ['adm-reviews', 'fa-star', 'Sharhlar'], ['adm-kyc', 'fa-user-check', 'KYC arizalari'], ['adm-settings', 'fa-gear', 'Sayt sozlamalari'], ['adm-audit', 'fa-list-check', 'Audit jurnali'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'],
+                     ['whinventory', 'fa-chart-pie', 'Inventarizatsiya'], ['adm-reviews', 'fa-star', 'Sharhlar'], ['adm-kyc', 'fa-user-check', 'KYC arizalari'], ['adm-settings', 'fa-gear', 'Sayt sozlamalari'], ['adm-audit', 'fa-list-check', 'Audit jurnali'], ['guide', 'fa-book-open', "Qo'llanma"], ['drivers', 'fa-truck-field', 'Haydovchilar'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'],
                      ['profile', 'fa-id-card', 'Profil']];
         const BOOKING_STATUS = {
             PENDING:   { label: 'Kutilmoqda',      cls: 'bg-amber-500/15 text-amber-400 border-amber-500/30' },
@@ -1617,6 +1619,8 @@
             else if (tab === 'badges') renderDashBadges(user);
             else if (tab === 'adm-kyc') renderAdmKyc(user);
             else if (tab === 'prices') renderDashPrices(user);
+            else if (tab === 'drivers') renderDashDrivers(user);
+            else if (tab === 'guide') renderDashGuide(user);
             else if (tab === 'subscription') renderDashSubscription(user);
             else if (tab === 'profile') renderDashProfile();
             else renderDashOverview(user);
@@ -8900,6 +8904,490 @@
             wrap.appendChild(bdChips(s.price, role, function () { openShipmentPrice(s, role); }));
             return wrap;
         }
+
+        // ===== HAYDOVCHI E'LONLARI KATALOGI =====
+        const TRAILER_LABEL = { DRY_VAN: 'Dry Van', REEFER: 'Reefer', FLATBED: 'Flatbed', DROP_DECK: 'Drop-Deck', TENT: 'Tent', BOX_TRUCK: 'Box Truck', TIPPER: 'Tipper', OTHER: 'Boshqa' };
+        const EXTRA_META = {
+            LOADERS: ['👷', 'Yuklovchi xizmati'], TEMP_CONTROL: ['🧊', 'Harorat nazorati'], STRAPS_TARPS: ['🔒', 'Tasmalash va Brezent'],
+            LIFTGATE: ['🏗', 'Gidravlik bort (Liftgate)'], GPS_247: ['📞', '24/7 GPS kuzatuv va shoshilinch yetkazib berish']
+        };
+        const dpState = { q: '', status: '', trailer: '', extras: [], items: [], mine: [], rid: 0, timer: null, editing: null };
+        const dpModal = document.getElementById('dp-modal');
+        const dpForm = document.getElementById('dp-form');
+        const dpAlert = document.getElementById('dp-alert');
+
+        function dpEta(min) {
+            if (min === null || min === undefined) return '';
+            if (min < 60) return T('{0} daqiqada yetib boradi', min);
+            return T('{0} soat {1} daqiqada yetib boradi', Math.floor(min / 60), min % 60);
+        }
+        function dpPhoto(url) { return API_URL + url; }
+
+        function dpSlider(p) {
+            const box = el('div', 'dp-slider');
+            const slides = el('div', 'dp-slides');
+            if (p.photos.length) {
+                p.photos.forEach(function (u) {
+                    const im = el('img'); im.src = dpPhoto(u); im.alt = T(TRAILER_LABEL[p.trailerType]); im.loading = 'lazy';
+                    slides.appendChild(im);
+                });
+            } else {
+                const ph = el('div', 'dp-ph'); ph.appendChild(el('i', 'fa-solid fa-truck-moving'));
+                slides.appendChild(ph);
+            }
+            box.appendChild(slides);
+            box.appendChild(el('span', ['dp-badge', p.status].join(' '), p.status === 'AVAILABLE' ? '🟢 ' + T("Bo'sh") : '🔵 ' + T("Yo'lda")));
+            if (p.photos.length > 1) {
+                const dots = el('div', 'dp-dots');
+                p.photos.forEach(function (_, i) { dots.appendChild(el('i', i === 0 ? 'on' : '')); });
+                box.appendChild(dots);
+                const go = function (dir) { slides.scrollBy({ left: dir * slides.clientWidth, behavior: 'smooth' }); };
+                [['fa-chevron-left', -1, 'left-2'], ['fa-chevron-right', 1, 'right-2']].forEach(function (n) {
+                    const b = el('button', ['dp-nav', n[2]].join(' ')); b.type = 'button';
+                    b.setAttribute('aria-label', n[1] < 0 ? T('Oldingi rasm') : T('Keyingi rasm'));
+                    b.appendChild(el('i', ['fa-solid', n[0]].join(' ')));
+                    b.addEventListener('click', function () { go(n[1]); });
+                    box.appendChild(b);
+                });
+                slides.addEventListener('scroll', function () {
+                    const idx = Math.round(slides.scrollLeft / Math.max(1, slides.clientWidth));
+                    Array.prototype.forEach.call(dots.children, function (d, i) { d.classList.toggle('on', i === idx); });
+                }, { passive: true });
+            }
+            return box;
+        }
+
+        async function dpReveal(p, kind, phoneEl) {
+            try {
+                const c = await authed('GET', '/driver-posts/' + p.id + '/contact');
+                if (phoneEl) phoneEl.textContent = c.phone;
+                if (kind === 'sms') {
+                    const msg = T("Assalomu alaykum! AgrarGo'dagi e'loningiz bo'yicha yuk taklif qilmoqchiman ({0}).", p.routes[0] || p.currentLocation);
+                    location.href = 'sms:' + c.phone + '?&body=' + encodeURIComponent(msg);
+                } else location.href = 'tel:' + c.phone;
+            } catch (err) { if (err.status !== 401) showToast((err.messages && err.messages[0]) || "Raqamni olib bo'lmadi", 3500, 'error'); }
+        }
+
+        function buildDriverPostCard(p, i, viewer) {
+            const own = viewer.role === 'DRIVER' && p.driver.userId === viewer.id;
+            const c = el('article', ['dp-card', p.isActive ? '' : 'off'].join(' '));
+            c.style.setProperty('--i', String(Math.min(i, 12)));
+            c.appendChild(dpSlider(p));
+            const body = el('div', 'p-5 flex flex-col gap-3 flex-1');
+            // Sarlavha: rasm, ism, telefon, reyting, verified
+            const head = el('div', 'flex items-center gap-3');
+            if (p.driver.avatarUrl) { const av = el('img', 'dp-av'); av.src = API_URL + p.driver.avatarUrl; av.alt = ''; head.appendChild(av); }
+            else head.appendChild(el('div', 'dp-av', p.driver.fullName.charAt(0).toUpperCase()));
+            const who = el('div', 'min-w-0 flex-1');
+            const nm = el('div', 'flex items-center gap-1.5 font-extrabold text-white');
+            nm.appendChild(el('span', 'truncate', p.driver.fullName));
+            if (p.driver.verified) nm.appendChild(verifiedMark());
+            who.appendChild(nm);
+            const phone = el('div', 'text-xs text-slate-400 font-mono', p.driver.phoneMasked);
+            who.appendChild(phone);
+            head.appendChild(who);
+            const rate = el('div', 'text-right flex-none');
+            rate.appendChild(el('div', 'text-lg font-black text-amber-300', (p.driver.rating.count ? p.driver.rating.avg.toFixed(1) : '—') + ' ★'));
+            rate.appendChild(el('div', 'text-[10px] text-slate-500', T('{0} ta baho', p.driver.rating.count)));
+            head.appendChild(rate);
+            body.appendChild(head);
+            body.appendChild(trustLine({ status: p.driver.status, topBadges: p.driver.topBadges, rank: p.driver.rank, unlocked: p.driver.unlocked, total: p.driver.total }));
+            // Mashina
+            const veh = el('div', 'flex flex-wrap items-center gap-2');
+            veh.appendChild(el('span', 'dp-chip', '🚛 ' + T(TRAILER_LABEL[p.trailerType])));
+            veh.appendChild(el('span', 'dp-chip', '⚖️ ' + T('{0} kg', formatNumber(p.capacityKg))));
+            if (p.workHours) veh.appendChild(el('span', 'dp-chip', '🕒 ' + p.workHours));
+            body.appendChild(veh);
+            // Yo'nalishlar
+            const rt = el('div', 'flex flex-wrap gap-1.5');
+            p.routes.forEach(function (r) { rt.appendChild(el('span', 'dp-chip route', '🧭 ' + r)); });
+            body.appendChild(rt);
+            // Holat bloki
+            const st = el('div', ['dp-status', p.status].join(' '));
+            if (p.status === 'AVAILABLE') st.appendChild(el('div', 'font-extrabold', '🟢 ' + T("Bo'sh / Yuk kutmoqda")));
+            else {
+                st.appendChild(el('div', 'font-extrabold', '🔵 ' + T("Yo'lda — qaytish yukini qidirmoqda")));
+                if (p.deliveryEtaAt) st.appendChild(el('div', '', T('Joriy yuk yetkaziladi: {0}', formatDateTime(p.deliveryEtaAt))));
+                if (p.returnPickupAt) st.appendChild(el('div', '', T('Qaytish yukini olish: {0}', formatDateTime(p.returnPickupAt))));
+            }
+            const where = '📍 ' + p.currentLocation + (p.pickupEtaMinutes !== null ? ' · ' + dpEta(p.pickupEtaMinutes) : '');
+            st.appendChild(el('div', 'mt-1 font-semibold', where));
+            body.appendChild(st);
+            // Narx
+            if (p.pricePerKm || p.priceNote) {
+                const pr = el('div', 'flex flex-wrap items-baseline gap-x-3 gap-y-1');
+                if (p.pricePerKm) pr.appendChild(el('span', 'text-xl font-black text-white', T("{0} so'm / km", formatNumber(p.pricePerKm))));
+                if (p.priceNote) pr.appendChild(el('span', 'text-xs text-slate-400 break-words', p.priceNote));
+                body.appendChild(pr);
+            }
+            if (p.extras.length) {
+                const ex = el('div', 'flex flex-wrap gap-1.5');
+                p.extras.forEach(function (k) { if (EXTRA_META[k]) ex.appendChild(el('span', 'dp-chip', EXTRA_META[k][0] + ' ' + T(EXTRA_META[k][1]))); });
+                body.appendChild(ex);
+            }
+            if (p.description) body.appendChild(el('p', 'text-xs text-slate-400 leading-relaxed break-words', p.description));
+            // Amallar
+            const act = el('div', 'flex flex-wrap gap-2 mt-auto pt-3 border-t border-white/10');
+            if (own) {
+                act.appendChild(actionBtn('fa-pen', 'Tahrirlash', false, function () { openDpModal(p); }));
+                act.appendChild(actionBtn(p.isActive ? 'fa-eye-slash' : 'fa-eye', p.isActive ? 'Yashirish' : 'Faollashtirish', false, async function () {
+                    try { await authed('PATCH', '/driver-posts/' + p.id, { isActive: !p.isActive }); loadDriverPosts(); } catch (err) { showToast((err.messages && err.messages[0]) || 'Xatolik', 3500, 'error'); }
+                }));
+                act.appendChild(actionBtn('fa-trash', "O'chirish", false, async function () {
+                    if (!confirm(T("E'lonni o'chirasizmi?"))) return;
+                    try { await authed('DELETE', '/driver-posts/' + p.id); loadDriverPosts(); } catch (err) { showToast((err.messages && err.messages[0]) || 'Xatolik', 3500, 'error'); }
+                }));
+            } else if (viewer.role !== 'DRIVER') {
+                act.appendChild(actionBtn('fa-phone', "Bog'lanish", true, function () { dpReveal(p, 'tel', phone); }));
+                act.appendChild(actionBtn('fa-box-open', 'Yuk taklif qilish', false, function () { dpReveal(p, 'sms', phone); }));
+            }
+            if (act.children.length) body.appendChild(act);
+            c.appendChild(body);
+            return c;
+        }
+
+        function renderDashDrivers(user) {
+            dashRenderId++;
+            dpState.q = ''; dpState.status = ''; dpState.trailer = ''; dpState.extras = []; dpState.items = []; dpState.mine = [];
+            const nodes = [];
+            const head = el('div', 'flex flex-wrap items-end justify-between gap-4');
+            head.appendChild(sectionTitle('Haydovchilar katalogi', "Bo'sh sig'im va xizmatlar: mos haydovchini toping va to'g'ridan-to'g'ri bog'laning"));
+            if (user.role === 'DRIVER') head.appendChild(actionBtn('fa-plus', "E'lon joylash", true, function () { openDpModal(null); }));
+            nodes.push(head);
+            const sw = el('div', 'pr-search');
+            sw.appendChild(el('i', 'fa-solid fa-magnifying-glass'));
+            const input = el('input');
+            input.type = 'search'; input.id = 'dp-search'; input.maxLength = 80; input.autocomplete = 'off';
+            input.placeholder = "Yo'nalish, shahar yoki haydovchi ismi bo'yicha qidiring...";
+            input.setAttribute('aria-label', 'Qidiruv');
+            input.addEventListener('input', function () { clearTimeout(dpState.timer); dpState.timer = setTimeout(function () { dpState.q = input.value.trim(); loadDriverPosts(); }, 250); });
+            sw.appendChild(input);
+            nodes.push(sw);
+            const filters = el('div', 'dp-filter');
+            const pill = function (label, on, fn) {
+                const b = el('button', ['dp-pill', on ? 'on' : ''].join(' '), label); b.type = 'button';
+                b.addEventListener('click', function () { fn(); renderDpFilters(); loadDriverPosts(); });
+                return b;
+            };
+            filters.id = 'dp-filters';
+            nodes.push(filters);
+            const count = el('div', 'text-sm font-semibold text-slate-300'); count.id = 'dp-count';
+            nodes.push(count);
+            const res = el('div'); res.id = 'dp-results';
+            nodes.push(res);
+            dashContent.replaceChildren.apply(dashContent, nodes);
+            void pill;
+            renderDpFilters();
+            loadDriverPosts();
+        }
+        function renderDpFilters() {
+            const box = document.getElementById('dp-filters');
+            if (!box) return;
+            const mk = function (label, on, fn) {
+                const b = el('button', ['dp-pill', on ? 'on' : ''].join(' '), label); b.type = 'button';
+                b.addEventListener('click', function () { fn(); renderDpFilters(); loadDriverPosts(); });
+                return b;
+            };
+            const nodes = [
+                mk(T('Hammasi'), !dpState.status, function () { dpState.status = ''; }),
+                mk('🟢 ' + T("Bo'sh"), dpState.status === 'AVAILABLE', function () { dpState.status = 'AVAILABLE'; }),
+                mk('🔵 ' + T("Yo'lda"), dpState.status === 'ON_ROUTE', function () { dpState.status = 'ON_ROUTE'; })
+            ];
+            const sel = el('select', 'auth-input dp-trailer-filter'); sel.id = 'dp-trailer-filter'; sel.setAttribute('aria-label', T('Tirkama turi'));
+            const o0 = el('option', '', T('Barcha tirkamalar')); o0.value = ''; sel.appendChild(o0);
+            Object.keys(TRAILER_LABEL).forEach(function (k) { const o = el('option', '', TRAILER_LABEL[k]); o.value = k; sel.appendChild(o); });
+            sel.value = dpState.trailer;
+            sel.addEventListener('change', function () { dpState.trailer = sel.value; loadDriverPosts(); });
+            nodes.push(sel);
+            Object.keys(EXTRA_META).forEach(function (k) {
+                nodes.push(mk(EXTRA_META[k][0] + ' ' + T(EXTRA_META[k][1]), dpState.extras.indexOf(k) !== -1, function () {
+                    const i = dpState.extras.indexOf(k);
+                    if (i === -1) dpState.extras.push(k); else dpState.extras.splice(i, 1);
+                }));
+            });
+            box.replaceChildren.apply(box, nodes);
+        }
+
+        async function loadDriverPosts() {
+            const box = document.getElementById('dp-results');
+            const count = document.getElementById('dp-count');
+            if (!box) return;
+            const user = currentUser();
+            const rid = ++dpState.rid;
+            if (!dpState.items.length) {
+                const g = el('div', 'dp-grid');
+                for (let i = 0; i < 6; i++) g.appendChild(el('div', 'sk-card h-96'));
+                box.replaceChildren(g);
+            }
+            const qs = [];
+            if (dpState.q) qs.push('q=' + encodeURIComponent(dpState.q));
+            if (dpState.status) qs.push('status=' + dpState.status);
+            if (dpState.trailer) qs.push('trailerType=' + dpState.trailer);
+            if (dpState.extras.length) qs.push('extras=' + dpState.extras.join(','));
+            let items, mine = [];
+            try {
+                items = await authed('GET', '/driver-posts' + (qs.length ? '?' + qs.join('&') : ''));
+                if (user.role === 'DRIVER') mine = await authed('GET', '/driver-posts/mine');
+            } catch (err) {
+                if (err.status === 401 || rid !== dpState.rid) return;
+                return box.replaceChildren(dashMessage('fa-triangle-exclamation text-rose-400', err.messages[0], loadDriverPosts));
+            }
+            if (rid !== dpState.rid) return;
+            dpState.items = items; dpState.mine = mine;
+            const parts = [];
+            if (mine.length) {
+                parts.push(el('h4', 'text-sm font-extrabold uppercase tracking-wider text-emerald-300 mb-3', T("Mening e'lonlarim")));
+                const g = el('div', 'dp-grid mb-8');
+                mine.forEach(function (p, i) { g.appendChild(buildDriverPostCard(p, i, user)); });
+                parts.push(g);
+            }
+            const others = items.filter(function (p) { return user.role !== 'DRIVER' || p.driver.userId !== user.id; });
+            count.textContent = others.length ? T('Topildi: {0}', others.length) : '';
+            if (!others.length) {
+                parts.push(emptyState({ art: 'shipments', compact: true,
+                    title: qs.length ? 'Hech narsa topilmadi' : "Haydovchi e'lonlari hali yo'q",
+                    text: qs.length ? "Filtrlarni o'zgartirib ko'ring." : "Haydovchilar bo'sh sig'imini shu yerda e'lon qiladi.",
+                    cta: user.role === 'DRIVER' && !mine.length ? { label: "E'lon joylash", icon: 'fa-plus', fn: function () { openDpModal(null); } } : null }));
+            } else {
+                if (mine.length) parts.push(el('h4', 'text-sm font-extrabold uppercase tracking-wider text-slate-300 mb-3', T('Boshqa haydovchilar')));
+                const g = el('div', 'dp-grid');
+                others.forEach(function (p, i) { g.appendChild(buildDriverPostCard(p, i, user)); });
+                parts.push(g);
+            }
+            box.replaceChildren.apply(box, parts);
+        }
+
+        // ----- E'lon yaratish / tahrirlash oynasi -----
+        function dpSyncRouteFields() { document.getElementById('dp-route-fields').classList.toggle('hidden', document.getElementById('dp-status').value !== 'ON_ROUTE'); }
+        document.getElementById('dp-status').addEventListener('change', dpSyncRouteFields);
+        (function () {
+            const box = document.getElementById('dp-extras');
+            Object.keys(EXTRA_META).forEach(function (k) {
+                const l = el('label', 'flex items-center gap-2.5 rounded-xl border border-white/12 bg-white/5 px-3 py-2.5 text-sm font-semibold text-slate-200 cursor-pointer hover:border-emerald-500/50');
+                const cb = el('input'); cb.type = 'checkbox'; cb.value = k; cb.className = 'w-4 h-4 accent-emerald-500';
+                l.appendChild(cb); l.appendChild(el('span', '', EXTRA_META[k][0])); l.appendChild(el('span', '', EXTRA_META[k][1]));
+                box.appendChild(l);
+            });
+        })();
+        const dpPending = []; // yangi tanlangan (hali yuklanmagan) rasmlar
+        function dpRenderPhotos() {
+            const box = document.getElementById('dp-photos');
+            const nodes = [];
+            const post = dpState.editing;
+            (post ? post.photos : []).forEach(function (u, i) {
+                const t = el('div', 'dp-thumb'); const im = el('img'); im.src = dpPhoto(u); im.alt = ''; t.appendChild(im);
+                const x = el('button', '', '✕'); x.type = 'button'; x.setAttribute('aria-label', T("O'chirish"));
+                x.addEventListener('click', async function () {
+                    try { dpState.editing = await authed('DELETE', '/driver-posts/' + post.id + '/photos/' + i); dpRenderPhotos(); } catch (err) { showAuthAlert(err.messages || ['Xatolik'], 'error', dpAlert); }
+                });
+                t.appendChild(x); nodes.push(t);
+            });
+            dpPending.forEach(function (f, i) {
+                const t = el('div', 'dp-thumb'); const im = el('img'); im.alt = ''; im.src = URL.createObjectURL(f);
+                im.addEventListener('load', function () { URL.revokeObjectURL(im.src); }); t.appendChild(im);
+                const x = el('button', '', '✕'); x.type = 'button';
+                x.addEventListener('click', function () { dpPending.splice(i, 1); dpRenderPhotos(); });
+                t.appendChild(x); nodes.push(t);
+            });
+            box.replaceChildren.apply(box, nodes);
+        }
+        document.getElementById('dp-file').addEventListener('change', function (e) {
+            const have = (dpState.editing ? dpState.editing.photos.length : 0) + dpPending.length;
+            Array.prototype.forEach.call(e.target.files, function (f) {
+                if (!/^image\/(jpeg|png|webp)$/.test(f.type)) return showAuthAlert(['Faqat JPG, PNG yoki WEBP rasm yuklang.'], 'error', dpAlert);
+                if (f.size > 4 * 1024 * 1024) return showAuthAlert(['Rasm hajmi 4 MB dan oshmasligi kerak.'], 'error', dpAlert);
+                if (have + dpPending.length >= 6) return showAuthAlert(["Ko'pi bilan 6 ta rasm yuklash mumkin."], 'error', dpAlert);
+                dpPending.push(f);
+            });
+            e.target.value = '';
+            dpRenderPhotos();
+        });
+        const toLocalInput = function (iso) { if (!iso) return ''; const d = new Date(iso), p = function (n) { return String(n).padStart(2, '0'); }; return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + 'T' + p(d.getHours()) + ':' + p(d.getMinutes()); };
+        function openDpModal(p) {
+            hideAuthAlert(dpAlert);
+            dpForm.reset();
+            dpPending.length = 0;
+            dpState.editing = p;
+            document.getElementById('dp-title').textContent = p ? T("E'lonni tahrirlash") : T("E'lon joylash");
+            const set = function (id, v) { const n = document.getElementById(id); n.value = v === null || v === undefined ? '' : v; n.dispatchEvent(new Event('change')); };
+            set('dp-status', p ? p.status : 'AVAILABLE'); set('dp-trailer', p ? p.trailerType : 'DRY_VAN');
+            set('dp-capacity', p ? p.capacityKg : ''); set('dp-hours', p ? p.workHours : ''); set('dp-routes', p ? p.routes.join(', ') : '');
+            set('dp-loc', p ? p.currentLocation : (currentUser() && currentUser().driver ? currentUser().driver.region : ''));
+            set('dp-eta', p ? p.pickupEtaMinutes : ''); set('dp-deliver', p ? toLocalInput(p.deliveryEtaAt) : ''); set('dp-return', p ? toLocalInput(p.returnPickupAt) : '');
+            set('dp-price', p ? p.pricePerKm : ''); set('dp-pricenote', p ? p.priceNote : ''); set('dp-desc', p ? p.description : '');
+            document.querySelectorAll('#dp-extras input').forEach(function (cb) { cb.checked = !!p && p.extras.indexOf(cb.value) !== -1; });
+            dpSyncRouteFields();
+            dpRenderPhotos();
+            dpModal.classList.add('open');
+            syncScrollLock();
+        }
+        function closeDpModal() { dpModal.classList.remove('open'); syncScrollLock(); }
+        async function dpUpload(id, file) {
+            const token = storageGet(TOKEN_KEY);
+            const fd = new FormData(); fd.append('file', file);
+            const res = await fetch(API_URL + '/driver-posts/' + id + '/photos', { method: 'POST', headers: { Authorization: 'Bearer ' + token }, body: fd });
+            if (!res.ok) { let m = res.status === 413 ? 'Rasm hajmi 4 MB dan oshmasligi kerak.' : "Rasmni yuklab bo'lmadi."; try { const j = await res.json(); if (j && j.message) m = [].concat(j.message)[0]; } catch (e) {} throw { status: res.status, messages: [m] }; }
+            return res.json();
+        }
+        dpForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            hideAuthAlert(dpAlert);
+            const v = function (id) { return document.getElementById(id).value.trim(); };
+            const status = v('dp-status');
+            const routes = v('dp-routes').split(/[,;\n]/).map(function (s) { return s.trim(); }).filter(Boolean);
+            const capacity = Number(v('dp-capacity'));
+            const errors = [];
+            if (!Number.isInteger(capacity) || capacity < 100) errors.push("Sig'imni kg da kiriting (kamida 100).");
+            if (!routes.length) errors.push("Kamida bitta yo'nalish kiriting.");
+            if (routes.length > 8) errors.push("Yo'nalishlar 8 tadan oshmasligi kerak.");
+            if (routes.some(function (r) { return r.length < 2 || r.length > 60; })) errors.push("Har bir yo'nalish 2-60 belgi bo'lsin.");
+            if (v('dp-loc').length < 2) errors.push('Hozirgi joylashuvni kiriting.');
+            if (status === 'ON_ROUTE' && v('dp-deliver') && v('dp-return') && v('dp-return') < v('dp-deliver')) errors.push("Qaytish yukini olish vaqti yetkazish vaqtidan oldin bo'lmasligi kerak.");
+            if (errors.length) return showAuthAlert(errors, 'error', dpAlert);
+            const body = {
+                status: status, trailerType: v('dp-trailer'), capacityKg: capacity, routes: routes, workHours: v('dp-hours'), currentLocation: v('dp-loc'),
+                priceNote: v('dp-pricenote'), description: v('dp-desc'),
+                extras: Array.prototype.map.call(document.querySelectorAll('#dp-extras input:checked'), function (c) { return c.value; })
+            };
+            if (v('dp-eta') !== '') body.pickupEtaMinutes = Number(v('dp-eta'));
+            if (v('dp-price') !== '') body.pricePerKm = Number(v('dp-price'));
+            if (status === 'ON_ROUTE') {
+                if (v('dp-deliver')) body.deliveryEtaAt = new Date(v('dp-deliver')).toISOString();
+                if (v('dp-return')) body.returnPickupAt = new Date(v('dp-return')).toISOString();
+                body.wantsBackhaul = true;
+            }
+            setLoading(dpForm, true);
+            try {
+                const saved = dpState.editing ? await authed('PATCH', '/driver-posts/' + dpState.editing.id, body) : await authed('POST', '/driver-posts', body);
+                let photoErr = null;
+                for (const f of dpPending.slice()) { try { await dpUpload(saved.id, f); } catch (err) { photoErr = err; break; } }
+                closeDpModal();
+                showSuccessCheck("E'lon saqlandi!", photoErr ? photoErr.messages[0] : "Endi fermer va marketlar sizni katalogdan topadi.", 'booking');
+                if (dashTab === 'drivers') loadDriverPosts();
+            } catch (err) {
+                if (err.status === 401) { closeDpModal(); return; }
+                showAuthAlert(err.status === 402 ? ["Obuna muddati tugagan. E'lon joylash uchun obunani uzaytiring."] : (err.messages || ['Xatolik']), 'error', dpAlert);
+            } finally { setLoading(dpForm, false); }
+        });
+
+        // ===== O'QUV QO'LLANMA (Knowledge Base) =====
+        const guideState = { role: null, data: null, lang: null, rid: 0 };
+        const GUIDE_ART = { listing: 'listings', booking: 'bookings', escrow: 'bookings', payouts: 'shipments', eld: 'shipments', post: 'shipments', kyc: 'search', badges: 'listings', prices: 'listings', dispatch: 'bookings' };
+        const GUIDE_TONE = { listing: 'emerald', booking: 'sky', escrow: 'amber', payouts: 'sky', eld: 'violet', post: 'emerald', kyc: 'emerald', badges: 'amber', prices: 'sky', dispatch: 'violet' };
+
+        function guideFlow(topic) {
+            const box = el('div', 'gd-flow');
+            topic.steps.forEach(function (s, i) {
+                const n = el('div', 'gd-node');
+                const ic = el('span', 'gd-node-ic'); ic.appendChild(el('i', ['fa-solid', s.icon].join(' ')));
+                n.appendChild(ic);
+                n.appendChild(el('span', 'gd-node-t', s.title));
+                box.appendChild(n);
+                if (i < topic.steps.length - 1) { const a = el('span', 'gd-arrow'); a.appendChild(el('i', 'fa-solid fa-arrow-right')); box.appendChild(a); }
+            });
+            return box;
+        }
+
+        function guideTopicCard(topic, idx) {
+            const tone = GUIDE_TONE[topic.id] || 'emerald';
+            const card = el('article', ['gd-card', tone].join(' '));
+            card.id = 'gd-' + topic.id;
+            card.style.setProperty('--i', String(Math.min(idx, 8)));
+            const head = el('div', 'gd-head');
+            const tile = el('span', 'gd-tile'); tile.appendChild(el('i', ['fa-solid', topic.icon].join(' ')));
+            head.appendChild(tile);
+            const ttl = el('div', 'min-w-0 flex-1');
+            ttl.appendChild(el('h3', 'text-lg sm:text-xl font-extrabold text-white break-words', topic.title));
+            ttl.appendChild(el('div', 'text-xs text-slate-400 font-semibold', T('{0} ta qadam', topic.steps.length)));
+            head.appendChild(ttl);
+            const art = emptyArt(GUIDE_ART[topic.id] || 'search'); art.classList.add('gd-art');
+            head.appendChild(art);
+            card.appendChild(head);
+            if (topic.id === 'escrow') card.appendChild(guideFlow(topic));
+            const list = el('ol', 'gd-steps');
+            topic.steps.forEach(function (s, i) {
+                const li = el('li', 'gd-step');
+                li.appendChild(el('span', 'gd-num', String(i + 1)));
+                const body = el('div', 'min-w-0');
+                const t = el('div', 'flex items-center gap-2 font-extrabold text-white text-sm');
+                t.appendChild(el('i', ['fa-solid', s.icon, 'gd-sic'].join(' ')));
+                t.appendChild(el('span', 'break-words', s.title));
+                body.appendChild(t);
+                body.appendChild(el('p', 'text-sm text-slate-400 leading-relaxed mt-1 break-words', s.text));
+                li.appendChild(body);
+                list.appendChild(li);
+            });
+            card.appendChild(list);
+            return card;
+        }
+
+        function guideRender() {
+            const box = document.getElementById('gd-body');
+            if (!box || !guideState.data) return;
+            const role = guideState.data.roles.filter(function (r) { return r.role === guideState.role; })[0] || guideState.data.roles[0];
+            const tabs = document.getElementById('gd-tabs');
+            tabs.replaceChildren.apply(tabs, guideState.data.roles.map(function (r) {
+                const b = el('button', ['dp-pill', r.role === role.role ? 'on' : ''].join(' ')); b.type = 'button';
+                b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', String(r.role === role.role));
+                b.appendChild(el('i', ['fa-solid', r.icon, 'mr-1.5'].join(' ')));
+                b.appendChild(el('span', '', r.title));
+                b.addEventListener('click', function () { guideState.role = r.role; guideRender(); });
+                return b;
+            }));
+            const nodes = [];
+            const intro = el('p', 'text-sm text-slate-300 leading-relaxed'); intro.textContent = role.intro;
+            nodes.push(intro);
+            const chips = el('div', 'flex flex-wrap gap-2');
+            role.topics.forEach(function (t) {
+                const c = el('button', 'dp-chip cursor-pointer hover:border-emerald-400/60'); c.type = 'button';
+                c.appendChild(el('i', ['fa-solid', t.icon].join(' ')));
+                c.appendChild(el('span', '', t.title));
+                c.addEventListener('click', function () { const n = document.getElementById('gd-' + t.id); if (n) n.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+                chips.appendChild(c);
+            });
+            nodes.push(chips);
+            const grid = el('div', 'gd-grid');
+            role.topics.forEach(function (t, i) { grid.appendChild(guideTopicCard(t, i)); });
+            nodes.push(grid);
+            box.replaceChildren.apply(box, nodes);
+        }
+
+        async function loadGuide() {
+            const box = document.getElementById('gd-body');
+            if (!box) return;
+            const lang = (window.I18N && I18N.lang) || 'uz';
+            const rid = ++guideState.rid;
+            try {
+                const res = await fetch(API_URL + '/guide?lang=' + lang);
+                if (!res.ok) throw new Error('guide');
+                const data = await res.json();
+                if (rid !== guideState.rid) return;
+                guideState.data = data; guideState.lang = lang;
+                guideRender();
+            } catch (err) {
+                if (rid === guideState.rid) box.replaceChildren(dashMessage('fa-triangle-exclamation text-rose-400', "Qo'llanmani yuklab bo'lmadi.", loadGuide));
+            }
+        }
+
+        function renderDashGuide(user) {
+            dashRenderId++;
+            guideState.role = user.role === 'ADMIN' ? 'FARMER' : user.role;
+            guideState.data = null;
+            const head = el('div', 'flex flex-wrap items-end justify-between gap-4');
+            head.appendChild(sectionTitle("O'quv qo'llanma", "Qadamma-qadam yo'riqnoma: e'lon, bron, Escrow, to'lovlar va ELD"));
+            const pdfBtn = actionBtn('fa-file-pdf', 'PDF yuklab olish', true, function () {
+                const lang = (window.I18N && I18N.lang) || 'uz';
+                downloadFile('/guide/pdf?lang=' + lang, 'AgrarGo-guide-' + lang + '.pdf', pdfBtn);
+            });
+            pdfBtn.id = 'gd-pdf';
+            head.appendChild(pdfBtn);
+            const tabs = el('div', 'dp-filter'); tabs.id = 'gd-tabs'; tabs.setAttribute('role', 'tablist');
+            const body = el('div', 'space-y-5'); body.id = 'gd-body';
+            body.appendChild(skeleton('cards'));
+            dashContent.replaceChildren(head, tabs, body);
+            loadGuide();
+        }
+        document.addEventListener('i18n:change', function () { if (dashTab === 'guide' && document.getElementById('gd-body')) loadGuide(); });
 
         // ===== ELD / Xarita: yon menyu va pastki navigatsiya uchun yagona kirish nuqtasi =====
         // Haydovchi: harakat jurnali (ELD); fermer/market: jonli xaritali yuklar; admin/dispetcher: yuklar. Kirmagan: haydovchi tanishtiruv sahifasi.

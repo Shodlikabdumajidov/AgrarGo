@@ -41,7 +41,7 @@ export class DriverPostService {
         driver: {
           id: r.driverId, userId: u.id, fullName: u.fullName, avatarUrl: u.avatarUrl, phoneMasked: maskPhone(u.phone),
           verified: t?.verified ?? u.isVerified, status: t?.status ?? 'NEW', rank: t?.rank ?? null, topBadges: t?.topBadges ?? [],
-          rating: t?.rating ?? { avg: 0, count: 0 }, deals: t?.deals ?? 0,
+          rating: t?.rating ?? { avg: 0, count: 0 }, deals: t?.deals ?? 0, unlocked: t?.unlocked ?? 0, total: t?.total ?? 0,
         },
       };
     });
