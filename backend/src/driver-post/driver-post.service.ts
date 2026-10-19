@@ -7,6 +7,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { UPLOADS_DIR, detectImageExt } from '../profile/profile.service';
 import { idsWithinRadius, parseRadius } from '../common/geo-search';
 import { findRegionCenter, snapPoint } from '../trust/geo';
+import { RatesService } from '../rates/rates.service';
 import { TrustService } from '../trust/trust.service';
 import { CreateDriverPostDto, ListDriverPostsQuery, UpdateDriverPostDto } from './dto/driver-post.dto';
 
@@ -29,10 +30,12 @@ const include = { driver: { include: { user: true } } } satisfies Prisma.DriverP
 
 @Injectable()
 export class DriverPostService {
-  constructor(private readonly prisma: PrismaService, private readonly trust: TrustService) {}
+  constructor(private readonly prisma: PrismaService, private readonly trust: TrustService, private readonly rates: RatesService) {}
 
   private async present(rows: PostRow[], distances?: Map<string, number>) {
     const trust = await this.trust.summaries(rows.map((r) => r.driver.userId));
+    // Bozor indeksi: taklif qilingan so'm/km stavkasi yo'nalish o'rtachasidan qancha farq qiladi
+    const market = new Map(await Promise.all(rows.map(async (r) => [r.id, r.pricePerKm ? await this.rates.compareText(r.routes[0], r.pricePerKm, r.driver.region) : null] as const)));
     return rows.map((r) => {
       const u = r.driver.user, t = trust.get(u.id);
       return {
@@ -40,6 +43,7 @@ export class DriverPostService {
         currentLocation: r.currentLocation, pickupEtaMinutes: r.pickupEtaMinutes, pricePerKm: r.pricePerKm, priceNote: r.priceNote,
         extras: r.extras, description: r.description, photos: r.photos, deliveryEtaAt: r.deliveryEtaAt, returnPickupAt: r.returnPickupAt,
         loadMode: r.loadMode, maxCapacityKg: r.maxCapacityKg, availableCapacityKg: r.availableCapacityKg, usedCapacityKg: r.maxCapacityKg - r.availableCapacityKg,
+        marketRate: market.get(r.id) ?? null,
         lat: r.lat, lng: r.lng, ...(distances?.has(r.id) && { distanceKm: distances.get(r.id) }),
         wantsBackhaul: r.wantsBackhaul, isActive: r.isActive, createdAt: r.createdAt, vehicleType: r.driver.vehicleType, region: r.driver.region,
         driver: {

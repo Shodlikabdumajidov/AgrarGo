@@ -6,6 +6,7 @@ import { SubscriptionGuard } from '../subscription/subscription.guard';
 import { Roles } from '../common/roles.decorator';
 import { RolesGuard } from '../common/roles.guard';
 import { ThrottleProfile } from '../security/throttle-profile';
+import { ChainAcceptDto } from './dto/chain-accept.dto';
 import { EldQuery, SendLocationDto } from './dto/location.dto';
 import { LocationService } from './tracking/location.service';
 import { AvailableShipmentsQuery, ListShipmentsQuery } from './dto/list-shipments.query';
@@ -21,6 +22,27 @@ export class ShipmentController {
   @Roles(Role.DRIVER)
   available(@CurrentUser() user: any, @Query() query: AvailableShipmentsQuery) {
     return this.shipments.listAvailable(this.driver(user), query);
+  }
+
+  /** Har bir ochiq yukka eng yaxshi TriHaul varianti */
+  @Get('trihaul')
+  @Roles(Role.DRIVER)
+  trihaulBatch(@CurrentUser() user: any) {
+    return this.shipments.trihaulBatch(this.driver(user));
+  }
+
+  /** Zanjirli bron (Chain Booking): ikkita yukni bir bosishda biriktirish */
+  @Post('chain-accept')
+  @UseGuards(SubscriptionGuard)
+  @Roles(Role.DRIVER)
+  chainAccept(@CurrentUser() user: any, @Body() dto: ChainAcceptDto) {
+    return this.shipments.acceptChain(this.driver(user), dto.firstId, dto.secondId);
+  }
+
+  @Get(':id/trihaul')
+  @Roles(Role.DRIVER)
+  trihaul(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string) {
+    return this.shipments.trihaul(this.driver(user), id);
   }
 
   @Post(':id/accept')

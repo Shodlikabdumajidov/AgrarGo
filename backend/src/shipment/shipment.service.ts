@@ -1,4 +1,4 @@
-import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PaymentStatus, Prisma, Role, ShipmentStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { SettingsService } from '../settings/settings.service';
@@ -8,7 +8,11 @@ import { PricingService } from '../pricing/pricing.service';
 import { NotificationService } from '../telegram/notification.service';
 import { idsWithinRadius, parseRadius } from '../common/geo-search';
 import { haversineKm } from '../trust/geo';
+import { RatesService } from '../rates/rates.service';
+import { compareRate } from '../rates/rates';
+import { randomUUID } from 'crypto';
 import { reserveLtl, restoreLtl } from './ltl';
+import { TriLoad, TriOption, evaluate, hasDirectReturn, triOptions } from './trihaul';
 import { AvailableShipmentsQuery, ListShipmentsQuery } from './dto/list-shipments.query';
 
 // Haydovchi bir vaqtda nechta yakunlanmagan yukni olib yura oladi
@@ -32,7 +36,7 @@ type Viewer = 'driver-open' | 'driver-own' | 'farmer' | 'market';
 
 @Injectable()
 export class ShipmentService {
-  constructor(private readonly prisma: PrismaService, private readonly settings: SettingsService, private readonly notify: NotificationService, private readonly trust: TrustService, private readonly pricing: PricingService) {}
+  constructor(private readonly prisma: PrismaService, private readonly settings: SettingsService, private readonly notify: NotificationService, private readonly trust: TrustService, private readonly pricing: PricingService, private readonly rates: RatesService) {}
 
   // ---------- Haydovchi ----------
 
@@ -65,19 +69,26 @@ export class ShipmentService {
       const ltl = await this.prisma.driverPost.aggregate({ where: { driverId: driver.id, isActive: true, loadMode: 'LTL' }, _max: { availableCapacityKg: true } });
       if (ltl._max.availableCapacityKg !== null) fit = new Prisma.Decimal(ltl._max.availableCapacityKg);
     }
-    return rows.map((s) => ({ ...this.shape(s, 'driver-open', fit, wh), ...(distances && { distanceKm: distances.get(s.id) }) }));
+    const out = rows.map((s) => ({ ...this.shape(s, 'driver-open', fit, wh), ...(distances && { distanceKm: distances.get(s.id) }) }));
+    return this.withRate(out);
   }
 
   /** Yukni o'ziga biriktirish: OPEN -> LOADING */
   async accept(driver: { id: string; capacityKg: Prisma.Decimal }, id: string) {
-    await this.prisma.$transaction(async (tx) => {
+    await this.prisma.$transaction((tx) => this.acceptTx(tx, driver, id));
+    return { ...(await this.reload(id, 'driver-own')), ltl: await this.ltlInfo(id) };
+  }
+
+  /** accept ning tranzaksiya ichidagi qismi; skipLimit — zanjirli bronning ikkinchi yuki uchun (faol yuk chegarasi tekshirilmaydi) */
+  private async acceptTx(tx: Prisma.TransactionClient, driver: { id: string; capacityKg: Prisma.Decimal }, id: string, skipLimit = false) {
+    {
       // Bir haydovchining ikki parallel so'rovi cheklovni aylanib o'ta olmasligi uchun
       await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${driver.id}))`;
 
       // LTL e'loni bor haydovchi bir reysda bir nechta yuk oladi (jami og'irlik bo'sh joydan oshmaguncha); qolganlari — avvalgidek bitta
       const hasLtl = (await tx.driverPost.count({ where: { driverId: driver.id, isActive: true, loadMode: 'LTL' } })) > 0;
       const active = await tx.shipment.count({ where: { driverId: driver.id, status: { in: ACTIVE }, ...(hasLtl && { ltlKg: null }) } });
-      if (active >= MAX_ACTIVE_SHIPMENTS) {
+      if (!skipLimit && active >= MAX_ACTIVE_SHIPMENTS) {
         throw new ConflictException("Sizda yakunlanmagan yuk bor. Avval uni yetkazib bering yoki qaytarib bering");
       }
 
@@ -108,8 +119,7 @@ export class ShipmentService {
       if (hasLtl) await reserveLtl(tx, driver.id, shipment);
       await tx.shipmentEvent.create({ data: { shipmentId: id, status: ShipmentStatus.LOADING } });
       if (shipment.warehouseOrderId) await tx.warehouseOrder.updateMany({ where: { id: shipment.warehouseOrderId }, data: { driverId: driver.id } });
-    });
-    return { ...(await this.reload(id, 'driver-own')), ltl: await this.ltlInfo(id) };
+    }
   }
 
   /** Yo'lga chiqishdan oldin yukni qaytarish: LOADING -> OPEN */
@@ -121,6 +131,7 @@ export class ShipmentService {
       });
       if (released.count === 0) await this.explainFailure(tx, id, driverId, "Yukni faqat yo'lga chiqishdan oldin qaytarish mumkin");
       await restoreLtl(tx, id); // LTL: band qilingan joy qaytadi
+      await tx.$executeRaw`UPDATE "Shipment" SET "chainId" = NULL, "chainSeq" = NULL WHERE "chainId" = (SELECT "chainId" FROM "Shipment" WHERE id = ${id}) AND "chainId" IS NOT NULL`; // zanjir buziladi
       await tx.shipmentEvent.create({ data: { shipmentId: id, status: ShipmentStatus.OPEN } });
       const sh = await tx.shipment.findUnique({ where: { id }, select: { warehouseOrderId: true } });
       if (sh?.warehouseOrderId) await tx.warehouseOrder.updateMany({ where: { id: sh.warehouseOrderId }, data: { driverId: null } });
@@ -132,8 +143,13 @@ export class ShipmentService {
   async advance(driverId: string, id: string) {
     let reached = null as ShipmentStatus | null;
     await this.prisma.$transaction(async (tx) => {
-      const current = await tx.shipment.findFirst({ where: { id, driverId }, select: { status: true, warehouseOrderId: true } });
+      const current = await tx.shipment.findFirst({ where: { id, driverId }, select: { status: true, warehouseOrderId: true, chainId: true, chainSeq: true } });
       if (!current) throw new NotFoundException('Yuk topilmadi');
+      // Zanjirli bron: ikkinchi yuk birinchisi yetkazilmaguncha yo'lga chiqmaydi
+      if (current.chainId && current.chainSeq === 2 && current.status === ShipmentStatus.LOADING) {
+        const first = await tx.shipment.findFirst({ where: { chainId: current.chainId, chainSeq: 1 }, select: { status: true } });
+        if (first && first.status !== ShipmentStatus.DELIVERED && first.status !== ShipmentStatus.CANCELLED) throw new ConflictException("Zanjirli bron: avval birinchi yukni yetkazing");
+      }
       // Ombor yuki: omborxonadan chiqishni (qoldiq kamayishi bilan) dispetcher yuklab tasdiqlaydi, haydovchi emas
       if (current.warehouseOrderId && current.status === ShipmentStatus.LOADING) {
         throw new ConflictException("Ombor yukini dispetcher yuklab jo'natadi. Yuklash tasdiqlanishini kuting");
@@ -180,7 +196,7 @@ export class ShipmentService {
         include: SHIPMENT_INCLUDE,
       });
       const wh = await this.warehouseContact(rows);
-      return rows.map((s) => this.shape(s, 'driver-own', undefined, wh));
+      return this.withRate(rows.map((s) => this.shape(s, 'driver-own', undefined, wh)));
     }
     if (user.role === Role.FARMER && user.farmer) {
       const rows = await this.prisma.shipment.findMany({
@@ -254,6 +270,77 @@ export class ShipmentService {
     return { farmName: `${st.siteName} omborxonasi`, fullName: 'Dispetcher', phone: st.callCenterPhones[0] ?? '' };
   }
 
+  // ---------- TriHaul (uchburchak marshrut) ----------
+
+  private triLoad(s: ShipmentRow): TriLoad {
+    const fee = Number(s.booking?.payment?.deliveryFee ?? s.warehouseOrder?.payment?.deliveryFee ?? 0);
+    return { id: s.id, cargoName: s.cargoName, originRegion: s.originRegion, destRegion: s.destRegion, weightKg: Number(s.weightKg), fee };
+  }
+
+  /** To'lovi kafolatlangan (HELD) ochiq yuklar: ularni darhol olish mumkin */
+  private async heldOpenLoads(): Promise<{ row: ShipmentRow; tri: TriLoad }[]> {
+    const rows = await this.prisma.shipment.findMany({ where: { status: ShipmentStatus.OPEN, driverId: null }, orderBy: { createdAt: 'desc' }, take: 300, include: SHIPMENT_INCLUDE });
+    return rows
+      .filter((r) => (r.booking?.payment?.status ?? r.warehouseOrder?.payment?.status) === PaymentStatus.HELD)
+      .map((row) => ({ row, tri: this.triLoad(row) }));
+  }
+
+  private async capacityOf(driver: { id: string; capacityKg: Prisma.Decimal }): Promise<number> {
+    const ltl = await this.prisma.driverPost.aggregate({ where: { driverId: driver.id, isActive: true, loadMode: 'LTL' }, _max: { availableCapacityKg: true } });
+    return ltl._max.availableCapacityKg ?? Number(driver.capacityKg);
+  }
+
+  /** Bitta yuk uchun TriHaul tavsiyasi (ochiq yuk yoki haydovchining o'z yuki) */
+  async trihaul(driver: { id: string; capacityKg: Prisma.Decimal }, id: string) {
+    const base = await this.prisma.shipment.findFirst({ where: { id, OR: [{ status: ShipmentStatus.OPEN, driverId: null }, { driverId: driver.id }] }, include: SHIPMENT_INCLUDE });
+    if (!base) throw new NotFoundException('Yuk topilmadi');
+    const l1 = this.triLoad(base);
+    const empty = { eligible: false, directReturn: false, base: l1, options: [] as TriOption[] };
+    if (base.status === ShipmentStatus.CANCELLED || base.status === ShipmentStatus.DELIVERED || base.chainId) return empty;
+    const pool = (await this.heldOpenLoads()).map((x) => x.tri);
+    const r = triOptions(l1, pool, await this.capacityOf(driver));
+    return { eligible: r.options.length > 0, directReturn: r.directReturn, base: l1, options: r.options };
+  }
+
+  /** "Mavjud yuklar" ro'yxati uchun: har bir ochiq yukka eng yaxshi TriHaul varianti (bo'lsa) */
+  async trihaulBatch(driver: { id: string; capacityKg: Prisma.Decimal }) {
+    const held = await this.heldOpenLoads();
+    const pool = held.map((x) => x.tri), cap = await this.capacityOf(driver);
+    const items: Record<string, TriOption> = {};
+    for (const l1 of pool.slice(0, 120)) {
+      const best = triOptions(l1, pool, cap, 1).options[0];
+      if (best) items[l1.id] = best;
+    }
+    return { items };
+  }
+
+  /** Zanjirli bron: ikkala yuk bitta tranzaksiyada biriktiriladi (birinchi — A→B, ikkinchi — B→C) */
+  async acceptChain(driver: { id: string; capacityKg: Prisma.Decimal }, firstId: string, secondId: string) {
+    if (firstId === secondId) throw new BadRequestException('Zanjir uchun ikkita turli yuk kerak');
+    const held = await this.heldOpenLoads();
+    const l1 = held.find((x) => x.tri.id === firstId)?.tri, l2 = held.find((x) => x.tri.id === secondId)?.tri;
+    if (!l1 || !l2) throw new ConflictException("Yuklardan biri allaqachon band yoki to'lovi kafolatlanmagan");
+    if (hasDirectReturn(l1, held.map((x) => x.tri)) || !evaluate(l1, l2)) throw new BadRequestException("Bu ikki yuk uchburchak (TriHaul) zanjirini hosil qilmaydi");
+    const chainId = randomUUID();
+    await this.prisma.$transaction(async (tx) => {
+      await this.acceptTx(tx, driver, firstId);
+      await this.acceptTx(tx, driver, secondId, true);
+      await tx.shipment.update({ where: { id: firstId }, data: { chainId, chainSeq: 1 } });
+      await tx.shipment.update({ where: { id: secondId }, data: { chainId, chainSeq: 2 } });
+    });
+    const [a, b] = await Promise.all([this.reload(firstId, 'driver-own'), this.reload(secondId, 'driver-own')]);
+    return { chainId, first: { ...a, ltl: await this.ltlInfo(firstId) }, second: { ...b, ltl: await this.ltlInfo(secondId) } };
+  }
+
+  /** Haydovchi uchun: yo'l haqi (so'm/km) bozor o'rtachasidan qancha farq qiladi (Hot Price / past narx) */
+  async withRate<T extends { price: { deliveryFee?: number; distanceKm?: number } | null; origin: { region: string }; destination: { region: string } }>(list: T[]) {
+    const idx = await this.rates.index();
+    return list.map((s) => {
+      const fee = Number(s.price?.deliveryFee ?? 0), km = Number(s.price?.distanceKm ?? 0);
+      return { ...s, marketRate: km > 0 && fee > 0 ? compareRate(idx, fee / km, s.origin.region, s.destination.region) : null };
+    });
+  }
+
   /** Yuk qaysi LTL e'londan joy band qilgan bo'lsa, o'sha e'lonning joriy sig'imi */
   async ltlInfo(shipmentId: string) {
     const s = await this.prisma.shipment.findUnique({ where: { id: shipmentId }, select: { ltlKg: true, ltlPost: { select: { id: true, routes: true, maxCapacityKg: true, availableCapacityKg: true } } } });
@@ -304,6 +391,8 @@ export class ShipmentService {
       warehouseOrderId: s.warehouseOrderId,
       warehouseOrderStatus: s.warehouseOrder?.status ?? null,
       status: s.status,
+      chainId: s.chainId,
+      chainSeq: s.chainSeq,
       urgent: s.urgent,
       cargoName: s.cargoName,
       category: s.category,

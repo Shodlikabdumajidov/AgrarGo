@@ -4569,6 +4569,7 @@
                         ? emptyState({ art: 'shipments', title: "Hali yuk tashish buyurtmalari yo'q", text: "Bronni tasdiqlaganingizda yuk tashish buyurtmasi avtomatik yaratiladi.", cta: { label: "Kelgan bronlarni ko'rish", icon: 'fa-inbox', fn: function () { selectDashTab('bookings'); } } })
                         : emptyState({ art: 'shipments', title: "Hali yuk tashish buyurtmalari yo'q", text: "Fermer bronni tasdiqlaganda yuk tashish buyurtmasi avtomatik yaratiladi.", cta: { label: "Katalogga o'tish", icon: 'fa-store', fn: goCatalog } }));
             dashContent.replaceChildren.apply(dashContent, nodes);
+            if (driver) mountOwnTriHaul(list);
         }
 
         // Mavjud yuklar (haydovchi): bo'sh yuklarni ko'rish va biriktirish
@@ -4614,6 +4615,7 @@
                 ? emptyState({ art: 'search', compact: true, title: "Bu hududdan bo'sh yuk yo'q", text: "Boshqa hududni tanlab ko'ring.", cta: { label: 'Barcha hududlar', icon: 'fa-globe', fn: function () { dashLoadsRegion = ''; renderDashLoads(user); } } })
                 : emptyState({ art: 'shipments', title: "Hozircha bo'sh yuklar yo'q", text: "Fermer bronni tasdiqlaganda yangi yuk shu yerda paydo bo'ladi.", cta: { label: 'Yangilash', icon: 'fa-rotate', fn: function () { renderDashLoads(user); } } }));
             dashContent.replaceChildren.apply(dashContent, nodes);
+            mountTriHaul(list);
             loadsRadar.update(list.map(function (s) { return { id: s.id, cardId: 'shc-' + s.id, lat: s.origin.lat, lng: s.origin.lng, title: s.cargoName, sub: s.origin.region + ' → ' + s.destination.region + ' · ' + formatNumber(s.weightKg) + ' kg' }; }));
         }
 
@@ -5325,11 +5327,12 @@
                         d.appendChild(el('span', 'font-extrabold text-white whitespace-nowrap', value));
                         return d;
                     };
-                    box.replaceChildren(
+                    box.replaceChildren.apply(box, [
                         row('🚚 ' + T("Taxminiy yo'l haqi ({0} km)", formatNumber(r.distanceKm)), bdMoney(r.deliveryFee), formulaButton(r.formula)),
+                        r.marketRate ? el('div', 'text-xs font-semibold ' + (r.marketRate.verdict === 'HOT' ? 'text-orange-300' : 'text-slate-400'), T("Stavka: {0} so'm/km — {1}", formatNumber(r.marketRate.ratePerKm), r.marketRate.verdict === 'FAIR' ? T('bozor o\'rtachasiga mos') : r.marketRate.diffPercent > 0 ? T('bozor o\'rtachasidan {0} baland', pctText(r.marketRate.diffPercent)) : T('bozor o\'rtachasidan {0} past', pctText(r.marketRate.diffPercent)))) : null,
                         row('🧾 ' + T('Platforma xizmat haqi'), bdMoney(r.serviceFee)),
                         row('💳 ' + T('Taxminiy jami'), bdMoney(r.totalPrice))
-                    );
+                    ].filter(Boolean));
                     box.classList.remove('hidden');
                 } catch (e) { if (seq === bookingEstSeq) box.classList.add('hidden'); }
             }, 400);
@@ -8890,7 +8893,7 @@
             return b;
         }
         // Haydovchi uchun yirik "Sizning daromadingiz" bloki (qabul qilishdan oldin ham ko'rinadi)
-        function earningsBlock(price) {
+        function earningsBlock(price, market) {
             const bd = bdNorm(price);
             const box = el('div', 'earn-card');
             const left = el('div', 'min-w-0');
@@ -8901,6 +8904,8 @@
             if (bd && bd.distance) right.appendChild(el('span', 'text-xs font-bold text-slate-300 bg-white/10 rounded-full px-2.5 py-1', '📏 ' + T('{0} km', formatNumber(bd.distance))));
             if (price && price.formula) right.appendChild(formulaButton(price.formula));
             box.appendChild(right);
+            const badge = rateBadge(market);
+            if (badge) { const row = el('div', 'basis-full'); row.appendChild(badge); box.appendChild(row); }
             return box;
         }
         // Yuk kartochkasidagi narx qatori
@@ -8908,7 +8913,7 @@
             const role = viewer === 'farmer' ? 'FARMER' : viewer === 'market' ? 'MARKET' : 'DRIVER';
             if (role === 'DRIVER') {
                 const wrap = el('div', 'space-y-2');
-                wrap.appendChild(earningsBlock(s.price));
+                wrap.appendChild(earningsBlock(s.price, s.marketRate));
                 return wrap;
             }
             const wrap = el('div', 'rounded-xl bg-slate-950/50 border border-white/10 px-4 py-3 space-y-1.5');
@@ -9043,6 +9048,8 @@
                 const pr = el('div', 'flex flex-wrap items-baseline gap-x-3 gap-y-1');
                 if (p.pricePerKm) pr.appendChild(el('span', 'text-xl font-black text-white', T("{0} so'm / km", formatNumber(p.pricePerKm))));
                 if (p.priceNote) pr.appendChild(el('span', 'text-xs text-slate-400 break-words', p.priceNote));
+                const rb = rateBadge(p.marketRate);
+                if (rb) pr.appendChild(rb);
                 body.appendChild(pr);
             }
             if (p.extras.length) {
@@ -9613,7 +9620,7 @@
                     }
                     paint();
                     setTimeout(function () { map && map.invalidateSize(); }, 80);
-                } catch (e) { console.warn('radar map', e); mapBox.classList.add('hidden'); }
+                } catch (e) { console.warn(e); mapBox.classList.add('hidden'); }
             };
             const head = el('div', 'flex flex-wrap items-center gap-3');
             head.appendChild(btn);
@@ -9625,6 +9632,168 @@
             node.appendChild(panel);
             sync();
             return { node: node, update: update, destroy: function () { if (map) { map.remove(); map = null; } } };
+        }
+
+        // ===== DINAMIK NARX INDIKATORI (bozor stavkasi bilan solishtirish) =====
+        const pctText = function (n) { return formatNumber(Math.round(Math.abs(n))) + '%'; };
+        // m: backend "market" obyekti { ratePerKm, avgRatePerKm, diffPercent, verdict, scope, samples, days }
+        function rateTipText(m) {
+            const lines = [T("So'nggi {0} kundagi o'rtacha stavkalar asosida hisoblandi", m.days)];
+            lines.push(T("O'rtacha bozor stavkasi: {0} so'm/km", formatNumber(m.avgRatePerKm)) + ' · ' + T('Sizning stavkangiz: {0} so\'m/km', formatNumber(m.ratePerKm)));
+            lines.push(T('Shu yo\'nalishda yakunlangan reyslar: {0}', m.samples));
+            return lines.join('\n');
+        }
+        // Haydovchi uchun belgi: 🔥 Qaynoq narx (yuqori) yoki kulrang "N% past"
+        function rateBadge(m) {
+            if (!m) return null;
+            const wrap = el('span', 'rt-wrap');
+            wrap.tabIndex = 0;
+            wrap.setAttribute('role', 'note');
+            wrap.setAttribute('aria-label', rateTipText(m).replace(/\n/g, '. '));
+            if (m.verdict === 'HOT') {
+                const hot = el('span', 'rt-hot');
+                hot.appendChild(el('span', '', '🔥'));
+                hot.appendChild(el('span', '', T('Qaynoq narx / Yuqori daromad')));
+                wrap.appendChild(hot);
+                wrap.appendChild(el('span', 'rt-low !text-orange-300', '+' + pctText(m.diffPercent)));
+            } else if (m.verdict === 'LOW') wrap.appendChild(el('span', 'rt-low', T("Bozordan {0} past", pctText(m.diffPercent))));
+            else wrap.appendChild(el('span', 'rt-low', T('Bozor narxida')));
+            wrap.appendChild(el('span', 'rt-tip', rateTipText(m)));
+            wrap.querySelector('.rt-tip').style.whiteSpace = 'pre-line';
+            return wrap;
+        }
+        // Fermer/market uchun oddiy matnli xabar (olov yo'q): "... bozor narxidan N% past/baland"
+        function rateHintFill(box, text, verdict) {
+            box.className = ['rate-hint', verdict || '', text ? '' : 'hidden'].join(' ').trim();
+            box.textContent = text || '';
+        }
+        function debounced(fn, ms) { let t = null; return function () { const a = arguments; clearTimeout(t); t = setTimeout(function () { fn.apply(null, a); }, ms); }; }
+        let rateHintSeq = 0;
+
+        // Mahsulot narxi (fermer): bozorlardagi o'rtacha narx bilan
+        const prodRateCheck = debounced(async function () {
+            const box = document.getElementById('prod-rate-hint');
+            const name = productForm.elements['name'].value.trim(), price = Number(productForm.pricePerKg.value);
+            if (name.length < 2 || !(price > 0) || !storageGet(TOKEN_KEY)) return rateHintFill(box, '');
+            const seq = ++rateHintSeq;
+            try {
+                const r = await authed('GET', '/rates/product?name=' + encodeURIComponent(name) + '&pricePerKg=' + encodeURIComponent(price));
+                if (seq !== rateHintSeq) return;
+                if (!r.avgPricePerKm && !r.avgPricePerKg) return rateHintFill(box, '');
+                const d = r.diffPercent;
+                const rel = Math.abs(d) < 3 ? T("bozor narxiga mos") : d > 0 ? T("bozor narxidan {0} baland", pctText(d)) : T("bozor narxidan {0} past", pctText(d));
+                rateHintFill(box, T("Joriy o'rtacha bozor narxi: {0} so'm/kg.", formatNumber(r.avgPricePerKg)) + ' ' + T('Sizning taklifingiz {0}.', rel), d >= 3 ? 'HOT' : d <= -3 ? 'LOW' : '');
+            } catch (e) { rateHintFill(box, ''); }
+        }, 450);
+        ['prod-name', 'prod-price'].forEach(function (id) { document.getElementById(id).addEventListener('input', prodRateCheck); });
+
+        // Haydovchi e'loni narxi (so'm/km): yo'nalish bo'yicha o'rtacha stavka bilan
+        const dpRateCheck = debounced(async function () {
+            const box = document.getElementById('dp-rate-hint');
+            const price = Number(document.getElementById('dp-price').value);
+            const route = document.getElementById('dp-routes').value.split(/[,;\n]/)[0].trim();
+            if (route.length < 2 || !(price > 0)) return rateHintFill(box, '');
+            const seq = ++rateHintSeq;
+            try {
+                const r = await authed('GET', '/rates/compare?route=' + encodeURIComponent(route) + '&ratePerKm=' + encodeURIComponent(price));
+                if (seq !== rateHintSeq || !r.compare) return rateHintFill(box, '');
+                const c = r.compare;
+                const rel = c.verdict === 'FAIR' ? T('bozor narxiga mos') : c.diffPercent > 0 ? T('bozor narxidan {0} baland', pctText(c.diffPercent)) : T('bozor narxidan {0} past', pctText(c.diffPercent));
+                rateHintFill(box, T("Ushbu yo'nalish bo'yicha joriy o'rtacha bozor stavkasi: {0} so'm/km.", formatNumber(c.avgRatePerKm)) + ' ' + T('Sizning taklifingiz {0}.', rel), c.verdict === 'HOT' ? 'HOT' : c.verdict === 'LOW' ? 'LOW' : '');
+            } catch (e) { rateHintFill(box, ''); }
+        }, 450);
+        ['dp-price', 'dp-routes'].forEach(function (id) { document.getElementById(id).addEventListener('input', dpRateCheck); });
+
+        // ===== TRIHAUL: uchburchak marshrut tavsiyasi =====
+        const SVGNS = 'http://www.w3.org/2000/svg';
+        function svgEl(tag, attrs, text) {
+            const n = document.createElementNS(SVGNS, tag);
+            Object.keys(attrs || {}).forEach(function (k) { n.setAttribute(k, attrs[k]); });
+            if (text !== undefined) n.textContent = text;
+            return n;
+        }
+        // A → B (yuk), B → C (yuk), C → A (bo'sh qaytish) uchburchagi
+        function triSvg(opt, base) {
+            const A = base.originRegion, B = base.destRegion, C = opt.via;
+            const svg = svgEl('svg', { viewBox: '0 0 320 150', class: 'tri-svg', role: 'img', 'aria-label': A + ' → ' + B + ' → ' + C + ' → ' + A });
+            const P = { A: [40, 118], B: [280, 118], C: [160, 24] };
+            const kmOf = function (i) { return opt.legs[i] ? formatNumber(opt.legs[i].km) + ' km' : ''; };
+            const loaded = opt.legs.filter(function (l) { return l.kind === 'LOADED'; });
+            const line = function (a, b, cls, color) { svg.appendChild(svgEl('line', { x1: P[a][0], y1: P[a][1], x2: P[b][0], y2: P[b][1], stroke: color, 'stroke-width': 3, 'stroke-linecap': 'round', class: cls })); };
+            line('C', 'A', 'dash', '#64748b'); line('A', 'B', '', '#34d399'); line('B', 'C', '', '#fbbf24');
+            const mid = function (a, b, dx, dy, txt) { svg.appendChild(svgEl('text', { x: (P[a][0] + P[b][0]) / 2 + dx, y: (P[a][1] + P[b][1]) / 2 + dy, class: 'km', 'text-anchor': 'middle' }, txt)); };
+            mid('A', 'B', 0, 14, formatNumber(loaded[0].km) + ' km');
+            mid('B', 'C', 22, -2, formatNumber(loaded[1].km) + ' km');
+            mid('C', 'A', -22, -2, formatNumber(opt.legs[opt.legs.length - 1].km) + ' km');
+            [['A', A, '#34d399', 'start'], ['B', B, '#fbbf24', 'end'], ['C', C, '#38bdf8', 'middle']].forEach(function (n) {
+                const p = P[n[0]];
+                svg.appendChild(svgEl('circle', { cx: p[0], cy: p[1], r: 9, fill: n[2], stroke: '#0f172a', 'stroke-width': 3 }));
+                svg.appendChild(svgEl('text', { x: p[0], y: p[1] + 3.5, 'text-anchor': 'middle', style: 'fill:#022c22;font-size:9px;font-weight:900' }, n[0]));
+                svg.appendChild(svgEl('text', { x: p[0], y: n[0] === 'C' ? p[1] - 15 : p[1] + 28, 'text-anchor': n[0] === 'A' ? 'start' : n[0] === 'B' ? 'end' : 'middle', transform: ['translate(', n[0] === 'A' ? -24 : n[0] === 'B' ? 24 : 0, ' 0)'].join('') }, n[1]));
+            });
+            void kmOf;
+            return svg;
+        }
+        // item: backend TriOption; base: { id, originRegion, destRegion, fee }; ctx: { onChain(firstId, secondId) | null, own }
+        function triBlock(opt, base, ctx) {
+            const box = el('div', 'tri-block space-y-3');
+            box.setAttribute('data-trihaul', opt.loadId);
+            const ttl = el('div', 'text-sm font-extrabold text-amber-200 flex items-center gap-1.5');
+            ttl.appendChild(el('span', '', '📍'));
+            ttl.appendChild(el('span', '', T('TriHaul Tavsiyasi')));
+            box.appendChild(ttl);
+            box.appendChild(el('p', 'text-sm font-semibold text-white leading-snug', T("{0} dan to'g'ridan-to'g'ri qaytish o'rniga {1} orqali qayting va umumiy daromadingizni {2}% ga oshiring!", base.destRegion, opt.via, opt.boostPercent)));
+            box.appendChild(triSvg(opt, base));
+            const stats = el('div', 'tri-stats');
+            const stat = function (v, l) { const s = el('div', 'tri-stat'); s.appendChild(el('b', '', v)); s.appendChild(el('span', '', l)); stats.appendChild(s); };
+            stat(T('{0} km', formatNumber(opt.totalKm)), T('Jami masofa'));
+            stat(T('{0} km', formatNumber(opt.emptyKm)), T("Bo'sh yurish"));
+            stat(bdMoney(opt.totalFee), T('Jami daromad'));
+            stat(T("{0} so'm/km", formatNumber(opt.perKm)), T("Bitta yukda: {0}", formatNumber(opt.directPerKm)));
+            box.appendChild(stats);
+            const l2 = opt.load;
+            box.appendChild(el('div', 'text-xs text-slate-300', T('Ikkinchi yuk: {0} · {1} → {2} · {3} kg · {4}', l2.cargoName || '', l2.originRegion, l2.destRegion, formatNumber(l2.weightKg), bdMoney(l2.fee))));
+            if (ctx && ctx.onChain) {
+                const b = actionBtn('fa-link', 'Ikkalasini birdan bron qilish', true, function () { ctx.onChain(base.id, opt.loadId, b); });
+                b.classList.add('w-full');
+                box.appendChild(b);
+            } else box.appendChild(el('p', 'text-[11px] text-slate-400', T("Birinchi yukni yetkazgach, ikkinchi yukni «Mavjud yuklar» bo'limidan oling.")));
+            return box;
+        }
+        async function chainAccept(firstId, secondId, btn) {
+            btn.disabled = true;
+            try {
+                await authed('POST', '/shipments/chain-accept', { firstId: firstId, secondId: secondId });
+                showSuccessCheck('Zanjirli bron qilindi!', T("Ikkala yuk sizga biriktirildi. Avval birinchisini yetkazing."), 'booking');
+                dashShipFilter = 'ALL';
+                selectDashTab('myloads');
+            } catch (err) {
+                btn.disabled = false;
+                if (err.status === 402) return showToast(T("Obuna muddati tugagan. Yuk olish uchun obunani uzaytiring."), 5000, 'error');
+                if (err.status !== 401) showToast((err.messages && err.messages[0]) || 'Xatolik', 5000, 'error');
+            }
+        }
+        // "Mavjud yuklar" ro'yxatidagi kartochkalarga TriHaul bloklarini qo'shadi (qaytish yuki yo'q bo'lsa)
+        async function mountTriHaul(list) {
+            let items = {};
+            try { items = (await authed('GET', '/shipments/trihaul')).items || {}; } catch (e) { return; }
+            list.forEach(function (s) {
+                const opt = items[s.id], card = document.getElementById('shc-' + s.id);
+                if (!opt || !card || card.querySelector('[data-trihaul]')) return;
+                const block = triBlock(opt, { id: s.id, originRegion: s.origin.region, destRegion: s.destination.region }, { onChain: chainAccept });
+                const anchor = card.querySelector('.earn-card');
+                (anchor && anchor.parentNode !== card ? anchor.parentNode : anchor) ? (anchor.parentNode !== card ? anchor.parentNode : anchor).after(block) : card.appendChild(block);
+            });
+        }
+        // Haydovchining o'z yuki (hali zanjirsiz, yo'lga chiqmagan yoki yo'lda) uchun ma'lumot bloki
+        async function mountOwnTriHaul(list) {
+            for (const s of list.filter(function (x) { return (x.status === 'LOADING' || x.status === 'IN_TRANSIT') && !x.chainId; }).slice(0, 4)) {
+                let r;
+                try { r = await authed('GET', '/shipments/' + s.id + '/trihaul'); } catch (e) { continue; }
+                const card = document.getElementById('shc-' + s.id);
+                if (!r.eligible || !card || card.querySelector('[data-trihaul]')) continue;
+                card.appendChild(triBlock(r.options[0], { id: s.id, originRegion: s.origin.region, destRegion: s.destination.region }, null));
+            }
         }
 
         // ===== ELD / Xarita: yon menyu va pastki navigatsiya uchun yagona kirish nuqtasi =====

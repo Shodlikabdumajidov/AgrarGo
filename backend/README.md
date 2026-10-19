@@ -192,3 +192,12 @@ Frontend ildizida: `manifest.json`, `sw.js` (Service Worker), `offline.html`, `i
 - LTL e'loni bor haydovchi `POST /shipments/:id/accept` bilan bir reysda bir nechta yuk oladi: og'irlik e'londagi bo'sh joydan atomik (bitta SQL UPDATE) ayriladi; sig'masa `409`. Yuk qaytarilsa (`release`), yetkazilsa (`DELIVERED`) yoki ombor buyurtmasi bekor bo'lsa joy bir marta tiklanadi. Javobdagi `ltl` — e'lonning joriy sig'imi.
 - `GET /shipments/:id/ltl-suggestions` (DRIVER) — qolgan joyga sig'adigan, bir manzil viloyatidagi, yaqin (≤80 km) olib ketish joyli va to'lovi kafolatlangan (HELD) boshqa yuklar.
 - Radiusli qidiruv: `GET /driver-posts` va `GET /shipments/available` `lat`, `lng`, `radiusKm` (1–500) qabul qiladi (uchalasi birga, aks holda `400`). Bounding box + Haversine (xom SQL, bog'langan parametrlar), natija masofa (`distanceKm`) bo'yicha tartiblanadi. Yuk nuqtasi — fermer koordinatasi (5 km gridga yaxlitlangan) yoki viloyat markazi; aniq manzil yashirin.
+
+## TriHaul (uchburchak marshrut) va zanjirli bron
+- A→B yukida qaytish (B→A) yuki bo'lmasa, tizim B dan olinadigan va uyga yaqinlashtiradigan B→C yukini izlaydi (C — A ga B dan kamida 30% yaqin, yuk olish joyi B ning 80 km ichida, og'irligi sig'adigan, to'lovi HELD). Hisob: yuklangan/bo'sh km, jami daromad (ikki yuk yig'indisi), `boostPercent` (2-yuk / 1-yuk), so'm/km (bitta yukli reys bilan solishtirib).
+- `GET /shipments/trihaul` (ro'yxat uchun eng yaxshi variantlar), `GET /shipments/:id/trihaul` (bitta yuk), `POST /shipments/chain-accept { firstId, secondId }` — ikkala yuk bitta tranzaksiyada biriktiriladi (`chainId`, `chainSeq` 1/2). Ikkinchi yuk birinchisi yetkazilmaguncha yo'lga chiqmaydi; birinchisi qaytarilsa zanjir buziladi. Faol yuk chegarasi (1 ta) faqat zanjirning 2-yuki uchun o'tkaziladi.
+
+## Dinamik narx indikatori (`/rates`)
+- Bozor stavkasi = oxirgi 30 yoki 60 kunda yakunlangan (`DELIVERED`, to'lov HELD/RELEASED) yuklarning jami yo'l haqi / jami masofa, yo'nalish bo'yicha (yo'nalishga bog'liq emas). Natija 10 daqiqa keshlanadi (dinamik kalkulyator). Yo'nalishda kamida 3 ta reys bo'lmasa solishtirilmaydi (`null`).
+- `GET /rates/routes?days=30|60`, `GET /rates/compare?route=|origin&dest&ratePerKm=` (foizli farq va `HOT` ≥ +3%, `LOW` ≤ −3%, aks holda `FAIR`), `GET /rates/product?name=&pricePerKg=` (Bozor narxlari moduli bilan mahsulot narxi).
+- `marketRate` maydoni: haydovchi uchun yuk kartochkalarida, `driver-posts` e'lonlarida va `/pricing/estimate` javobida.

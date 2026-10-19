@@ -6,12 +6,13 @@ import { Roles } from '../common/roles.decorator';
 import { RolesGuard } from '../common/roles.guard';
 import { PrismaService } from '../prisma/prisma.service';
 import { breakdownOf } from './pricing';
+import { RatesService } from '../rates/rates.service';
 import { PricingService } from './pricing.service';
 
 @Controller('pricing')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class PricingController {
-  constructor(private readonly pricing: PricingService, private readonly prisma: PrismaService) {}
+  constructor(private readonly pricing: PricingService, private readonly prisma: PrismaService, private readonly rates: RatesService) {}
 
   /** Bron qilishdan oldin taxminiy to'lov tarkibi (haydovchi yo'l haqi formulasi bilan). Faqat market. */
   @Get('estimate')
@@ -24,6 +25,8 @@ export class PricingController {
     if (!p) throw new NotFoundException("E'lon topilmadi yoki hozir faol emas");
     const product = p.pricePerKg.mul(q);
     const quote = this.pricing.quote(p.farmer.region, user.market.region, product, q);
-    return { ...breakdownOf({ ...quote, productPrice: quote.productPrice }), formula: this.pricing.formula(quote.distanceKm, q, quote.deliveryFee), estimated: true };
+    const fee = quote.deliveryFee.toNumber();
+    const market = quote.distanceKm > 0 ? await this.rates.compare(p.farmer.region, user.market.region, fee / quote.distanceKm) : null;
+    return { ...breakdownOf({ ...quote, productPrice: quote.productPrice }), formula: this.pricing.formula(quote.distanceKm, q, quote.deliveryFee), marketRate: market, estimated: true };
   }
 }

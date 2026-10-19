@@ -224,6 +224,9 @@ model Shipment {
   ltlPostId String?
   ltlPost   DriverPost? @relation(fields: [ltlPostId], references: [id], onDelete: SetNull)
   ltlKg     Int?
+  // Zanjirli bron (TriHaul): bir juft yuk bitta chainId bilan bog'lanadi; chainSeq 1 — avval, 2 — keyin yetkaziladi
+  chainId   String?
+  chainSeq  Int?
 
   // Oxirgi ma'lum joylashuv (LocationLog'ning nusxasi): xaritani tez ko'rsatish uchun
   lastLat            Float?
@@ -239,6 +242,7 @@ model Shipment {
   @@index([status, createdAt])
   @@index([originLat, originLng])
   @@index([ltlPostId])
+  @@index([chainId])
   @@index([driverId, status])
   @@index([farmerId, status])
   @@index([marketId, status])

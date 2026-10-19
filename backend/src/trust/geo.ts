@@ -42,3 +42,18 @@ export function centersSqlCase(col: string, idx: 0 | 1): string {
   const whens = Object.entries(CENTERS).map(([k, v]) => `WHEN lower(${col}) = '${k.replace(/'/g, "''")}' THEN ${v[idx]}`);
   return `CASE ${whens.join(' ')} END`;
 }
+
+/** Matndagi viloyat nomlarini (kanonik, kichik harf) topadi: "Samarqand ↔ Toshkent" -> ['samarqand', 'toshkent shahri'] */
+export function findRegionNames(text: string): string[] {
+  const n = normRegion(text);
+  const out: { name: string; at: number }[] = [];
+  for (const name of Object.keys(CENTERS)) {
+    const short = name.replace(/ shahri| viloyati/g, '');
+    const at = n.indexOf(short);
+    if (at === -1) continue;
+    // "toshkent viloyati" va "toshkent shahri" ajratiladi; ko'rsatilmasa — shahar
+    const full = name.endsWith('viloyati') ? n.includes('toshkent viloyat') : name.endsWith('shahri') ? !n.includes('toshkent viloyat') : true;
+    if (full) out.push({ name, at });
+  }
+  return out.sort((a, b) => a.at - b.at).map((x) => x.name);
+}

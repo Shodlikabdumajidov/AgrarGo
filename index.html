@@ -842,6 +842,28 @@
         @keyframes rdPulse { 70% { box-shadow: 0 0 0 14px rgba(16,185,129,0); } 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); } }
         .rd-hit { outline: 2px solid #34d399; outline-offset: 3px; }
         @media (prefers-reduced-motion: reduce) { .rd-pulse i { animation: none; } .ltl-fill { transition: none; } }
+        /* Dinamik narx indikatori */
+        .rate-hint { border-radius: .9rem; padding: .6rem .8rem; font-size: .8rem; line-height: 1.45; font-weight: 600; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.05); color: #cbd5e1; }
+        .rate-hint.HOT { border-color: rgba(251,146,60,.5); background: rgba(251,146,60,.1); color: #fed7aa; }
+        .rate-hint.LOW { border-color: rgba(56,189,248,.4); background: rgba(56,189,248,.08); color: #bae6fd; }
+        .rt-wrap { position: relative; display: inline-flex; align-items: center; gap: .4rem; flex-wrap: wrap; outline: none; cursor: help; }
+        .rt-hot { display: inline-flex; align-items: center; gap: .35rem; padding: .25rem .65rem; border-radius: 9999px; font-size: .72rem; font-weight: 900; color: #431407; background: linear-gradient(90deg, #fb923c, #fbbf24); animation: rtGlow 1.6s ease-in-out infinite; }
+        @keyframes rtGlow { 0%, 100% { box-shadow: 0 0 6px 0 rgba(251,146,60,.55); } 50% { box-shadow: 0 0 18px 3px rgba(251,146,60,.9); } }
+        .rt-low { font-size: .72rem; font-weight: 700; color: #94a3b8; }
+        .rt-tip { position: absolute; left: 0; top: calc(100% + 6px); z-index: 30; width: max-content; max-width: min(18rem, 80vw); padding: .6rem .75rem; border-radius: .8rem; font-size: .72rem; font-weight: 600; line-height: 1.4; color: #e2e8f0; background: rgba(15,23,42,.96); border: 1px solid rgba(255,255,255,.18); box-shadow: 0 16px 40px -16px rgba(0,0,0,.9); opacity: 0; visibility: hidden; transform: translateY(-4px); transition: opacity .18s, transform .18s, visibility .18s; pointer-events: none; }
+        .rt-wrap:hover .rt-tip, .rt-wrap:focus .rt-tip, .rt-wrap:focus-within .rt-tip { opacity: 1; visibility: visible; transform: none; }
+        /* TriHaul */
+        .tri-block { border-radius: 1.25rem; padding: 1rem 1.1rem; border: 1px solid rgba(251,191,36,.4); background: linear-gradient(135deg, rgba(251,191,36,.12), rgba(16,185,129,.1)); }
+        .tri-svg { width: 100%; max-height: 11rem; }
+        .tri-svg text { font-family: inherit; font-size: 10px; font-weight: 700; fill: #e2e8f0; }
+        .tri-svg .km { fill: #94a3b8; font-size: 9px; font-weight: 600; }
+        .tri-svg .dash { stroke-dasharray: 5 5; animation: triDash 1.2s linear infinite; }
+        @keyframes triDash { to { stroke-dashoffset: -20; } }
+        .tri-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr)); gap: .5rem; }
+        .tri-stat { border-radius: .8rem; padding: .5rem .65rem; background: rgba(15,23,42,.55); border: 1px solid rgba(255,255,255,.1); }
+        .tri-stat b { display: block; font-size: 1rem; color: #fff; font-weight: 900; }
+        .tri-stat span { font-size: .68rem; color: #94a3b8; font-weight: 700; }
+        @media (prefers-reduced-motion: reduce) { .rt-hot, .tri-svg .dash { animation: none; } }
         .pr-search { position: relative; }
         .pr-search i { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: #6ee7b7; pointer-events: none; }
         .pr-search input { width: 100%; min-height: 3.25rem; padding: .8rem 1rem .8rem 2.8rem; border-radius: 1rem; background: rgba(15,23,42,.6); border: 1px solid rgba(255,255,255,.16); color: #f1f5f9; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); transition: border-color .2s, box-shadow .2s; }
@@ -2093,6 +2115,7 @@
                         <input id="prod-price" name="pricePerKg" type="number" min="0" step="0.01" inputmode="decimal" placeholder="4500" class="auth-input">
                     </div>
                 </div>
+                <div id="prod-rate-hint" class="hidden rate-hint" role="status" aria-live="polite"></div>
                 <div>
                     <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="prod-harvest">O'rim-yig'im sanasi <span class="text-slate-500 normal-case font-medium">(ixtiyoriy)</span></label>
                     <input id="prod-harvest" name="harvestDate" type="date" class="auth-input">
@@ -2231,6 +2254,7 @@
                     <div>
                         <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="dp-price">Narx (so'm / km)</label>
                         <input id="dp-price" type="number" min="1" step="1" inputmode="numeric" placeholder="Masalan: 4500" class="auth-input">
+                        <div id="dp-rate-hint" class="hidden rate-hint mt-2" role="status" aria-live="polite"></div>
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="dp-pricenote">Narx izohi <span class="text-slate-500 normal-case font-medium">(ixtiyoriy)</span></label>
