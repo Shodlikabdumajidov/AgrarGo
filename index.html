@@ -695,6 +695,56 @@
         .bd-total { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: .6rem; padding-top: .8rem; border-top: 1px dashed rgba(255,255,255,.25); }
         .bd-receipt { font-variant-numeric: tabular-nums; }
 
+        /* ===== Mobil: ixcham header, yig'iladigan qidiruv va pastki navigatsiya (Bottom Nav) ===== */
+        #bottom-nav, #nav-search-toggle { display: none; }
+        .bn-item { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .18rem; min-height: 48px; padding: .3rem .1rem; border-radius: .95rem; color: #94a3b8; font-size: .66rem; font-weight: 700; line-height: 1.1; -webkit-tap-highlight-color: transparent; transition: color .2s, background .25s, transform .15s; }
+        .bn-item svg { width: 1.4rem; height: 1.4rem; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: filter .25s, transform .25s; }
+        .bn-item:active { transform: scale(.93); }
+        .bn-item.active { color: #6ee7b7; background: radial-gradient(circle at 50% 0%, rgba(16,185,129,.28), rgba(16,185,129,.05) 70%); }
+        .bn-item.active svg { filter: drop-shadow(0 0 7px rgba(52,211,153,.85)); transform: translateY(-1px); }
+        .bn-item.active::before { content: ''; position: absolute; top: 0; left: 28%; right: 28%; height: 2px; border-radius: 9999px; background: #34d399; box-shadow: 0 0 10px 1px rgba(52,211,153,.9); }
+        @media (max-width: 768px) {
+            #bottom-nav { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .15rem; position: fixed; left: 0; right: 0; bottom: 0; z-index: 47; padding: .3rem .45rem calc(.3rem + env(safe-area-inset-bottom, 0px)); background: rgba(5,28,21,.84); -webkit-backdrop-filter: blur(12px) saturate(1.3); backdrop-filter: blur(12px) saturate(1.3); border-top: 1px solid rgba(52,211,153,.28); box-shadow: 0 -12px 30px -14px rgba(0,0,0,.75), 0 -1px 0 rgba(16,185,129,.12) inset; }
+            body.bn-hide #bottom-nav { display: none; }
+            /* Kontent pastki panel ostida qolib ketmasin */
+            body { padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px)); }
+            #dashboard-view, #role-page { padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px)); }
+            .toast-stack { bottom: calc(4.9rem + env(safe-area-inset-bottom, 0px)); }
+            .oq-pill { bottom: calc(4.9rem + env(safe-area-inset-bottom, 0px)); }
+            /* Yuqori yordamchi panel */
+            #top-util { padding: .4rem .75rem; gap: .5rem; font-size: .78rem; }
+            #top-util .overflow-x-auto { display: none; }
+            #top-util button { padding: .3rem .7rem; font-size: .76rem; }
+            /* Asosiy header: bitta ixcham qator */
+            #main-nav { padding: .45rem .75rem; box-shadow: 0 10px 30px -18px rgba(0,0,0,.9); }
+            #main-nav > div { flex-direction: row; flex-wrap: wrap; align-items: center; gap: .5rem; }
+            #nav-left { order: 1; width: auto !important; flex: none; gap: .5rem; }
+            #nav-left > div { gap: .55rem; }
+            #nav-left button { font-size: 1.15rem; padding: .5rem .65rem; border-radius: .8rem; }
+            #nav-left img { height: 2.5rem; padding: .2rem; border-radius: .75rem; }
+            #nav-right { order: 2; width: auto !important; margin-left: auto; gap: .5rem; flex: none; }
+            #nav-right > button[onclick*="scrollToMarket"] { display: none; }
+            #nav-search-toggle { display: inline-flex; align-items: center; justify-content: center; width: 2.75rem; height: 2.75rem; border-radius: .9rem; font-size: 1rem; color: #e2e8f0; background: rgba(15,23,42,.85); border: 1px solid rgba(255,255,255,.18); transition: color .2s, border-color .2s, background .2s; }
+            #main-nav.search-open #nav-search-toggle { color: #6ee7b7; border-color: rgba(52,211,153,.6); background: rgba(16,185,129,.12); }
+            /* "Kabinetga Kirish": faqat odamcha / avatar */
+            #auth-nav-btn { padding: .35rem !important; width: 2.75rem; height: 2.75rem; border-radius: .9rem !important; justify-content: center; gap: 0 !important; }
+            #auth-nav-label, #auth-nav-caret { display: none !important; }
+            #auth-nav-avatar { width: 2rem !important; height: 2rem !important; background: transparent !important; font-size: .85rem; }
+            #auth-nav-avatar i { font-size: 1.05rem; }
+            #account-menu { width: min(18rem, calc(100vw - 1.5rem)); }
+            /* Qidiruv: bosilganda ochiladi */
+            #nav-search { order: 3; display: none; width: 100%; max-width: none; flex: none; }
+            #main-nav.search-open #nav-search { display: block; animation: navSearchIn .25s cubic-bezier(.16,1,.3,1) both; }
+            #nav-search > div { border-width: 1px; border-radius: 1rem; }
+            #nav-search #dropdown-btn { padding: .65rem .8rem; font-size: .8rem; gap: .4rem; }
+            #nav-search #selected-text { max-width: 4.6rem; }
+            #nav-search #market-search { padding: .65rem .75rem; font-size: .95rem; }
+            #nav-search #market-search-btn { padding: .65rem 1rem; font-size: 1rem; }
+            #custom-dropdown-menu { width: min(16rem, calc(100vw - 1.5rem)); }
+        }
+        @keyframes navSearchIn { from { opacity: 0; transform: translateY(-6px); } }
+        @media (prefers-reduced-motion: reduce) { #main-nav.search-open #nav-search { animation: none; } }
+
         /* ===== Bozor narxlari ===== */
         #price-modal { opacity: 0; visibility: hidden; transition: opacity .3s ease, visibility .3s ease; }
         #price-modal.open { opacity: 1; visibility: visible; }
@@ -858,7 +908,7 @@
     <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"></div>
 
     <!-- TOP UTILITY BAR -->
-    <div class="bg-slate-900 border-b border-white/10 text-sm text-slate-200 px-6 sm:px-10 py-3 flex flex-wrap justify-between items-center gap-4">
+    <div id="top-util" class="bg-slate-900 border-b border-white/10 text-sm text-slate-200 px-6 sm:px-10 py-3 flex flex-wrap justify-between items-center gap-4">
         <div class="flex items-center gap-6 font-semibold overflow-x-auto py-1 min-w-0">
             <a href="#hub" data-scroll="#hub" class="top-link hidden md:inline-block">AgrarGo B2B Hub</a>
             <a href="#contact" data-scroll="#contact" class="top-link hidden md:inline-block">Hamkorlik / Aloqa</a>
@@ -890,9 +940,9 @@
     </div>
 
     <!-- MAIN NAVIGATION & SEARCH BAR -->
-    <nav class="sticky top-0 left-0 w-full z-30 glass border-b border-white/15 px-6 sm:px-10 py-5 shadow-2xl">
+    <nav id="main-nav" class="sticky top-0 left-0 w-full z-30 glass border-b border-white/15 px-6 sm:px-10 py-5 shadow-2xl">
         <div class="max-w-7xl mx-auto flex flex-col xl:flex-row justify-between items-center gap-6">
-            <div class="flex items-center gap-6 w-full xl:w-auto justify-between xl:justify-start">
+            <div id="nav-left" class="flex items-center gap-6 w-full xl:w-auto justify-between xl:justify-start">
                 <div class="flex items-center gap-5">
                     <button onclick="toggleSidebar()" class="text-slate-200 hover:text-emerald-400 hover:scale-110 text-3xl transition focus:outline-none p-1.5 bg-slate-900/85 rounded-xl border border-white/10 shadow">
                         <i class="fa-solid fa-bars-staggered"></i>
@@ -902,7 +952,7 @@
             </div>
 
             <!-- CUSTOM ANIMATED SEARCH BAR WITH DROPDOWN -->
-            <div class="flex-1 max-w-3xl w-full">
+            <div id="nav-search" class="flex-1 max-w-3xl w-full">
                 <div class="flex items-center bg-slate-900 border-2 border-white/20 rounded-2xl overflow-visible shadow-2xl hover:border-emerald-500/50 transition duration-300 relative">
                     <div class="relative">
                         <button onclick="toggleDropdown(event)" id="dropdown-btn" class="bg-slate-950 text-emerald-400 text-sm sm:text-base px-5 py-4 outline-none border-r border-white/15 cursor-pointer font-bold flex items-center gap-3 hover:bg-slate-900 transition rounded-l-2xl">
@@ -937,7 +987,8 @@
                 </div>
             </div>
 
-            <div class="flex items-center gap-4 w-full xl:w-auto justify-end">
+            <div id="nav-right" class="flex items-center gap-4 w-full xl:w-auto justify-end">
+                <button type="button" id="nav-search-toggle" aria-label="Qidiruv" aria-controls="nav-search" aria-expanded="false"><i class="fa-solid fa-magnifying-glass"></i></button>
                 <button type="button" onclick="scrollToMarket(true)" class="hidden sm:flex items-center gap-2.5 bg-slate-900 hover:bg-slate-800 text-slate-100 px-5 py-4 rounded-2xl text-base font-semibold border border-white/20 hover:border-emerald-500 transition duration-300 shadow">
                     <i class="fa-solid fa-sliders text-sm text-emerald-400"></i> Filtrlar
                 </button>
@@ -1001,7 +1052,7 @@
                 <span class="text-base font-semibold text-slate-200 group-hover:text-emerald-400">AgrarGo Hub (Dispetcher)</span>
                 <span class="text-xs bg-amber-500/20 text-amber-400 px-3 py-1 rounded-full font-bold">Markaz</span>
             </a>
-            <a href="#" class="flex justify-between items-center p-5 hover:bg-white/10 transition group">
+            <a href="#" onclick="openEld(); return false;" class="flex justify-between items-center p-5 hover:bg-white/10 transition group">
                 <span class="text-base font-semibold text-slate-200 group-hover:text-emerald-400">ELD Tracking & Maps</span>
                 <span class="text-xs bg-purple-500/20 text-purple-400 px-3 py-1 rounded-full font-bold">Onlayn</span>
             </a>
@@ -1025,6 +1076,30 @@
             <div>AgrarGo Enterprise Platform v2.0</div>
         </div>
     </div>
+
+    <!-- PASTKI NAVIGATSIYA (faqat mobil) -->
+    <nav id="bottom-nav" aria-label="Asosiy navigatsiya">
+        <button type="button" class="bn-item" data-bn="home" aria-label="Asosiy">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/></svg>
+            <span>Asosiy</span>
+        </button>
+        <button type="button" class="bn-item" data-bn="market" aria-label="Bozor">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2.5 3.5h3l2.4 12h11l2-8.5H6.4"/></svg>
+            <span>Bozor</span>
+        </button>
+        <button type="button" class="bn-item" data-bn="prices" aria-label="Narxlar">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></svg>
+            <span>Narxlar</span>
+        </button>
+        <button type="button" class="bn-item" data-bn="eld" aria-label="ELD / Xarita">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1.5 6.5h12v9h-12z"/><path d="M13.5 9.5h4l3 3.2v2.8h-7"/><circle cx="6" cy="17.5" r="1.7"/><circle cx="17" cy="17.5" r="1.7"/></svg>
+            <span>ELD / Xarita</span>
+        </button>
+        <button type="button" class="bn-item" data-bn="cabinet" aria-label="Kabinet">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.8"/><path d="M4.5 21c.6-4 3.8-6.2 7.5-6.2s6.9 2.2 7.5 6.2"/></svg>
+            <span id="bn-cabinet-label">Kabinet</span>
+        </button>
+    </nav>
 
     <!-- HERO SECTION (Updated with Left Rotating Logo Space & Right Text) -->
     <header class="relative min-h-[80vh] flex items-center justify-center pt-16 pb-20 px-6 sm:px-12 overflow-hidden">
@@ -2522,6 +2597,10 @@
                 closeAccountMenu();
             }
             if (typeof renderDashHeader === 'function') renderDashHeader();
+            try { bnSync(); } catch (e) { /* pastki panel hali yaratilmagan */ }
+            const al = document.getElementById('auth-nav-btn');
+            al.setAttribute('aria-label', user ? user.fullName : 'Kabinetga Kirish');
+            al.title = user ? user.fullName : 'Kabinetga Kirish';
         }
 
         // Sahifa ochilganda sessiya yangilanadi (rasm, rol ma'lumotlari); token yaroqsiz bo'lsa jimgina tozalanadi
@@ -3814,6 +3893,7 @@
             const user = currentUser();
             if (!user) return;
             dashTab = tab;
+            try { bnSync(); } catch (e) {}
             document.querySelectorAll('.dash-tab').forEach(function (b) {
                 const on = b.dataset.tab === tab;
                 b.classList.toggle('active', on);
@@ -11010,6 +11090,75 @@
             wrap.appendChild(bdChips(s.price, role, role === 'DRIVER' && viewer === 'driver-open' ? null : function () { openShipmentPrice(s, role); }));
             return wrap;
         }
+
+        // ===== ELD / Xarita: yon menyu va pastki navigatsiya uchun yagona kirish nuqtasi =====
+        // Haydovchi: harakat jurnali (ELD); fermer/market: jonli xaritali yuklar; admin/dispetcher: yuklar. Kirmagan: haydovchi tanishtiruv sahifasi.
+        function openEld() {
+            if (sidebar.classList.contains('open')) toggleSidebar();
+            const user = currentUser();
+            if (!user) return openRolePage('DRIVER');
+            const tab = { DRIVER: 'eld', FARMER: 'shipments', MARKET: 'shipments', ADMIN: 'adm-shipments', DISPATCHER: 'whboard' }[user.role];
+            openDashboard(tab);
+        }
+
+        // ===== Mobil header: yig'iladigan qidiruv =====
+        (function () {
+            const nav = document.getElementById('main-nav');
+            const btn = document.getElementById('nav-search-toggle');
+            const input = document.getElementById('market-search');
+            const set = function (open) {
+                nav.classList.toggle('search-open', open);
+                btn.setAttribute('aria-expanded', String(open));
+                if (open) setTimeout(function () { input.focus(); }, 60);
+            };
+            btn.addEventListener('click', function () { set(!nav.classList.contains('search-open')); });
+            input.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !input.value) set(false); });
+            document.getElementById('market-search-btn').addEventListener('click', function () { if (window.innerWidth <= 768 && input.value.trim()) nav.classList.add('search-open'); });
+        })();
+
+        // ===== Pastki navigatsiya (Bottom Nav) =====
+        const bottomNav = document.getElementById('bottom-nav');
+        function bnCloseOverlays() {
+            if (dashboardView.classList.contains('open')) closeDashboard();
+            if (rolePage.classList.contains('open')) closeRolePage();
+            if (sidebar.classList.contains('open')) toggleSidebar();
+            closeAccountMenu();
+        }
+        function bnGo(id) {
+            const user = currentUser();
+            if (id === 'home') { bnCloseOverlays(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+            else if (id === 'market') { bnCloseOverlays(); scrollToMarket(); }
+            else if (id === 'prices') {
+                if (user) { if (sidebar.classList.contains('open')) toggleSidebar(); openDashboard('prices'); }
+                else { afterLoginAction = function () { openDashboard('prices'); }; openAuthModal('login'); }
+            }
+            else if (id === 'eld') openEld();
+            else if (id === 'cabinet') { if (user) { if (rolePage.classList.contains('open')) closeRolePage(); openDashboard(); } else openAuthModal('login'); }
+            setTimeout(bnSync, 60);
+        }
+        function bnActive() {
+            if (dashboardView.classList.contains('open')) return dashTab === 'prices' ? 'prices' : (dashTab === 'eld' || dashTab === 'adm-shipments' ? 'eld' : 'cabinet');
+            if (rolePage.classList.contains('open')) return rpRole === 'DRIVER' ? 'eld' : null;
+            const m = document.getElementById('market').getBoundingClientRect();
+            if (m.top < window.innerHeight * 0.55 && m.bottom > window.innerHeight * 0.3) return 'market';
+            return window.scrollY < window.innerHeight * 0.6 ? 'home' : null;
+        }
+        function bnSync() {
+            const cur = bnActive();
+            bottomNav.querySelectorAll('.bn-item').forEach(function (b) {
+                const on = b.dataset.bn === cur;
+                b.classList.toggle('active', on);
+                if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+            });
+            document.getElementById('bn-cabinet-label').textContent = T(currentUser() ? 'Kabinet' : 'Kirish');
+            document.body.classList.toggle('bn-hide', notFoundView.classList.contains('open'));
+        }
+        bottomNav.addEventListener('click', function (e) { const b = e.target.closest('[data-bn]'); if (b) bnGo(b.dataset.bn); });
+        let bnTick = false;
+        window.addEventListener('scroll', function () { if (bnTick) return; bnTick = true; requestAnimationFrame(function () { bnTick = false; bnSync(); }); }, { passive: true });
+        [dashboardView, rolePage, notFoundView].forEach(function (n) { new MutationObserver(bnSync).observe(n, { attributes: true, attributeFilter: ['class'] }); });
+        window.addEventListener('resize', bnSync);
+        bnSync();
 
         startLiveReviews();
         routeRoleHash();
