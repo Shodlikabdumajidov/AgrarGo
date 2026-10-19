@@ -30,6 +30,13 @@ export class ShipmentController {
     return this.shipments.accept(this.driver(user), id);
   }
 
+  /** Smart-taklif: LTL e'londagi qolgan joyga sig'adigan shu yo'nalishdagi boshqa yuklar */
+  @Get(':id/ltl-suggestions')
+  @Roles(Role.DRIVER)
+  ltlSuggestions(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string) {
+    return this.shipments.ltlSuggestions(this.driver(user).id, id);
+  }
+
   @Post(':id/release')
   @Roles(Role.DRIVER)
   release(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string) {

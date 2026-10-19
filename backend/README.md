@@ -186,3 +186,9 @@ Frontend ildizida: `manifest.json`, `sw.js` (Service Worker), `offline.html`, `i
 ## O'quv qo'llanma (`/guide`)
 - `GET /guide?lang=uz|ru|en[&role=FARMER|DRIVER|MARKET|DISPATCHER]` — ommaviy JSON (rollar → mavzular → qadamlar).
 - `GET /guide/pdf?lang=&role=` — brendlangan PDF (muqova, mundarija, qadam kartochkalari, Escrow sxemasi).
+
+## LTL (qisman yuklar) va Yuk radari
+- Haydovchi e'loni (`DriverPost`) endi `loadMode` (`FTL` | `LTL`), `maxCapacityKg`, `availableCapacityKg`, `lat/lng` (taxminiy, ~5 km gridga yaxlitlanadi) maydonlariga ega. Mavjud e'lonlar migratsiyada FTL, sig'im = eski `capacityKg` bo'lib ko'chiriladi.
+- LTL e'loni bor haydovchi `POST /shipments/:id/accept` bilan bir reysda bir nechta yuk oladi: og'irlik e'londagi bo'sh joydan atomik (bitta SQL UPDATE) ayriladi; sig'masa `409`. Yuk qaytarilsa (`release`), yetkazilsa (`DELIVERED`) yoki ombor buyurtmasi bekor bo'lsa joy bir marta tiklanadi. Javobdagi `ltl` — e'lonning joriy sig'imi.
+- `GET /shipments/:id/ltl-suggestions` (DRIVER) — qolgan joyga sig'adigan, bir manzil viloyatidagi, yaqin (≤80 km) olib ketish joyli va to'lovi kafolatlangan (HELD) boshqa yuklar.
+- Radiusli qidiruv: `GET /driver-posts` va `GET /shipments/available` `lat`, `lng`, `radiusKm` (1–500) qabul qiladi (uchalasi birga, aks holda `400`). Bounding box + Haversine (xom SQL, bog'langan parametrlar), natija masofa (`distanceKm`) bo'yicha tartiblanadi. Yuk nuqtasi — fermer koordinatasi (5 km gridga yaxlitlangan) yoki viloyat markazi; aniq manzil yashirin.

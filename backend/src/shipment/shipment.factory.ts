@@ -1,4 +1,11 @@
 import { Prisma, ShipmentStatus } from '@prisma/client';
+import { regionCenter, snapPoint } from '../trust/geo';
+
+/** Yuk olinadigan joyning taxminiy nuqtasi: fermer koordinatasi (5 km gridga yaxlitlangan) yoki viloyat markazi */
+export function originPoint(region: string, lat?: number | null, lng?: number | null): { originLat: number | null; originLng: number | null } {
+  const c = lat != null && lng != null ? snapPoint(lat, lng) : regionCenter(region);
+  return { originLat: c ? c[0] : null, originLng: c ? c[1] : null };
+}
 
 /** Tasdiqlangan bron uchun yuk tashish buyurtmasini yaratadi (bron tasdiqlangan tranzaksiya ichida chaqiriladi). */
 export async function createShipmentForBooking(tx: Prisma.TransactionClient, bookingId: string) {
@@ -9,7 +16,7 @@ export async function createShipmentForBooking(tx: Prisma.TransactionClient, boo
       marketId: true,
       urgent: true,
       product: {
-        select: { name: true, category: true, farmerId: true, farmer: { select: { region: true, district: true, address: true } } },
+        select: { name: true, category: true, farmerId: true, farmer: { select: { region: true, district: true, address: true, latitude: true, longitude: true } } },
       },
       market: { select: { region: true, district: true, address: true } },
     },
@@ -30,6 +37,7 @@ export async function createShipmentForBooking(tx: Prisma.TransactionClient, boo
       originRegion: from.region,
       originDistrict: from.district,
       originAddress: from.address,
+      ...originPoint(from.region, from.latitude, from.longitude),
       destRegion: to.region,
       destDistrict: to.district,
       destAddress: to.address,
@@ -72,6 +80,7 @@ export async function createShipmentForWarehouseOrder(tx: Prisma.TransactionClie
       originRegion: warehouse.region,
       originDistrict: warehouse.district,
       originAddress: warehouse.address,
+      ...originPoint(warehouse.region),
       destRegion: order.market.region,
       destDistrict: order.market.district,
       destAddress: order.market.address,

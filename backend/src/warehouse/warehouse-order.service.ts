@@ -1,3 +1,4 @@
+import { restoreLtl } from '../shipment/ltl';
 import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma, Role, ShipmentStatus, StockMovementType, WarehouseItemStatus, WarehouseOrderStatus, WarehouseZone } from '@prisma/client';
 import { PaymentService } from '../payment/payment.service';
@@ -194,6 +195,7 @@ export class WarehouseOrderService {
         const cancelled = await tx.shipment.updateMany({ where: { id: sh.id, status: { in: [ShipmentStatus.OPEN, ShipmentStatus.LOADING] } }, data: { status: ShipmentStatus.CANCELLED } });
         if (cancelled.count === 0) throw new ConflictException("Yuk allaqachon yo'lda: bekor qilib bo'lmaydi");
         await tx.shipmentEvent.create({ data: { shipmentId: sh.id, status: ShipmentStatus.CANCELLED } });
+        await restoreLtl(tx, sh.id); // LTL: band qilingan joy qaytadi
       }
       await tx.$executeRaw`UPDATE "WarehouseItem" SET "reservedKg" = "reservedKg" - ${order.quantityKg}::numeric, "updatedAt" = now() WHERE id = ${order.itemId}`;
       await this.payments.refundForWarehouseOrder(tx, id, staff ? user.role : 'MARKET', staff ? 'Buyurtma bekor qilindi (dispetcher)' : 'Buyurtma bekor qilindi');

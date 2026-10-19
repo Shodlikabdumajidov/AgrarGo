@@ -1,3 +1,4 @@
+import { RadiusQuery } from '../../common/geo-search';
 import { ShipmentStatus } from '@prisma/client';
 import { Transform } from 'class-transformer';
 import { IsEnum, IsOptional, IsString, MaxLength } from 'class-validator';
@@ -12,7 +13,7 @@ export class ListShipmentsQuery {
   status?: ShipmentStatus;
 }
 
-export class AvailableShipmentsQuery {
+export class AvailableShipmentsQuery extends RadiusQuery {
   // Qayerdan olib ketilishi bo'yicha viloyat filtri
   @IsOptional()
   @Transform(emptyToUndefined)

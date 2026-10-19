@@ -16,3 +16,29 @@ export function routeKm(from: string, to: string): number {
   const h = Math.sin(dLat / 2) ** 2 + Math.cos(rad(a[0])) * Math.cos(rad(b[0])) * Math.sin(dLng / 2) ** 2;
   return Math.round(2 * 6371 * Math.asin(Math.sqrt(h)) * 1.25);
 }
+
+/** Viloyat markazi [lat, lng]; noma'lum bo'lsa null */
+export const regionCenter = (region: string): [number, number] | null => CENTERS[normRegion(region)] ?? null;
+/** Matn ichidan viloyat nomini topadi ("Samarqand sh." -> samarqand markazi) */
+export function findRegionCenter(...texts: (string | null | undefined)[]): [number, number] | null {
+  for (const t of texts) {
+    if (!t) continue;
+    const n = normRegion(t);
+    for (const [name, c] of Object.entries(CENTERS)) if (n.includes(name.replace(/ shahri| viloyati/g, ''))) return c;
+  }
+  return null;
+}
+/** Koordinatani gridga yaxlitlash: aniq joy sizib chiqmasin (step=0.05 ~ 5 km) */
+export const roundCoord = (v: number, step = 0.05) => Math.round(v / step) * step;
+export const snapPoint = (lat: number, lng: number, step = 0.05): [number, number] => [Number(roundCoord(lat, step).toFixed(4)), Number(roundCoord(lng, step).toFixed(4))];
+
+/** Ikki nuqta orasidagi to'g'ri chiziq masofasi (km), Haversine */
+export function haversineKm(aLat: number, aLng: number, bLat: number, bLng: number): number {
+  const dLat = rad(bLat - aLat), dLng = rad(bLng - aLng);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(rad(aLat)) * Math.cos(rad(bLat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * 6371 * Math.asin(Math.sqrt(h));
+}
+export function centersSqlCase(col: string, idx: 0 | 1): string {
+  const whens = Object.entries(CENTERS).map(([k, v]) => `WHEN lower(${col}) = '${k.replace(/'/g, "''")}' THEN ${v[idx]}`);
+  return `CASE ${whens.join(' ')} END`;
+}

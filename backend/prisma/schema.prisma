@@ -16,42 +16,42 @@ enum Role {
 }
 
 model User {
-  id           String   @id @default(uuid())
-  phone        String   @unique
-  email        String?  @unique
-  passwordHash String
-  role         Role     @default(FARMER)
-  fullName     String
-  avatarUrl    String?
+  id                         String    @id @default(uuid())
+  phone                      String    @unique
+  email                      String?   @unique
+  passwordHash               String
+  role                       Role      @default(FARMER)
+  fullName                   String
+  avatarUrl                  String?
   // Fermer va market uchun shaxsiy orqa fon muqovasi (cover banner), /uploads/covers/... yo'li
-  coverUrl     String?
+  coverUrl                   String?
   // Obuna: ro'yxatdan o'tganda 1 oylik bepul sinov; to'lovdan keyin subscriptionEndsAt uzaytiriladi.
   // Kirish huquqi = ikkalasidan kechroq sana. Admin/dispetcherlarda bo'sh (obuna talab qilinmaydi).
-  trialEndsAt        DateTime?
-  subscriptionEndsAt DateTime?
+  trialEndsAt                DateTime?
+  subscriptionEndsAt         DateTime?
   // Shaxsni tasdiqlash (KYC): haydovchida hujjatlar+Face ID, fermer/marketda administrator tasdig'i
-  isVerified      Boolean   @default(false)
-  verifiedAt      DateTime?
-  kycStatus       KycStatus @default(NONE)
-  kycRejectReason String?
+  isVerified                 Boolean   @default(false)
+  verifiedAt                 DateTime?
+  kycStatus                  KycStatus @default(NONE)
+  kycRejectReason            String?
   // Parol o'zgarganda/tiklanganda oshiriladi: eski JWT tokenlar darhol yaroqsiz bo'ladi
-  tokenVersion Int      @default(0)
-  isActive     Boolean  @default(true)
+  tokenVersion               Int       @default(0)
+  isActive                   Boolean   @default(true)
   // Telegram bot: chat ID (bitta chat — bitta akkaunt) va bog'lash uchun vaqtinchalik bir martalik token.
   // Tokenning faqat SHA-256 xeshi saqlanadi; ochiq ko'rinishi faqat foydalanuvchiga (havolada) beriladi.
   telegramChatId             String?   @unique
   telegramAuthToken          String?   @unique
   telegramAuthTokenExpiresAt DateTime?
   telegramLinkedAt           DateTime?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt                  DateTime  @default(now())
+  updatedAt                  DateTime  @updatedAt
 
   farmer Farmer?
   driver Driver?
   market Market?
 
-  passwordResets PasswordReset[]
-  review         Review?
+  passwordResets       PasswordReset[]
+  review               Review?
   subscriptionPayments SubscriptionPayment[]
   kycDocuments         KycDocument[]
   ratingsGiven         ShipmentRating[]      @relation("RatingRater")
@@ -198,8 +198,8 @@ model Shipment {
   driverId         String?
   driver           Driver?         @relation(fields: [driverId], references: [id], onDelete: SetNull)
 
-  status ShipmentStatus @default(OPEN)
-  urgent Boolean        @default(false) // shoshilinch (bron belgisi nusxasi)
+  status  ShipmentStatus   @default(OPEN)
+  urgent  Boolean          @default(false) // shoshilinch (bron belgisi nusxasi)
   ratings ShipmentRating[]
 
   // Bron paytidagi ma'lumotlar nusxasi: keyin profil o'zgarsa ham marshrut o'zgarmaydi
@@ -217,6 +217,14 @@ model Shipment {
   deliveredAt DateTime?
   events      ShipmentEvent[]
 
+  // Yuk olinadigan joyning taxminiy nuqtasi (aniq manzil emas): radiusli qidiruv uchun
+  originLat Float?
+  originLng Float?
+  // LTL: shu yuk mashinaning qaysi e'lonidagi bo'sh joydan band qilingan (ltlKg != null — band)
+  ltlPostId String?
+  ltlPost   DriverPost? @relation(fields: [ltlPostId], references: [id], onDelete: SetNull)
+  ltlKg     Int?
+
   // Oxirgi ma'lum joylashuv (LocationLog'ning nusxasi): xaritani tez ko'rsatish uchun
   lastLat            Float?
   lastLng            Float?
@@ -229,6 +237,8 @@ model Shipment {
   updatedAt DateTime @updatedAt
 
   @@index([status, createdAt])
+  @@index([originLat, originLng])
+  @@index([ltlPostId])
   @@index([driverId, status])
   @@index([farmerId, status])
   @@index([marketId, status])
@@ -658,6 +668,11 @@ enum TrailerType {
   OTHER
 }
 
+enum LoadMode {
+  FTL
+  LTL
+}
+
 enum DriverExtra {
   LOADERS
   TEMP_CONTROL
@@ -672,25 +687,34 @@ model DriverPost {
   driverId String
   driver   Driver @relation(fields: [driverId], references: [id], onDelete: Cascade)
 
-  status           DriverPostStatus @default(AVAILABLE)
-  trailerType      TrailerType
-  capacityKg       Int
-  routes           String[]
-  workHours        String?
-  currentLocation  String
-  pickupEtaMinutes Int?
-  pricePerKm       Int?
-  priceNote        String?
-  extras           DriverExtra[]
-  description      String?
-  photos           String[]
-  deliveryEtaAt    DateTime?
-  returnPickupAt   DateTime?
-  wantsBackhaul    Boolean          @default(false)
-  isActive         Boolean          @default(true)
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
+  status              DriverPostStatus @default(AVAILABLE)
+  trailerType         TrailerType
+  capacityKg          Int
+  // Yuk tashish rejimi: FTL (to'liq yuk) yoki LTL (qisman yuklar yig'ish)
+  loadMode            LoadMode         @default(FTL)
+  maxCapacityKg       Int
+  availableCapacityKg Int
+  // Taxminiy joylashuv (grid ~5 km): radiusli qidiruv va xarita uchun
+  lat                 Float?
+  lng                 Float?
+  shipments           Shipment[]
+  routes              String[]
+  workHours           String?
+  currentLocation     String
+  pickupEtaMinutes    Int?
+  pricePerKm          Int?
+  priceNote           String?
+  extras              DriverExtra[]
+  description         String?
+  photos              String[]
+  deliveryEtaAt       DateTime?
+  returnPickupAt      DateTime?
+  wantsBackhaul       Boolean          @default(false)
+  isActive            Boolean          @default(true)
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
 
   @@index([isActive, status, createdAt])
   @@index([driverId])
+  @@index([lat, lng])
 }

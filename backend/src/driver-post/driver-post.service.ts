@@ -5,6 +5,8 @@ import { promises as fs } from 'fs';
 import { join } from 'path';
 import { PrismaService } from '../prisma/prisma.service';
 import { UPLOADS_DIR, detectImageExt } from '../profile/profile.service';
+import { idsWithinRadius, parseRadius } from '../common/geo-search';
+import { findRegionCenter, snapPoint } from '../trust/geo';
 import { TrustService } from '../trust/trust.service';
 import { CreateDriverPostDto, ListDriverPostsQuery, UpdateDriverPostDto } from './dto/driver-post.dto';
 
@@ -29,7 +31,7 @@ const include = { driver: { include: { user: true } } } satisfies Prisma.DriverP
 export class DriverPostService {
   constructor(private readonly prisma: PrismaService, private readonly trust: TrustService) {}
 
-  private async present(rows: PostRow[]) {
+  private async present(rows: PostRow[], distances?: Map<string, number>) {
     const trust = await this.trust.summaries(rows.map((r) => r.driver.userId));
     return rows.map((r) => {
       const u = r.driver.user, t = trust.get(u.id);
@@ -37,6 +39,8 @@ export class DriverPostService {
         id: r.id, status: r.status, trailerType: r.trailerType, capacityKg: r.capacityKg, routes: r.routes, workHours: r.workHours,
         currentLocation: r.currentLocation, pickupEtaMinutes: r.pickupEtaMinutes, pricePerKm: r.pricePerKm, priceNote: r.priceNote,
         extras: r.extras, description: r.description, photos: r.photos, deliveryEtaAt: r.deliveryEtaAt, returnPickupAt: r.returnPickupAt,
+        loadMode: r.loadMode, maxCapacityKg: r.maxCapacityKg, availableCapacityKg: r.availableCapacityKg, usedCapacityKg: r.maxCapacityKg - r.availableCapacityKg,
+        lat: r.lat, lng: r.lng, ...(distances?.has(r.id) && { distanceKm: distances.get(r.id) }),
         wantsBackhaul: r.wantsBackhaul, isActive: r.isActive, createdAt: r.createdAt, vehicleType: r.driver.vehicleType, region: r.driver.region,
         driver: {
           id: r.driverId, userId: u.id, fullName: u.fullName, avatarUrl: u.avatarUrl, phoneMasked: maskPhone(u.phone),
@@ -51,6 +55,15 @@ export class DriverPostService {
     const where: Prisma.DriverPostWhereInput = { isActive: true };
     if (query.status) where.status = query.status;
     if (query.trailerType) where.trailerType = query.trailerType;
+    if (query.loadMode) where.loadMode = query.loadMode;
+    // Radiusli qidiruv: Haversine (xom SQL) — radius ichidagi e'lonlar masofa bo'yicha tartiblanadi
+    const radius = parseRadius(query);
+    let distances: Map<string, number> | undefined;
+    if (radius) {
+      const hits = await idsWithinRadius(this.prisma, 'DriverPost', radius, 'lat', 'lng', Prisma.sql`"isActive" = TRUE`);
+      distances = new Map(hits.map((h) => [h.id, h.distanceKm]));
+      where.id = { in: hits.map((h) => h.id) };
+    }
     const extras = (query.extras ?? '').split(',').map((x) => x.trim()).filter((x): x is DriverExtra => x in DriverExtra);
     if (extras.length) where.extras = { hasEvery: extras };
     const and: Prisma.DriverPostWhereInput[] = [];
@@ -65,14 +78,15 @@ export class DriverPostService {
     if (and.length) where.AND = and;
     let rows = await this.prisma.driverPost.findMany({ where, include, orderBy: { createdAt: 'desc' }, take: 200 });
     // Yo'nalish qidiruvi: "samarqand" ham "Samarqand ↔ Toshkent" ni topsin
-    if (q || region) {
+    if (!radius && (q || region)) {
       const needle = (q || region).toLowerCase();
       const extra = await this.prisma.driverPost.findMany({ where: { ...where, AND: undefined, routes: { isEmpty: false } }, include, take: 400, orderBy: { createdAt: 'desc' } });
       const seen = new Set(rows.map((r) => r.id));
       for (const r of extra) if (!seen.has(r.id) && r.routes.some((x) => x.toLowerCase().includes(needle))) rows.push(r);
       rows = rows.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()).slice(0, 200);
     }
-    return this.present(rows);
+    if (distances) rows.sort((a, b) => distances!.get(a.id)! - distances!.get(b.id)!);
+    return this.present(rows, distances);
   }
 
   async mine(driverId: string) {
@@ -91,9 +105,15 @@ export class DriverPostService {
     if (!dto.routes.length) throw new BadRequestException("Kamida bitta yo'nalish kiriting");
     this.rules(dto, dto);
     const onRoute = dto.status === 'ON_ROUTE';
+    const driver = await this.prisma.driver.findUnique({ where: { id: driverId }, select: { region: true } });
+    const point = dto.lat !== undefined && dto.lng !== undefined ? snapPoint(dto.lat, dto.lng) : findRegionCenter(dto.currentLocation, driver?.region);
+    const loadMode = dto.loadMode ?? 'FTL';
+    const available = Math.min(dto.availableCapacityKg ?? dto.capacityKg, dto.capacityKg);
     const row = await this.prisma.driverPost.create({
       data: {
-        driverId, status: dto.status, trailerType: dto.trailerType, capacityKg: dto.capacityKg, routes: dto.routes, workHours: dto.workHours || null,
+        driverId, status: dto.status, trailerType: dto.trailerType, capacityKg: dto.capacityKg,
+        loadMode, maxCapacityKg: dto.capacityKg, availableCapacityKg: loadMode === 'LTL' ? available : dto.capacityKg,
+        lat: point ? point[0] : null, lng: point ? point[1] : null, routes: dto.routes, workHours: dto.workHours || null,
         currentLocation: dto.currentLocation, pickupEtaMinutes: dto.pickupEtaMinutes ?? null, pricePerKm: dto.pricePerKm ?? null, priceNote: dto.priceNote || null,
         extras: dto.extras ?? [], description: dto.description || null,
         deliveryEtaAt: onRoute ? dto.deliveryEtaAt ?? null : null, returnPickupAt: onRoute ? dto.returnPickupAt ?? null : null,
@@ -121,7 +141,15 @@ export class DriverPostService {
     const status = dto.status ?? cur.status;
     const eta = dto.deliveryEtaAt ?? cur.deliveryEtaAt ?? undefined, ret = dto.returnPickupAt ?? cur.returnPickupAt ?? undefined;
     this.rules({ deliveryEtaAt: eta, returnPickupAt: ret }, { status });
-    const data: Prisma.DriverPostUpdateInput = { ...dto, workHours: dto.workHours === undefined ? undefined : dto.workHours || null, priceNote: dto.priceNote === undefined ? undefined : dto.priceNote || null, description: dto.description === undefined ? undefined : dto.description || null };
+    const { lat, lng, capacityKg, availableCapacityKg, ...rest } = dto;
+    const data: Prisma.DriverPostUpdateInput = { ...rest, workHours: dto.workHours === undefined ? undefined : dto.workHours || null, priceNote: dto.priceNote === undefined ? undefined : dto.priceNote || null, description: dto.description === undefined ? undefined : dto.description || null };
+    if (capacityKg !== undefined || availableCapacityKg !== undefined) {
+      const max = capacityKg ?? cur.maxCapacityKg;
+      const avail = availableCapacityKg ?? cur.availableCapacityKg + (max - cur.maxCapacityKg);
+      Object.assign(data, { capacityKg: max, maxCapacityKg: max, availableCapacityKg: Math.max(0, Math.min(max, avail)) });
+    }
+    const point = lat !== undefined && lng !== undefined ? snapPoint(lat, lng) : dto.currentLocation ? findRegionCenter(dto.currentLocation) : null;
+    if (point) Object.assign(data, { lat: point[0], lng: point[1] });
     if (status === 'AVAILABLE') Object.assign(data, { deliveryEtaAt: null, returnPickupAt: null, wantsBackhaul: false });
     const row = await this.prisma.driverPost.update({ where: { id }, data, include });
     return (await this.present([row]))[0];

@@ -1,6 +1,7 @@
-import { DriverExtra, DriverPostStatus, TrailerType } from '@prisma/client';
+import { DriverExtra, DriverPostStatus, LoadMode, TrailerType } from '@prisma/client';
+import { RadiusQuery } from '../../common/geo-search';
 import { Transform, Type } from 'class-transformer';
-import { ArrayMaxSize, ArrayUnique, IsArray, IsBoolean, IsDate, IsEnum, IsInt, IsOptional, IsString, Length, Max, Min } from 'class-validator';
+import { ArrayMaxSize, ArrayUnique, IsArray, IsBoolean, IsDate, IsEnum, IsInt, IsNumber, IsOptional, IsString, Length, Max, Min } from 'class-validator';
 
 const clean = ({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim().replace(/\s+/g, ' ') : value);
 const cleanList = ({ value }: { value: unknown }) => (Array.isArray(value) ? value.map((v) => (typeof v === 'string' ? v.trim().replace(/\s+/g, ' ') : v)) : value);
@@ -28,6 +29,19 @@ export class CreateDriverPostDto {
 
   @IsOptional() @Transform(clean) @IsString() @Length(0, 60)
   workHours?: string;
+
+  @IsOptional() @IsEnum(LoadMode, { message: "Yuk tashish rejimi FTL yoki LTL bo'lishi kerak" })
+  loadMode?: LoadMode;
+
+  /** Joriy bo'sh joy (kg); berilmasa — to'liq sig'im */
+  @IsOptional() @Type(() => Number) @IsInt() @Min(0) @Max(60_000)
+  availableCapacityKg?: number;
+
+  @IsOptional() @Type(() => Number) @IsNumber() @Min(-90) @Max(90)
+  lat?: number;
+
+  @IsOptional() @Type(() => Number) @IsNumber() @Min(-180) @Max(180)
+  lng?: number;
 
   @Transform(clean)
   @IsString()
@@ -69,6 +83,10 @@ export class UpdateDriverPostDto {
   @IsOptional() @Transform(cleanList) @IsArray() @ArrayMaxSize(8) @IsString({ each: true }) @Length(2, 60, { each: true }) routes?: string[];
   @IsOptional() @Transform(clean) @IsString() @Length(0, 60) workHours?: string;
   @IsOptional() @Transform(clean) @IsString() @Length(2, 80) currentLocation?: string;
+  @IsOptional() @IsEnum(LoadMode) loadMode?: LoadMode;
+  @IsOptional() @Type(() => Number) @IsInt() @Min(0) @Max(60_000) availableCapacityKg?: number;
+  @IsOptional() @Type(() => Number) @IsNumber() @Min(-90) @Max(90) lat?: number;
+  @IsOptional() @Type(() => Number) @IsNumber() @Min(-180) @Max(180) lng?: number;
   @IsOptional() @Transform(emptyToUndef) @Type(() => Number) @IsInt() @Min(0) @Max(2880) pickupEtaMinutes?: number;
   @IsOptional() @Transform(emptyToUndef) @Type(() => Number) @IsInt() @Min(1) @Max(1_000_000) pricePerKm?: number;
   @IsOptional() @Transform(clean) @IsString() @Length(0, 120) priceNote?: string;
@@ -80,7 +98,8 @@ export class UpdateDriverPostDto {
   @IsOptional() @IsBoolean() isActive?: boolean;
 }
 
-export class ListDriverPostsQuery {
+export class ListDriverPostsQuery extends RadiusQuery {
+  @IsOptional() @IsEnum(LoadMode) loadMode?: LoadMode;
   @IsOptional() @Transform(clean) @IsString() @Length(0, 80) q?: string;
   @IsOptional() @IsEnum(DriverPostStatus) status?: DriverPostStatus;
   @IsOptional() @IsEnum(TrailerType) trailerType?: TrailerType;

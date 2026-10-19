@@ -821,6 +821,27 @@
         .gd-node-t { font-size: .68rem; font-weight: 700; color: #e2e8f0; line-height: 1.25; }
         .gd-arrow { align-self: center; color: rgba(var(--tone), .8); font-size: .8rem; }
         @media (max-width: 520px) { .gd-art { display: none; } .gd-arrow { display: none; } }
+        #ltl-modal { opacity: 0; visibility: hidden; transition: opacity .3s ease, visibility .3s ease; }
+        #ltl-modal.open { opacity: 1; visibility: visible; }
+        #ltl-modal .auth-card { transform: translateY(20px) scale(.96); transition: transform .4s cubic-bezier(.16,1,.3,1); }
+        #ltl-modal.open .auth-card { transform: none; }
+        .ltl-bar { --pct: 0; }
+        .ltl-track { position: relative; height: .85rem; border-radius: 9999px; background: rgba(255,255,255,.1); overflow: hidden; border: 1px solid rgba(255,255,255,.12); }
+        .ltl-fill { height: 100%; width: calc(var(--pct) * 1%); border-radius: 9999px; background: linear-gradient(90deg, #34d399, #38bdf8); transition: width .8s cubic-bezier(.16,1,.3,1); }
+        .ltl-bar.full .ltl-fill { background: linear-gradient(90deg, #fbbf24, #f43f5e); }
+        .ltl-widget { border-radius: 1.25rem; padding: 1rem 1.1rem; border: 1px solid rgba(56,189,248,.35); background: linear-gradient(135deg, rgba(14,165,233,.14), rgba(16,185,129,.1)); }
+        .rd-panel { border-radius: 1.25rem; padding: 1rem; border: 1px solid rgba(52,211,153,.3); background: rgba(15,23,42,.55); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+        .rd-range { width: 100%; accent-color: #10b981; }
+        .rd-ticks { display: flex; justify-content: space-between; font-size: .75rem; font-weight: 700; color: #94a3b8; }
+        .rd-ticks .on { color: #6ee7b7; }
+        .rd-map { height: 18rem; border-radius: 1rem; overflow: hidden; border: 1px solid rgba(255,255,255,.14); z-index: 0; }
+        .rd-pulse { position: relative; display: block; width: 18px; height: 18px; }
+        .rd-pulse i { position: absolute; inset: 3px; border-radius: 9999px; background: #10b981; border: 2px solid #ecfdf5; box-shadow: 0 0 0 0 rgba(16,185,129,.7); animation: rdPulse 1.8s infinite; }
+        .rd-pulse.load i { background: #f59e0b; box-shadow: 0 0 0 0 rgba(245,158,11,.7); }
+        .rd-pulse.me i { background: #38bdf8; box-shadow: 0 0 0 0 rgba(56,189,248,.7); }
+        @keyframes rdPulse { 70% { box-shadow: 0 0 0 14px rgba(16,185,129,0); } 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); } }
+        .rd-hit { outline: 2px solid #34d399; outline-offset: 3px; }
+        @media (prefers-reduced-motion: reduce) { .rd-pulse i { animation: none; } .ltl-fill { transition: none; } }
         .pr-search { position: relative; }
         .pr-search i { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: #6ee7b7; pointer-events: none; }
         .pr-search input { width: 100%; min-height: 3.25rem; padding: .8rem 1rem .8rem 2.8rem; border-radius: 1rem; background: rgba(15,23,42,.6); border: 1px solid rgba(255,255,255,.16); color: #f1f5f9; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); transition: border-color .2s, box-shadow .2s; }
@@ -2158,9 +2179,21 @@
                             <option value="OTHER">Boshqa</option>
                         </select>
                     </div>
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="dp-mode">Yuk tashish rejimi</label>
+                        <select id="dp-mode" class="auth-input">
+                            <option value="FTL">Faqat to'liq yuk (FTL)</option>
+                            <option value="LTL">Qisman yuklar yig'ishga tayyor (LTL)</option>
+                        </select>
+                        <p id="dp-mode-hint" class="hidden text-xs text-emerald-300/90 mt-1.5">LTL: bir reysda bir nechta kichik yuk olasiz. Yuk olganingizda bo'sh joy kamayadi, yetkazilgach tiklanadi.</p>
+                    </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="dp-capacity">Sig'im (kg)</label>
+                        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="dp-capacity">Umumiy sig'im (kg)</label>
                         <input id="dp-capacity" type="number" min="100" max="60000" step="1" inputmode="numeric" placeholder="Masalan: 20000" class="auth-input">
+                    </div>
+                    <div id="dp-avail-wrap" class="hidden">
+                        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="dp-avail">Hozirgi bo'sh joy (kg)</label>
+                        <input id="dp-avail" type="number" min="0" max="60000" step="1" inputmode="numeric" placeholder="Bo'sh qoldirsangiz — to'liq sig'im" class="auth-input">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="dp-hours">Ish vaqti <span class="text-slate-500 normal-case font-medium">(ixtiyoriy)</span></label>
@@ -2176,6 +2209,8 @@
                     <div>
                         <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="dp-loc">Hozirgi joylashuv</label>
                         <input id="dp-loc" type="text" maxlength="80" placeholder="Masalan: Samarqand sh." class="auth-input">
+                        <button type="button" id="dp-geo-btn" class="mt-2 text-xs font-bold text-emerald-300 hover:text-emerald-200 inline-flex items-center gap-1.5"><i class="fa-solid fa-location-crosshairs"></i> <span>Joylashuvimni aniqlash</span></button>
+                        <span id="dp-geo-text" class="block text-[11px] text-slate-500 mt-1"></span>
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="dp-eta">Yuklash joyiga yetib borish (daqiqa)</label>
@@ -2223,6 +2258,21 @@
                     <i class="fa-solid fa-check"></i> <span>E'lonni saqlash</span>
                 </button>
             </form>
+        </div>
+    </div>
+
+    <!-- LTL smart-taklif oynasi -->
+    <div id="ltl-modal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="ltl-title" onclick="if (event.target === this) closeLtlModal()">
+        <div class="auth-card glass relative w-full max-w-xl max-h-[92vh] overflow-y-auto rounded-3xl border border-emerald-500/25 shadow-2xl shadow-emerald-500/10 bg-gradient-to-b from-slate-900 to-emerald-950/30 p-5 sm:p-8">
+            <button type="button" onclick="closeLtlModal()" aria-label="Yopish" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl p-1 transition hover:rotate-90 duration-300"><i class="fa-solid fa-xmark"></i></button>
+            <div class="text-center space-y-2 mb-5">
+                <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold uppercase tracking-widest"><i class="fa-solid fa-boxes-packing"></i> <span>LTL</span></div>
+                <h2 id="ltl-title" class="text-xl sm:text-2xl font-extrabold tracking-tight"></h2>
+                <p id="ltl-sub" class="text-slate-400 text-sm"></p>
+            </div>
+            <div id="ltl-bar" class="mb-5"></div>
+            <div id="ltl-list" class="space-y-3"></div>
+            <button type="button" onclick="closeLtlModal()" class="mt-5 w-full py-3 rounded-2xl border border-white/15 text-sm font-bold text-slate-200 hover:border-emerald-500/50">Keyinroq</button>
         </div>
     </div>
 
