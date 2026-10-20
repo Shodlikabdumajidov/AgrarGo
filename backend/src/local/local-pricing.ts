@@ -51,3 +51,21 @@ export function codesMatch(a: string, b: string): boolean {
   for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
   return diff === 0;
 }
+
+/**
+ * Bir kuryer bitta Hub'dan bir nechta mahsulotni birga olib borsa, yetkazish haqi bitta: n ta buyurtma o'rtasida teng bo'linadi
+ * (tiyinlargacha; qoldiq birinchi buyurtmalarga). Yig'indi har doim to'liq haqqa teng. Biri bekor bo'lsa, faqat o'z ulushi qaytadi.
+ */
+export function splitCourierFee(fee: Prisma.Decimal.Value, n: number): Prisma.Decimal[] {
+  const total = D(fee);
+  if (n <= 1) return [total];
+  const cents = total.mul(100).toDecimalPlaces(0, Prisma.Decimal.ROUND_HALF_UP);
+  const base = cents.div(n).floor();
+  const rem = cents.minus(base.mul(n)).toNumber();
+  return Array.from({ length: n }, (_, i) => base.plus(i < rem ? 1 : 0).div(100));
+}
+
+/** Buyurtma narxida kuryer haqini boshqa qiymatga almashtiradi (jami qayta hisoblanadi) */
+export function withCourierFee(q: LocalQuote, courierFee: Prisma.Decimal): LocalQuote {
+  return { ...q, courierFee, total: q.productAmount.add(q.hubFee).add(courierFee).add(q.serviceFee) };
+}

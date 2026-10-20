@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import { codesMatch, localQuote, localSplits } from './local-pricing';
+import { codesMatch, localQuote, localSplits, splitCourierFee, withCourierFee } from './local-pricing';
 
 const cfg = { hubPercent: 5, hubMin: 2000, courierFee: 12000, servicePercent: 3, serviceMin: 500 };
 
@@ -41,5 +41,23 @@ describe('codesMatch', () => {
     expect(codesMatch('1234', '1234')).toBe(true);
     expect(codesMatch('1234', '1235')).toBe(false);
     expect(codesMatch('1234', '123')).toBe(false);
+  });
+});
+
+describe('splitCourierFee', () => {
+  const sum = (a: any[]) => a.reduce((x, y) => x.add(y), new Prisma.Decimal(0));
+  it('yig\'indi to\'liq haqqa teng, farq 1 tiyindan oshmaydi', () => {
+    for (const [fee, n] of [[12000, 1], [12000, 2], [12000, 3], [10000, 3], [12000.01, 4], [100, 7]] as [number, number][]) {
+      const parts = splitCourierFee(fee, n);
+      expect(parts).toHaveLength(n);
+      expect(sum(parts).toFixed(2)).toBe(new Prisma.Decimal(fee).toFixed(2));
+      const nums = parts.map(Number);
+      expect(Math.max(...nums) - Math.min(...nums)).toBeLessThanOrEqual(0.0100001);
+    }
+  });
+  it('withCourierFee jami yig\'indisini saqlaydi', () => {
+    const q = localQuote(cfg, 10, 4000);
+    const r = withCourierFee(q, new Prisma.Decimal(6000));
+    expect(r.total.toFixed(2)).toBe(q.productAmount.add(q.hubFee).add(6000).add(q.serviceFee).toFixed(2));
   });
 });

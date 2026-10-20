@@ -306,4 +306,71 @@ describe('Rampalar (dock loading) va birlashgan savat (e2e)', () => {
     expect(Number(st.reservedKg)).toBe(40); expect(Number(st.weightKg)).toBe(60);
     expect(await t.prisma.localOrder.count()).toBe(2);
   });
+
+  // ---------- Bir kuryer — bir nechta mahsulot ----------
+
+  it("bir Hub'dan 2 xil mahsulot: bitta yetkazish haqi (teng bo'lingan), umumiy kod, kuryer ikkalasini birga oladi va bitta kod bilan topshiradi", async () => {
+    const w = await cartWorld();
+    const c2 = await stocked(w.hub, w.staff, 'Piyoz', 80, 2500); // a bilan bir Hub
+    const items = [{ productId: w.a.product.id, quantityKg: 10 }, { productId: c2.product.id, quantityKg: 20 }];
+    const q = (await send('post', null, '/local/cart/quote', { items })).body;
+    expect(q.hubCount).toBe(1); expect(q.lines.every((l: any) => l.sharedCourier)).toBe(true);
+    expect(q.lines.reduce((s: number, l: any) => s + l.courierFee, 0)).toBe(12000); // bitta yetkazish haqi (LOCAL_COURIER_FEE)
+    const r = await send('post', w.consumer, '/local/orders/checkout-bulk', { items, ...w.addr });
+    expect(r.status).toBe(201); expect(r.body.totalPrice).toBe(q.totalPrice); expect(r.body.courierFee).toBe(12000);
+    const [o1, o2] = r.body.orders;
+    expect(o1.deliveryGroupId).toBeTruthy(); expect(o1.deliveryGroupId).toBe(o2.deliveryGroupId);
+    expect(o1.deliveryCode).toBe(o2.deliveryCode);
+    expect(o1.courierFee + o2.courierFee).toBe(12000);
+    for (const o of r.body.orders) expect(o.splits.reduce((s: number, x: any) => s + x.amount, 0)).toBeCloseTo(o.totalPrice, 2);
+    const courier = await registerDriver(t.http, { region: 'Samarqand' });
+    await send('patch', courier, '/local/courier/mode', { enabled: true, hubId: w.hub.id });
+    // faqat biri tayyor: kuryerga ko'rinmaydi va olib bo'lmaydi
+    await send('post', w.staff, `/local/orders/${o1.id}/pack-start`, {}); await send('post', w.staff, `/local/orders/${o1.id}/packed`, {});
+    expect((await send('get', courier, '/local/courier/available')).body).toHaveLength(0);
+    const early = await send('post', courier, `/local/orders/${o1.id}/accept`, {});
+    expect(early.status).toBe(409); expect(early.body.message).toMatch(/tayyor/);
+    await send('post', w.staff, `/local/orders/${o2.id}/pack-start`, {}); await send('post', w.staff, `/local/orders/${o2.id}/packed`, {});
+    const av = (await send('get', courier, '/local/courier/available')).body;
+    expect(av).toHaveLength(1); expect(av[0].items).toHaveLength(2); expect(av[0].courierFee).toBe(12000);
+    // bitta buyurtmani olish ikkalasini oladi
+    const acc = await send('post', courier, `/local/orders/${o2.id}/accept`, {});
+    expect(acc.status).toBe(201);
+    const mine = (await send('get', courier, '/local/courier/mine')).body;
+    expect(mine.map((o: any) => o.status)).toEqual(['DELIVERING', 'DELIVERING']);
+    const st = await t.prisma.hubStock.findMany({ where: { productId: { in: [w.a.product.id, c2.product.id] } } });
+    expect(st.every((x) => Number(x.reservedKg) === 0)).toBe(true); // ikkalasi ombordan chiqdi
+    // noto'g'ri kod urinishlari guruhga umumiy; to'g'ri kod ikkalasini yakunlaydi
+    expect((await send('post', courier, `/local/orders/${o1.id}/deliver`, { code: '0000' === o1.deliveryCode ? '1111' : '0000' })).status).toBe(400);
+    expect((await t.prisma.localOrder.findMany({ select: { codeAttempts: true } })).every((x) => x.codeAttempts === 1)).toBe(true);
+    calls = [];
+    const done = await send('post', courier, `/local/orders/${o1.id}/deliver`, { code: o1.deliveryCode });
+    expect(done.body.status).toBe('COMPLETED');
+    expect((await t.prisma.localOrder.findMany()).every((x) => x.status === 'COMPLETED')).toBe(true);
+    const courierPayouts = calls.filter((c) => c.kind === 'payout' && c.paymentId.endsWith(':courier'));
+    expect(courierPayouts.reduce((s, c) => s + Number(c.amount), 0)).toBe(12000);
+  });
+
+  it("guruh: bittasi bekor bo'lsa faqat o'z ulushi qaytadi; 3 tadan ortiq mahsulotli guruh bitta yetkazish hisoblanadi", async () => {
+    const w = await cartWorld();
+    const extra = [await stocked(w.hub, w.staff, 'Piyoz', 80, 2500), await stocked(w.hub, w.staff, 'Sabzi2', 80, 2500), await stocked(w.hub, w.staff, 'Rediska', 80, 2500)];
+    const items = [w.a, ...extra].map((x) => ({ productId: x.product.id, quantityKg: 10 }));
+    const r = await send('post', w.consumer, '/local/orders/checkout-bulk', { items, ...w.addr });
+    expect(r.status).toBe(201); expect(r.body.orders).toHaveLength(4); expect(r.body.courierFee).toBe(12000);
+    const orders = r.body.orders;
+    // bittasini bekor qilish: aynan o'z jami qaytadi
+    calls = [];
+    const victim = orders[3];
+    expect((await send('post', w.consumer, `/local/orders/${victim.id}/cancel`, {})).body.status).toBe('CANCELLED');
+    const rf = calls.filter((c) => c.kind === 'refund'); expect(rf).toHaveLength(1); expect(Number(rf[0].amount)).toBe(victim.totalPrice);
+    for (const o of orders.slice(0, 3)) { await send('post', w.staff, `/local/orders/${o.id}/pack-start`, {}); await send('post', w.staff, `/local/orders/${o.id}/packed`, {}); }
+    const courier = await registerDriver(t.http, { region: 'Samarqand' });
+    await send('patch', courier, '/local/courier/mode', { enabled: true, hubId: w.hub.id });
+    const av = (await send('get', courier, '/local/courier/available')).body;
+    expect(av).toHaveLength(1); expect(av[0].items).toHaveLength(3); // bekor qilingani guruhdan chiqadi
+    expect((await send('post', courier, `/local/orders/${orders[0].id}/accept`, {})).status).toBe(201);
+    // xaridor tasdiqlasa ham hamma yo'ldagi birga yakunlanadi
+    expect((await send('post', w.consumer, `/local/orders/${orders[1].id}/confirm`, {})).body.status).toBe('COMPLETED');
+    expect((await t.prisma.localOrder.findMany({ where: { status: 'COMPLETED' } })).length).toBe(3);
+  });
 });

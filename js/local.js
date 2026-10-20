@@ -83,6 +83,9 @@ function lcSteps(status) {
     return wrap;
 }
 
+/** "Sabzi 10 kg + Pomidor 20 kg" */
+function lcItemsText(items) { return items.map(function (x) { return x.productName + ' ' + lcKg(x.quantityKg); }).join(' + '); }
+
 // ---------- Savatcha (localStorage) ----------
 const LCART_KEY = 'agrargo_cart_v1';
 function cartGet() { try { const v = JSON.parse(localStorage.getItem(LCART_KEY) || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
@@ -406,6 +409,7 @@ async function renderCartTab(user) {
         gh.appendChild(el('div', 'text-sm font-extrabold text-sky-300', '🏬 ' + g.hub.name + ' · ' + g.hub.region));
         gh.appendChild(el('div', 'text-xs text-slate-400', T('{0} ta mahsulot', g.items.length) + ' · ' + bdMoney(g.total)));
         box.appendChild(gh);
+        if (g.items.length > 1) box.appendChild(el('p', 'px-1 text-xs text-emerald-300', '🛵 ' + T("Bitta kuryer bu Hub'dan hammasini birga olib boradi: yetkazish haqi bitta, kod bitta.")));
         g.items.forEach(function (it) { box.appendChild(lineCard(it.l, it.q, null)); });
         nodes.push(box);
     });
@@ -413,7 +417,7 @@ async function renderCartTab(user) {
     const receipt = el('div', 'space-y-2');
     receipt.appendChild(el('div', 'text-[11px] font-bold uppercase tracking-wider text-slate-400', T('Umumiy chek')));
     receipt.appendChild(lcBreakdown(sum, T('{0} ta mahsulot', quote.okCount)));
-    receipt.appendChild(el('p', 'text-xs text-slate-400', T("Bitta to'lov: {0} ta alohida buyurtma ({1} ta Hub). Har biri o'z escrow'iga va topshirish kodiga ega.", quote.okCount, quote.hubCount)));
+    receipt.appendChild(el('p', 'text-xs text-slate-400', T("Bitta to'lov: {0} ta buyurtma, {1} ta yetkazish. Har bir buyurtma o'z escrow'iga ega.", quote.okCount, quote.deliveryCount || quote.hubCount)));
     nodes.push(receipt);
     if (!lcRequireConsumerSilent(user)) {
         nodes.push(el('p', 'text-sm text-amber-300', T("Buyurtma berish uchun «Xaridor» akkauntidan kiring.")));
@@ -505,6 +509,7 @@ function consumerOrderCard(o, reload) {
         code.appendChild(l); code.appendChild(el('b', '', o.deliveryCode));
         card.appendChild(code);
     }
+    if (o.deliveryGroupId) card.appendChild(el('p', 'text-xs text-emerald-300', '🛵 ' + T("Shu Hub'dagi boshqa mahsulotlar bilan bitta kuryerda, bir xil kod bilan keladi.")));
     if (o.courier) card.appendChild(el('p', 'text-sm text-sky-200', '🛵 ' + o.courier.name + ' · ' + o.courier.phone));
     if (o.cancelReason && o.status === 'CANCELLED') card.appendChild(el('p', 'text-xs text-slate-400', T('Sabab: {0}', o.cancelReason)));
     card.appendChild(lcBreakdown(o, lcKg(o.quantityKg)));
@@ -878,9 +883,10 @@ async function renderCourierTab(user) {
         avail.forEach(function (o) {
             const c = el('article', 'glass rounded-2xl border border-white/10 p-4 space-y-2');
             const top = el('div', 'flex items-start justify-between gap-3');
-            top.appendChild(el('div', 'min-w-0 font-extrabold text-white', o.productName + ' · ' + lcKg(o.quantityKg)));
+            top.appendChild(el('div', 'min-w-0 font-extrabold text-white break-words', lcItemsText(o.items)));
             top.appendChild(el('div', 'earn-amt !text-xl shrink-0', bdMoney(o.courierFee)));
             c.appendChild(top);
+            if (o.items.length > 1) c.appendChild(el('div', 'text-xs font-bold text-emerald-300', '📦 ' + T('Bitta yetkazish: {0} ta mahsulot birga olinadi', o.items.length)));
             c.appendChild(el('div', 'text-xs text-slate-300', '🏬 ' + o.hub.name + (o.hubAddress ? ' (' + o.hubAddress + ')' : '') + ' → 📍 ' + o.deliveryRegion + ', ' + o.deliveryDistrict));
             c.appendChild(el('div', 'text-[11px] text-slate-500', T("Aniq manzil va telefon buyurtmani olgandan keyin ochiladi.")));
             c.appendChild(actionBtn('fa-hand', 'Buyurtmani olish', true, async function () { try { await authed('POST', '/local/orders/' + o.id + '/accept'); renderCourierTab(user); } catch (err) { if (err.status !== 401) showToast(lcErr(err), 4500, 'error'); } }));
@@ -890,14 +896,21 @@ async function renderCourierTab(user) {
     const myActive = mine.filter(function (o) { return o.status === 'DELIVERING'; });
     nodes.push(el('h3', 'text-lg font-extrabold text-white mt-2', T("Yo'ldagi buyurtmalarim")));
     if (!myActive.length) nodes.push(el('p', 'text-sm text-slate-400', T("Hozir yo'lda buyurtma yo'q.")));
+    // Bir guruhdagi buyurtmalar (bir Hub, bir xaridor) bitta yetkazish: bitta karta, bitta kod
+    const delivered = {};
     myActive.forEach(function (o) {
+        const gid = o.deliveryGroupId || o.id;
+        if (delivered[gid]) return;
+        delivered[gid] = true;
+        const grp = myActive.filter(function (x) { return (x.deliveryGroupId || x.id) === gid; });
         const c = el('article', 'glass rounded-2xl border border-violet-500/30 p-4 space-y-2');
-        c.appendChild(el('div', 'font-extrabold text-white', o.productName + ' · ' + lcKg(o.quantityKg)));
+        c.appendChild(el('div', 'font-extrabold text-white break-words', lcItemsText(grp.map(function (x) { return { productName: x.productName, quantityKg: x.quantityKg }; }))));
+        if (grp.length > 1) c.appendChild(el('div', 'text-xs font-bold text-emerald-300', '📦 ' + T('Bitta yetkazish: {0} ta mahsulot birga olinadi', grp.length)));
         if (o.dock) c.appendChild(dockBadge(o.dock));
         c.appendChild(el('div', 'text-sm text-slate-200', '📍 ' + o.deliveryDistrict + ', ' + o.deliveryAddress));
         c.appendChild(el('div', 'text-sm text-sky-200', '👤 ' + o.consumerName + ' · ' + o.contactPhone));
         if (o.note) c.appendChild(el('div', 'text-xs text-slate-400', '💬 ' + o.note));
-        c.appendChild(el('div', 'text-xs text-emerald-300 font-bold', T("Yetkazib berish haqi: {0}", bdMoney(o.courierFee))));
+        c.appendChild(el('div', 'text-xs text-emerald-300 font-bold', T("Yetkazib berish haqi: {0}", bdMoney(grp.reduce(function (a, x) { return a + x.courierFee; }, 0)))));
         c.appendChild(actionBtn('fa-key', 'Kod bilan topshirish', true, function () {
             openWhForm({ title: 'Buyurtmani topshirish', sub: T("Xaridordan 4 xonali topshirish kodini oling"), submit: 'Topshirish', icon: 'fa-check',
                 fields: [{ name: 'code', label: 'Topshirish kodi', required: true, maxLength: 4, placeholder: '0000' }],

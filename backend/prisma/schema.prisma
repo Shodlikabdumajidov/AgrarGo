@@ -946,6 +946,8 @@ model LocalOrder {
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
 
+  // Bir checkout'dagi shu Hub'ning buyurtmalari bitta kuryer bilan bitta yetkaziladi: umumiy guruh, umumiy kod, kuryer haqi teng bo'lingan
+  deliveryGroupId String?
   // Savat: bir martalik umumiy to'lovdan ajratilgan buyurtmalar bitta checkout'ga bog'lanadi
   checkoutId String?
   checkout   LocalCheckout? @relation(fields: [checkoutId], references: [id], onDelete: Restrict)
@@ -956,6 +958,7 @@ model LocalOrder {
   payment Payment?
 
   @@index([checkoutId])
+  @@index([deliveryGroupId])
   @@index([pickupApptId])
   @@index([consumerId, createdAt])
   @@index([hubId, status])

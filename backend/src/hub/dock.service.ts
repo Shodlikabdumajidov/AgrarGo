@@ -322,7 +322,7 @@ export class DockService {
    * Kuryer buyurtmani olganda tegishli rampa yozuvini aniqlaydi: ko'rsatilgan bo'lsa — o'sha, aks holda hozirgi vaqtga mos keladigan o'ziniki.
    * Hub majburiy qilsa va yozuv bo'lmasa/vaqti kelmagan bo'lsa — 409. Yozuv "keldi" holatiga o'tadi.
    */
-  async attachPickup(tx: Tx, p: { userId: string; hubId: string; appointmentId?: string; maxOrders: number }): Promise<string | null> {
+  async attachPickup(tx: Tx, p: { userId: string; hubId: string; appointmentId?: string; maxOrders: number; addCount?: number }): Promise<string | null> {
     const hub = await tx.hub.findUniqueOrThrow({ where: { id: p.hubId }, select: { requireDockBooking: true } });
     const now = Date.now(), grace = this.env.DOCK_GRACE_MIN * 60_000;
     const inWindow = (a: { startsAt: Date; endsAt: Date }) => a.startsAt.getTime() - grace <= now && now <= a.endsAt.getTime() + grace;
@@ -340,7 +340,7 @@ export class DockService {
     }
     if (!appt) return null;
     const attached = await tx.localOrder.count({ where: { pickupApptId: appt.id } });
-    if (attached >= p.maxOrders) throw new ConflictException(`Bitta rampa yozuvida ${p.maxOrders} tadan ortiq buyurtma olinmaydi`);
+    if (attached + (p.addCount ?? 1) > p.maxOrders) throw new ConflictException(`Bitta rampa yozuvida ${p.maxOrders} tadan ortiq buyurtma olinmaydi`);
     if (appt.status === DockApptStatus.BOOKED) await tx.dockAppointment.updateMany({ where: { id: appt.id, status: DockApptStatus.BOOKED }, data: { status: DockApptStatus.ARRIVED, arrivedAt: new Date() } });
     return appt.id;
   }

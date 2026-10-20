@@ -105,3 +105,7 @@ Kitobni yuklab bo'lmadi. Internetni tekshirib, qayta urinib ko'ring. ‖ Не у
 AgrarBook topilmadi yoki eski versiya ‖ AgrarBook topilmadi yoki eski versiya ‖ AgrarBook topilmadi yoki eski versiya
 [Kitob] yuklanmadi: ‖ [Kitob] yuklanmadi: ‖ [Kitob] yuklanmadi:
 [Kitob] renderer: ‖ [Kitob] renderer: ‖ [Kitob] renderer:
+Bitta yetkazish: {0} ta mahsulot birga olinadi ‖ Одна доставка: {0} товара берутся вместе ‖ One delivery: {0} products are picked up together
+Bitta kuryer bu Hub'dan hammasini birga olib boradi: yetkazish haqi bitta, kod bitta. ‖ Один курьер заберёт всё с этого Hub вместе: одна плата за доставку, один код. ‖ One courier takes everything from this Hub together: one delivery fee, one code.
+Bitta to'lov: {0} ta buyurtma, {1} ta yetkazish. Har bir buyurtma o'z escrow'iga ega. ‖ Одна оплата: заказов {0}, доставок {1}. У каждого заказа свой эскроу. ‖ One payment: {0} orders, {1} deliveries. Each order has its own escrow.
+Shu Hub'dagi boshqa mahsulotlar bilan bitta kuryerda, bir xil kod bilan keladi. ‖ Приедет одним курьером вместе с другими товарами с этого Hub, с одним кодом. ‖ Arrives with the same courier as your other products from this Hub, with the same code.
