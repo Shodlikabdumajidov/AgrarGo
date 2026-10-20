@@ -1046,7 +1046,7 @@
         }
 
         // ===== «Mening e'lonlarim» raqamli kitobi (React + Framer Motion, lazy yuklanadi) =====
-        const BOOK_SRC = 'js/book/agrar-book.js?v=1';
+        const BOOK_SRC = 'js/book/agrar-book.js?v=2';
         let bookPromise = null, bookInst = null;
         function loadBookLib() {
             if (window.AgrarBook && window.AgrarBook.mount) return Promise.resolve(window.AgrarBook);

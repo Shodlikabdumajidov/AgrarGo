@@ -6,7 +6,7 @@
  *   (shaxsiy ma'lumotlar, to'lov va GPS har doim yangi bo'lishi shart).
  * Versiyani o'zgartirsangiz eski keshlar o'chiriladi.
  */
-const VERSION = 'v20';
+const VERSION = 'v21';
 const SHELL = `agrargo-shell-${VERSION}`;
 const RUNTIME = `agrargo-runtime-${VERSION}`;
 const RUNTIME_MAX = 80;

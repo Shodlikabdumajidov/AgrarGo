@@ -23,3 +23,11 @@ Saqlab bo'lmadi. Qayta urinib ko'ring. ‖ Не удалось сохранит�
 Oldingi ‖ Назад ‖ Previous
 Keyingi ‖ Далее ‖ Next
 Sahifa ‖ Страница ‖ Page
+Ochish uchun bosing yoki suring ‖ Нажмите или потяните, чтобы открыть ‖ Click or drag to open
+Mundarija (davomi) ‖ Содержание (продолжение) ‖ Contents (continued)
+Muqova ‖ Обложка ‖ Cover
+Ochish ‖ Открыть ‖ Open
+Mundarijadan e'lonni tanlang yoki sahifani varaqlang ‖ Выберите объявление в содержании или листайте страницы ‖ Pick a listing from the contents or turn the pages
+Mening e'lonlarim kitobi ‖ Книга «Мои объявления» ‖ "My Listings" book
+3D kitob ‖ 3D-книга ‖ 3D book
+Sahifani tanlash ‖ Выбор страницы ‖ Choose page
