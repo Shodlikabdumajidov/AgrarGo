@@ -373,4 +373,30 @@ describe('Rampalar (dock loading) va birlashgan savat (e2e)', () => {
     expect((await send('post', w.consumer, `/local/orders/${orders[1].id}/confirm`, {})).body.status).toBe('COMPLETED');
     expect((await t.prisma.localOrder.findMany({ where: { status: 'COMPLETED' } })).length).toBe(3);
   });
+
+  it("Hub xodimi: guruhni bitta bosishda qadoqlash (boshlash va tayyor), huquqlar, takroriy bosish", async () => {
+    const w = await cartWorld();
+    const c2 = await stocked(w.hub, w.staff, 'Piyoz', 80, 2500);
+    const r = await send('post', w.consumer, '/local/orders/checkout-bulk', { items: [{ productId: w.a.product.id, quantityKg: 10 }, { productId: c2.product.id, quantityKg: 20 }], ...w.addr });
+    const [o1, o2] = r.body.orders;
+    expect((await send('post', w.consumer, `/local/orders/${o1.id}/pack-group`, {})).status).toBe(403); // xaridor emas
+    expect((await send('post', w.staff2, `/local/orders/${o1.id}/pack-group`, {})).status).toBe(404); // boshqa Hub xodimi
+    const start = await send('post', w.staff, `/local/orders/${o2.id}/pack-group`, {});
+    expect(start.status).toBe(201); expect(start.body.map((x: any) => x.status)).toEqual(['PACKING', 'PACKING']); expect(start.body.every((x: any) => !x.packed)).toBe(true);
+    expect((await send('post', w.staff, `/local/orders/${o2.id}/pack-group`, {})).status).toBe(409); // allaqachon qadoqlashda
+    const ready = await send('post', w.staff, `/local/orders/${o1.id}/pack-group`, { ready: true });
+    expect(ready.status).toBe(201); expect(ready.body.every((x: any) => x.status === 'PACKING' && x.packed)).toBe(true);
+    expect((await send('post', w.staff, `/local/orders/${o1.id}/pack-group`, { ready: true })).status).toBe(409);
+    // kuryer endi ikkalasini bitta yetkazish sifatida ko'radi
+    const courier = await registerDriver(t.http, { region: 'Samarqand' });
+    await send('patch', courier, '/local/courier/mode', { enabled: true, hubId: w.hub.id });
+    expect((await send('get', courier, '/local/courier/available')).body[0].items).toHaveLength(2);
+    // PENDING dan to'g'ridan-to'g'ri tayyor (bitta bosish)
+    const r2 = await send('post', w.consumer, '/local/orders/checkout-bulk', { items: [{ productId: w.a.product.id, quantityKg: 10 }, { productId: c2.product.id, quantityKg: 10 }], ...w.addr });
+    const direct = await send('post', w.staff, `/local/orders/${r2.body.orders[0].id}/pack-group`, { ready: true });
+    expect(direct.body.every((x: any) => x.status === 'PACKING' && x.packed)).toBe(true);
+    // yakka (guruhsiz) buyurtma ham ishlaydi
+    const single = (await send('post', w.consumer, '/local/orders', { productId: w.b.product.id, quantityKg: 10, ...w.addr })).body;
+    expect((await send('post', w.staff2, `/local/orders/${single.id}/pack-group`, { ready: true })).body).toHaveLength(1);
+  });
 });

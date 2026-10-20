@@ -237,6 +237,27 @@ export class LocalOrderService {
     return this.get(user, id);
   }
 
+  /**
+   * Guruhni bitta bosishda qadoqlash: shu buyurtma bilan bir yetkazish guruhidagi (bir Hub, bir checkout) barcha faol buyurtmalar.
+   * ready=false: kutayotganlarini qadoqlashga o'tkazadi; ready=true: hammasini tayyor (kuryerga) qiladi, kutayotganlarini ham qadoqlab.
+   */
+  async packGroup(user: LocalUser, id: string, ready: boolean) {
+    const o = await this.staffOrder(user, id);
+    const members = o.deliveryGroupId
+      ? await this.prisma.localOrder.findMany({ where: { deliveryGroupId: o.deliveryGroupId, status: { in: [LocalOrderStatus.PENDING, LocalOrderStatus.PACKING] } }, select: { id: true } })
+      : [{ id }];
+    const ids = members.map((m) => m.id);
+    const started = await this.prisma.$transaction(async (tx) => {
+      const pend = await tx.localOrder.findMany({ where: { id: { in: ids }, status: LocalOrderStatus.PENDING }, select: { id: true } });
+      const a = await tx.localOrder.updateMany({ where: { id: { in: ids }, status: LocalOrderStatus.PENDING }, data: { status: LocalOrderStatus.PACKING, ...(ready && { packedAt: new Date() }) } });
+      const b = ready ? await tx.localOrder.updateMany({ where: { id: { in: ids }, status: LocalOrderStatus.PACKING, packedAt: null }, data: { packedAt: new Date() } }) : { count: 0 };
+      if (a.count + b.count === 0) throw new ConflictException("Guruhdagi buyurtmalar holati o'zgargan yoki allaqachon tayyor. Sahifani yangilang");
+      return pend.map((x) => x.id);
+    });
+    started.forEach((sid) => this.notify.localOrder(sid, 'PACKING'));
+    return Promise.all(ids.map((x) => this.get(user, x)));
+  }
+
   // ---------- Bekor qilish (xaridor / Hub / administrator) ----------
 
   async cancel(user: LocalUser, id: string, dto: CancelOrderDto) {

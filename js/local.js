@@ -710,7 +710,27 @@ async function renderHubOps(user) {
             if (rid !== dashRenderId) return;
             setTabBadge('hubops', list.filter(function (o) { return o.status === 'PENDING'; }).length);
             if (!list.length) return body.replaceChildren(emptyState({ art: 'bookings', compact: true, title: "Chakana buyurtma yo'q", text: "Xaridorlar buyurtma berganda shu yerda paydo bo'ladi." }));
-            body.replaceChildren.apply(body, list.map(function (o) { return hubOrderCard(o, user); }));
+            // Bir yetkazish guruhi (bir xaridor, bir Hub, 2+ mahsulot): bitta quti va guruhni bitta bosishda qadoqlash
+            const out = []; const seen = {};
+            list.forEach(function (o) {
+                if (!o.deliveryGroupId) return out.push(hubOrderCard(o, user));
+                if (seen[o.deliveryGroupId]) return;
+                seen[o.deliveryGroupId] = true;
+                const grp = list.filter(function (x) { return x.deliveryGroupId === o.deliveryGroupId; });
+                const live = grp.filter(function (x) { return x.status === 'PENDING' || x.status === 'PACKING'; });
+                const box = el('section', 'space-y-3 rounded-3xl border border-emerald-500/20 bg-emerald-500/5 p-3 sm:p-4');
+                const gh = el('div', 'flex flex-wrap items-center justify-between gap-2 px-1');
+                gh.appendChild(el('div', 'font-extrabold text-emerald-300', '📦 ' + T('Bitta kuryer: {0} ta mahsulot', grp.length) + ' · ' + o.consumerName));
+                const ga = el('div', 'flex flex-wrap gap-2');
+                const runGroup = function (ready) { return async function () { try { await authed('POST', '/local/orders/' + live[0].id + '/pack-group', { ready: ready }); showToast(T(ready ? 'Guruh tayyor: kuryer kutilmoqda' : 'Guruh qadoqlashga o\'tdi'), 3000, 'success'); renderHubOps(user); } catch (err) { if (err.status !== 401) showToast(lcErr(err), 4000, 'error'); } }; };
+                if (live.some(function (x) { return x.status === 'PENDING'; })) ga.appendChild(actionBtn('fa-box', 'Hammasini qadoqlashni boshlash', false, runGroup(false)));
+                if (live.some(function (x) { return x.status === 'PENDING' || !x.packed; })) ga.appendChild(actionBtn('fa-check-double', 'Hammasi tayyor (kuryerga)', true, runGroup(true)));
+                gh.appendChild(ga);
+                box.appendChild(gh);
+                grp.forEach(function (x) { box.appendChild(hubOrderCard(x, user)); });
+                out.push(box);
+            });
+            body.replaceChildren.apply(body, out);
         } else if (hubOps.tab === 'intakes') {
             const list = await authed('GET', '/hub/intakes' + qs);
             if (rid !== dashRenderId) return;

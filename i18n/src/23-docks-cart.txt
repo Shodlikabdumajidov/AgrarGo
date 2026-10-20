@@ -109,3 +109,8 @@ Bitta yetkazish: {0} ta mahsulot birga olinadi ‖ Одна доставка: {0
 Bitta kuryer bu Hub'dan hammasini birga olib boradi: yetkazish haqi bitta, kod bitta. ‖ Один курьер заберёт всё с этого Hub вместе: одна плата за доставку, один код. ‖ One courier takes everything from this Hub together: one delivery fee, one code.
 Bitta to'lov: {0} ta buyurtma, {1} ta yetkazish. Har bir buyurtma o'z escrow'iga ega. ‖ Одна оплата: заказов {0}, доставок {1}. У каждого заказа свой эскроу. ‖ One payment: {0} orders, {1} deliveries. Each order has its own escrow.
 Shu Hub'dagi boshqa mahsulotlar bilan bitta kuryerda, bir xil kod bilan keladi. ‖ Приедет одним курьером вместе с другими товарами с этого Hub, с одним кодом. ‖ Arrives with the same courier as your other products from this Hub, with the same code.
+Bitta kuryer: {0} ta mahsulot ‖ Один курьер: товаров {0} ‖ One courier: {0} products
+Hammasini qadoqlashni boshlash ‖ Начать упаковку всех ‖ Start packing all
+Hammasi tayyor (kuryerga) ‖ Все готовы (курьеру) ‖ All ready (for the courier)
+Guruh tayyor: kuryer kutilmoqda ‖ Группа готова: ждёт курьера ‖ Group ready: waiting for a courier
+Guruh qadoqlashga o'tdi ‖ Группа передана на упаковку ‖ Group moved to packing

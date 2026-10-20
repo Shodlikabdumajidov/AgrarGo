@@ -83,3 +83,8 @@ export class AcceptOrderDto {
   /** Rampa yozuvi (bo'sh bo'lsa hozirgi vaqtga mos kelgani avtomatik tanlanadi) */
   @IsOptional() @IsUUID('all') appointmentId?: string;
 }
+
+export class PackGroupDto {
+  /** true — hammasi tayyor (kuryerga); false/bo'sh — hammasini qadoqlashga o'tkazish */
+  @IsOptional() @IsBoolean() ready?: boolean;
+}

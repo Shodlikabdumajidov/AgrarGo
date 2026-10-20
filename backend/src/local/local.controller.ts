@@ -6,7 +6,7 @@ import { Roles } from '../common/roles.decorator';
 import { RolesGuard } from '../common/roles.guard';
 import { ThrottleProfile } from '../security/throttle-profile';
 import { SubscriptionGuard } from '../subscription/subscription.guard';
-import { AcceptOrderDto, BulkCheckoutDto, CancelOrderDto, CartQuoteDto, CourierModeDto, CreateLocalOrderDto, DeliverDto, ListLocalOrdersQuery, LocalMarketQuery, QuoteQuery } from './dto/local.dto';
+import { AcceptOrderDto, PackGroupDto, BulkCheckoutDto, CancelOrderDto, CartQuoteDto, CourierModeDto, CreateLocalOrderDto, DeliverDto, ListLocalOrdersQuery, LocalMarketQuery, QuoteQuery } from './dto/local.dto';
 import { LocalOrderService } from './local-order.service';
 
 const STAFF = [Role.DISPATCHER, Role.ADMIN] as const;
@@ -62,6 +62,10 @@ export class LocalOrdersController {
 
   @Post('orders/:id/packed') @Roles(...STAFF)
   packed(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string) { return this.local.markPacked(user, id); }
+
+  /** Guruhni bitta bosishda qadoqlash (bir Hub'dan bir xaridorning bir nechta mahsuloti) */
+  @Post('orders/:id/pack-group') @Roles(...STAFF)
+  packGroup(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string, @Body() dto: PackGroupDto) { return this.local.packGroup(user, id, !!dto?.ready); }
 
   // --- Bekor qilish: xaridor (faqat PENDING), Hub, administrator ---
   @Post('orders/:id/cancel') @Roles(Role.CONSUMER, ...STAFF)
