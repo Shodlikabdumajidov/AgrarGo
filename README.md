@@ -1,6 +1,7 @@
 # AgrarGo
 AgrarGo — O'zbekiston agrar sektori uchun aqlli agro-logistika ekotizimi.
 
+- `book/` — «Mening e'lonlarim» raqamli kitobi manbasi (React + Framer Motion), yig'ilgan bundle: `js/book/agrar-book.js` ([book/README.md](book/README.md)).
 - `index.html` — frontend sahifasi (HTML + uslublar), `js/app.js` — butun frontend mantiqi, `js/tailwind-config.js` — Tailwind sozlamalari, `images/` — barcha rasmlar (`images/icons/` — PWA ikonkalari, `images/og-banner.jpg` — ulashish kartochkasi), `backend/` — NestJS + Prisma + PostgreSQL API ([backend/README.md](backend/README.md)).
 
 ## Ko'p tillilik (i18n): UZ / RU / EN

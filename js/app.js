@@ -63,7 +63,7 @@
 
         // Sahifa skrolli: biror modal/panel/kabinet ochiq bo'lsa qulflanadi
         function syncScrollLock() {
-            const open = ['auth-modal', 'product-modal', 'booking-modal', 'payment-modal', 'wh-modal', 'price-modal', 'dp-modal', 'ltl-modal', 'ct-modal', 'of-modal', 'rate-modal', 'face-modal', 'bd-modal', 'my-products-panel', 'dashboard-view', 'role-page', 'not-found'].some(function (id) {
+            const open = ['auth-modal', 'product-modal', 'booking-modal', 'payment-modal', 'wh-modal', 'price-modal', 'dp-modal', 'ltl-modal', 'ct-modal', 'of-modal', 'book-root', 'rate-modal', 'face-modal', 'bd-modal', 'my-products-panel', 'dashboard-view', 'role-page', 'not-found'].some(function (id) {
                 const node = document.getElementById(id);
                 return node && node.classList.contains('open');
             });
@@ -1024,8 +1024,77 @@
             return b;
         }
 
-        function openMyProducts() {
+        // ===== «Mening e'lonlarim» raqamli kitobi (React + Framer Motion, lazy yuklanadi) =====
+        const BOOK_SRC = 'js/book/agrar-book.js?v=1';
+        let bookPromise = null, bookInst = null;
+        function loadBookLib() {
+            if (window.AgrarBook && window.AgrarBook.mount) return Promise.resolve(window.AgrarBook);
+            if (bookPromise) return bookPromise;
+            bookPromise = new Promise(function (resolve, reject) {
+                const s = document.createElement('script');
+                s.src = BOOK_SRC;
+                s.onload = function () { window.AgrarBook && window.AgrarBook.mount ? resolve(window.AgrarBook) : reject(new Error('book')); };
+                s.onerror = function () { reject(new Error('book')); };
+                document.head.appendChild(s);
+            }).catch(function (e) { bookPromise = null; throw e; });
+            return bookPromise;
+        }
+        // Kitobning API adapteri: xatolar { messages } bilan kitob formasiga qaytariladi, 401 da sessiya yangilanadi
+        async function bookCall(method, path, payload) {
+            const token = storageGet(TOKEN_KEY);
+            if (!token) { closeBook(); handleSessionExpired(openMyProducts); throw { messages: [] }; }
+            try {
+                return await apiRequest(method, path, payload, token);
+            } catch (err) {
+                if (err.status === 401) { closeBook(); handleSessionExpired(openMyProducts); }
+                throw err;
+            }
+        }
+        async function refreshBook() {
+            try { myProducts = await apiRequest('GET', '/products', undefined, storageGet(TOKEN_KEY)); } catch (e) { return; }
+            if (bookInst) bookInst.update({ products: myProducts });
+        }
+        function closeBook() {
+            if (bookInst) { bookInst.unmount(); bookInst = null; }
+            const root = document.getElementById('book-root');
+            if (root) root.remove();
+            syncScrollLock();
+        }
+        async function openMyProducts() {
             closeAccountMenu();
+            if (!storageGet(TOKEN_KEY)) return handleSessionExpired(openMyProducts);
+            let lib;
+            try { lib = await loadBookLib(); } catch (e) { return openMyProductsPanel(); } // kutubxona yuklanmasa (oflayn) — oddiy panel
+            if (bookInst) return;
+            let list;
+            try { list = await bookCall('GET', '/products'); } catch (err) { if (err.status === 401) return; return openMyProductsPanel(); }
+            myProducts = list;
+            const root = el('div');
+            root.id = 'book-root';
+            root.classList.add('open');
+            document.body.appendChild(root);
+            bookInst = lib.mount(root, {
+                products: list,
+                onClose: closeBook,
+                onCreate: async function (payload) { const r = await bookCall('POST', '/products', payload); showToast("E'lon muvaffaqiyatli joylandi!", 3000, 'success'); await refreshBook(); return r; },
+                onUpdate: async function (id, payload) { const r = await bookCall('PUT', '/products/' + id, payload); showToast("E'lon yangilandi!", 3000, 'success'); await refreshBook(); return r; },
+                onArchive: async function (p) {
+                    const next = p.status === 'ARCHIVED' ? 'ACTIVE' : 'ARCHIVED';
+                    try { await bookCall('PUT', '/products/' + p.id, { status: next }); showToast(next === 'ARCHIVED' ? "E'lon arxivlandi." : "E'lon qayta faollashtirildi."); }
+                    catch (err) { if (err.messages && err.messages[0]) showToast(err.messages[0]); }
+                    await refreshBook();
+                },
+                onDelete: async function (id) {
+                    try { await bookCall('DELETE', '/products/' + id); showToast("E'lon o'chirildi."); }
+                    catch (err) { if (err.messages && err.messages[0]) showToast(err.messages[0]); }
+                    await refreshBook();
+                }
+            });
+            syncScrollLock();
+        }
+
+        // Oddiy o'ng panel: kitob yuklanmagan (oflayn) holatda zaxira
+        function openMyProductsPanel() {
             panel.classList.add('open');
             panelOverlay.classList.add('open');
             syncScrollLock();
@@ -1033,6 +1102,7 @@
         }
 
         function closeMyProducts() {
+            closeBook();
             panel.classList.remove('open');
             panelOverlay.classList.remove('open');
             mpConfirmId = null;
