@@ -114,3 +114,5 @@ Hammasini qadoqlashni boshlash ‖ Начать упаковку всех ‖ St
 Hammasi tayyor (kuryerga) ‖ Все готовы (курьеру) ‖ All ready (for the courier)
 Guruh tayyor: kuryer kutilmoqda ‖ Группа готова: ждёт курьера ‖ Group ready: waiting for a courier
 Guruh qadoqlashga o'tdi ‖ Группа передана на упаковку ‖ Group moved to packing
+Hammasini olish ‖ Взять всё ‖ Take all
+{0} ta mahsulot birga olindi ‖ Товаров взято вместе: {0} ‖ {0} products taken together

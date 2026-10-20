@@ -909,7 +909,7 @@ async function renderCourierTab(user) {
             if (o.items.length > 1) c.appendChild(el('div', 'text-xs font-bold text-emerald-300', '📦 ' + T('Bitta yetkazish: {0} ta mahsulot birga olinadi', o.items.length)));
             c.appendChild(el('div', 'text-xs text-slate-300', '🏬 ' + o.hub.name + (o.hubAddress ? ' (' + o.hubAddress + ')' : '') + ' → 📍 ' + o.deliveryRegion + ', ' + o.deliveryDistrict));
             c.appendChild(el('div', 'text-[11px] text-slate-500', T("Aniq manzil va telefon buyurtmani olgandan keyin ochiladi.")));
-            c.appendChild(actionBtn('fa-hand', 'Buyurtmani olish', true, async function () { try { await authed('POST', '/local/orders/' + o.id + '/accept'); renderCourierTab(user); } catch (err) { if (err.status !== 401) showToast(lcErr(err), 4500, 'error'); } }));
+            c.appendChild(actionBtn('fa-hand', o.items.length > 1 ? 'Hammasini olish' : 'Buyurtmani olish', true, async function () { try { await authed('POST', '/local/orders/' + o.id + '/accept'); if (o.items.length > 1) showToast(T('{0} ta mahsulot birga olindi', o.items.length), 3000, 'success'); renderCourierTab(user); } catch (err) { if (err.status !== 401) showToast(lcErr(err), 4500, 'error'); } }));
             nodes.push(c);
         });
     }
