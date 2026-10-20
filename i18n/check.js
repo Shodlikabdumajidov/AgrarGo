@@ -16,16 +16,15 @@ const covered = (s) => keys.has(s.trim()) || patterns.some((re) => re.test(s.tri
 
 // JS endi js/app.js da; HTML'dan skript va uslublar olib tashlanadi
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-const js = fs.readFileSync(path.join(root, 'js', 'app.js'), 'utf8');
 const head = html.replace(/<style[\s\S]*?<\/style>/g, '').replace(/<!--[\s\S]*?-->/g, '').replace(/<script[\s\S]*?<\/script>/g, '');
 const found = new Set();
 for (const m of head.matchAll(/>([^<>]+)</g)) found.add(m[1].replace(/&copy;/g, '©').replace(/\s+/g, ' ').trim());
 for (const m of head.matchAll(/\b(?:placeholder|title|aria-label|alt)="([^"]*)"/g)) found.add(m[1].trim());
-const ast = acorn.parse(js, { ecmaVersion: 2022 });
+const asts = ['app.js', 'local.js'].map((f) => acorn.parse(fs.readFileSync(path.join(root, 'js', f), 'utf8'), { ecmaVersion: 2022 }));
 const strOf = (n) => (n.type === 'Literal' && typeof n.value === 'string' ? n.value : null);
 const flat = (n, a) => (n.type === 'BinaryExpression' && n.operator === '+' ? (flat(n.left, a), flat(n.right, a)) : a.push(n));
 const seen = new Set();
-(function walk(n) {
+function walk(n) {
   if (!n || typeof n.type !== 'string') return;
   if (n.type === 'Literal' && typeof n.value === 'string') found.add(n.value);
   if (n.type === 'BinaryExpression' && n.operator === '+' && !seen.has(n)) {
@@ -36,7 +35,8 @@ const seen = new Set();
     }
   }
   for (const k of Object.keys(n)) { const v = n[k]; if (Array.isArray(v)) v.forEach(walk); else if (v && typeof v === 'object') walk(v); }
-})(ast);
+}
+asts.forEach((a) => walk(a));
 
 const uzbek = /['ʻ‘’]|\b(?:va|uchun|bilan|yo'q|kerak|ma'lumot|bo'l|qil|ish|lar|dagi|dan|ga)\b|[a-z]{3,}(?:ish|lar|ni|ga|da|dan|ma|im|iz|ing)\b/i;
 const missing = [];

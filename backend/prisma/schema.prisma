@@ -13,6 +13,7 @@ enum Role {
   MARKET
   ADMIN
   DISPATCHER // ombor dispetcheri: omborxona operatsiyalarini boshqaradi (API orqali ro'yxatdan o'tmaydi)
+  CONSUMER // mahalliy aholi: Hub omboridan kichik hajmli (chakana) xarid qiladi
 }
 
 model User {
@@ -59,6 +60,11 @@ model User {
   ratingsGiven         ShipmentRating[]      @relation("RatingRater")
   ratingsReceived      ShipmentRating[]      @relation("RatingTarget")
   offersSent           DriverOffer[]
+  consumer             Consumer?
+  // Hub xodimi (DISPATCHER): faqat shu Hub'ning chakana buyurtmalari va qabullarini boshqaradi; bo'sh bo'lsa — barcha Hub'lar
+  hubId                String?
+  hub                  Hub?                  @relation("HubStaff", fields: [hubId], references: [id], onDelete: SetNull)
+  hubIntakesReceived   HubIntake[]
 }
 
 model Farmer {
@@ -96,8 +102,28 @@ model Driver {
   locationLogs    LocationLog[]
   warehouseOrders WarehouseOrder[]
   posts           DriverPost[]
+  // Shahar ichi kuryeri rejimi: yoqilgan bo'lsa shu Hub'ning chakana buyurtmalarini yetkazadi
+  courierMode     Boolean          @default(false)
+  courierHubId    String?
+  courierHub      Hub?             @relation("HubCouriers", fields: [courierHubId], references: [id], onDelete: SetNull)
+  localOrders     LocalOrder[]
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
+}
+
+/// Mahalliy aholi (chakana xaridor) profili
+model Consumer {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  region   String
+  district String
+  address  String?
+
+  orders    LocalOrder[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
 }
 
 model Market {
@@ -170,11 +196,22 @@ model Product {
 
   bookings Booking[]
 
+  // Chakana (mahalliy bozor) savdo: Hub omboridan kichik hajmda sotiladi
+  isRetail         Boolean      @default(false)
+  minOrderKg       Decimal?     @db.Decimal(12, 2)
+  retailPricePerKg Decimal?     @db.Decimal(14, 2)
+  hubId            String?
+  hub              Hub?         @relation(fields: [hubId], references: [id], onDelete: SetNull)
+  hubStocks        HubStock[]
+  hubIntakes       HubIntake[]
+  localOrders      LocalOrder[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([farmerId])
   @@index([status, category])
+  @@index([isRetail, hubId])
 }
 
 // Yuk tashish: fermer bronni tasdiqlaganda avtomatik yaratiladi
@@ -305,6 +342,11 @@ model Payment {
   booking          Booking?        @relation(fields: [bookingId], references: [id], onDelete: Restrict)
   warehouseOrderId String?         @unique
   warehouseOrder   WarehouseOrder? @relation(fields: [warehouseOrderId], references: [id], onDelete: Restrict)
+  localOrderId     String?         @unique
+  localOrder       LocalOrder?     @relation(fields: [localOrderId], references: [id], onDelete: Restrict)
+  // Hub omboriga saqlash va qadoqlash haqi (chakana buyurtmalarda mahsulot summasiga QO'SHIMCHA); jami = amount + deliveryFee + serviceFee + hubFee
+  hubFee           Decimal         @default(0) @db.Decimal(20, 2)
+  splits           PaymentSplit[]
   feeAmount        Decimal         @default(0) @db.Decimal(20, 2) // omborxona xizmat haqi (summaning ichida): fermerga amount - feeAmount o'tadi
   amount           Decimal         @db.Decimal(20, 2) // server hisoblaydi: miqdor x bron narxi (= mahsulot summasi, fermerga tegishli)
   // To'lov tarkibi: market jami = amount + deliveryFee + serviceFee. Eski yozuvlarda 0 (jami = amount).
@@ -747,4 +789,185 @@ model DriverOffer {
   @@unique([postId, shipmentId])
   @@index([postId, createdAt])
   @@index([fromUserId])
+}
+
+// ===== HUB OMBORLARI va CHAKANA (B2C) SAVDO =====
+
+/// AgrarGo Hub: viloyat/shahar ombori. Fermerlar yirik partiyani shu yerga topshiradi, mahalliy aholiga kichik hajmda sotiladi.
+model Hub {
+  id       String  @id @default(uuid())
+  name     String  @unique
+  region   String
+  district String?
+  address  String?
+  lat      Float?
+  lng      Float?
+  isActive Boolean @default(true)
+
+  staff     User[]       @relation("HubStaff")
+  couriers  Driver[]     @relation("HubCouriers")
+  products  Product[]
+  stocks    HubStock[]
+  intakes   HubIntake[]
+  orders    LocalOrder[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@index([region, isActive])
+}
+
+/// Hub omboridagi qoldiq (balans): mavjud, shundan zaxiralangan (buyurtma qilingan, hali chiqmagan)
+model HubStock {
+  id         String  @id @default(uuid())
+  hubId      String
+  hub        Hub     @relation(fields: [hubId], references: [id], onDelete: Restrict)
+  productId  String
+  product    Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+  weightKg   Decimal @default(0) @db.Decimal(12, 2)
+  reservedKg Decimal @default(0) @db.Decimal(12, 2)
+
+  movements HubStockMovement[]
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  @@unique([hubId, productId])
+}
+
+enum HubMovementType {
+  INTAKE // fermerdan qabul qilindi (+)
+  RESERVE // chakana buyurtma uchun zaxira
+  RELEASE // buyurtma bekor bo'ldi: zaxira bo'shadi
+  DISPATCH // kuryerga topshirildi: ombordan chiqdi (-)
+  RETURN // yetkazilmay qaytdi: omborga qaytdi (+)
+  ADJUST // qo'lda tuzatish
+}
+
+/// Qoldiq harakatlari jurnali (audit): har bir o'zgarish sababi bilan
+model HubStockMovement {
+  id         String          @id @default(uuid())
+  stockId    String
+  stock      HubStock        @relation(fields: [stockId], references: [id], onDelete: Cascade)
+  type       HubMovementType
+  quantityKg Decimal         @db.Decimal(12, 2)
+  refType    String? // LOCAL_ORDER | HUB_INTAKE
+  refId      String?
+  note       String?
+  createdAt  DateTime        @default(now())
+
+  @@index([stockId, createdAt])
+  @@index([refType, refId])
+}
+
+enum HubIntakeStatus {
+  ANNOUNCED // fermer topshirishni e'lon qildi
+  RECEIVED // Hub qabul qildi (qoldiq oshdi)
+  REJECTED // Hub rad etdi
+  CANCELLED // fermer bekor qildi
+}
+
+/// Fermerning Hub omboriga topshirishi: e'lon -> Hub qabul qiladi (haqiqiy vazn bilan)
+model HubIntake {
+  id           String          @id @default(uuid())
+  hubId        String
+  hub          Hub             @relation(fields: [hubId], references: [id], onDelete: Restrict)
+  productId    String
+  product      Product         @relation(fields: [productId], references: [id], onDelete: Restrict)
+  farmerId     String
+  declaredKg   Decimal         @db.Decimal(12, 2)
+  receivedKg   Decimal?        @db.Decimal(12, 2)
+  status       HubIntakeStatus @default(ANNOUNCED)
+  note         String?
+  receivedById String?
+  receivedBy   User?           @relation(fields: [receivedById], references: [id], onDelete: SetNull)
+  receivedAt   DateTime?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  @@index([hubId, status])
+  @@index([farmerId, createdAt])
+}
+
+enum LocalOrderStatus {
+  PENDING // to'langan (escrow), Hub qabul qilishi kutilmoqda
+  PACKING // Hub qadoqlayapti (packedAt bo'lsa — tayyor, kuryer kutilmoqda)
+  DELIVERING // kuryer olib ketdi, yo'lda
+  COMPLETED // yetkazildi, escrow taqsimlandi
+  CANCELLED // bekor qilindi, mablag' qaytarildi
+}
+
+/// Chakana buyurtma: mahalliy aholi Hub omboridan kichik hajmda xarid qiladi
+model LocalOrder {
+  id         String   @id @default(uuid())
+  consumerId String
+  consumer   Consumer @relation(fields: [consumerId], references: [id], onDelete: Restrict)
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+  hubId      String
+  hub        Hub      @relation(fields: [hubId], references: [id], onDelete: Restrict)
+  farmerId   String
+  courierId  String?
+  courier    Driver?  @relation(fields: [courierId], references: [id], onDelete: SetNull)
+
+  quantityKg    Decimal @db.Decimal(12, 2)
+  pricePerKg    Decimal @db.Decimal(14, 2) // buyurtma paytidagi chakana narx
+  // Pul tarkibi (Payment bilan bir xil): jami = productAmount + hubFee + courierFee + serviceFee
+  productAmount Decimal @db.Decimal(20, 2)
+  hubFee        Decimal @db.Decimal(20, 2)
+  courierFee    Decimal @db.Decimal(20, 2)
+  serviceFee    Decimal @db.Decimal(20, 2)
+  totalPrice    Decimal @db.Decimal(20, 2)
+
+  deliveryRegion   String
+  deliveryDistrict String
+  deliveryAddress  String
+  contactPhone     String
+  note             String?
+  // Topshirish kodi: faqat xaridor ko'radi; kuryer yetkazganda shu kodni kiritadi
+  deliveryCode     String
+  codeAttempts     Int     @default(0) // noto'g'ri kod urinishlari: 5 tadan keyin kuryer kodi bloklanadi (xaridor tasdiqlaydi)
+
+  status       LocalOrderStatus @default(PENDING)
+  packedAt     DateTime?
+  pickedAt     DateTime?
+  deliveredAt  DateTime?
+  cancelledAt  DateTime?
+  cancelReason String?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  payment Payment?
+
+  @@index([consumerId, createdAt])
+  @@index([hubId, status])
+  @@index([farmerId, createdAt])
+  @@index([courierId, status])
+}
+
+enum SplitParty {
+  FARMER
+  HUB
+  COURIER
+  PLATFORM
+}
+
+enum SplitStatus {
+  HELD // escrow'da
+  PAID // egasiga o'tkazildi (yoki platforma daromadi sifatida hisobga olindi)
+  REFUNDED // xaridorga qaytarildi
+}
+
+/// Escrow taqsimoti: har bir so'm kimga tegishli ekanligi. Yig'indi doim to'lov jamiga teng.
+model PaymentSplit {
+  id        String      @id @default(uuid())
+  paymentId String
+  payment   Payment     @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  party     SplitParty
+  partyId   String? // fermer / Hub / kuryer ID (platformada bo'sh)
+  amount    Decimal     @db.Decimal(20, 2)
+  status    SplitStatus @default(HELD)
+  ref       String?
+  settledAt DateTime?
+  createdAt DateTime    @default(now())
+
+  @@unique([paymentId, party])
 }

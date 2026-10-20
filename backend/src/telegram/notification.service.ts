@@ -168,4 +168,50 @@ export class NotificationService {
       await this.sendTo([o.post.driver.userId], lines.join('\n'));
     });
   }
+
+  // ---------- Chakana (Hub) buyurtmalari ----------
+
+  localOrder(orderId: string, event: 'CREATED' | 'PACKING' | 'DELIVERING' | 'COMPLETED' | 'CANCELLED') {
+    this.run(async () => {
+      const o = await this.prisma.localOrder.findUnique({
+        where: { id: orderId },
+        select: {
+          quantityKg: true, productAmount: true, totalPrice: true, deliveryCode: true, deliveryDistrict: true, cancelReason: true, hubId: true,
+          product: { select: { name: true, farmer: { select: { userId: true } } } }, hub: { select: { name: true } },
+          consumer: { select: { userId: true } }, courier: { select: { user: { select: { fullName: true, phone: true } } } },
+        },
+      });
+      if (!o) return;
+      const what = `«${h(o.product.name)}» — ${num(o.quantityKg)} kg`;
+      const staff = async () => (await this.prisma.user.findMany({ where: { role: { in: [Role.DISPATCHER] }, isActive: true, telegramChatId: { not: null }, OR: [{ hubId: o.hubId }, { hubId: null }] }, select: { id: true } })).map((u) => u.id);
+      if (event === 'CREATED') {
+        await this.sendTo([o.consumer.userId], `🛒 <b>Buyurtma qabul qilindi</b>
+${what}. To'lov ${som(o.totalPrice)} escrow'da saqlanmoqda.
+Topshirish kodi: <b>${o.deliveryCode}</b> — buni faqat kuryer yetkazganda ayting.`);
+        await this.sendTo([o.product.farmer.userId], `🧺 <b>Mahsulotingiz chakana sotildi</b>
+${what}. Yetkazilgach hisobingizga ${som(o.productAmount)} o'tadi.`);
+        await this.sendTo(await staff(), `📦 <b>Yangi chakana buyurtma</b> (${h(o.hub.name)})
+${what}, ${h(o.deliveryDistrict)}. Qadoqlashni boshlang.`);
+      } else if (event === 'PACKING') {
+        await this.sendTo([o.consumer.userId], `📦 <b>Buyurtmangiz qadoqlanmoqda</b>
+${what}. Tez orada kuryer olib chiqadi.`);
+      } else if (event === 'DELIVERING') {
+        const c = o.courier ? `
+Kuryer: ${h(o.courier.user.fullName)}, ${h(o.courier.user.phone)}` : '';
+        await this.sendTo([o.consumer.userId], `🛵 <b>Kuryer yo'lga chiqdi</b>
+${what}.${c}
+Kod: <b>${o.deliveryCode}</b>`);
+      } else if (event === 'COMPLETED') {
+        await this.sendTo([o.consumer.userId], `✅ <b>Buyurtma yetkazildi</b>
+${what}. Rahmat!`);
+        await this.sendTo([o.product.farmer.userId], `💰 <b>Chakana savdo yakunlandi</b>
+${what}: hisobingizga ${som(o.productAmount)} o'tkazildi.`);
+      } else {
+        await this.sendTo([o.consumer.userId], `↩️ <b>Buyurtma bekor qilindi</b>
+${what}. Jami ${som(o.totalPrice)} to'liq qaytarildi.${o.cancelReason ? `
+Sabab: ${h(o.cancelReason)}` : ''}`);
+        await this.sendTo([o.product.farmer.userId], `ℹ️ Chakana buyurtma bekor qilindi (${what}). Qoldiq Hub omborida saqlanmoqda.`);
+      }
+    });
+  }
 }

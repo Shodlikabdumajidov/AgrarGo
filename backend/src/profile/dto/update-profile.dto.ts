@@ -88,6 +88,23 @@ export class UpdateDriverProfileDto extends BaseProfileDto {
   licenseNumber?: string | null;
 }
 
+export class UpdateConsumerProfileDto extends BaseProfileDto {
+  @ValidateIf((o) => o.region !== undefined)
+  @IsString()
+  @MinLength(2, { message: 'Viloyatni kiriting' })
+  region?: string;
+
+  @ValidateIf((o) => o.district !== undefined)
+  @IsString()
+  @MinLength(2, { message: 'Tuman yoki shaharni kiriting' })
+  district?: string;
+
+  @IsOptional()
+  @Transform(blankToNull)
+  @IsString()
+  address?: string | null;
+}
+
 export class UpdateMarketProfileDto extends BaseProfileDto {
   @ValidateIf((o) => o.companyName !== undefined)
   @IsString()

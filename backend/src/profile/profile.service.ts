@@ -8,7 +8,7 @@ import { join } from 'path';
 import { USER_WITH_PROFILES } from '../auth/auth.service';
 import { publicUser } from '../common/public-user';
 import { PrismaService } from '../prisma/prisma.service';
-import { UpdateDriverProfileDto, UpdateFarmerProfileDto, UpdateMarketProfileDto } from './dto/update-profile.dto';
+import { UpdateConsumerProfileDto, UpdateDriverProfileDto, UpdateFarmerProfileDto, UpdateMarketProfileDto } from './dto/update-profile.dto';
 
 export const UPLOADS_DIR = join(process.cwd(), 'uploads');
 const AVATAR_DIR = join(UPLOADS_DIR, 'avatars');
@@ -67,6 +67,11 @@ export class ProfileService {
       tg(dto);
       if (dto.fullName !== undefined) data.fullName = dto.fullName;
       data.market = { update: set(dto, ['companyName', 'region', 'district', 'address', 'stir']) };
+    } else if (role === Role.CONSUMER) {
+      const dto = await parseDto(UpdateConsumerProfileDto, body);
+      tg(dto);
+      if (dto.fullName !== undefined) data.fullName = dto.fullName;
+      data.consumer = { update: set(dto, ['region', 'district', 'address']) };
     } else {
       throw new BadRequestException("Bu rol uchun profil tahrirlash mavjud emas");
     }

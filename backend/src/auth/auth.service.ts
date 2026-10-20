@@ -10,14 +10,15 @@ import { RegisterBaseDto } from './dto/register-base.dto';
 import { trialEndsFromNow } from '../subscription/subscription.logic';
 import { RegisterDriverDto } from './dto/register-driver.dto';
 import { RegisterFarmerDto } from './dto/register-farmer.dto';
+import { RegisterConsumerDto } from './dto/register-consumer.dto';
 import { RegisterMarketDto } from './dto/register-market.dto';
 
 // Foydalanuvchi topilmaganda ham bcrypt solishtirilishi uchun: javob vaqti orqali raqam mavjudligi bilinmasin
 const TIMING_DUMMY_HASH = bcrypt.hashSync('timing-protection-dummy', 10);
 
-export const USER_WITH_PROFILES = { farmer: true, driver: true, market: true } as const;
+export const USER_WITH_PROFILES = { farmer: true, driver: true, market: true, consumer: true } as const;
 
-type RoleProfile = Pick<Prisma.UserCreateInput, 'farmer' | 'driver' | 'market'>;
+type RoleProfile = Pick<Prisma.UserCreateInput, 'farmer' | 'driver' | 'market' | 'consumer'>;
 
 @Injectable()
 export class AuthService {
@@ -38,6 +39,12 @@ export class AuthService {
   registerMarket(dto: RegisterMarketDto) {
     const { phone, password, fullName, ...market } = dto;
     return this.register(Role.MARKET, dto, { market: { create: market } });
+  }
+
+  /** Mahalliy aholi (chakana xaridor). Obuna talab qilinmaydi. */
+  registerConsumer(dto: RegisterConsumerDto) {
+    const { phone, password, fullName, ...consumer } = dto;
+    return this.register(Role.CONSUMER, dto, { consumer: { create: consumer } });
   }
 
   async login(dto: LoginDto) {

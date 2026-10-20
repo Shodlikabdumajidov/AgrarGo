@@ -880,6 +880,34 @@
         .of-item.on { border-color: rgba(52,211,153,.9); background: rgba(16,185,129,.14); box-shadow: 0 0 0 3px rgba(16,185,129,.15); }
         .of-item.off { opacity: .5; cursor: not-allowed; }
         .of-item input { margin-top: .25rem; accent-color: #10b981; }
+        #lo-modal { opacity: 0; visibility: hidden; transition: opacity .3s ease, visibility .3s ease; }
+        #lo-modal.open { opacity: 1; visibility: visible; }
+        #lo-modal .auth-card { transform: translateY(20px) scale(.96); transition: transform .4s cubic-bezier(.16,1,.3,1); }
+        #lo-modal.open .auth-card { transform: none; }
+        .mm-btn.active { background: rgba(16,185,129,.2); color: #6ee7b7; box-shadow: inset 0 0 0 1px rgba(52,211,153,.6); }
+        .lc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr)); gap: 1.25rem; }
+        .lc-card { display: flex; flex-direction: column; gap: .75rem; border-radius: 1.4rem; padding: 1.1rem; border: 1px solid rgba(255,255,255,.14); background: linear-gradient(160deg, rgba(255,255,255,.09), rgba(15,23,42,.66)); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); animation: prIn .5s cubic-bezier(.16,1,.3,1) both; animation-delay: calc(var(--i, 0) * 45ms); }
+        .lc-ph { height: 5.5rem; border-radius: 1rem; display: flex; align-items: center; justify-content: center; font-size: 2.4rem; font-weight: 900; color: rgba(255,255,255,.9); background: linear-gradient(135deg, hsl(var(--h, 150) 55% 28%), hsl(calc(var(--h, 150) + 40) 55% 18%)); }
+        .lc-chip { padding: .35rem .8rem; border-radius: 9999px; font-size: .78rem; font-weight: 800; border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.07); color: #e2e8f0; cursor: pointer; transition: all .18s; }
+        .lc-chip:hover { border-color: rgba(52,211,153,.7); }
+        .lc-chip.on { background: #00E676; color: #000; border-color: #00E676; }
+        .lc-step { width: 2.6rem; height: 2.6rem; border-radius: .8rem; border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.08); color: #fff; font-size: 1.3rem; font-weight: 800; cursor: pointer; transition: background .15s, transform .1s; }
+        .lc-step:hover { background: rgba(52,211,153,.2); } .lc-step:active { transform: scale(.94); }
+        .lc-btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; padding: .8rem 1rem; border-radius: 1rem; font-weight: 800; font-size: .88rem; transition: transform .12s, background .2s; cursor: pointer; }
+        .lc-btn:active { transform: scale(.97); } .lc-btn:disabled { opacity: .55; cursor: not-allowed; }
+        .lc-btn.solid { background: #00E676; color: #000; box-shadow: 0 10px 24px -12px rgba(0,230,118,.8); }
+        .lc-btn.ghost { border: 1px solid rgba(0,230,118,.6); color: #00E676; background: transparent; }
+        .lc-quote { border-radius: 1rem; padding: .8rem 1rem; border: 1px solid rgba(255,255,255,.14); background: rgba(15,23,42,.6); font-size: .85rem; }
+        .lc-line { display: flex; justify-content: space-between; align-items: baseline; gap: .75rem; padding: .22rem 0; color: #cbd5e1; }
+        .lc-line small { display: block; color: #64748b; font-size: .68rem; }
+        .lc-line b { color: #fff; white-space: nowrap; }
+        .lc-total { display: flex; justify-content: space-between; padding-top: .55rem; margin-top: .35rem; border-top: 1px dashed rgba(255,255,255,.2); font-weight: 900; color: #00E676; font-size: 1.05rem; }
+        .lc-code { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; border-radius: 1rem; padding: .8rem 1rem; background: rgba(251,191,36,.1); border: 1px dashed rgba(251,191,36,.6); }
+        .lc-code b { font-family: ui-monospace, monospace; font-size: 1.9rem; letter-spacing: .3em; color: #fde68a; }
+        .lc-steps { display: flex; align-items: center; gap: .3rem; font-size: .68rem; font-weight: 800; color: #64748b; flex-wrap: wrap; }
+        .lc-steps span.on { color: #6ee7b7; } .lc-steps span.cur { color: #00E676; text-decoration: underline; text-underline-offset: 3px; }
+        .lc-bar { height: .55rem; border-radius: 9999px; background: rgba(255,255,255,.1); overflow: hidden; display: flex; }
+        .lc-bar i { display: block; height: 100%; } .lc-bar i.a { background: #00E676; } .lc-bar i.r { background: #fbbf24; }
         .pr-search { position: relative; }
         .pr-search i { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: #6ee7b7; pointer-events: none; }
         .pr-search input { width: 100%; min-height: 3.25rem; padding: .8rem 1rem .8rem 2.8rem; border-radius: 1rem; background: rgba(15,23,42,.6); border: 1px solid rgba(255,255,255,.16); color: #f1f5f9; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); transition: border-color .2s, box-shadow .2s; }
@@ -1302,6 +1330,12 @@
             <p class="text-slate-300 text-base sm:text-lg max-w-2xl mx-auto">Faol e'lonlarni ko'ring, filtrlang va B2B bron qiling. Vositachilarsiz, fermer narxida.</p>
         </div>
 
+        <div id="market-mode" class="flex justify-center mb-6" role="tablist" aria-label="Bozor turi">
+            <div class="inline-flex flex-wrap justify-center gap-1.5 p-1.5 rounded-2xl bg-slate-950/60 border border-white/10">
+                <button type="button" id="mm-b2b" role="tab" aria-selected="true" class="mm-btn active px-4 py-2.5 rounded-xl text-sm font-bold text-slate-300 transition"><i class="fa-solid fa-truck-ramp-box mr-2"></i><span>B2B: yirik hajm</span></button>
+                <button type="button" id="mm-local" role="tab" aria-selected="false" class="mm-btn px-4 py-2.5 rounded-xl text-sm font-bold text-slate-300 transition"><i class="fa-solid fa-basket-shopping mr-2"></i><span>Mahalliy bozor / Kichik hajmli (10kg+)</span></button>
+            </div>
+        </div>
         <div id="market-filters" class="glass rounded-3xl border border-white/10 p-4 sm:p-6 mb-6 space-y-5">
             <div class="flex items-center justify-between gap-3 flex-wrap">
                 <button type="button" id="filters-toggle" aria-expanded="true" aria-controls="filter-body" class="flex items-center gap-3 text-white font-extrabold text-lg">
@@ -1843,10 +1877,11 @@
             </div>
 
             <!-- Rol tanlash (faqat ro'yxatdan o'tishda) -->
-            <div id="role-pills" class="hidden grid grid-cols-3 gap-2 mb-5">
+            <div id="role-pills" class="hidden grid grid-cols-2 sm:grid-cols-4 gap-2 mb-5">
                 <button type="button" data-role="FARMER" onclick="setAuthRole('FARMER')" class="role-pill px-2 py-2 rounded-xl border border-white/15 text-xs font-bold text-slate-300 transition hover:border-emerald-500/50"><i class="fa-solid fa-seedling mr-1.5"></i>Fermer</button>
                 <button type="button" data-role="DRIVER" onclick="setAuthRole('DRIVER')" class="role-pill px-2 py-2 rounded-xl border border-white/15 text-xs font-bold text-slate-300 transition hover:border-emerald-500/50"><i class="fa-solid fa-truck-fast mr-1.5"></i>Haydovchi</button>
                 <button type="button" data-role="MARKET" onclick="setAuthRole('MARKET')" class="role-pill px-2 py-2 rounded-xl border border-white/15 text-xs font-bold text-slate-300 transition hover:border-emerald-500/50"><i class="fa-solid fa-store mr-1.5"></i>Market</button>
+                <button type="button" data-role="CONSUMER" onclick="setAuthRole('CONSUMER')" class="role-pill px-2 py-2 rounded-xl border border-white/15 text-xs font-bold text-slate-300 transition hover:border-emerald-500/50"><i class="fa-solid fa-basket-shopping mr-1.5"></i>Xaridor</button>
             </div>
 
             <!-- Error / success box -->
@@ -2019,6 +2054,41 @@
                 <div>
                     <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="mkt-password">Parol</label>
                     <input id="mkt-password" name="password" type="password" autocomplete="new-password" placeholder="Kamida 8 ta belgi" class="auth-input">
+                </div>
+                <button type="submit" class="auth-submit w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed text-slate-950 font-extrabold py-3.5 rounded-2xl transition duration-200 shadow-xl shadow-emerald-500/30 flex items-center justify-center gap-2.5">
+                    <i class="fa-solid fa-user-plus"></i> <span>Ro'yxatdan o'tish</span>
+                </button>
+                <p class="text-center text-sm text-slate-400">Hisobingiz bormi? <button type="button" onclick="switchAuthTab('login')" class="text-emerald-400 font-bold hover:underline">Kirish</button></p>
+            </form>
+            <form id="register-consumer-form" class="space-y-4 hidden" novalidate>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="con-fullName">Ism va familiya</label>
+                    <input id="con-fullName" name="fullName" type="text" autocomplete="name" placeholder="Dilnoza Karimova" class="auth-input">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="con-phone">Telefon raqam</label>
+                    <div class="flex items-stretch gap-2">
+                        <span class="flex items-center px-3 rounded-[0.875rem] bg-slate-950/60 border border-white/15 text-emerald-400 font-bold text-sm">+998</span>
+                        <input id="con-phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="90 123 45 67" class="auth-input">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="con-region">Viloyat</label>
+                        <select id="con-region" name="region" data-regions class="auth-input"><option value="">Tanlang...</option></select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="con-district">Tuman / shahar</label>
+                        <input id="con-district" name="district" type="text" placeholder="Siyob" class="auth-input">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="con-address">Manzil <span class="text-slate-500 normal-case font-medium">(ixtiyoriy)</span></label>
+                    <input id="con-address" name="address" type="text" placeholder="Ko'cha, uy" class="auth-input">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="con-password">Parol</label>
+                    <input id="con-password" name="password" type="password" autocomplete="new-password" placeholder="Kamida 8 ta belgi" class="auth-input">
                 </div>
                 <button type="submit" class="auth-submit w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed text-slate-950 font-extrabold py-3.5 rounded-2xl transition duration-200 shadow-xl shadow-emerald-500/30 flex items-center justify-center gap-2.5">
                     <i class="fa-solid fa-user-plus"></i> <span>Ro'yxatdan o'tish</span>
@@ -2358,6 +2428,43 @@
         </div>
     </div>
 
+    <!-- MAHALLIY BOZOR: buyurtma oynasi -->
+    <div id="lo-modal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="lo-title" onclick="if (event.target === this) closeLoModal()">
+        <div class="auth-card glass relative w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-3xl border border-emerald-500/25 shadow-2xl shadow-emerald-500/10 bg-gradient-to-b from-slate-900 to-emerald-950/30 p-5 sm:p-7">
+            <button type="button" onclick="closeLoModal()" aria-label="Yopish" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl p-1 transition hover:rotate-90 duration-300"><i class="fa-solid fa-xmark"></i></button>
+            <div class="space-y-1 mb-4 pr-8">
+                <div class="text-xs font-bold uppercase tracking-widest text-emerald-400" id="lo-hub"></div>
+                <h2 id="lo-title" class="text-2xl font-extrabold tracking-tight break-words"></h2>
+                <p id="lo-sub" class="text-slate-400 text-sm"></p>
+            </div>
+            <div id="lo-alert" class="hidden mb-4 rounded-2xl px-4 py-3 text-sm font-medium" role="alert"></div>
+            <div class="space-y-4">
+                <div>
+                    <span class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Miqdor (kg)</span>
+                    <div id="lo-chips" class="flex flex-wrap gap-2 mb-3"></div>
+                    <div class="flex items-center gap-2">
+                        <button type="button" id="lo-minus" class="lc-step" aria-label="Kamaytirish">−</button>
+                        <input id="lo-qty" type="number" step="1" inputmode="decimal" class="auth-input text-center !w-28 font-extrabold" aria-label="Miqdor (kg)">
+                        <button type="button" id="lo-plus" class="lc-step" aria-label="Ko'paytirish">+</button>
+                        <span id="lo-range" class="text-xs text-slate-500 ml-1"></span>
+                    </div>
+                </div>
+                <div id="lo-quote" class="lc-quote" aria-live="polite"></div>
+                <div id="lo-checkout" class="hidden space-y-3 rounded-2xl border border-white/10 bg-white/5 p-4">
+                    <div class="text-xs font-bold uppercase tracking-wider text-emerald-300">Yetkazib berish</div>
+                    <input id="lo-district" type="text" maxlength="80" placeholder="Tuman / mahalla" class="auth-input" aria-label="Tuman yoki mahalla">
+                    <input id="lo-address" type="text" maxlength="200" placeholder="Ko'cha, uy, xonadon" class="auth-input" aria-label="Manzil">
+                    <input id="lo-phone" type="tel" placeholder="+998 90 123 45 67" class="auth-input" aria-label="Telefon">
+                    <input id="lo-note" type="text" maxlength="300" placeholder="Izoh (ixtiyoriy)" class="auth-input" aria-label="Izoh">
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button type="button" id="lo-cart" class="lc-btn ghost"><i class="fa-solid fa-cart-plus"></i> <span>Savatga qo'shish</span></button>
+                    <button type="button" id="lo-buy" class="lc-btn solid"><i class="fa-solid fa-bolt"></i> <span id="lo-buy-label">Tezkor buyurtma</span></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- BAHOLASH oynasi (yetkazilgan yukdan keyin) -->
     <div id="rate-modal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="rate-title" onclick="if (event.target === this) closeRateModal()">
         <div class="auth-card glass relative w-full max-w-md max-h-[92vh] overflow-y-auto rounded-3xl border border-emerald-500/25 shadow-2xl shadow-emerald-500/10 bg-gradient-to-b from-slate-900 to-emerald-950/30 p-6 sm:p-8">
@@ -2606,5 +2713,6 @@
     <script src="i18n/en.js"></script>
     <script src="i18n/engine.js"></script>
     <script src="js/app.js" defer></script>
+    <script src="js/local.js" defer></script>
 </body>
 </html>

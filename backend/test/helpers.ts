@@ -91,7 +91,7 @@ export async function resetDb(prisma: PrismaClient) {
   const [{ db }] = await prisma.$queryRaw<{ db: string }[]>`SELECT current_database() AS db`;
   if (!db.endsWith('_test')) throw new Error(`resetDb "${db}" bazasida bajarilmaydi: faqat *_test`);
   // CASCADE: User'ga bog'liq barcha jadvallar (profillar, e'lon, bron, yuk) tozalanadi
-  await prisma.$executeRawUnsafe('TRUNCATE TABLE "User", "StorageUnit", "AuditLog", "MarketPrice" CASCADE');
+  await prisma.$executeRawUnsafe('TRUNCATE TABLE "User", "StorageUnit", "AuditLog", "MarketPrice", "Hub" CASCADE');
 }
 
 let phoneCounter = 0;
@@ -122,6 +122,15 @@ export async function registerMarket(http: Http, extra: Record<string, unknown> 
     region: 'Toshkent shahri', district: 'Chilonzor', address: 'Bunyodkor 12', ...extra,
   });
   if (res.status !== 201) throw new Error(`registerMarket ${res.status}: ${JSON.stringify(res.body)}`);
+  return { token: res.body.accessToken, user: res.body.user, phone };
+}
+
+export async function registerConsumer(http: Http, extra: Record<string, unknown> = {}): Promise<Account> {
+  const phone = (extra.phone as string) ?? nextPhone();
+  const res = await http().post('/auth/consumer/register').send({
+    phone, password: PASSWORD, fullName: 'Dilnoza Xaridor', region: 'Samarqand', district: 'Siyob', address: "Registon ko'chasi 10", ...extra,
+  });
+  if (res.status !== 201) throw new Error(`registerConsumer ${res.status}: ${JSON.stringify(res.body)}`);
   return { token: res.body.accessToken, user: res.body.user, phone };
 }
 

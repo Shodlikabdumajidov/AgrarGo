@@ -25,6 +25,13 @@ export interface AppEnv {
   DELIVERY_FEE_PER_KM: number;
   DELIVERY_FEE_PER_TON_KM: number;
   SERVICE_FEE_PERCENT: number;
+  LOCAL_HUB_FEE_PERCENT: number;
+  LOCAL_HUB_FEE_MIN: number;
+  LOCAL_COURIER_FEE: number;
+  LOCAL_SERVICE_FEE_PERCENT: number;
+  LOCAL_SERVICE_FEE_MIN: number;
+  LOCAL_MIN_ORDER_KG: number;
+  LOCAL_MAX_ORDER_KG: number;
   SMS_PROVIDER: 'simulated';
   SMS_ALLOW_SIMULATION: boolean;
   OTP_TTL_SECONDS: number;
@@ -228,6 +235,14 @@ export function validateEnv(raw: Record<string, unknown>): AppEnv & Record<strin
     DELIVERY_FEE_PER_KM: intInRange(raw.DELIVERY_FEE_PER_KM, 'DELIVERY_FEE_PER_KM', 400, 0, 100_000, errors),
     DELIVERY_FEE_PER_TON_KM: intInRange(raw.DELIVERY_FEE_PER_TON_KM, 'DELIVERY_FEE_PER_TON_KM', 150, 0, 100_000, errors),
     SERVICE_FEE_PERCENT: intInRange(raw.SERVICE_FEE_PERCENT, 'SERVICE_FEE_PERCENT', 1, 0, 30, errors),
+    // Chakana (Hub) savdo: Hub saqlash/qadoqlash haqi, shahar ichi kuryer haqi va platforma komissiyasi (hammasi xaridorga ochiq ko'rsatiladi)
+    LOCAL_HUB_FEE_PERCENT: intInRange(raw.LOCAL_HUB_FEE_PERCENT, 'LOCAL_HUB_FEE_PERCENT', 5, 0, 30, errors),
+    LOCAL_HUB_FEE_MIN: intInRange(raw.LOCAL_HUB_FEE_MIN, 'LOCAL_HUB_FEE_MIN', 2000, 0, 1_000_000, errors),
+    LOCAL_COURIER_FEE: intInRange(raw.LOCAL_COURIER_FEE, 'LOCAL_COURIER_FEE', 12000, 0, 1_000_000, errors),
+    LOCAL_SERVICE_FEE_PERCENT: intInRange(raw.LOCAL_SERVICE_FEE_PERCENT, 'LOCAL_SERVICE_FEE_PERCENT', 3, 0, 30, errors),
+    LOCAL_SERVICE_FEE_MIN: intInRange(raw.LOCAL_SERVICE_FEE_MIN, 'LOCAL_SERVICE_FEE_MIN', 500, 0, 1_000_000, errors),
+    LOCAL_MIN_ORDER_KG: intInRange(raw.LOCAL_MIN_ORDER_KG, 'LOCAL_MIN_ORDER_KG', 10, 1, 1000, errors),
+    LOCAL_MAX_ORDER_KG: intInRange(raw.LOCAL_MAX_ORDER_KG, 'LOCAL_MAX_ORDER_KG', 200, 1, 5000, errors),
     PAYMENT_RELEASE_GRACE_HOURS: intInRange(raw.PAYMENT_RELEASE_GRACE_HOURS, 'PAYMENT_RELEASE_GRACE_HOURS', 72, 0, 720, errors),
   };
 

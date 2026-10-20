@@ -131,7 +131,7 @@ export class AdminService {
   }
 
   async getUser(id: string) {
-    const u = await this.prisma.user.findUnique({ where: { id }, include: { farmer: true, driver: true, market: true } });
+    const u = await this.prisma.user.findUnique({ where: { id }, include: { farmer: true, driver: true, market: true, consumer: true } });
     if (!u) throw new NotFoundException('Foydalanuvchi topilmadi');
     const [products, bookings, shipments, whItems, whOrders] = await Promise.all([
       u.farmer ? this.prisma.product.count({ where: { farmerId: u.farmer.id } }) : 0,

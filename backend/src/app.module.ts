@@ -16,6 +16,8 @@ import { PricingModule } from './pricing/pricing.module';
 import { DriverPostModule } from './driver-post/driver-post.module';
 import { GuideModule } from './guide/guide.module';
 import { RatesModule } from './rates/rates.module';
+import { HubModule } from './hub/hub.module';
+import { LocalModule } from './local/local.module';
 import { MarketPriceModule } from './market-price/market-price.module';
 import { MarketplaceModule } from './marketplace/marketplace.module';
 import { PaymentModule } from './payment/payment.module';
@@ -57,6 +59,8 @@ import { WarehouseModule } from './warehouse/warehouse.module';
     DriverPostModule,
     GuideModule,
     RatesModule,
+    HubModule,
+    LocalModule,
     DocumentsModule,
     ReportsModule,
     TrustModule,

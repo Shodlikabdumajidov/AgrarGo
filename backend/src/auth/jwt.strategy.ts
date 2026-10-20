@@ -25,7 +25,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(payload: JwtPayload) {
     const user = await this.prisma.user.findUnique({
       where: { id: payload.sub },
-      include: { farmer: true, driver: true, market: true },
+      include: { farmer: true, driver: true, market: true, consumer: true },
     });
     if (!user || !user.isActive) throw new UnauthorizedException();
     // tv yo'q (eski) tokenlar 0 versiyaga teng hisoblanadi

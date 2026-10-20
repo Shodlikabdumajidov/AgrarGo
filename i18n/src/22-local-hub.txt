@@ -1,0 +1,139 @@
+# --- Mahalliy bozor (B2C) va AgrarGo Hub ---
+B2B: yirik hajm ‖ B2B: крупные объёмы ‖ B2B: bulk volumes
+Savatga qo'shish ‖ Добавить в корзину ‖ Add to cart
+Tezkor buyurtma ‖ Быстрый заказ ‖ Quick order
+Bozor turi ‖ Тип рынка ‖ Market type
+Ali Valiyev ‖ Али Валиев ‖ Ali Valiyev
+Ali Agro ‖ Али Агро ‖ Ali Agro
+Hasan Karimov ‖ Хасан Каримов ‖ Hasan Karimov
+Sardor Aliyev ‖ Сардор Алиев ‖ Sardor Aliyev
+Dilnoza Karimova ‖ Дилноза Каримова ‖ Dilnoza Karimova
+Kamaytirish ‖ Уменьшить ‖ Decrease
+Ko'paytirish ‖ Увеличить ‖ Increase
+Tuman yoki mahalla ‖ Район или махалля ‖ District or neighbourhood
+AgrarGo Local ‖ AgrarGo Local ‖ AgrarGo Local
+Xaridor sifatida ro'yxatdan o'tish ‖ Регистрация покупателя ‖ Sign up as a buyer
+Yangi hosilni 10 kg dan buyurtma qiling: shahringizdagi Hub ombordan kuryer olib keladi. ‖ Заказывайте свежий урожай от 10 кг: курьер привезёт со склада Hub в вашем городе. ‖ Order fresh produce from 10 kg: a courier brings it from the Hub warehouse in your city.
+Tuman yoki shaharni kiriting. ‖ Укажите район или город. ‖ Enter your district or city.
+Hub ombori orqali sotish ‖ Продажа через склад Hub ‖ Sell via Hub warehouse
+Shahar ichi kuryeri ‖ Городской курьер ‖ City courier
+Mahalliy bozor ‖ Местный рынок ‖ Local market
+Buyurtmalarim ‖ Мои заказы ‖ My orders
+Hub: chakana savdo ‖ Hub: розничная торговля ‖ Hub: retail
+Hub omborlar ‖ Склады Hub ‖ Hub warehouses
+Hub tasdig'i kutilmoqda ‖ Ожидает подтверждения Hub ‖ Waiting for Hub confirmation
+Qadoqlanmoqda ‖ Упаковывается ‖ Being packed
+Kuryer yo'lda ‖ Курьер в пути ‖ Courier on the way
+O'tkazildi ‖ Переведено ‖ Transferred
+Hub: saqlash va qadoqlash ‖ Hub: хранение и упаковка ‖ Hub: storage and packing
+Shahar ichi yetkazish ‖ Доставка по городу ‖ City delivery
+Escrow: pul qanday taqsimlanadi ‖ Эскроу: как распределяются деньги ‖ Escrow: how the money is split
+Savatga ‖ В корзину ‖ To cart
+Eng kam buyurtma: {0} ‖ Минимальный заказ: {0} ‖ Minimum order: {0}
+Hisoblanmoqda... ‖ Считаем... ‖ Calculating...
+Mahalliy bozordan xarid qilish uchun xaridor sifatida ro'yxatdan o'ting yoki kiring. ‖ Чтобы покупать на местном рынке, зарегистрируйтесь или войдите как покупатель. ‖ Sign up or log in as a buyer to shop in the local market.
+Mahalliy bozordan faqat «Xaridor» akkaunti xarid qila oladi. ‖ На местном рынке покупать может только аккаунт «Покупатель». ‖ Only a "Buyer" account can shop in the local market.
+To'lash va buyurtma berish ‖ Оплатить и заказать ‖ Pay and place order
+Tuman yoki mahallani kiriting. ‖ Укажите район или махаллю. ‖ Enter your district or neighbourhood.
+Manzilni to'liq kiriting. ‖ Укажите адрес полностью. ‖ Enter the full address.
+Buyurtma qabul qilindi! ‖ Заказ принят! ‖ Order placed!
+Topshirish kodi: {0}. Uni faqat kuryer yetkazganda ayting. ‖ Код получения: {0}. Назовите его только курьеру при доставке. ‖ Handover code: {0}. Tell it only to the courier on delivery.
+Hozircha mahalliy bozorda mahsulot yo'q ‖ Пока на местном рынке нет товаров ‖ No products in the local market yet
+Mahalliy bozorni yuklab bo'lmadi ‖ Не удалось загрузить местный рынок ‖ Could not load the local market
+Shahringizdagi Hub ombordan 10 kg dan buyurtma qiling: kuryer bir necha soatda yetkazadi ‖ Заказывайте от 10 кг со склада Hub в вашем городе: курьер доставит за несколько часов ‖ Order from 10 kg from the Hub warehouse in your city: a courier delivers within hours
+Mahsulot nomi bo'yicha qidiring... ‖ Поиск по названию товара... ‖ Search by product name...
+Boshqa viloyat yoki nom bilan qidirib ko'ring. Yangi mahsulot Hub omboriga kelganda bu yerda paydo bo'ladi. ‖ Попробуйте другой регион или название. Новые товары появятся здесь, когда поступят на склад Hub. ‖ Try another region or name. New products appear here once they reach the Hub warehouse.
+Har bir mahsulot alohida buyurtma bo'ladi: o'z escrow to'lovi va kuryer yetkazishi bilan ‖ Каждый товар — отдельный заказ: со своей эскроу-оплатой и доставкой курьером ‖ Each product is a separate order: with its own escrow payment and courier delivery
+Savatchangiz bo'sh ‖ Корзина пуста ‖ Your cart is empty
+Mahalliy bozorga o'tish ‖ Перейти на местный рынок ‖ Go to the local market
+Qator jami: {0} ‖ Итого по позиции: {0} ‖ Line total: {0}
+{0} ta mahsulot ‖ Товаров: {0} ‖ {0} items
+Buyurtma berish uchun «Xaridor» akkauntidan kiring. ‖ Чтобы заказать, войдите в аккаунт «Покупатель». ‖ Log in with a "Buyer" account to order.
+To'lash va buyurtma berish: {0} ‖ Оплатить и заказать: {0} ‖ Pay and place order: {0}
+Qabul qilindi: {0} ta buyurtma ‖ Принято заказов: {0} ‖ Orders placed: {0}
+Buyurtmalar qabul qilindi! ‖ Заказы приняты! ‖ Orders placed!
+Topshirish kodlari «Buyurtmalarim» bo'limida. ‖ Коды получения — в разделе «Мои заказы». ‖ Handover codes are in "My orders".
+Topshirish kodi ‖ Код получения ‖ Handover code
+Faqat kuryer buyurtmani topshirganda ayting ‖ Называйте только когда курьер вручает заказ ‖ Tell it only when the courier hands over the order
+Buyurtma yakunlandi. Rahmat! ‖ Заказ завершён. Спасибо! ‖ Order completed. Thank you!
+Buyurtmani bekor qilasizmi? To'lov to'liq qaytariladi. ‖ Отменить заказ? Оплата будет возвращена полностью. ‖ Cancel the order? The payment is refunded in full.
+Mahalliy bozordan 10 kg dan buyurtma qiling. ‖ Заказывайте на местном рынке от 10 кг. ‖ Order from 10 kg in the local market.
+1. Hub'ga topshiring ‖ 1. Сдайте на Hub ‖ 1. Hand over to the Hub
+2. Hub qabul qiladi ‖ 2. Hub принимает ‖ 2. The Hub receives it
+3. Aholiga sotiladi ‖ 3. Продаётся жителям ‖ 3. Sold to residents
+4. Pul sizga o'tadi ‖ 4. Деньги переводятся вам ‖ 4. You get paid
+To'lov Escrow'da turadi; yetkazilgach mahsulot puli to'liq hisobingizga o'tadi. ‖ Оплата хранится в эскроу; после доставки полная стоимость товара переводится вам. ‖ The payment stays in escrow; after delivery the full product price is paid out to you.
+Mahsulotingizni Hub omboriga topshiring va mahalliy aholiga chakana soting ‖ Сдайте товар на склад Hub и продавайте жителям в розницу ‖ Hand your produce to the Hub warehouse and sell it to residents at retail
+Mening mahsulotlarim ‖ Мои товары ‖ My products
+Mahsulot yo'q ‖ Нет товаров ‖ No products
+Avval «Mening e'lonlarim» bo'limida mahsulot joylang. ‖ Сначала разместите товар в разделе «Мои объявления». ‖ First post a product in "My listings".
+Topshirishlar tarixi ‖ История сдач ‖ Handover history
+Hub qabulini kutmoqda ‖ Ожидает приёмки Hub ‖ Waiting for Hub intake
+Chakana sotuvlar va pul oqimi ‖ Розничные продажи и денежный поток ‖ Retail sales and cash flow
+Escrow'da: yetkazilgach o'tadi ‖ В эскроу: перейдёт после доставки ‖ In escrow: paid after delivery
+Omborimda (B2B): {0} ‖ На моём складе (B2B): {0} ‖ In my stock (B2B): {0}
+Chakana sotuvda ‖ В розничной продаже ‖ On retail sale
+Chakana sotuv o'chiq ‖ Розничная продажа выключена ‖ Retail sale is off
+Hub qabulini kutmoqda: {0} ‖ Ожидает приёмки Hub: {0} ‖ Waiting for Hub intake: {0}
+Hub'ga topshirish ‖ Сдать на Hub ‖ Hand over to Hub
+Sotuvni to'xtatish ‖ Остановить продажу ‖ Stop selling
+Sotuvni yoqish ‖ Включить продажу ‖ Start selling
+Narxni o'zgartirish ‖ Изменить цену ‖ Change price
+Chakana narx va minimum ‖ Розничная цена и минимум ‖ Retail price and minimum
+Hozircha faol Hub ombori yo'q. ‖ Пока нет активных складов Hub. ‖ There is no active Hub warehouse yet.
+Hub omboriga topshirish ‖ Сдача на склад Hub ‖ Hand over to the Hub warehouse
+Sizda mavjud: {0} ‖ У вас есть: {0} ‖ You have: {0}
+Topshirishni e'lon qilish ‖ Объявить о сдаче ‖ Announce handover
+Hub ombori ‖ Склад Hub ‖ Hub warehouse
+Haqiqiy vaznni Hub qabul paytida tekshiradi. ‖ Фактический вес проверит Hub при приёмке. ‖ The Hub verifies the actual weight on intake.
+Topshirish e'lon qilindi. Mahsulotni Hub omboriga olib boring. ‖ Сдача объявлена. Привезите товар на склад Hub. ‖ Handover announced. Bring the produce to the Hub warehouse.
+Chakana buyurtma yo'q ‖ Нет розничных заказов ‖ No retail orders
+Xaridorlar buyurtma berganda shu yerda paydo bo'ladi. ‖ Появятся здесь, когда покупатели сделают заказы. ‖ They appear here when buyers place orders.
+Topshirishlar yo'q ‖ Нет сдач ‖ No handovers
+Fermerlar Hub'ga mahsulot topshirishni e'lon qilganda shu yerda ko'rinadi. ‖ Появятся здесь, когда фермеры объявят о сдаче товара на Hub. ‖ They appear here when farmers announce a handover to the Hub.
+Omborda qoldiq yo'q ‖ Нет остатков на складе ‖ No stock in the warehouse
+Birinchi topshirishni qabul qilgach qoldiq shu yerda ko'rinadi. ‖ Остатки появятся здесь после первой приёмки. ‖ Stock appears here after the first intake is received.
+Tayyor: kuryer kutilmoqda ‖ Готов: ждёт курьера ‖ Ready: waiting for a courier
+Qadoqlash jarayonida ‖ В процессе упаковки ‖ Packing in progress
+Qadoqlashni boshlash ‖ Начать упаковку ‖ Start packing
+Qabul: {0} ‖ Приёмка: {0} ‖ Intake: {0}
+Mahsulotni qabul qilish ‖ Принять товар ‖ Receive produce
+Qoldiq balansga shu vazn yoziladi va fermer e'lonidagi miqdordan ayriladi. ‖ Этот вес записывается на остаток склада и вычитается из объёма объявления фермера. ‖ This weight is added to the warehouse balance and deducted from the farmer's listing quantity.
+Qabul qilindi: qoldiq yangilandi. ‖ Принято: остаток обновлён. ‖ Received: stock updated.
+Topshirishni rad etish ‖ Отклонить сдачу ‖ Reject handover
+Rad etildi. ‖ Отклонено. ‖ Rejected.
+Sotuv o'chiq ‖ Продажа выключена ‖ Sale is off
+Tuzatish ‖ Корректировка ‖ Adjust
+Hozir: {0} ‖ Сейчас: {0} ‖ Now: {0}
+Qoldiq tuzatildi. ‖ Остаток скорректирован. ‖ Stock adjusted.
+Zaxira bo'shadi ‖ Резерв снят ‖ Reservation released
+Kuryerga chiqdi ‖ Передан курьеру ‖ Handed to courier
+Omborga qaytdi ‖ Возвращён на склад ‖ Returned to warehouse
+Viloyat omborlari va ularning xodimlari ‖ Региональные склады и их сотрудники ‖ Regional warehouses and their staff
+Hub qo'shish ‖ Добавить Hub ‖ Add Hub
+Yangi Hub ombori ‖ Новый склад Hub ‖ New Hub warehouse
+Samarqand Hub ‖ Hub Самарканд ‖ Samarkand Hub
+Hub yaratildi. ‖ Hub создан. ‖ Hub created.
+Hub yo'q ‖ Нет Hub ‖ No Hubs
+Faol emas ‖ Неактивен ‖ Inactive
+Xodimlar: {0} ‖ Сотрудников: {0} ‖ Staff: {0}
+Xodim biriktirish ‖ Прикрепить сотрудника ‖ Assign staff
+Biriktiriladigan dispetcher yo'q. Avval «Foydalanuvchilar» bo'limida dispetcher yarating. ‖ Нет диспетчеров для назначения. Сначала создайте диспетчера в разделе «Пользователи». ‖ No dispatcher to assign. First create one in the "Users" section.
+Hub ombordan shahar ichidagi kichik buyurtmalarni yetkazing: har buyurtma uchun qat'iy haq ‖ Развозите небольшие заказы со склада Hub по городу: фиксированная плата за каждый заказ ‖ Deliver small orders from the Hub warehouse within the city: a fixed fee per order
+Kuryer rejimi yoqilgan ‖ Режим курьера включён ‖ Courier mode is on
+Kuryer rejimi o'chiq ‖ Режим курьера выключен ‖ Courier mode is off
+Viloyatingizda Hub yo'q ‖ В вашем регионе нет Hub ‖ There is no Hub in your region
+Rejimni o'chirish ‖ Выключить режим ‖ Turn the mode off
+Kuryer bo'lish ‖ Стать курьером ‖ Become a courier
+Tayyor buyurtmalar ‖ Готовые заказы ‖ Ready orders
+Hozircha tayyor buyurtma yo'q. Hub qadoqlab bo'lgach shu yerda paydo bo'ladi. ‖ Пока нет готовых заказов. Они появятся здесь, когда Hub упакует их. ‖ No ready orders yet. They appear here once the Hub has packed them.
+Aniq manzil va telefon buyurtmani olgandan keyin ochiladi. ‖ Точный адрес и телефон откроются после принятия заказа. ‖ The exact address and phone are shown after you accept the order.
+Buyurtmani olish ‖ Взять заказ ‖ Accept order
+Yo'ldagi buyurtmalarim ‖ Мои заказы в пути ‖ My orders on the way
+Hozir yo'lda buyurtma yo'q. ‖ Сейчас нет заказов в пути. ‖ No orders on the way.
+Yetkazib berish haqi: {0} ‖ Плата за доставку: {0} ‖ Delivery fee: {0}
+Kod bilan topshirish ‖ Вручить по коду ‖ Hand over with code
+Buyurtmani topshirish ‖ Вручить заказ ‖ Hand over the order
+Xaridordan 4 xonali topshirish kodini oling ‖ Получите у покупателя 4-значный код ‖ Get the 4-digit handover code from the buyer
+Topshirish ‖ Вручить ‖ Hand over
+Yetkazildi! Yetkazish haqi hisobingizga o'tkazildi. ‖ Доставлено! Плата за доставку переведена вам. ‖ Delivered! The delivery fee has been paid to you.

@@ -63,7 +63,7 @@
 
         // Sahifa skrolli: biror modal/panel/kabinet ochiq bo'lsa qulflanadi
         function syncScrollLock() {
-            const open = ['auth-modal', 'product-modal', 'booking-modal', 'payment-modal', 'wh-modal', 'price-modal', 'dp-modal', 'ltl-modal', 'ct-modal', 'of-modal', 'book-root', 'rate-modal', 'face-modal', 'bd-modal', 'my-products-panel', 'dashboard-view', 'role-page', 'not-found'].some(function (id) {
+            const open = ['auth-modal', 'product-modal', 'booking-modal', 'payment-modal', 'wh-modal', 'price-modal', 'dp-modal', 'ltl-modal', 'ct-modal', 'of-modal', 'lo-modal', 'book-root', 'rate-modal', 'face-modal', 'bd-modal', 'my-products-panel', 'dashboard-view', 'role-page', 'not-found'].some(function (id) {
                 const node = document.getElementById(id);
                 return node && node.classList.contains('open');
             });
@@ -81,9 +81,11 @@
             DISPATCHER: { label: 'Dispetcher', badge: 'AgrarGo Ombor', icon: 'fa-warehouse', regTitle: '', regSub: '' },
             ADMIN: { label: 'Admin', badge: 'AgrarGo Admin', icon: 'fa-user-shield', regTitle: '', regSub: '' },
             MARKET: { label: 'Market', badge: 'AgrarGo Market', icon: 'fa-store',
-                regTitle: "Market sifatida ro'yxatdan o'tish", regSub: "Kompaniyangiz nomidan fermerlardan bevosita xarid qiling." }
+                regTitle: "Market sifatida ro'yxatdan o'tish", regSub: "Kompaniyangiz nomidan fermerlardan bevosita xarid qiling." },
+            CONSUMER: { label: 'Xaridor', badge: 'AgrarGo Local', icon: 'fa-basket-shopping',
+                regTitle: "Xaridor sifatida ro'yxatdan o'tish", regSub: "Yangi hosilni 10 kg dan buyurtma qiling: shahringizdagi Hub ombordan kuryer olib keladi." }
         };
-        const REGISTER_FORM_IDS = { FARMER: 'register-form', DRIVER: 'register-driver-form', MARKET: 'register-market-form' };
+        const REGISTER_FORM_IDS = { FARMER: 'register-form', DRIVER: 'register-driver-form', MARKET: 'register-market-form', CONSUMER: 'register-consumer-form' };
         let authRole = 'FARMER';  // ro'yxatdan o'tish formasi uchun tanlangan rol
         let loginRole = null;     // sidebar orqali tanlangan bo'lsa, kirish shu rol bilan cheklanadi
 
@@ -778,6 +780,25 @@
 
         // Har bir rol uchun: forma elementidan payload yig'adi va mijoz tomonida tekshiradi
         const REGISTER_CONFIG = {
+            CONSUMER: {
+                path: '/auth/consumer/register',
+                collect: function (f) {
+                    const payload = {
+                        fullName: f.fullName.value.trim(), phone: normalizePhone(f.phone.value),
+                        region: f.region.value, district: f.district.value.trim(), password: f.password.value
+                    };
+                    const address = f.address.value.trim();
+                    if (address) payload.address = address;
+                    const errors = [];
+                    if (payload.fullName.length < 2) errors.push('Ism va familiyani kiriting.');
+                    if (!/^\+998\d{9}$/.test(payload.phone)) errors.push(PHONE_ERR);
+                    if (!payload.region) errors.push('Viloyatni tanlang.');
+                    if (payload.district.length < 2) errors.push('Tuman yoki shaharni kiriting.');
+                    const pwProblem = passwordProblems(payload.password)[0];
+                    if (pwProblem) errors.push(pwProblem);
+                    return { payload: payload, errors: errors };
+                }
+            },
             FARMER: {
                 path: '/auth/farmer/register',
                 collect: function (f) {
@@ -1253,6 +1274,7 @@
             if (tourState.active || notFoundView.classList.contains('open')) return; // tur va 404 o'z Escape'ini boshqaradi: kabinet yopilmasin
             if (document.getElementById('bd-modal').classList.contains('open')) closeBdModal();
             else if (document.getElementById('face-modal').classList.contains('open')) closeFaceModal();
+            else if (document.getElementById('lo-modal').classList.contains('open')) closeLoModal();
             else if (document.getElementById('ct-modal').classList.contains('open')) closeCtModal();
             else if (document.getElementById('of-modal').classList.contains('open')) closeOfModal();
             else if (document.getElementById('ltl-modal').classList.contains('open')) closeLtlModal();
@@ -1406,6 +1428,7 @@
         }
 
         async function loadMarket() {
+            if (typeof marketMode !== 'undefined' && marketMode === 'local') return loadLocalMarket();
             const reqId = ++marketRequestId; // eski (kechikkan) javoblar yangisini bosib ketmasin
             renderMarketChips();
             syncMarketFilterUi();
@@ -1566,7 +1589,7 @@
         const dashboardView = document.getElementById('dashboard-view');
         const dashContent = document.getElementById('dash-content');
         const DASH_TABS = {
-            FARMER: [['overview', 'fa-gauge', 'Umumiy'], ['bookings', 'fa-inbox', 'Kelgan bronlar'],
+            FARMER: [['overview', 'fa-gauge', 'Umumiy'], ['bookings', 'fa-inbox', 'Kelgan bronlar'], ['hub', 'fa-store', "Hub ombori orqali sotish"],
                      ['shipments', 'fa-truck-ramp-box', 'Yuk tashish'], ['payments', 'fa-wallet', "To'lovlar"],
                      ['warehouse', 'fa-warehouse', 'Omborxona'], ['whorders', 'fa-clipboard-list', 'Ombor buyurtmalari'],
                      ['products', 'fa-boxes-stacked', "E'lonlarim"], ['guide', 'fa-book-open', "Qo'llanma"], ['drivers', 'fa-truck-field', 'Haydovchilar'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'], ['badges', 'fa-trophy', 'Ishonch badjlari'], ['subscription', 'fa-crown', 'Obuna'], ['profile', 'fa-id-card', 'Profil']],
@@ -1574,12 +1597,13 @@
                      ['shipments', 'fa-truck-ramp-box', 'Yuk tashish'], ['payments', 'fa-wallet', "To'lovlar"],
                      ['warehouse', 'fa-warehouse', 'Omborxona'], ['whorders', 'fa-clipboard-list', 'Ombor buyurtmalari'],
                      ['catalog', 'fa-store', 'Katalog'], ['guide', 'fa-book-open', "Qo'llanma"], ['drivers', 'fa-truck-field', 'Haydovchilar'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'], ['badges', 'fa-trophy', 'Ishonch badjlari'], ['subscription', 'fa-crown', 'Obuna'], ['profile', 'fa-id-card', 'Profil']],
-            DRIVER: [['overview', 'fa-gauge', 'Umumiy'], ['loads', 'fa-boxes-packing', 'Mavjud yuklar'],
+            DRIVER: [['overview', 'fa-gauge', 'Umumiy'], ['loads', 'fa-boxes-packing', 'Mavjud yuklar'], ['courier', 'fa-motorcycle', 'Shahar ichi kuryeri'],
                      ['myloads', 'fa-truck-fast', 'Mening yuklarim'], ['eld', 'fa-clock-rotate-left', 'Harakat jurnali'], ['verify', 'fa-id-card-clip', 'Shaxsni tasdiqlash'], ['badges', 'fa-trophy', 'Darajalar va mukofotlar'], ['guide', 'fa-book-open', "Qo'llanma"], ['drivers', 'fa-truck-field', 'Haydovchilar'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'], ['subscription', 'fa-crown', 'Obuna'], ['profile', 'fa-id-card', 'Profil']],
-            DISPATCHER: [['whboard', 'fa-table-columns', 'Zonalar'], ['whunits', 'fa-temperature-half', 'Kameralar'],
+            CONSUMER: [['lmarket', 'fa-basket-shopping', 'Mahalliy bozor'], ['lcart', 'fa-cart-shopping', 'Savatcha'], ['lorders', 'fa-box', 'Buyurtmalarim'], ['guide', 'fa-book-open', "Qo'llanma"], ['profile', 'fa-id-card', 'Profil']],
+            DISPATCHER: [['hubops', 'fa-warehouse', 'Hub: chakana savdo'], ['whboard', 'fa-table-columns', 'Zonalar'], ['whunits', 'fa-temperature-half', 'Kameralar'],
                      ['whorders', 'fa-clipboard-list', 'Buyurtmalar'], ['whinventory', 'fa-chart-pie', 'Inventarizatsiya'], ['guide', 'fa-book-open', "Qo'llanma"], ['drivers', 'fa-truck-field', 'Haydovchilar'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'], ['profile', 'fa-id-card', 'Profil']]
         };
-        DASH_TABS.ADMIN = [['adm-dashboard', 'fa-chart-line', 'Boshqaruv paneli'], ['adm-users', 'fa-users', 'Foydalanuvchilar'],
+        DASH_TABS.ADMIN = [['adm-dashboard', 'fa-chart-line', 'Boshqaruv paneli'], ['adm-hubs', 'fa-warehouse', "Hub omborlar"], ['hubops', 'fa-basket-shopping', 'Hub: chakana savdo'], ['adm-users', 'fa-users', 'Foydalanuvchilar'],
                      ['adm-products', 'fa-boxes-stacked', "E'lonlar"], ['adm-shipments', 'fa-truck-fast', 'Yuk tashish'], ['adm-payments', 'fa-wallet', "To'lovlar"],
                      ['whboard', 'fa-warehouse', 'Ombor: zonalar'], ['whunits', 'fa-temperature-half', 'Kameralar'], ['whorders', 'fa-clipboard-list', 'Ombor buyurtmalari'],
                      ['whinventory', 'fa-chart-pie', 'Inventarizatsiya'], ['adm-reviews', 'fa-star', 'Sharhlar'], ['adm-kyc', 'fa-user-check', 'KYC arizalari'], ['adm-settings', 'fa-gear', 'Sayt sozlamalari'], ['adm-audit', 'fa-list-check', 'Audit jurnali'], ['guide', 'fa-book-open', "Qo'llanma"], ['drivers', 'fa-truck-field', 'Haydovchilar'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'],
@@ -1643,7 +1667,7 @@
             syncScrollLock();
             renderSubBanner();
             loadSubscription();
-            selectDashTab(tab || (user.role === 'ADMIN' ? 'adm-dashboard' : isStaffRole(user) ? 'whboard' : 'overview'));
+            selectDashTab(tab || (user.role === 'ADMIN' ? 'adm-dashboard' : user.role === 'CONSUMER' ? 'lmarket' : isStaffRole(user) ? 'whboard' : 'overview'));
             setTimeout(function () { maybeStartTour(user); }, 1500); // birinchi kirishda interaktiv qo'llanma
         }
 
@@ -1692,6 +1716,7 @@
             else if (tab === 'badges') renderDashBadges(user);
             else if (tab === 'adm-kyc') renderAdmKyc(user);
             else if (tab === 'prices') renderDashPrices(user);
+            else if (LOCAL_TABS[tab]) LOCAL_TABS[tab](user);
             else if (tab === 'drivers') renderDashDrivers(user);
             else if (tab === 'guide') renderDashGuide(user);
             else if (tab === 'subscription') renderDashSubscription(user);
@@ -3322,7 +3347,7 @@
         }
 
         // ===== SUPER ADMIN PANELI =====
-        const ADM_ROLE_LABEL = { FARMER: 'Fermer', MARKET: 'Market', DRIVER: 'Haydovchi', DISPATCHER: 'Dispetcher', ADMIN: 'Admin' };
+        const ADM_ROLE_LABEL = { FARMER: 'Fermer', MARKET: 'Market', DRIVER: 'Haydovchi', DISPATCHER: 'Dispetcher', ADMIN: 'Admin', CONSUMER: 'Xaridor' };
         const ADM_PRODUCT_STATUS = {
             ACTIVE: { label: 'Faol', cls: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' },
             BOOKED: { label: 'Bron qilingan', cls: 'bg-amber-500/15 text-amber-300 border-amber-500/30' },
@@ -5040,6 +5065,7 @@
                 ['address', 'Manzil (ixtiyoriy)', 'text', false], ['stir', 'STIR (ixtiyoriy)', 'stir', false], ['telegramUsername', 'Telegram username (ixtiyoriy)', 'tgname', false]] },
             DRIVER: { key: 'driver', fields: [['vehicleType', 'Transport turi', 'vehicle', true], ['plateNumber', 'Davlat raqami', 'plate', true],
                 ['capacityKg', "Yuk sig'imi (kg)", 'number', true], ['region', 'Faoliyat viloyati', 'region', true], ['licenseNumber', 'Haydovchilik guvohnomasi (ixtiyoriy)', 'text', false], ['telegramUsername', 'Telegram username (ixtiyoriy)', 'tgname', false]] },
+            CONSUMER: { key: 'consumer', fields: [['region', 'Viloyat', 'region', true], ['district', 'Tuman / shahar', 'text', true], ['address', 'Manzil (ixtiyoriy)', 'text', false], ['telegramUsername', 'Telegram username (ixtiyoriy)', 'tgname', false]] },
             MARKET: { key: 'market', fields: [['companyName', "Kompaniya / do'kon nomi", 'text', true], ['region', 'Viloyat', 'region', true],
                 ['district', 'Tuman', 'text', true], ['address', 'Manzil (ixtiyoriy)', 'text', false], ['stir', 'STIR (ixtiyoriy)', 'stir', false], ['telegramUsername', 'Telegram username (ixtiyoriy)', 'tgname', false]] }
         };
@@ -6587,7 +6613,7 @@
             const n = function (o, k) { return (o && o[k]) || 0; };
             wrap.appendChild(doughnutCard('Bronlar taqsimoti', "Holat bo'yicha", bookingSlices(function (st) { return n(s.bookings, st); }), { tall: true }));
             wrap.appendChild(barChartCard("Ombor qoldig'i", 'Zonalar bo\'yicha, kg', s.warehouse.byZone.map(function (z) { return T(WH_ZONES[z.zone].label); }), [{ label: 'Qoldiq (kg)', data: s.warehouse.byZone.map(function (z) { return Number(z.weightKg); }), color: CHART_COLORS.teal }], { fmt: kg, cls: 'lg:col-span-2', emptyText: "Omborga yuk qabul qilinganda qoldiqlar shu yerda ko'rinadi." }));
-            wrap.appendChild(doughnutCard('Foydalanuvchilar', "Rollar bo'yicha", Object.keys(ADM_ROLE_LABEL).map(function (r, i) { return [ADM_ROLE_LABEL[r], n(s.users.byRole, r), [CHART_COLORS.emerald, CHART_COLORS.amber, CHART_COLORS.blue, CHART_COLORS.purple, CHART_COLORS.rose][i]]; })));
+            wrap.appendChild(doughnutCard('Foydalanuvchilar', "Rollar bo'yicha", Object.keys(ADM_ROLE_LABEL).map(function (r, i) { return [ADM_ROLE_LABEL[r], n(s.users.byRole, r), [CHART_COLORS.emerald, CHART_COLORS.amber, CHART_COLORS.blue, CHART_COLORS.purple, CHART_COLORS.rose, '#94a3b8'][i]]; })));
             return wrap;
         }
 

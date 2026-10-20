@@ -206,3 +206,24 @@ Frontend ildizida: `manifest.json`, `sw.js` (Service Worker), `offline.html`, `i
 - `GET /driver-posts/:id/contact` (FARMER/MARKET/DISPATCHER/ADMIN) — telefon, ism va `telegramUsername` (profilda ixtiyoriy kiritiladi, `PATCH /profile { telegramUsername }`; "@" olib tashlanadi, 5–32 belgi).
 - `GET /driver-posts/offerable?postId=` (FARMER/MARKET) — o'z ochiq (haydovchisiz) yuklari: mahsulot, hajm, yo'nalish, yo'l haqi, `ready` (to'lov kafolatlangan), `fits` (e'longa sig'adimi), `alreadyOffered`.
 - `POST /driver-posts/:id/offers { shipmentId, pickupAt?, note? }` — taklif yuborish: haydovchi kabinetida (`GET /driver-posts/offers/mine`, `POST /driver-posts/offers/:id/read`) va ulangan bo'lsa Telegramda xabar (mahsulot, hajm, olish vaqti, viloyat/tuman, yo'l haqi; aniq manzil yuk biriktirilgach ochiladi). Takror, begona/band yuk, sig'maydigan yuk — 409/404; kuniga 20 tagacha.
+
+## Mahalliy bozor (B2C) va AgrarGo Hub
+
+Fermer katta partiyani viloyatdagi **Hub** (ombor)ga topshiradi; aholi shu ombordan 10 kg dan buyurtma qiladi, shahar ichidagi kuryer yetkazadi. Hamma pul **Escrow**da turadi.
+
+**Pul oqimi** (jami = mahsulot + Hub haqi + kuryer haqi + platforma haqi):
+- mahsulot summasi (kg × chakana narx) → **fermerga** (to'liq);
+- Hub saqlash/qadoqlash haqi (`LOCAL_HUB_FEE_*`) → **Hub**ga;
+- shahar ichi yetkazish (`LOCAL_COURIER_FEE`) → **kuryerga**;
+- platforma xizmat haqi (`LOCAL_SERVICE_FEE_*`) → **platformaga**.
+Xaridor to'lovdan oldin aniq taqsimotni ko'radi (`GET /local/quote`); to'lov `HELD` → yetkazilgach `RELEASED` (har tomonga alohida payout, `PaymentSplit` qatorlari), bekor bo'lsa to'liq `REFUNDED`.
+
+**Rollar:** `CONSUMER` (xaridor, obunadan ozod), `FARMER` (Hub'ga topshiradi, chakana narx belgilaydi), `DISPATCHER` + `hubId` (Hub xodimi: qabul, qadoqlash, qoldiq), `DRIVER` (kuryer rejimi, bir vaqtda ko'pi bilan 3 buyurtma, o'z viloyati Hub'i), `ADMIN` (Hub yaratadi, xodim biriktiradi).
+
+**Asosiy endpointlar:** `GET /local/market`, `GET /local/quote` (ochiq); `POST /local/orders`, `GET /local/orders/mine`, `POST /local/orders/:id/{confirm|cancel|pack-start|packed|accept|deliver}`; `GET /local/farmer/orders`, `/local/hub/orders`, `/local/courier/{me|available|mine}`, `PATCH /local/courier/mode`; `POST/GET /hubs`, `/hubs/:id/staff`; `POST /hub/intakes`, `/hub/intakes/:id/{receive|reject|cancel}`, `GET /hub/stock`, `POST /hub/stock/:id/adjust`, `PATCH /hub/retail/:productId`.
+
+**Ombor qoldig'i (HubStock):** buyurtma paytida atomik zaxiralanadi (`reserved`), kuryer olganda chiqim, bekor bo'lsa qaytadi; har harakat `HubStockMovement` jurnaliga yoziladi; DB CHECK: `weight ≥ reserved ≥ 0` (oversell bo'lmaydi).
+
+**Topshirish kodi:** 4 xonali kod faqat xaridorga ko'rinadi; kuryer yetkazganda kiritadi (5 ta xato urinishdan keyin bloklanadi; xaridor o'zi ham tasdiqlashi mumkin).
+
+**Cheklovlar:** har buyurtma bitta mahsulot/qator (savat — alohida buyurtmalar); Hub xaridor viloyatidagi ombor; fermer to'liq chakana narxni oladi, Hub/kuryer/platforma haqi ustiga qo'shiladi; fermerdan Hub'gacha tashish platforma ichida yuritilmaydi; kuryer haqi qat'iy (masofaga bog'liq emas).

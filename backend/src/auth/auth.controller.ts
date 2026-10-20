@@ -5,6 +5,7 @@ import { LoginDto } from './dto/login.dto';
 import { ChangePasswordDto, ForgotPasswordDto, ResetPasswordDto, VerifyResetCodeDto } from './dto/password.dto';
 import { RegisterDriverDto } from './dto/register-driver.dto';
 import { RegisterFarmerDto } from './dto/register-farmer.dto';
+import { RegisterConsumerDto } from './dto/register-consumer.dto';
 import { RegisterMarketDto } from './dto/register-market.dto';
 import { ThrottleProfile } from '../security/throttle-profile';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -30,6 +31,12 @@ export class AuthController {
   @ThrottleProfile('register')
   registerMarket(@Body() dto: RegisterMarketDto) {
     return this.auth.registerMarket(dto);
+  }
+
+  @Post('consumer/register')
+  @ThrottleProfile('register')
+  registerConsumer(@Body() dto: RegisterConsumerDto) {
+    return this.auth.registerConsumer(dto);
   }
 
   @Post('login')

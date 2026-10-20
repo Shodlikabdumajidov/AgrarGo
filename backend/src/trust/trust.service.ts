@@ -31,7 +31,7 @@ export class TrustService {
   private static allowedHours(km: number) { return km / 50 + 1; }
 
   private async metrics(userId: string): Promise<Metrics> {
-    const user = await this.prisma.user.findUnique({ where: { id: userId }, include: { farmer: true, driver: true, market: true } });
+    const user = await this.prisma.user.findUnique({ where: { id: userId }, include: { farmer: true, driver: true, market: true, consumer: true } });
     if (!user) throw new NotFoundException('Foydalanuvchi topilmadi');
     const now = Date.now();
     const ratings = await this.prisma.shipmentRating.findMany({ where: { targetId: userId }, select: { stars: true, friendly: true, damaged: true } });

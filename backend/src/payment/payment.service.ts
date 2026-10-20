@@ -1,5 +1,6 @@
 import { BadGatewayException, ConflictException, ForbiddenException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { BookingStatus, PaymentStatus, Prisma, Role, ShipmentStatus } from '@prisma/client';
+import { BookingStatus, PaymentStatus, Prisma, Role, ShipmentStatus, SplitStatus } from '@prisma/client';
+import { LocalQuote, localSplits } from '../local/local-pricing';
 import { restoreStock } from '../booking/stock';
 import { computeAmount } from './payment.factory';
 import { APP_ENV } from '../config/app-env.module';
@@ -27,6 +28,15 @@ const PAYMENT_INCLUDE = {
       product: { select: { name: true, category: true, farmerId: true, farmer: { select: { farmName: true, region: true } } } },
       market: { select: { companyName: true, region: true } },
       shipment: { select: { id: true, status: true, deliveredAt: true, driverId: true } },
+    },
+  },
+  splits: { orderBy: { party: Prisma.SortOrder.asc } },
+  localOrder: {
+    select: {
+      id: true, status: true, consumerId: true, farmerId: true, hubId: true, courierId: true, quantityKg: true, pricePerKg: true, deliveredAt: true,
+      product: { select: { name: true, category: true, farmer: { select: { farmName: true, region: true } } } },
+      hub: { select: { name: true, region: true } },
+      consumer: { select: { user: { select: { fullName: true } } } },
     },
   },
   warehouseOrder: {
@@ -68,8 +78,62 @@ export class PaymentService {
   // Bu amallar WarehouseOrderService'ning tranzaksiyasi ichida chaqiriladi: provayder xatosi butun amalni (zaxira ham) qaytaradi.
 
   /** Market to'laydigan jami summa: mahsulot + yetkazib berish + xizmat haqi (eski yozuvlarda faqat mahsulot) */
-  private total(row: { amount: Prisma.Decimal; deliveryFee: Prisma.Decimal; serviceFee: Prisma.Decimal }) {
-    return row.amount.add(row.deliveryFee).add(row.serviceFee);
+  private total(row: { amount: Prisma.Decimal; deliveryFee: Prisma.Decimal; serviceFee: Prisma.Decimal; hubFee: Prisma.Decimal }) {
+    return row.amount.add(row.deliveryFee).add(row.serviceFee).add(row.hubFee);
+  }
+
+  // ---------- Chakana (Hub) buyurtmalari: escrow va taqsimot ----------
+  // LocalOrderService tranzaksiyasi ichida chaqiriladi: provayder xatosi butun amalni (zaxira ham) qaytaradi.
+
+  /**
+   * Buyurtma berilganda xaridor mablag'i darhol escrow'ga o'tadi (HELD) va jami summa to'rt ulushga bo'linadi
+   * (fermer / Hub / kuryer / platforma). Ulushlar yig'indisi jamiga teng — hech qanday summa "yo'qolmaydi".
+   */
+  async holdForLocalOrder(tx: Prisma.TransactionClient, order: { id: string; farmerId: string; hubId: string }, q: LocalQuote) {
+    const payment = await tx.payment.create({
+      data: {
+        localOrderId: order.id, amount: q.productAmount, hubFee: q.hubFee, deliveryFee: q.courierFee, serviceFee: q.serviceFee,
+        distanceKm: 0, currency: 'UZS', status: PaymentStatus.HELD, heldAt: new Date(), provider: this.provider.name,
+      },
+    });
+    const res = await this.callProvider("Mablag' yechilmadi", () => this.provider.charge({ paymentId: payment.id, amount: q.total.toFixed(2), currency: payment.currency }));
+    await tx.payment.update({ where: { id: payment.id }, data: { providerRef: res.ref } });
+    const partyId = { FARMER: order.farmerId, HUB: order.hubId, COURIER: null, PLATFORM: null } as const;
+    await tx.paymentSplit.createMany({ data: localSplits(q).map((x) => ({ paymentId: payment.id, party: x.party, partyId: partyId[x.party], amount: x.amount, status: SplitStatus.HELD })) });
+    await this.event(tx, payment.id, PaymentStatus.HELD, 'CONSUMER', `Mablag' escrow'ga o'tkazildi: jami ${q.total.toFixed(2)} (${res.ref})`);
+    return payment;
+  }
+
+  /** Yetkazilgach: HELD -> RELEASED. Fermerga mahsulot summasi, Hub'ga saqlash haqi, kuryerga yetkazish haqi; platforma komissiyasi daromad sifatida qayd etiladi. */
+  async releaseForLocalOrder(tx: Prisma.TransactionClient, orderId: string, actor: string, courierId: string | null) {
+    const row = await tx.payment.findUnique({ where: { localOrderId: orderId }, include: { splits: true } });
+    if (!row) throw new NotFoundException("Buyurtma to'lovi topilmadi");
+    const claimed = await tx.payment.updateMany({ where: { id: row.id, status: PaymentStatus.HELD }, data: { status: PaymentStatus.RELEASED, releasedAt: new Date() } });
+    if (claimed.count === 0) throw new ConflictException("To'lov holati o'zgargan. Sahifani yangilang");
+    const refs: string[] = [];
+    for (const sp of row.splits) {
+      let ref: string | null = 'PLATFORM-INCOME';
+      if (sp.party !== 'PLATFORM' && sp.amount.gt(0)) {
+        const res = await this.callProvider(`Mablag' ${sp.party} ulushiga o'tkazilmadi`, () => this.provider.payout({ paymentId: `${row.id}:${sp.party.toLowerCase()}`, amount: sp.amount.toFixed(2), currency: row.currency }));
+        ref = res.ref;
+      } else if (sp.party !== 'PLATFORM') ref = null;
+      await tx.paymentSplit.update({ where: { id: sp.id }, data: { status: SplitStatus.PAID, ref, settledAt: new Date(), ...(sp.party === 'COURIER' && { partyId: courierId }) } });
+      refs.push(`${sp.party}=${sp.amount.toFixed(2)}`);
+    }
+    await this.event(tx, row.id, PaymentStatus.RELEASED, actor, `Escrow taqsimlandi: ${refs.join(', ')}`);
+    return row.id;
+  }
+
+  /** Bekor qilinganda hamma narsa xaridorga qaytadi (jami summa): HELD -> REFUNDED. */
+  async refundForLocalOrder(tx: Prisma.TransactionClient, orderId: string, actor: string, reason?: string) {
+    const row = await tx.payment.findUnique({ where: { localOrderId: orderId } });
+    if (!row) throw new NotFoundException("Buyurtma to'lovi topilmadi");
+    const claimed = await tx.payment.updateMany({ where: { id: row.id, status: PaymentStatus.HELD }, data: { status: PaymentStatus.REFUNDED, refundedAt: new Date() } });
+    if (claimed.count === 0) throw new ConflictException("To'lov holati o'zgargan. Sahifani yangilang");
+    const res = await this.callProvider("Mablag' qaytarilmadi", () => this.provider.refund({ paymentId: row.id, amount: this.total(row).toFixed(2), currency: row.currency }));
+    await tx.paymentSplit.updateMany({ where: { paymentId: row.id }, data: { status: SplitStatus.REFUNDED, settledAt: new Date(), ref: res.ref } });
+    await this.event(tx, row.id, PaymentStatus.REFUNDED, actor, `${reason?.trim() || "Mablag' xaridorga qaytarildi"} (${res.ref})`);
+    return row.id;
   }
 
   /** Haydovchiga yetkazib berish haqi o'tkaziladi (yuk yetkazilgach, fermer ulushi bilan birga) */
@@ -237,7 +301,7 @@ export class PaymentService {
       actor === 'MARKET'
         ? { OR: [{ booking: { marketId: this.need(user.market, 'Market profili topilmadi').id } }, { warehouseOrder: { marketId: user.market!.id } }] }
       : actor === 'FARMER'
-        ? { OR: [{ booking: { product: { farmerId: this.need(user.farmer, 'Fermer profili topilmadi').id } } }, { warehouseOrder: { item: { farmerId: user.farmer!.id } } }] }
+        ? { OR: [{ booking: { product: { farmerId: this.need(user.farmer, 'Fermer profili topilmadi').id } } }, { warehouseOrder: { item: { farmerId: user.farmer!.id } } }, { localOrder: { farmerId: user.farmer!.id } }] }
       : {};
     const rows = await this.prisma.payment.findMany({
       where: { ...scope, ...(query.status && { status: query.status }) },
@@ -326,12 +390,15 @@ export class PaymentService {
   /** To'lov tarkibi maydonlari: productPrice (fermer), deliveryFee (haydovchi), serviceFee (platforma), totalPrice (market jami) */
   private parts(row: PaymentRow) {
     const b = breakdownOf({ productPrice: row.amount, deliveryFee: row.deliveryFee, serviceFee: row.serviceFee, distanceKm: row.distanceKm, currency: row.currency });
-    return { productPrice: b.productPrice, deliveryFee: b.deliveryFee, serviceFee: b.serviceFee, totalPrice: b.totalPrice, distanceKm: b.distanceKm, breakdown: { ...b, warehouseFee: Number(row.feeAmount), farmerShare: b.productPrice - Number(row.feeAmount), driverShare: b.deliveryFee, platformShare: b.serviceFee + Number(row.feeAmount) } };
+    const hub = Number(row.hubFee); // chakana buyurtmada Hub haqi mahsulot summasidan tashqari (qo'shimcha) qator
+    const totalPrice = b.totalPrice + hub;
+    return { productPrice: b.productPrice, deliveryFee: b.deliveryFee, serviceFee: b.serviceFee, totalPrice, distanceKm: b.distanceKm, ...(hub > 0 && { hubFee: hub }), breakdown: { ...b, ...(hub > 0 && { hubFee: hub, hubShare: hub }), totalPrice, warehouseFee: Number(row.feeAmount), farmerShare: b.productPrice - Number(row.feeAmount), driverShare: b.deliveryFee, platformShare: b.serviceFee + Number(row.feeAmount) } };
   }
 
   /** Javob: holat, summa, tarix va foydalanuvchi uchun mumkin bo'lgan amallar (frontend qoidalarni takrorlamaydi). */
   private view(row: PaymentRow, user: PaymentUser) {
     const actor = this.actorOf(user);
+    if (row.localOrder) return this.localView(row, row.localOrder, actor);
     if (row.warehouseOrder) return this.warehouseView(row, row.warehouseOrder, actor);
     const bk = this.bookingOf(row);
     const ctx = this.ctx(row);
@@ -378,6 +445,35 @@ export class PaymentService {
         releaseBlockedReason: !release.allowed && open && row.status === PaymentStatus.HELD ? release.reason : null,
         refundBlockedReason: !refund.allowed && open ? refund.reason : null,
       },
+    };
+  }
+
+  /** Chakana buyurtma to'lovi: amallar buyurtma orqali bajariladi; ulushlar (splits) ochiq ko'rsatiladi. */
+  private localView(row: PaymentRow, lo: NonNullable<PaymentRow['localOrder']>, actor: PaymentActor) {
+    return {
+      id: row.id,
+      source: 'LOCAL' as const,
+      bookingId: null,
+      shipmentId: null,
+      localOrderId: lo.id,
+      amount: row.amount,
+      ...this.parts(row),
+      currency: row.currency,
+      status: row.status,
+      provider: row.provider,
+      heldAt: row.heldAt,
+      releasedAt: row.releasedAt,
+      refundedAt: row.refundedAt,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+      events: row.events.map((e) => ({ status: e.status, actor: e.actor, note: e.note, createdAt: e.createdAt })),
+      splits: row.splits.map((x) => ({ party: x.party, amount: Number(x.amount), status: x.status })),
+      order: { productName: lo.product.name, category: lo.product.category, quantityKg: lo.quantityKg, pricePerKg: lo.pricePerKg, bookingStatus: lo.status },
+      shipmentStatus: lo.status,
+      deliveredAt: lo.deliveredAt,
+      farmer: actor !== 'FARMER' ? { name: lo.product.farmer.farmName, region: lo.product.farmer.region } : null,
+      market: { name: `${lo.consumer.user.fullName} (xaridor)`, region: lo.hub.region },
+      actions: { canPay: false, canRelease: false, canRefund: false, refundEffect: null, releaseBlockedReason: null, refundBlockedReason: null },
     };
   }
 
