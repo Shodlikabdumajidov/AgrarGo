@@ -63,7 +63,7 @@
 
         // Sahifa skrolli: biror modal/panel/kabinet ochiq bo'lsa qulflanadi
         function syncScrollLock() {
-            const open = ['auth-modal', 'product-modal', 'booking-modal', 'payment-modal', 'wh-modal', 'price-modal', 'dp-modal', 'ltl-modal', 'ct-modal', 'of-modal', 'lo-modal', 'book-root', 'rate-modal', 'face-modal', 'bd-modal', 'my-products-panel', 'dashboard-view', 'role-page', 'not-found'].some(function (id) {
+            const open = ['auth-modal', 'product-modal', 'booking-modal', 'payment-modal', 'wh-modal', 'price-modal', 'dp-modal', 'ltl-modal', 'ct-modal', 'of-modal', 'lo-modal', 'book-root', 'rate-modal', 'face-modal', 'bd-modal', 'dashboard-view', 'role-page', 'not-found'].some(function (id) {
                 const node = document.getElementById(id);
                 return node && node.classList.contains('open');
             });
@@ -991,7 +991,7 @@
                     closeProductModal();
                     hideAuthAlert(productAlert);
                 }, 1000);
-                if (panel.classList.contains('open')) loadMyProducts();
+                if (bookInst) refreshBook();
             } catch (err) {
                 if (err.status === 401) {
                     // Tahrirlashda kiritilgan qiymatlar yo'qolmasligi uchun forma qayta ochilganda eski holatga qaytadi
@@ -1003,20 +1003,8 @@
             }
         });
 
-        // ===== MENING E'LONLARIM (offcanvas) =====
-        const panel = document.getElementById('my-products-panel');
-        const panelOverlay = document.getElementById('mp-overlay');
-        const mpList = document.getElementById('mp-list');
+        // ===== MENING E'LONLARIM: 3D kitob (js/book/agrar-book.js, index.html'da ulangan) =====
         let myProducts = [];
-        let mpFilter = 'ALL';
-        let mpConfirmId = null; // o'chirish tasdig'i kutilayotgan e'lon
-
-        const STATUS_META = {
-            ACTIVE:   { label: 'Faol',      cls: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' },
-            ARCHIVED: { label: 'Arxivda',   cls: 'bg-slate-500/20 text-slate-300 border-slate-500/30' },
-            BOOKED:   { label: 'Bron qilingan', cls: 'bg-amber-500/15 text-amber-400 border-amber-500/30' },
-            SOLD:     { label: 'Sotilgan',  cls: 'bg-blue-500/15 text-blue-400 border-blue-500/30' }
-        };
 
         function formatNumber(n) {
             return Number(n).toLocaleString('ru-RU', { maximumFractionDigits: 2 });
@@ -1035,27 +1023,21 @@
             return node;
         }
 
-        function iconBtn(iconCls, label, cls, onClick) {
-            const b = el('button', 'flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-bold border transition ' + cls);
-            b.type = 'button';
-            const i = el('i', 'fa-solid ' + iconCls);
-            b.appendChild(i);
-            b.appendChild(el('span', '', label));
-            b.addEventListener('click', onClick);
-            return b;
-        }
-
-        // ===== «Mening e'lonlarim» raqamli kitobi (React + Framer Motion, lazy yuklanadi) =====
-        const BOOK_SRC = 'js/book/agrar-book.js?v=2';
+        // ===== «Mening e'lonlarim» 3D kitobi =====
+        // Kitob index.html'dagi <script src="js/book/agrar-book.js"> orqali ulanadi va global AgrarBook obyektini beradi.
+        // Eski (3D'siz) bundle keshda qolgan bo'lsa AgrarBook.version bo'lmaydi: u holda yangi nusxa bir marta majburan yuklanadi.
+        const BOOK_VERSION = 3;
+        const BOOK_SRC = 'js/book/agrar-book.js?v=' + BOOK_VERSION;
         let bookPromise = null, bookInst = null;
+        const bookReady = function () { return !!(window.AgrarBook && typeof window.AgrarBook.mount === 'function' && window.AgrarBook.version >= BOOK_VERSION); };
         function loadBookLib() {
-            if (window.AgrarBook && window.AgrarBook.mount) return Promise.resolve(window.AgrarBook);
+            if (bookReady()) return Promise.resolve(window.AgrarBook);
             if (bookPromise) return bookPromise;
             bookPromise = new Promise(function (resolve, reject) {
                 const s = document.createElement('script');
-                s.src = BOOK_SRC;
-                s.onload = function () { window.AgrarBook && window.AgrarBook.mount ? resolve(window.AgrarBook) : reject(new Error('book')); };
-                s.onerror = function () { reject(new Error('book')); };
+                s.src = BOOK_SRC + '&_=' + Date.now(); // keshni chetlab o'tadi
+                s.onload = function () { bookReady() ? resolve(window.AgrarBook) : reject(new Error('AgrarBook topilmadi yoki eski versiya')); };
+                s.onerror = function () { reject(new Error('agrar-book.js yuklanmadi')); };
                 document.head.appendChild(s);
             }).catch(function (e) { bookPromise = null; throw e; });
             return bookPromise;
@@ -1085,10 +1067,11 @@
             closeAccountMenu();
             if (!storageGet(TOKEN_KEY)) return handleSessionExpired(openMyProducts);
             let lib;
-            try { lib = await loadBookLib(); } catch (e) { return openMyProductsPanel(); } // kutubxona yuklanmasa (oflayn) — oddiy panel
+            try { lib = await loadBookLib(); }
+            catch (e) { console.error('[Kitob] yuklanmadi:', e); return showToast("Kitobni yuklab bo'lmadi. Internetni tekshirib, qayta urinib ko'ring.", 4500, 'error'); }
             if (bookInst) return;
             let list;
-            try { list = await bookCall('GET', '/products'); } catch (err) { if (err.status === 401) return; return openMyProductsPanel(); }
+            try { list = await bookCall('GET', '/products'); } catch (err) { if (err.status !== 401) showToast((err.messages && err.messages[0]) || "E'lonlarni yuklab bo'lmadi.", 4500, 'error'); return; }
             myProducts = list;
             const root = el('div');
             root.id = 'book-root';
@@ -1111,162 +1094,12 @@
                     await refreshBook();
                 }
             });
+            console.info('[Kitob] renderer:', bookInst.renderer); // 'webgl' — 3D kitob; 'css' — faqat xato/WebGL yo'q bo'lsa
             syncScrollLock();
         }
 
-        // Oddiy o'ng panel: kitob yuklanmagan (oflayn) holatda zaxira
-        function openMyProductsPanel() {
-            panel.classList.add('open');
-            panelOverlay.classList.add('open');
-            syncScrollLock();
-            loadMyProducts();
-        }
+        function closeMyProducts() { closeBook(); }
 
-        function closeMyProducts() {
-            closeBook();
-            panel.classList.remove('open');
-            panelOverlay.classList.remove('open');
-            mpConfirmId = null;
-            syncScrollLock();
-        }
-
-        function addProductFromPanel() {
-            openProductModal();
-        }
-
-        async function loadMyProducts() {
-            const token = storageGet(TOKEN_KEY);
-            if (!token) return handleSessionExpired(openMyProducts);
-            if (!myProducts.length) renderMpMessage('fa-spinner fa-spin', "E'lonlar yuklanmoqda...");
-            try {
-                myProducts = await apiRequest('GET', '/products', undefined, token);
-                renderMyProducts();
-            } catch (err) {
-                if (err.status === 401) return handleSessionExpired(openMyProducts);
-                renderMpMessage('fa-triangle-exclamation text-rose-400', err.messages[0], true);
-            }
-        }
-
-        function renderMpMessage(icon, text, withRetry) {
-            mpList.replaceChildren();
-            if (icon.indexOf('fa-spinner') !== -1) { mpList.appendChild(skeleton('list')); return; }
-            const box = el('div', 'text-center py-16 space-y-4 text-slate-300');
-            box.appendChild(el('i', 'fa-solid text-4xl text-emerald-400 ' + icon));
-            box.appendChild(el('p', 'text-sm font-medium', text));
-            if (withRetry) {
-                const b = el('button', 'px-5 py-2 rounded-xl border border-emerald-500/40 text-emerald-400 text-sm font-bold hover:bg-emerald-500/10 transition', 'Qayta urinish');
-                b.type = 'button';
-                b.addEventListener('click', loadMyProducts);
-                box.appendChild(b);
-            }
-            mpList.appendChild(box);
-        }
-
-        function renderMyProducts() {
-            const total = myProducts.length;
-            document.getElementById('mp-count').innerText = total ? 'Jami: ' + total + " ta e'lon" : '';
-            const items = mpFilter === 'ALL' ? myProducts : myProducts.filter(function (p) { return p.status === mpFilter; });
-
-            if (!items.length) {
-                if (!total) {
-                    mpList.replaceChildren(emptyState({ art: 'listings', compact: true, title: "Hali e'lon qo'shmagansiz", text: "Mahsulotingizni joylang: do'konlar uni darhol ko'rib, bron qila boshlaydi.", cta: { label: "Birinchi e'loningizni joylang", icon: 'fa-plus', fn: function () { openProductModal(); } } }));
-                } else {
-                    renderMpMessage('fa-filter', "Bu holatdagi e'lonlar yo'q.");
-                }
-                return;
-            }
-            mpList.replaceChildren.apply(mpList, items.map(buildProductCard));
-        }
-
-        function buildProductCard(p) {
-            const meta = STATUS_META[p.status] || STATUS_META.ACTIVE;
-            const card = el('div', 'glass rounded-2xl border border-white/10 hover:border-emerald-500/40 transition p-4 space-y-3');
-
-            const top = el('div', 'flex items-start justify-between gap-3');
-            const titleBox = el('div', 'min-w-0');
-            titleBox.appendChild(el('h3', 'font-extrabold text-white text-lg truncate', p.name));
-            titleBox.appendChild(el('p', 'text-xs text-slate-400 font-semibold uppercase tracking-wider', p.category));
-            top.appendChild(titleBox);
-            top.appendChild(el('span', 'shrink-0 text-xs font-bold px-3 py-1 rounded-full border ' + meta.cls, meta.label));
-            card.appendChild(top);
-
-            const grid = el('div', 'grid grid-cols-3 gap-2 text-center');
-            [['Vazni', formatNumber(p.quantityKg) + ' kg'],
-             ['Narxi', formatNumber(p.pricePerKg) + " so'm/kg"],
-             ['Jami', formatNumber(Number(p.quantityKg) * Number(p.pricePerKg)) + " so'm"]].forEach(function (row) {
-                const cell = el('div', 'rounded-xl bg-slate-950/50 border border-white/5 px-2 py-2');
-                cell.appendChild(el('div', 'text-[10px] uppercase tracking-wider text-slate-500 font-bold', row[0]));
-                cell.appendChild(el('div', 'text-xs font-bold text-emerald-300 break-words', row[1]));
-                grid.appendChild(cell);
-            });
-            card.appendChild(grid);
-
-            const harvest = formatDate(p.harvestDate);
-            if (harvest) {
-                const line = el('p', 'text-xs text-slate-400');
-                line.appendChild(el('i', 'fa-solid fa-calendar-day text-emerald-400 mr-1.5'));
-                line.appendChild(document.createTextNode("O'rim-yig'im: " + harvest));
-                card.appendChild(line);
-            }
-
-            const actions = el('div', 'flex gap-2 pt-1');
-            if (mpConfirmId === p.id) {
-                const q = el('span', 'flex-1 self-center text-xs font-semibold text-rose-300', "O'chirishni tasdiqlaysizmi?");
-                actions.appendChild(q);
-                actions.appendChild(iconBtn('fa-check', 'Ha', 'border-rose-500/40 bg-rose-500/15 text-rose-300 hover:bg-rose-500/25', function () { deleteProduct(p.id); }));
-                actions.appendChild(iconBtn('fa-xmark', "Yo'q", 'border-white/15 text-slate-300 hover:bg-white/10', function () { mpConfirmId = null; renderMyProducts(); }));
-            } else {
-                actions.appendChild(iconBtn('fa-pen', 'Tahrirlash', 'border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10', function () { openProductModal(p); }));
-                if (p.status === 'ACTIVE' || p.status === 'ARCHIVED') {
-                    const archived = p.status === 'ARCHIVED';
-                    actions.appendChild(iconBtn(archived ? 'fa-box-open' : 'fa-box-archive', archived ? 'Faollashtirish' : 'Arxivlash',
-                        'border-white/15 text-slate-300 hover:bg-white/10', function () { toggleArchive(p); }));
-                }
-                actions.appendChild(iconBtn('fa-trash', "O'chirish", 'border-rose-500/30 text-rose-400 hover:bg-rose-500/10', function () { mpConfirmId = p.id; renderMyProducts(); }));
-            }
-            card.appendChild(actions);
-            return card;
-        }
-
-        async function toggleArchive(p) {
-            const token = storageGet(TOKEN_KEY);
-            if (!token) return handleSessionExpired(openMyProducts);
-            const next = p.status === 'ARCHIVED' ? 'ACTIVE' : 'ARCHIVED';
-            try {
-                await apiRequest('PUT', '/products/' + p.id, { status: next }, token);
-                showToast(next === 'ARCHIVED' ? "E'lon arxivlandi." : "E'lon qayta faollashtirildi.");
-                loadMyProducts();
-            } catch (err) {
-                if (err.status === 401) return handleSessionExpired(openMyProducts);
-                showToast(err.messages[0]);
-                if (err.status === 404) loadMyProducts();
-            }
-        }
-
-        async function deleteProduct(id) {
-            const token = storageGet(TOKEN_KEY);
-            if (!token) return handleSessionExpired(openMyProducts);
-            try {
-                await apiRequest('DELETE', '/products/' + id, undefined, token);
-                mpConfirmId = null;
-                showToast("E'lon o'chirildi.");
-                loadMyProducts();
-            } catch (err) {
-                if (err.status === 401) return handleSessionExpired(openMyProducts);
-                mpConfirmId = null;
-                showToast(err.messages[0]);
-                loadMyProducts();
-            }
-        }
-
-        document.getElementById('mp-chips').addEventListener('click', function (e) {
-            const chip = e.target.closest('.mp-chip');
-            if (!chip) return;
-            mpFilter = chip.dataset.filter;
-            document.querySelectorAll('.mp-chip').forEach(function (c) { c.classList.toggle('active', c === chip); });
-            mpConfirmId = null;
-            renderMyProducts();
-        });
 
         document.addEventListener('keydown', function (e) {
             if (e.key !== 'Escape') return;
@@ -1286,7 +1119,7 @@
             else if (bookingModal.classList.contains('open')) closeBookingModal();
             else if (productModal.classList.contains('open')) closeProductModal();
             else if (authModal.classList.contains('open')) closeAuthModal();
-            else if (panel.classList.contains('open')) closeMyProducts();
+            else if (bookInst) closeBook();
             else if (dashboardView.classList.contains('open')) closeDashboard();
             else closeAccountMenu();
         });

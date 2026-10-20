@@ -235,25 +235,6 @@
             transform: translateY(0) scale(1);
             visibility: visible;
         }
-        /* My products offcanvas (o'ng tomondan) */
-        #my-products-panel {
-            transform: translateX(100%);
-            visibility: hidden;
-            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.4s ease;
-        }
-        #my-products-panel.open {
-            transform: translateX(0);
-            visibility: visible;
-        }
-        #mp-overlay {
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-        }
-        #mp-overlay.open {
-            opacity: 1;
-            visibility: visible;
-        }
         .mp-chip.active {
             background: rgba(16, 185, 129, 0.2);
             border-color: rgba(16, 185, 129, 0.6);
@@ -449,7 +430,6 @@
 
         /* Sahifa va modal almashinuvi: sakramasdan fade */
         #dashboard-view, #role-page { will-change: opacity, transform; }
-        #my-products-panel { transition: transform .45s cubic-bezier(.16,1,.3,1), opacity .3s ease, visibility .3s ease; }
         #sidebar { transition: transform .5s cubic-bezier(.16,1,.3,1); }
         #sidebar-overlay { transition: opacity .35s ease, visibility .35s ease; }
         #custom-dropdown-menu, #lang-menu, #account-menu { transform-origin: top; }
@@ -2717,31 +2697,6 @@
         </div>
     </div>
 
-    <!-- MY PRODUCTS OFFCANVAS -->
-    <div id="mp-overlay" onclick="closeMyProducts()" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[55]"></div>
-    <aside id="my-products-panel" role="dialog" aria-modal="true" aria-labelledby="mp-title" class="glass fixed inset-y-0 right-0 w-full max-w-md z-[56] flex flex-col border-l border-emerald-500/25 bg-gradient-to-b from-slate-900 to-emerald-950/30 shadow-2xl">
-        <div class="p-5 border-b border-white/10 bg-slate-950/50 flex items-center justify-between gap-3">
-            <div>
-                <h2 id="mp-title" class="font-extrabold text-xl text-white flex items-center gap-2.5"><i class="fa-solid fa-boxes-stacked text-emerald-400"></i> Mening e'lonlarim</h2>
-                <p id="mp-count" class="text-xs text-slate-400 mt-0.5"></p>
-            </div>
-            <button type="button" onclick="closeMyProducts()" aria-label="Yopish" class="text-slate-400 hover:text-white text-xl p-1 transition hover:rotate-90 duration-300">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        </div>
-        <div class="px-5 pt-4 flex gap-2 flex-wrap" id="mp-chips">
-            <button type="button" data-filter="ALL" class="mp-chip active px-4 py-1.5 rounded-full border border-white/15 text-xs font-bold text-slate-300 transition hover:border-emerald-500/50">Hammasi</button>
-            <button type="button" data-filter="ACTIVE" class="mp-chip px-4 py-1.5 rounded-full border border-white/15 text-xs font-bold text-slate-300 transition hover:border-emerald-500/50">Faol</button>
-            <button type="button" data-filter="ARCHIVED" class="mp-chip px-4 py-1.5 rounded-full border border-white/15 text-xs font-bold text-slate-300 transition hover:border-emerald-500/50">Arxivda</button>
-        </div>
-        <div id="mp-list" class="flex-1 overflow-y-auto p-5 space-y-4"></div>
-        <div class="p-5 border-t border-white/10 bg-slate-950/50">
-            <button type="button" onclick="addProductFromPanel()" class="w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-extrabold py-3.5 rounded-2xl transition duration-200 shadow-xl shadow-emerald-500/30 flex items-center justify-center gap-2.5">
-                <i class="fa-solid fa-plus"></i> Yangi e'lon qo'shish
-            </button>
-        </div>
-    </aside>
-
     <div id="toast-stack" class="toast-stack" aria-live="polite"></div>
 
     <!-- AOS & Custom Dropdown/Sidebar JS -->
@@ -2749,6 +2704,8 @@
     <script src="i18n/ru.js"></script>
     <script src="i18n/en.js"></script>
     <script src="i18n/engine.js"></script>
+    <!-- «Mening e'lonlarim» 3D kitobi (React Three Fiber): global AgrarBook obyektini beradi -->
+    <script src="js/book/agrar-book.js?v=3" defer></script>
     <script src="js/app.js" defer></script>
     <script src="js/local-dock.js" defer></script>
     <script src="js/local.js" defer></script>

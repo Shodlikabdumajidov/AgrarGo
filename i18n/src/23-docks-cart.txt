@@ -100,3 +100,8 @@ Omborda: {0} · sotuvga tayyor: {1} · buyurtmalarga band: {2} ‖ На скла
 biriktirilmagan ‖ не назначены ‖ none assigned
 Yetkazish haqi: {0} (buyurtma topshirilgach, Escrow'dan avtomatik o'tadi). Bir vaqtda {1} tagacha buyurtma olasiz. ‖ Плата за доставку: {0} (переводится из эскроу автоматически после вручения). Одновременно можно взять до {1} заказов. ‖ Delivery fee: {0} (paid from escrow automatically after handover). You can take up to {1} orders at a time.
 Yakunlangan yetkazishlar: {0} · jami daromad: {1} ‖ Завершённых доставок: {0} · общий доход: {1} ‖ Completed deliveries: {0} · total earnings: {1}
+E'lonlarni yuklab bo'lmadi. ‖ Не удалось загрузить объявления. ‖ Could not load the listings.
+Kitobni yuklab bo'lmadi. Internetni tekshirib, qayta urinib ko'ring. ‖ Не удалось загрузить книгу. Проверьте интернет и повторите попытку. ‖ Could not load the book. Check your connection and try again.
+AgrarBook topilmadi yoki eski versiya ‖ AgrarBook topilmadi yoki eski versiya ‖ AgrarBook topilmadi yoki eski versiya
+[Kitob] yuklanmadi: ‖ [Kitob] yuklanmadi: ‖ [Kitob] yuklanmadi:
+[Kitob] renderer: ‖ [Kitob] renderer: ‖ [Kitob] renderer:

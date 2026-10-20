@@ -6,7 +6,7 @@
  *   (shaxsiy ma'lumotlar, to'lov va GPS har doim yangi bo'lishi shart).
  * Versiyani o'zgartirsangiz eski keshlar o'chiriladi.
  */
-const VERSION = 'v22';
+const VERSION = 'v23';
 const SHELL = `agrargo-shell-${VERSION}`;
 const RUNTIME = `agrargo-runtime-${VERSION}`;
 const RUNTIME_MAX = 80;
@@ -65,6 +65,17 @@ async function staleWhileRevalidate(request) {
   return cached || (await network) || Response.error();
 }
 
+async function networkFirstAsset(request) {
+  const cache = await caches.open(RUNTIME);
+  try {
+    const res = await fetch(request);
+    if (res && res.ok) cache.put(request, res.clone());
+    return res;
+  } catch (e) {
+    return (await cache.match(request)) || Response.error();
+  }
+}
+
 async function networkFirstPage(request) {
   try {
     const res = await fetch(request);
@@ -92,6 +103,8 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   const sameOrigin = url.origin === self.location.origin;
+  // 3D kitob bundle'i: har doim yangisi (tarmoq birinchi), oflayn bo'lsa keshdagisi — eski nusxa qotib qolmasin
+  if (sameOrigin && url.pathname.endsWith('/js/book/agrar-book.js')) { event.respondWith(networkFirstAsset(req)); return; }
   if (sameOrigin && !/\.(js|css|png|jpe?g|webp|svg|ico|json|woff2?)$/i.test(url.pathname)) return; // faqat statik fayllar
   if (!sameOrigin && !CDN_HOSTS.includes(url.hostname)) return; // backend API, xarita plitkalari va boshqalar keshlanmaydi
   event.respondWith(staleWhileRevalidate(req));
