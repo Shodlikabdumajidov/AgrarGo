@@ -1,6 +1,7 @@
 import { HubIntakeStatus } from '@prisma/client';
 import { Transform, Type } from 'class-transformer';
-import { IsBoolean, IsEnum, IsNumber, IsOptional, IsString, IsUUID, Length, Max, Min } from 'class-validator';
+import { IsBoolean, IsEnum, IsNumber, IsOptional, IsString, IsUUID, Length, Max, Min, ValidateNested } from 'class-validator';
+import { DockSlotInput } from './dock.dto';
 
 const clean = ({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim().replace(/\s+/g, ' ') : value);
 const kg = { maxDecimalPlaces: 2 };
@@ -51,6 +52,10 @@ export class AnnounceIntakeDto {
 
   @IsOptional() @Type(() => Number) @IsNumber(kg) @Min(1) @Max(5000)
   minOrderKg?: number;
+
+  /** Yuk tushiriladigan rampa va vaqt (Hub majburiy qilsa — shart) */
+  @IsOptional() @ValidateNested() @Type(() => DockSlotInput)
+  dockSlot?: DockSlotInput;
 }
 
 export class ReceiveIntakeDto {

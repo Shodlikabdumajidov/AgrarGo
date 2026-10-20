@@ -1,0 +1,102 @@
+# --- Hub rampalari (dock loading) va birlashgan savat ---
+Rampalar ‖ Рампы ‖ Docks
+Rampa ‖ Рампа ‖ Dock
+Rampa va vaqt ‖ Рампа и время ‖ Dock & time
+Hub darvozalari va vaqt jadvali ‖ Ворота Hub и график времени ‖ Hub gates and time schedule
+{0}-sonli rampa ‖ Рампа №{0} ‖ Dock #{0}
+vaqt: {0} ‖ время: {0} ‖ time: {0}
+Band qilingan ‖ Забронировано ‖ Booked
+Yuk tushirish ‖ Разгрузка ‖ Unloading
+Yuk ortish ‖ Погрузка ‖ Loading
+Yuk tushirish (fermer) ‖ Разгрузка (фермер) ‖ Unloading (farmer)
+Yuk ortish (kuryer) ‖ Погрузка (курьер) ‖ Loading (courier)
+Vaqt oralig'i ‖ Интервал времени ‖ Time slot
+Vaqt oralig'ini tanlang. ‖ Выберите интервал времени. ‖ Pick a time slot.
+Bu Hub rampa jadvalini yuritmaydi: vaqt belgilash shart emas. ‖ Этот Hub не ведёт график рамп: выбирать время не обязательно. ‖ This Hub does not run a dock schedule: no time slot is needed.
+Bu Hub rampa va vaqtni band qilishni talab qiladi. Tizim bo'sh rampani o'zi tanlaydi. ‖ Этот Hub требует бронировать рампу и время. Система сама выберет свободную рампу. ‖ This Hub requires a dock and time booking. The system picks a free dock for you.
+Rampa va vaqtni tanlang. Tizim bo'sh rampani o'zi tanlaydi. ‖ Выберите рампу и время. Система сама выберет свободную рампу. ‖ Choose a time. The system picks a free dock for you.
+O'tib ketgan ‖ Прошло ‖ Past
+Sizniki ‖ Ваша ‖ Yours
+{0} ta bo'sh ‖ Свободно: {0} ‖ {0} free
+Band ‖ Занято ‖ Busy
+Rampa: avtomatik (tavsiya) ‖ Рампа: автоматически (рекомендуется) ‖ Dock: automatic (recommended)
+Hub ombori tanlang. ‖ Выберите склад Hub. ‖ Choose a Hub warehouse.
+Vaqtni o'zgartirish ‖ Изменить время ‖ Change time
+Rampani band qilish ‖ Забронировать рампу ‖ Book a dock
+Rampa band qilish ‖ Забронировать рампу ‖ Book a dock
+Rampa band qilindi. ‖ Рампа забронирована. ‖ Dock booked.
+Band qilish ‖ Забронировать ‖ Book
+Bu Hub'dan yuk olish uchun avval rampa va vaqtni band qilishingiz shart. Belgilangan vaqtda keling. ‖ Чтобы забрать груз на этом Hub, сначала забронируйте рампу и время. Приезжайте в назначенное время. ‖ To pick up goods at this Hub you must first book a dock and time. Arrive at the booked time.
+Hub navbatsiz tartib uchun rampa jadvalini yuritadi: vaqtni oldindan band qilsangiz, kutmaysiz. ‖ Hub ведёт график рамп, чтобы не было очередей: забронируйте время заранее и не ждите. ‖ The Hub runs a dock schedule to avoid queues: book ahead and you won't wait.
+Oldingi kun ‖ Предыдущий день ‖ Previous day
+Keyingi kun ‖ Следующий день ‖ Next day
+Rampa qo'shish ‖ Добавить рампу ‖ Add dock
+Yangi rampa (darvoza) ‖ Новая рампа (ворота) ‖ New dock (gate)
+Qo'shish ‖ Добавить ‖ Add
+Nomi (ixtiyoriy) ‖ Название (необязательно) ‖ Name (optional)
+Masalan: Sovutgichli ‖ Например: С холодильником ‖ E.g. Refrigerated
+Raqami (bo'sh qolsa avtomatik) ‖ Номер (если пусто — автоматически) ‖ Number (automatic if empty)
+Rampa qo'shildi. ‖ Рампа добавлена. ‖ Dock added.
+Jadval sozlamalari ‖ Настройки графика ‖ Schedule settings
+Rampa jadvali ‖ График рамп ‖ Dock schedule
+Slot uzunligi ‖ Длительность слота ‖ Slot length
+{0} daqiqa ‖ {0} мин ‖ {0} min
+Ochilish vaqti ‖ Время открытия ‖ Opening time
+Yopilish vaqti ‖ Время закрытия ‖ Closing time
+Yuk topshirish va olish uchun rampa band qilish majburiy ‖ Бронирование рампы обязательно для сдачи и получения груза ‖ Dock booking is required to hand over and pick up goods
+{0} · {1}–{2} · slot {3} daqiqa · faol yozuvlar: {4} ‖ {0} · {1}–{2} · слот {3} мин · активных записей: {4} ‖ {0} · {1}–{2} · {3}-min slots · active bookings: {4}
+band qilish majburiy ‖ бронирование обязательно ‖ booking required
+Rampa yo'q ‖ Нет рамп ‖ No docks
+«Rampa qo'shish» tugmasi bilan Hub darvozalarini kiriting (masalan, 3 ta). ‖ Добавьте ворота Hub кнопкой «Добавить рампу» (например, 3 шт.). ‖ Add the Hub gates with the "Add dock" button (e.g. 3 of them).
+Kunning yozuvlari ‖ Записи за день ‖ Bookings of the day
+Rampani o'chirish ‖ Удалить рампу ‖ Delete dock
+{0}-sonli rampani o'chirasizmi? ‖ Удалить рампу №{0}? ‖ Delete dock #{0}?
+Rampa o'chirildi. ‖ Рампа удалена. ‖ Dock deleted.
+Rampa yozuvi ‖ Запись на рампу ‖ Dock booking
+Band qilgan ‖ Забронировал ‖ Booked by
+Mashina raqami ‖ Номер машины ‖ Vehicle plate
+Maqsad ‖ Назначение ‖ Purpose
+Buyurtmalar ‖ Заказы ‖ Orders
+Izoh ‖ Комментарий ‖ Note
+Hub bekor qildi ‖ Hub отменил ‖ Cancelled by the Hub
+Keldi ‖ Приехал ‖ Arrived
+Kelmadi ‖ Не приехал ‖ No-show
+Yakunlash ‖ Завершить ‖ Complete
+Yakunlandi ‖ Завершено ‖ Completed
+Bugun ‖ Сегодня ‖ Today
+Ertaga ‖ Завтра ‖ Tomorrow
+Sana ‖ Дата ‖ Date
+Savatga qo'shildi: {0} · {1} ‖ Добавлено в корзину: {0} · {1} ‖ Added to cart: {0} · {1}
+Hamma mahsulotlar uchun bitta to'lov: tizim ularni Hub va fermerlar bo'yicha o'zi ajratadi ‖ Одна оплата за все товары: система сама разделит их по Hub и фермерам ‖ One payment for everything: the system splits it by Hub and farmer for you
+Ba'zi mahsulotlarni sotib olib bo'lmaydi: ularni olib tashlang yoki miqdorini o'zgartiring. ‖ Некоторые товары купить нельзя: удалите их или измените количество. ‖ Some products cannot be bought: remove them or change the quantity.
+Muammoli mahsulotlarni olib tashlash ‖ Убрать проблемные товары ‖ Remove problem items
+Umumiy chek ‖ Общий чек ‖ Combined receipt
+Bitta to'lov: {0} ta alohida buyurtma ({1} ta Hub). Har biri o'z escrow'iga va topshirish kodiga ega. ‖ Одна оплата: {0} отдельных заказов ({1} Hub). У каждого свой эскроу и код получения. ‖ One payment: {0} separate orders ({1} Hubs). Each has its own escrow and handover code.
+To'langan: {0} · buyurtmalar: {1} ‖ Оплачено: {0} · заказов: {1} ‖ Paid: {0} · orders: {1}
+Kodni faqat kuryer buyurtmani topshirganda ayting. Kodlar «Buyurtmalarim» bo'limida ham bor. ‖ Называйте код только курьеру при вручении. Коды также есть в разделе «Мои заказы». ‖ Tell the code only to the courier on delivery. Codes are also in "My orders".
+Bitta to'lov, {0} ta alohida buyurtma ‖ Одна оплата, {0} отдельных заказов ‖ One payment, {0} separate orders
+Bitta to'lov: {0} ta buyurtma ‖ Одна оплата: заказов {0} ‖ One payment: {0} orders
+Tushunarli ‖ Понятно ‖ Got it
+dan ‖ от ‖ from
+Mavjud: {0} ‖ В наличии: {0} ‖ Available: {0}
+{0} so'm / kg · {1} · fermer: {2} ‖ {0} сум / кг · {1} · фермер: {2} ‖ {0} UZS / kg · {1} · farmer: {2}
+{0} – {1} ‖ {0} – {1} ‖ {0} – {1}
+{0} × {1} so'm ‖ {0} × {1} сум ‖ {0} × {1} UZS
+To'lov Escrow'da muzlatiladi. Yetkazilgach: mahsulot puli fermerga, Hub haqi omborga, yetkazish haqi kuryerga o'tadi. ‖ Оплата замораживается в эскроу. После доставки: деньги за товар — фермеру, плата за хранение — складу, плата за доставку — курьеру. ‖ The payment is frozen in escrow. After delivery: the product price goes to the farmer, the storage fee to the warehouse and the delivery fee to the courier.
+Fermerlar mahsulotni shahringizdagi AgrarGo Hub omboriga topshiradi — siz 10 kg dan buyurtma qilasiz, kuryer bir necha soatda eshigingizgacha olib keladi. To'lov Escrow'da kafolatlanadi. ‖ Фермеры сдают товар на склад AgrarGo Hub в вашем городе — вы заказываете от 10 кг, курьер привозит к двери за несколько часов. Оплата гарантирована эскроу. ‖ Farmers hand their produce to the AgrarGo Hub warehouse in your city — you order from 10 kg and a courier brings it to your door within hours. Payment is guaranteed by escrow.
+Fermerlar Hub omboriga mahsulot topshirgach, bu yerda 10 kg dan buyurtma qilish mumkin bo'ladi. ‖ Когда фермеры сдадут товар на склад Hub, здесь можно будет заказать от 10 кг. ‖ Once farmers hand produce to the Hub warehouse, you can order from 10 kg here.
+Yetkazib berish ‖ Доставка ‖ Delivery
+Tuman / mahalla ‖ Район / махалля ‖ District / neighbourhood
+Ko'cha, uy, xonadon ‖ Улица, дом, квартира ‖ Street, house, apartment
+Bekor qilindi, mablag' qaytarildi. ‖ Отменено, деньги возвращены. ‖ Cancelled, the money was refunded.
+Holat, topshirish kodi va pul taqsimoti real vaqtda yangilanadi ‖ Статус, код получения и распределение денег обновляются в реальном времени ‖ Status, handover code and money split update in real time
+Hali chakana buyurtma yo'q. Hub omboriga mahsulot topshirib, sotuvni yoqing. ‖ Розничных заказов пока нет. Сдайте товар на склад Hub и включите продажу. ‖ No retail orders yet. Hand produce to the Hub warehouse and turn selling on.
+Hub omborida: {0} · sotuvga tayyor: {1} · band: {2} ‖ На складе Hub: {0} · готово к продаже: {1} · занято: {2} ‖ In the Hub: {0} · ready to sell: {1} · reserved: {2}
+Chakana narx: {0} so'm/kg · eng kam: {1} ‖ Розничная цена: {0} сум/кг · минимум: {1} ‖ Retail price: {0} UZS/kg · minimum: {1}
+Qabul, qoldiq va mahalliy buyurtmalarni boshqarish ‖ Приёмка, остатки и местные заказы ‖ Intake, stock and local orders
+To'lov xaridorga to'liq qaytariladi, qoldiq omborga qaytadi. ‖ Оплата возвращается покупателю полностью, остаток возвращается на склад. ‖ The buyer is refunded in full and the stock returns to the warehouse.
+Chakana sotuvda: {0} so'm/kg ‖ В розничной продаже: {0} сум/кг ‖ On retail sale: {0} UZS/kg
+Omborda: {0} · sotuvga tayyor: {1} · buyurtmalarga band: {2} ‖ На складе: {0} · готово к продаже: {1} · занято заказами: {2} ‖ In stock: {0} · ready to sell: {1} · reserved by orders: {2}
+biriktirilmagan ‖ не назначены ‖ none assigned
+Yetkazish haqi: {0} (buyurtma topshirilgach, Escrow'dan avtomatik o'tadi). Bir vaqtda {1} tagacha buyurtma olasiz. ‖ Плата за доставку: {0} (переводится из эскроу автоматически после вручения). Одновременно можно взять до {1} заказов. ‖ Delivery fee: {0} (paid from escrow automatically after handover). You can take up to {1} orders at a time.
+Yakunlangan yetkazishlar: {0} · jami daromad: {1} ‖ Завершённых доставок: {0} · общий доход: {1} ‖ Completed deliveries: {0} · total earnings: {1}

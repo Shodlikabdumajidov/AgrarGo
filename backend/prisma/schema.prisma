@@ -65,6 +65,7 @@ model User {
   hubId                String?
   hub                  Hub?                  @relation("HubStaff", fields: [hubId], references: [id], onDelete: SetNull)
   hubIntakesReceived   HubIntake[]
+  dockAppointments     DockAppointment[]
 }
 
 model Farmer {
@@ -122,6 +123,7 @@ model Consumer {
   address  String?
 
   orders    LocalOrder[]
+  checkouts LocalCheckout[]
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
 }
@@ -804,6 +806,14 @@ model Hub {
   lng      Float?
   isActive Boolean @default(true)
 
+  // Rampa (dock) jadvali: slot uzunligi, ish vaqti (mahalliy vaqt, kun boshidan daqiqalarda) va majburiy bron
+  slotMinutes        Int     @default(30)
+  dockOpenMin        Int     @default(360)
+  dockCloseMin       Int     @default(1200)
+  requireDockBooking Boolean @default(false)
+
+  docks        HubDock[]
+  appointments DockAppointment[]
   staff     User[]       @relation("HubStaff")
   couriers  Driver[]     @relation("HubCouriers")
   products  Product[]
@@ -880,6 +890,7 @@ model HubIntake {
   receivedById String?
   receivedBy   User?           @relation(fields: [receivedById], references: [id], onDelete: SetNull)
   receivedAt   DateTime?
+  appointment  DockAppointment?
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
 
@@ -935,8 +946,17 @@ model LocalOrder {
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
 
+  // Savat: bir martalik umumiy to'lovdan ajratilgan buyurtmalar bitta checkout'ga bog'lanadi
+  checkoutId String?
+  checkout   LocalCheckout? @relation(fields: [checkoutId], references: [id], onDelete: Restrict)
+  // Kuryer Hub'dan yukni qaysi rampa/vaqt bilan oladi
+  pickupApptId String?
+  pickupAppt   DockAppointment? @relation(fields: [pickupApptId], references: [id], onDelete: SetNull)
+
   payment Payment?
 
+  @@index([checkoutId])
+  @@index([pickupApptId])
   @@index([consumerId, createdAt])
   @@index([hubId, status])
   @@index([farmerId, createdAt])
@@ -970,4 +990,80 @@ model PaymentSplit {
   createdAt DateTime    @default(now())
 
   @@unique([paymentId, party])
+}
+
+/// Savat orqali bir martalik to'lov: jami summa bitta (escrow), buyurtmalar Hub/fermer bo'yicha ajratiladi
+model LocalCheckout {
+  id             String   @id @default(uuid())
+  consumerId     String
+  consumer       Consumer @relation(fields: [consumerId], references: [id], onDelete: Restrict)
+  idempotencyKey String? // qayta yuborilgan so'rov ikki marta to'lamasligi uchun
+  totalPrice     Decimal  @db.Decimal(20, 2)
+  itemCount      Int
+  providerRef    String?
+  createdAt      DateTime @default(now())
+
+  orders LocalOrder[]
+
+  @@unique([consumerId, idempotencyKey])
+  @@index([consumerId, createdAt])
+}
+
+/// Hub darvozasi (rampa): yuk ortish/tushirish joyi
+model HubDock {
+  id        String   @id @default(uuid())
+  hubId     String
+  hub       Hub      @relation(fields: [hubId], references: [id], onDelete: Cascade)
+  number    Int
+  name      String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  appointments DockAppointment[]
+
+  @@unique([hubId, number])
+}
+
+enum DockPurpose {
+  INTAKE // fermer yukni Hub'ga olib keladi (tushirish)
+  PICKUP // kuryer Hub'dan buyurtmalarni oladi (ortish)
+}
+
+enum DockApptStatus {
+  BOOKED
+  ARRIVED // mashina keldi / yuk ortilmoqda
+  DONE
+  CANCELLED
+  NO_SHOW
+}
+
+/// Rampa bandligi (time slot). Bir rampada bir vaqtda bittadan ortiq faol yozuv bo'lmaydi:
+/// ilova qatlamida Hub bo'yicha qulf + kesishuv tekshiruvi, bazada esa slotLock bilan UNIQUE (faol bo'lmaganda NULL).
+model DockAppointment {
+  id           String         @id @default(uuid())
+  hubId        String
+  hub          Hub            @relation(fields: [hubId], references: [id], onDelete: Restrict)
+  dockId       String
+  dock         HubDock        @relation(fields: [dockId], references: [id], onDelete: Restrict)
+  purpose      DockPurpose
+  startsAt     DateTime
+  endsAt       DateTime
+  status       DockApptStatus @default(BOOKED)
+  slotLock     String?        @default("A") // BOOKED/ARRIVED uchun "A", boshqa holatlarda NULL
+  bookedById   String
+  bookedBy     User           @relation(fields: [bookedById], references: [id], onDelete: Restrict)
+  vehiclePlate String?
+  note         String?
+  cancelReason String?
+  arrivedAt    DateTime?
+  completedAt  DateTime?
+  intakeId     String?        @unique
+  intake       HubIntake?     @relation(fields: [intakeId], references: [id], onDelete: SetNull)
+  orders       LocalOrder[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@unique([dockId, startsAt, slotLock])
+  @@index([hubId, startsAt])
+  @@index([bookedById, startsAt])
 }

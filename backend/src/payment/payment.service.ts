@@ -104,6 +104,29 @@ export class PaymentService {
     return payment;
   }
 
+  /**
+   * Savat (bir nechta buyurtma): xaridordan BITTA umumiy to'lov yechiladi (provider.charge — jami summaga, checkout identifikatori bilan),
+   * har bir buyurtma esa o'z escrow yozuviga (HELD) va 4 ulushli taqsimotga ega bo'ladi. Shunda har bir buyurtma alohida yetkaziladi,
+   * alohida taqsimlanadi yoki qaytariladi, jami esa doim chekdagi summaga teng.
+   */
+  async holdForCheckout(tx: Prisma.TransactionClient, checkoutId: string, lines: { order: { id: string; farmerId: string; hubId: string }; q: LocalQuote }[]) {
+    const total = lines.reduce((a, l) => a.add(l.q.total), new Prisma.Decimal(0));
+    const ids: string[] = [];
+    for (const { order, q } of lines) {
+      const payment = await tx.payment.create({
+        data: { localOrderId: order.id, amount: q.productAmount, hubFee: q.hubFee, deliveryFee: q.courierFee, serviceFee: q.serviceFee, distanceKm: 0, currency: 'UZS', status: PaymentStatus.HELD, heldAt: new Date(), provider: this.provider.name },
+      });
+      const partyId = { FARMER: order.farmerId, HUB: order.hubId, COURIER: null, PLATFORM: null } as const;
+      await tx.paymentSplit.createMany({ data: localSplits(q).map((x) => ({ paymentId: payment.id, party: x.party, partyId: partyId[x.party], amount: x.amount, status: SplitStatus.HELD })) });
+      ids.push(payment.id);
+    }
+    const res = await this.callProvider("Mablag' yechilmadi", () => this.provider.charge({ paymentId: checkoutId, amount: total.toFixed(2), currency: 'UZS' }));
+    await tx.payment.updateMany({ where: { id: { in: ids } }, data: { providerRef: res.ref } });
+    await tx.localCheckout.update({ where: { id: checkoutId }, data: { providerRef: res.ref } });
+    for (const id of ids) await this.event(tx, id, PaymentStatus.HELD, 'CONSUMER', `Savat to'lovi: umumiy ${total.toFixed(2)} (${res.ref}), shu buyurtma ulushi escrow'ga o'tkazildi`);
+    return { total, paymentIds: ids, ref: res.ref };
+  }
+
   /** Yetkazilgach: HELD -> RELEASED. Fermerga mahsulot summasi, Hub'ga saqlash haqi, kuryerga yetkazish haqi; platforma komissiyasi daromad sifatida qayd etiladi. */
   async releaseForLocalOrder(tx: Prisma.TransactionClient, orderId: string, actor: string, courierId: string | null) {
     const row = await tx.payment.findUnique({ where: { localOrderId: orderId }, include: { splits: true } });

@@ -3,12 +3,13 @@ import { LocalOrderStatus, Prisma, ProductStatus, Role } from '@prisma/client';
 import { randomInt } from 'crypto';
 import { APP_ENV } from '../config/app-env.module';
 import { AppEnv } from '../config/env.validation';
+import { DockService } from '../hub/dock.service';
 import { dispatchStock, releaseReserve, reserveStock, returnStock } from '../hub/hub-stock';
 import { PaymentService } from '../payment/payment.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationService } from '../telegram/notification.service';
 import { normRegion } from '../trust/geo';
-import { CancelOrderDto, CourierModeDto, CreateLocalOrderDto, ListLocalOrdersQuery, LocalMarketQuery } from './dto/local.dto';
+import { BulkCheckoutDto, CancelOrderDto, CartItemDto, CourierModeDto, CreateLocalOrderDto, ListLocalOrdersQuery, LocalMarketQuery } from './dto/local.dto';
 import { LocalFeeConfig, codesMatch, localQuote } from './local-pricing';
 
 export const MAX_ACTIVE_COURIER_ORDERS = 3;
@@ -28,6 +29,7 @@ const ORDER_INCLUDE = {
   consumer: { select: { user: { select: { fullName: true } } } },
   courier: { select: { id: true, vehicleType: true, plateNumber: true, user: { select: { fullName: true, phone: true } } } },
   payment: { select: { status: true, splits: { select: { party: true, amount: true, status: true } } } },
+  pickupAppt: { select: { id: true, status: true, purpose: true, startsAt: true, endsAt: true, hub: { select: { name: true } }, dock: { select: { number: true, name: true } } } },
 } satisfies Prisma.LocalOrderInclude;
 type OrderRow = Prisma.LocalOrderGetPayload<{ include: typeof ORDER_INCLUDE }>;
 type Viewer = 'consumer' | 'staff' | 'farmer' | 'courier' | 'courier-open';
@@ -41,6 +43,7 @@ export class LocalOrderService {
     private readonly prisma: PrismaService,
     private readonly payments: PaymentService,
     private readonly notify: NotificationService,
+    private readonly docks: DockService,
     @Inject(APP_ENV) private readonly env: AppEnv,
   ) {
     this.fees = { hubPercent: env.LOCAL_HUB_FEE_PERCENT, hubMin: env.LOCAL_HUB_FEE_MIN, courierFee: env.LOCAL_COURIER_FEE, servicePercent: env.LOCAL_SERVICE_FEE_PERCENT, serviceMin: env.LOCAL_SERVICE_FEE_MIN };
@@ -69,8 +72,8 @@ export class LocalOrderService {
   }
 
   /** Buyurtma qilish mumkinligi va qoidalar: ombor qoldig'i, eng kam/ko'p miqdor */
-  private async orderable(productId: string, qty: number) {
-    const p = await this.prisma.product.findUnique({ where: { id: productId }, include: { hub: true, hubStocks: true } });
+  private async orderable(productId: string, qty: number, db: Prisma.TransactionClient | PrismaService = this.prisma) {
+    const p = await db.product.findUnique({ where: { id: productId }, include: { hub: true, hubStocks: true } });
     if (!p || !p.isRetail || !p.hub || !p.hub.isActive || p.status === ProductStatus.ARCHIVED || !p.retailPricePerKg) throw new NotFoundException("Mahsulot mahalliy bozorda sotilmaydi");
     const stock = p.hubStocks.find((s) => s.hubId === p.hubId);
     const available = stock ? Number(stock.weightKg) - Number(stock.reservedKg) : 0;
@@ -140,6 +143,9 @@ export class LocalOrderService {
       id: o.id, status: o.status, packed: !!o.packedAt, createdAt: o.createdAt, packedAt: o.packedAt, pickedAt: o.pickedAt, deliveredAt: o.deliveredAt, cancelledAt: o.cancelledAt, cancelReason: o.cancelReason,
       productId: o.productId, productName: o.product.name, category: o.product.category, quantityKg: Number(o.quantityKg), pricePerKg: Number(o.pricePerKg),
       hub: v === 'farmer' ? { id: o.hub.id, name: o.hub.name, region: o.hub.region } : o.hub, paymentStatus: o.payment?.status ?? null,
+      checkoutId: o.checkoutId,
+      // Rampa va vaqt: kuryer va Hub xodimi uchun "Samarqand Hub, 2-rampa, 10:00-11:00"
+      ...(v === 'staff' || v === 'courier' || v === 'courier-open' ? { dock: o.pickupAppt ? this.docks.brief(o.pickupAppt) : null } : {}),
     };
     if (v === 'consumer') {
       return {
@@ -264,7 +270,9 @@ export class LocalOrderService {
   async courierMe(userId: string) {
     const d = await this.prisma.driver.findUniqueOrThrow({ where: { userId }, include: { courierHub: { select: { id: true, name: true, region: true, district: true, address: true } } } });
     const active = await this.prisma.localOrder.count({ where: { courierId: d.id, status: LocalOrderStatus.DELIVERING } });
-    return { courierMode: d.courierMode, hub: d.courierHub, activeOrders: active, maxActive: MAX_ACTIVE_COURIER_ORDERS, courierFee: this.env.LOCAL_COURIER_FEE };
+    const hubDock = d.courierHubId ? await this.prisma.hub.findUnique({ where: { id: d.courierHubId }, select: { requireDockBooking: true, _count: { select: { docks: { where: { isActive: true } } } } } }) : null;
+    const appts = d.courierHubId ? await this.prisma.dockAppointment.findMany({ where: { bookedById: userId, hubId: d.courierHubId, purpose: 'PICKUP', status: { in: ['BOOKED', 'ARRIVED'] }, endsAt: { gt: new Date() } }, orderBy: { startsAt: 'asc' }, take: 10, include: { hub: { select: { name: true } }, dock: { select: { number: true, name: true } } } }) : [];
+    return { courierMode: d.courierMode, hub: d.courierHub, activeOrders: active, maxActive: MAX_ACTIVE_COURIER_ORDERS, courierFee: this.env.LOCAL_COURIER_FEE, requireDock: !!hubDock?.requireDockBooking, dockCount: hubDock?._count.docks ?? 0, appointments: appts.map((a) => this.docks.brief(a)) };
   }
 
   async courierAvailable(user: LocalUser) {
@@ -280,7 +288,7 @@ export class LocalOrderService {
   }
 
   /** Kuryer yukni oladi: faqat tayyor (qadoqlangan) buyurtma, o'z Hub'idan, bir vaqtda MAX tagacha. Ombordan jismonan chiqadi. */
-  async courierAccept(user: LocalUser, id: string) {
+  async courierAccept(user: LocalUser, id: string, appointmentId?: string) {
     const d = await this.prisma.driver.findUniqueOrThrow({ where: { id: this.driver(user).id } });
     if (!d.courierMode || !d.courierHubId) throw new ForbiddenException("Avval «Shahar ichi kuryeri» rejimini yoqing");
     await this.prisma.$transaction(async (tx) => {
@@ -289,7 +297,9 @@ export class LocalOrderService {
       if (active >= MAX_ACTIVE_COURIER_ORDERS) throw new ConflictException(`Bir vaqtda ${MAX_ACTIVE_COURIER_ORDERS} tadan ortiq buyurtma ola olmaysiz`);
       const o = await tx.localOrder.findUnique({ where: { id }, select: { hubId: true, productId: true, quantityKg: true } });
       if (!o || o.hubId !== d.courierHubId) throw new NotFoundException('Buyurtma topilmadi');
-      const claimed = await tx.localOrder.updateMany({ where: { id, status: LocalOrderStatus.PACKING, packedAt: { not: null }, courierId: null }, data: { courierId: d.id, status: LocalOrderStatus.DELIVERING, pickedAt: new Date() } });
+      // Hub rampa jadvalini yuritsa: kuryer o'z rampa/vaqti bilan keladi (majburiy bo'lsa — shart)
+      const apptId = await this.docks.attachPickup(tx, { userId: user.id, hubId: o.hubId, appointmentId, maxOrders: MAX_ACTIVE_COURIER_ORDERS });
+      const claimed = await tx.localOrder.updateMany({ where: { id, status: LocalOrderStatus.PACKING, packedAt: { not: null }, courierId: null }, data: { courierId: d.id, status: LocalOrderStatus.DELIVERING, pickedAt: new Date(), pickupApptId: apptId } });
       if (claimed.count === 0) throw new ConflictException('Buyurtma tayyor emas yoki boshqa kuryer olgan');
       await dispatchStock(tx, o.hubId, o.productId, o.quantityKg, id);
     });
@@ -329,5 +339,110 @@ export class LocalOrderService {
       await this.payments.releaseForLocalOrder(tx, id, actor, o.courierId);
     });
     this.notify.localOrder(id, 'COMPLETED');
+  }
+
+  // ---------- Savat: bir nechta mahsulot, bitta umumiy to'lov ----------
+
+  /** Savat qatorlarini birlashtiradi (bir xil mahsulot — miqdori qo'shiladi) va deadlock bo'lmasligi uchun tartiblaydi */
+  private mergeItems(items: CartItemDto[]) {
+    const m = new Map<string, number>();
+    for (const it of items) m.set(it.productId, Math.round(((m.get(it.productId) ?? 0) + it.quantityKg) * 100) / 100);
+    return [...m.entries()].map(([productId, quantityKg]) => ({ productId, quantityKg })).sort((a, b) => a.productId.localeCompare(b.productId));
+  }
+
+  /** Savatni narxlash: to'lovsiz. Muammoli qatorlar `error` bilan qaytadi (butun so'rov rad etilmaydi), jami faqat to'g'ri qatorlar bo'yicha. */
+  async cartQuote(items: CartItemDto[]) {
+    const lines = [];
+    let total = new Prisma.Decimal(0), product = new Prisma.Decimal(0);
+    for (const it of this.mergeItems(items)) {
+      try {
+        const o = await this.orderable(it.productId, it.quantityKg);
+        const q = localQuote(this.fees, it.quantityKg, o.price);
+        total = total.add(q.total); product = product.add(q.productAmount);
+        lines.push({ productId: it.productId, name: o.product.name, quantityKg: it.quantityKg, pricePerKg: Number(o.price), minOrderKg: o.min, availableKg: o.available, hub: { id: o.hub.id, name: o.hub.name, region: o.hub.region }, ok: true, ...this.money(q) });
+      } catch (e: any) {
+        lines.push({ productId: it.productId, quantityKg: it.quantityKg, ok: false, error: e?.response?.message ?? e?.message ?? 'Mahsulot sotib olinmaydi' });
+      }
+    }
+    const hubs = new Set(lines.filter((l: any) => l.ok).map((l: any) => l.hub.id));
+    return { lines, itemCount: lines.length, okCount: lines.filter((l: any) => l.ok).length, hubCount: hubs.size, productAmount: Number(product), totalPrice: Number(total), currency: 'UZS' };
+  }
+
+  /**
+   * Savatni rasmiylashtirish: hammasi yoki hech narsa. Bitta tranzaksiyada: har bir qator uchun alohida LocalOrder (o'z Hub'i va fermeri bilan),
+   * ombor zaxirasi, har bir buyurtmaning escrow ulushlari va xaridordan yechiladigan BITTA umumiy to'lov.
+   * Biror qator (qoldiq tugagan, narx o'zgargan...) o'tmasa — hech narsa yozilmaydi va xaridor qaysi mahsulot to'sqinlik qilganini bilib oladi.
+   */
+  async checkoutBulk(user: LocalUser, dto: BulkCheckoutDto) {
+    const c = this.consumer(user);
+    if (dto.idempotencyKey) {
+      const prior = await this.prisma.localCheckout.findUnique({ where: { consumerId_idempotencyKey: { consumerId: c.id, idempotencyKey: dto.idempotencyKey } }, select: { id: true } });
+      if (prior) return this.checkoutView(user, prior.id);
+    }
+    const items = this.mergeItems(dto.items);
+    const region = dto.region ?? c.region;
+    let checkoutId: string;
+    try {
+      checkoutId = await this.prisma.$transaction(async (tx) => {
+        const lines: { item: { productId: string; quantityKg: number }; o: Awaited<ReturnType<LocalOrderService['orderable']>>; q: ReturnType<typeof localQuote> }[] = [];
+        for (const item of items) {
+          let o;
+          try { o = await this.orderable(item.productId, item.quantityKg, tx); }
+          catch (e: any) { throw this.lineError(e, item.productId, (await tx.product.findUnique({ where: { id: item.productId }, select: { name: true } }))?.name); }
+          if (normRegion(region) !== normRegion(o.hub.region)) throw new BadRequestException({ message: `«${o.product.name}»: bu Hub faqat ${o.hub.region} bo'yicha yetkazib beradi`, productId: item.productId });
+          lines.push({ item, o, q: localQuote(this.fees, item.quantityKg, o.price) });
+        }
+        const total = lines.reduce((a, l) => a.add(l.q.total), new Prisma.Decimal(0));
+        const checkout = await tx.localCheckout.create({ data: { consumerId: c.id, idempotencyKey: dto.idempotencyKey ?? null, totalPrice: total, itemCount: lines.length } });
+        const created: { order: { id: string; farmerId: string; hubId: string }; q: (typeof lines)[number]['q'] }[] = [];
+        for (const { item, o, q } of lines) {
+          const order = await tx.localOrder.create({
+            data: {
+              consumerId: c.id, checkoutId: checkout.id, productId: o.product.id, hubId: o.hub.id, farmerId: o.product.farmerId, quantityKg: item.quantityKg, pricePerKg: o.price,
+              productAmount: q.productAmount, hubFee: q.hubFee, courierFee: q.courierFee, serviceFee: q.serviceFee, totalPrice: q.total,
+              deliveryRegion: o.hub.region, deliveryDistrict: dto.district, deliveryAddress: dto.address, contactPhone: dto.phone ?? user.phone, note: dto.note || null, deliveryCode: String(randomInt(1000, 10000)),
+            },
+          });
+          try { await reserveStock(tx, o.hub.id, o.product.id, item.quantityKg, order.id); }
+          catch (e: any) { throw this.lineError(e, item.productId, o.product.name); }
+          created.push({ order: { id: order.id, farmerId: o.product.farmerId, hubId: o.hub.id }, q });
+        }
+        await this.payments.holdForCheckout(tx, checkout.id, created);
+        return checkout.id;
+      });
+    } catch (e) {
+      // Bir vaqtda yuborilgan bir xil kalit: ikkinchisi birinchisining natijasini oladi
+      if (dto.idempotencyKey && e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
+        const prior = await this.prisma.localCheckout.findUnique({ where: { consumerId_idempotencyKey: { consumerId: c.id, idempotencyKey: dto.idempotencyKey } }, select: { id: true } });
+        if (prior) return this.checkoutView(user, prior.id);
+      }
+      throw e;
+    }
+    const orders = await this.prisma.localOrder.findMany({ where: { checkoutId }, select: { id: true } });
+    orders.forEach((o) => this.notify.localOrder(o.id, 'CREATED'));
+    return this.checkoutView(user, checkoutId);
+  }
+
+  /** Qator xatosini qaysi mahsulotga tegishli ekani bilan qaytaradi (UI shu qatorni belgilaydi) */
+  private lineError(e: any, productId: string, name?: string) {
+    const msg = e?.response?.message ?? e?.message ?? 'Mahsulot sotib olinmaydi';
+    const text = Array.isArray(msg) ? msg.join(', ') : String(msg);
+    const status = typeof e?.getStatus === 'function' ? e.getStatus() : 409;
+    const body = { message: name ? `«${name}»: ${text}` : text, productId };
+    return status === 404 ? new NotFoundException(body) : status === 400 ? new BadRequestException(body) : new ConflictException(body);
+  }
+
+  /** Xaridorning bitta chek ko'rinishi: umumiy summa + har bir buyurtma (kodlar, taqsimot) */
+  async checkoutView(user: LocalUser, id: string) {
+    const c = this.consumer(user);
+    const co = await this.prisma.localCheckout.findFirst({ where: { id, consumerId: c.id }, include: { orders: { include: ORDER_INCLUDE, orderBy: { createdAt: 'asc' } } } });
+    if (!co) throw new NotFoundException('Buyurtma topilmadi');
+    const orders = co.orders.map((o) => this.shape(o, 'consumer'));
+    const sum = (k: 'productAmount' | 'hubFee' | 'courierFee' | 'serviceFee') => orders.reduce((a, o: any) => a + o[k], 0);
+    return {
+      checkoutId: co.id, createdAt: co.createdAt, itemCount: co.itemCount, totalPrice: Number(co.totalPrice), currency: 'UZS',
+      productAmount: sum('productAmount'), hubFee: sum('hubFee'), courierFee: sum('courierFee'), serviceFee: sum('serviceFee'),
+      paymentRef: co.providerRef, orders,
+    };
   }
 }

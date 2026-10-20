@@ -6,7 +6,7 @@ import { Roles } from '../common/roles.decorator';
 import { RolesGuard } from '../common/roles.guard';
 import { ThrottleProfile } from '../security/throttle-profile';
 import { SubscriptionGuard } from '../subscription/subscription.guard';
-import { CancelOrderDto, CourierModeDto, CreateLocalOrderDto, DeliverDto, ListLocalOrdersQuery, LocalMarketQuery, QuoteQuery } from './dto/local.dto';
+import { AcceptOrderDto, BulkCheckoutDto, CancelOrderDto, CartQuoteDto, CourierModeDto, CreateLocalOrderDto, DeliverDto, ListLocalOrdersQuery, LocalMarketQuery, QuoteQuery } from './dto/local.dto';
 import { LocalOrderService } from './local-order.service';
 
 const STAFF = [Role.DISPATCHER, Role.ADMIN] as const;
@@ -21,6 +21,10 @@ export class LocalMarketController {
 
   @Get('quote')
   quote(@Query() q: QuoteQuery) { return this.local.quote(q.productId, q.quantityKg); }
+
+  /** Savatni narxlash: qatorlar bo'yicha narx va umumiy summa (to'lovsiz) */
+  @Post('cart/quote') @ThrottleProfile('booking')
+  cartQuote(@Body() dto: CartQuoteDto) { return this.local.cartQuote(dto.items); }
 }
 
 @Controller('local')
@@ -31,6 +35,13 @@ export class LocalOrdersController {
   // --- Xaridor ---
   @Post('orders') @Roles(Role.CONSUMER) @ThrottleProfile('booking')
   create(@CurrentUser() user: any, @Body() dto: CreateLocalOrderDto) { return this.local.create(user, dto); }
+
+  /** Savat: bir nechta mahsulot — bitta umumiy to'lov; buyurtmalar Hub/fermer bo'yicha avtomatik ajratiladi */
+  @Post('orders/checkout-bulk') @Roles(Role.CONSUMER) @ThrottleProfile('booking')
+  checkoutBulk(@CurrentUser() user: any, @Body() dto: BulkCheckoutDto) { return this.local.checkoutBulk(user, dto); }
+
+  @Get('checkouts/:id') @Roles(Role.CONSUMER)
+  checkout(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string) { return this.local.checkoutView(user, id); }
 
   @Get('orders/mine') @Roles(Role.CONSUMER)
   mine(@CurrentUser() user: any, @Query() q: ListLocalOrdersQuery) { return this.local.mine(user, q); }
@@ -70,7 +81,7 @@ export class LocalOrdersController {
   courierMine(@CurrentUser() user: any, @Query() q: ListLocalOrdersQuery) { return this.local.courierMine(user, q); }
 
   @Post('orders/:id/accept') @Roles(Role.DRIVER) @UseGuards(SubscriptionGuard)
-  accept(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string) { return this.local.courierAccept(user, id); }
+  accept(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string, @Body() dto: AcceptOrderDto) { return this.local.courierAccept(user, id, dto?.appointmentId); }
 
   @Post('orders/:id/deliver') @Roles(Role.DRIVER) @ThrottleProfile('verify')
   deliver(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string, @Body() dto: DeliverDto) { return this.local.courierDeliver(user, id, dto.code); }

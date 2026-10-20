@@ -230,7 +230,7 @@
                     console.error('[API xato]', method, path, '->', res.status, { yuborildi: sent, javob: data });
                 } catch (e) {}
                 if (res.status === 402 && data && data.code === 'SUBSCRIPTION_REQUIRED') setTimeout(handleSubscriptionRequired, 0);
-                throw { status: res.status, messages: messages, raw: typeof raw === 'string' ? raw : null, code: data && data.code };
+                throw { status: res.status, messages: messages, raw: typeof raw === 'string' ? raw : null, code: data && data.code, productId: data && data.productId };
             }
             return data;
         }
@@ -1600,10 +1600,10 @@
             DRIVER: [['overview', 'fa-gauge', 'Umumiy'], ['loads', 'fa-boxes-packing', 'Mavjud yuklar'], ['courier', 'fa-motorcycle', 'Shahar ichi kuryeri'],
                      ['myloads', 'fa-truck-fast', 'Mening yuklarim'], ['eld', 'fa-clock-rotate-left', 'Harakat jurnali'], ['verify', 'fa-id-card-clip', 'Shaxsni tasdiqlash'], ['badges', 'fa-trophy', 'Darajalar va mukofotlar'], ['guide', 'fa-book-open', "Qo'llanma"], ['drivers', 'fa-truck-field', 'Haydovchilar'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'], ['subscription', 'fa-crown', 'Obuna'], ['profile', 'fa-id-card', 'Profil']],
             CONSUMER: [['lmarket', 'fa-basket-shopping', 'Mahalliy bozor'], ['lcart', 'fa-cart-shopping', 'Savatcha'], ['lorders', 'fa-box', 'Buyurtmalarim'], ['guide', 'fa-book-open', "Qo'llanma"], ['profile', 'fa-id-card', 'Profil']],
-            DISPATCHER: [['hubops', 'fa-warehouse', 'Hub: chakana savdo'], ['whboard', 'fa-table-columns', 'Zonalar'], ['whunits', 'fa-temperature-half', 'Kameralar'],
+            DISPATCHER: [['hubops', 'fa-warehouse', 'Hub: chakana savdo'], ['hubdocks', 'fa-door-open', 'Rampalar'], ['whboard', 'fa-table-columns', 'Zonalar'], ['whunits', 'fa-temperature-half', 'Kameralar'],
                      ['whorders', 'fa-clipboard-list', 'Buyurtmalar'], ['whinventory', 'fa-chart-pie', 'Inventarizatsiya'], ['guide', 'fa-book-open', "Qo'llanma"], ['drivers', 'fa-truck-field', 'Haydovchilar'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'], ['profile', 'fa-id-card', 'Profil']]
         };
-        DASH_TABS.ADMIN = [['adm-dashboard', 'fa-chart-line', 'Boshqaruv paneli'], ['adm-hubs', 'fa-warehouse', "Hub omborlar"], ['hubops', 'fa-basket-shopping', 'Hub: chakana savdo'], ['adm-users', 'fa-users', 'Foydalanuvchilar'],
+        DASH_TABS.ADMIN = [['adm-dashboard', 'fa-chart-line', 'Boshqaruv paneli'], ['adm-hubs', 'fa-warehouse', "Hub omborlar"], ['hubops', 'fa-basket-shopping', 'Hub: chakana savdo'], ['hubdocks', 'fa-door-open', 'Rampalar'], ['adm-users', 'fa-users', 'Foydalanuvchilar'],
                      ['adm-products', 'fa-boxes-stacked', "E'lonlar"], ['adm-shipments', 'fa-truck-fast', 'Yuk tashish'], ['adm-payments', 'fa-wallet', "To'lovlar"],
                      ['whboard', 'fa-warehouse', 'Ombor: zonalar'], ['whunits', 'fa-temperature-half', 'Kameralar'], ['whorders', 'fa-clipboard-list', 'Ombor buyurtmalari'],
                      ['whinventory', 'fa-chart-pie', 'Inventarizatsiya'], ['adm-reviews', 'fa-star', 'Sharhlar'], ['adm-kyc', 'fa-user-check', 'KYC arizalari'], ['adm-settings', 'fa-gear', 'Sayt sozlamalari'], ['adm-audit', 'fa-list-check', 'Audit jurnali'], ['guide', 'fa-book-open', "Qo'llanma"], ['drivers', 'fa-truck-field', 'Haydovchilar'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'],
@@ -2278,7 +2278,11 @@
             const inputs = {};
             o.fields.forEach(function (f) {
                 const wrap = el('div');
-                if (f.type === 'checkbox') {
+                if (f.type === 'custom') { // tayyor DOM tugun (masalan, rampa/vaqt tanlagich): f.get() qiymat qaytaradi
+                    wrap.appendChild(el('div', 'block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5', f.label + (f.required ? ' *' : '')));
+                    wrap.appendChild(f.node);
+                    inputs[f.name] = { custom: true };
+                } else if (f.type === 'checkbox') {
                     const lab = el('label', 'flex items-start gap-3 text-sm text-slate-300 cursor-pointer');
                     const cb = el('input', 'mt-1 accent-emerald-500');
                     cb.type = 'checkbox'; cb.checked = !!f.value;
@@ -2324,6 +2328,7 @@
                 const values = {}, errors = [];
                 o.fields.forEach(function (f) {
                     const inp = inputs[f.name];
+                    if (f.type === 'custom') { const v = f.get(); if (f.required && !v) errors.push(f.label + ' kiritilishi shart.'); values[f.name] = v || undefined; return; }
                     if (f.type === 'checkbox') { values[f.name] = inp.checked; return; }
                     if (f.type === 'file') { values[f.name] = inp.files && inp.files[0] ? inp.files[0] : null; return; }
                     const raw = String(inp.value).trim();

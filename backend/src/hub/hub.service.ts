@@ -3,16 +3,17 @@ import { HubIntakeStatus, Prisma, ProductStatus, Role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { regionCenter } from '../trust/geo';
 import { AdjustStockDto, AnnounceIntakeDto, CreateHubDto, ListIntakesQuery, ReceiveIntakeDto, RejectIntakeDto, SetRetailDto, UpdateHubDto } from './dto/hub.dto';
+import { DockService } from './dock.service';
 import { addStock, adjustStock } from './hub-stock';
 
 export interface HubUser { id: string; role: Role; hubId?: string | null; farmer?: { id: string } | null }
 
-const HUB_PUBLIC = { id: true, name: true, region: true, district: true, address: true, isActive: true } satisfies Prisma.HubSelect;
+const HUB_PUBLIC = { id: true, name: true, region: true, district: true, address: true, isActive: true, requireDockBooking: true } satisfies Prisma.HubSelect;
 const num = (d: Prisma.Decimal | null | undefined) => (d === null || d === undefined ? null : Number(d));
 
 @Injectable()
 export class HubService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly docks: DockService) {}
 
   // ---------- Hub'lar (administrator) ----------
 
@@ -103,16 +104,23 @@ export class HubService {
       throw new ConflictException("Bu mahsulot boshqa Hub omborida sotilmoqda. Avval o'sha qoldiq tugashini kuting");
     }
     if (dto.minOrderKg && dto.minOrderKg > dto.declaredKg) throw new BadRequestException("Eng kam buyurtma topshirilayotgan miqdordan katta bo'lmasin");
+    if (hub.requireDockBooking && !dto.dockSlot) throw new ConflictException("Bu Hub'ga yuk topshirish uchun rampa va vaqtni tanlang");
     const intake = await this.prisma.$transaction(async (tx) => {
       await tx.product.update({ where: { id: product.id }, data: { hubId: hub.id, retailPricePerKg: dto.retailPricePerKg, minOrderKg: dto.minOrderKg ?? null } });
-      return tx.hubIntake.create({ data: { hubId: hub.id, productId: product.id, farmerId, declaredKg: dto.declaredKg } });
+      const created = await tx.hubIntake.create({ data: { hubId: hub.id, productId: product.id, farmerId, declaredKg: dto.declaredKg } });
+      // Rampa band bo'lsa butun e'lon bekor bo'ladi (yarim holat qolmaydi)
+      if (dto.dockSlot) await this.docks.bookTx(tx, user, { hubId: hub.id, purpose: 'INTAKE', intakeId: created.id, startsAt: new Date(dto.dockSlot.startsAt), dockId: dto.dockSlot.dockId, vehiclePlate: dto.dockSlot.vehiclePlate });
+      return created;
     });
     return this.intakeView(intake.id);
   }
 
   async cancelIntake(user: HubUser, id: string) {
-    const r = await this.prisma.hubIntake.updateMany({ where: { id, farmerId: this.farmerId(user), status: HubIntakeStatus.ANNOUNCED }, data: { status: HubIntakeStatus.CANCELLED } });
-    if (r.count === 0) throw new NotFoundException("Topshirish topilmadi yoki allaqachon ko'rib chiqilgan");
+    await this.prisma.$transaction(async (tx) => {
+      const r = await tx.hubIntake.updateMany({ where: { id, farmerId: this.farmerId(user), status: HubIntakeStatus.ANNOUNCED }, data: { status: HubIntakeStatus.CANCELLED } });
+      if (r.count === 0) throw new NotFoundException("Topshirish topilmadi yoki allaqachon ko'rib chiqilgan");
+      await this.docks.closeForIntake(tx, id, 'CANCELLED', 'Fermer topshirishni bekor qildi');
+    });
     return this.intakeView(id);
   }
 
@@ -136,8 +144,8 @@ export class HubService {
   // ---------- Hub xodimi ----------
 
   private async intakeView(id: string) {
-    const i = await this.prisma.hubIntake.findUniqueOrThrow({ where: { id }, include: { hub: { select: HUB_PUBLIC }, product: { select: { name: true, category: true, farmer: { select: { farmName: true } } } } } });
-    return { id: i.id, status: i.status, declaredKg: num(i.declaredKg), receivedKg: num(i.receivedKg), note: i.note, createdAt: i.createdAt, receivedAt: i.receivedAt, hub: i.hub, productId: i.productId, productName: i.product.name, category: i.product.category, farmName: i.product.farmer.farmName };
+    const i = await this.prisma.hubIntake.findUniqueOrThrow({ where: { id }, include: { hub: { select: HUB_PUBLIC }, product: { select: { name: true, category: true, farmer: { select: { farmName: true } } } }, appointment: { include: { hub: { select: { name: true } }, dock: { select: { number: true, name: true } } } } } });
+    return { id: i.id, dock: i.appointment ? this.docks.brief(i.appointment) : null, status: i.status, declaredKg: num(i.declaredKg), receivedKg: num(i.receivedKg), note: i.note, createdAt: i.createdAt, receivedAt: i.receivedAt, hub: i.hub, productId: i.productId, productName: i.product.name, category: i.product.category, farmName: i.product.farmer.farmName };
   }
 
   async listIntakes(user: HubUser, q: ListIntakesQuery) {
@@ -162,6 +170,7 @@ export class HubService {
       await tx.product.updateMany({ where: { id: intake.productId, quantityKg: 0, status: ProductStatus.ACTIVE }, data: { status: ProductStatus.BOOKED } });
       await tx.product.update({ where: { id: intake.productId }, data: { isRetail: true, hubId: intake.hubId } });
       await addStock(tx, intake.hubId, intake.productId, dto.receivedKg, { type: 'HUB_INTAKE', id }, dto.note);
+      await this.docks.closeForIntake(tx, id, 'DONE');
     });
     return this.intakeView(id);
   }
@@ -170,8 +179,11 @@ export class HubService {
     const intake = await this.prisma.hubIntake.findUnique({ where: { id }, select: { hubId: true } });
     if (!intake) throw new NotFoundException('Topshirish topilmadi');
     this.assertAccess(user, intake.hubId);
-    const r = await this.prisma.hubIntake.updateMany({ where: { id, status: HubIntakeStatus.ANNOUNCED }, data: { status: HubIntakeStatus.REJECTED, note: dto.note, receivedById: user.id, receivedAt: new Date() } });
-    if (r.count === 0) throw new ConflictException("Bu topshirish allaqachon ko'rib chiqilgan");
+    await this.prisma.$transaction(async (tx) => {
+      const r = await tx.hubIntake.updateMany({ where: { id, status: HubIntakeStatus.ANNOUNCED }, data: { status: HubIntakeStatus.REJECTED, note: dto.note, receivedById: user.id, receivedAt: new Date() } });
+      if (r.count === 0) throw new ConflictException("Bu topshirish allaqachon ko'rib chiqilgan");
+      await this.docks.closeForIntake(tx, id, 'CANCELLED', 'Hub topshirishni rad etdi');
+    });
     return this.intakeView(id);
   }
 

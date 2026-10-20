@@ -32,6 +32,10 @@ export interface AppEnv {
   LOCAL_SERVICE_FEE_MIN: number;
   LOCAL_MIN_ORDER_KG: number;
   LOCAL_MAX_ORDER_KG: number;
+  DOCK_UTC_OFFSET_MIN: number;
+  DOCK_MAX_DAYS_AHEAD: number;
+  DOCK_MAX_ACTIVE_PER_USER: number;
+  DOCK_GRACE_MIN: number;
   SMS_PROVIDER: 'simulated';
   SMS_ALLOW_SIMULATION: boolean;
   OTP_TTL_SECONDS: number;
@@ -243,6 +247,10 @@ export function validateEnv(raw: Record<string, unknown>): AppEnv & Record<strin
     LOCAL_SERVICE_FEE_MIN: intInRange(raw.LOCAL_SERVICE_FEE_MIN, 'LOCAL_SERVICE_FEE_MIN', 500, 0, 1_000_000, errors),
     LOCAL_MIN_ORDER_KG: intInRange(raw.LOCAL_MIN_ORDER_KG, 'LOCAL_MIN_ORDER_KG', 10, 1, 1000, errors),
     LOCAL_MAX_ORDER_KG: intInRange(raw.LOCAL_MAX_ORDER_KG, 'LOCAL_MAX_ORDER_KG', 200, 1, 5000, errors),
+    DOCK_UTC_OFFSET_MIN: intInRange(raw.DOCK_UTC_OFFSET_MIN, 'DOCK_UTC_OFFSET_MIN', 300, -720, 840, errors),
+    DOCK_MAX_DAYS_AHEAD: intInRange(raw.DOCK_MAX_DAYS_AHEAD, 'DOCK_MAX_DAYS_AHEAD', 14, 1, 60, errors),
+    DOCK_MAX_ACTIVE_PER_USER: intInRange(raw.DOCK_MAX_ACTIVE_PER_USER, 'DOCK_MAX_ACTIVE_PER_USER', 6, 1, 50, errors),
+    DOCK_GRACE_MIN: intInRange(raw.DOCK_GRACE_MIN, 'DOCK_GRACE_MIN', 15, 0, 120, errors),
     PAYMENT_RELEASE_GRACE_HOURS: intInRange(raw.PAYMENT_RELEASE_GRACE_HOURS, 'PAYMENT_RELEASE_GRACE_HOURS', 72, 0, 720, errors),
   };
 

@@ -20,7 +20,7 @@ const head = html.replace(/<style[\s\S]*?<\/style>/g, '').replace(/<!--[\s\S]*?-
 const found = new Set();
 for (const m of head.matchAll(/>([^<>]+)</g)) found.add(m[1].replace(/&copy;/g, '©').replace(/\s+/g, ' ').trim());
 for (const m of head.matchAll(/\b(?:placeholder|title|aria-label|alt)="([^"]*)"/g)) found.add(m[1].trim());
-const asts = ['app.js', 'local.js'].map((f) => acorn.parse(fs.readFileSync(path.join(root, 'js', f), 'utf8'), { ecmaVersion: 2022 }));
+const asts = ['app.js', 'local.js', 'local-dock.js'].map((f) => acorn.parse(fs.readFileSync(path.join(root, 'js', f), 'utf8'), { ecmaVersion: 2022 }));
 const strOf = (n) => (n.type === 'Literal' && typeof n.value === 'string' ? n.value : null);
 const flat = (n, a) => (n.type === 'BinaryExpression' && n.operator === '+' ? (flat(n.left, a), flat(n.right, a)) : a.push(n));
 const seen = new Set();
@@ -48,7 +48,7 @@ for (const raw of found) {
   if (toks.every((t) => /^[a-z0-9\/\[\]\-_.:%#!()@,>*&~+='"\\]+$/.test(t)) && toks.some((t) => /[-:\[\]\/]/.test(t))) continue;
   if (toks.length === 1 && /^[a-z][A-Za-z0-9_.\-]*$/.test(s)) continue;
   if (/^[A-Z][A-Z0-9_]*$/.test(s) || /^[A-Za-z0-9_.\-\/]+$/.test(s) && !/^[A-Z][a-z]/.test(s)) continue;
-  if (/^(fa-|bg-|text-|border-|flex|grid|rounded|absolute|relative|hidden|w-|h-|px-|py-|mt-|mb-|min-|max-|shadow|space-|gap-|glass|auth-|mp-|shrink|inline|mx-|font-|dash-|trk-|hover:)/.test(s)) continue;
+  if (/^(fa-|bg-|text-|border-|flex|grid|rounded|absolute|relative|hidden|w-|h-|px-|py-|mt-|mb-|min-|max-|shadow|space-|gap-|glass|auth-|mp-|shrink|inline|mx-|font-|dash-|trk-|dk-|hover:)/.test(s)) continue;
   if (!uzbek.test(s) && toks.length < 2) continue;
   if (/^(Bearer|\[API|noopener|&copy;|\{0\}(rounded|glass)|O'zbekcha$|English$)/.test(s)) continue;
   if (!covered(s)) missing.push(s);
