@@ -33,3 +33,5 @@ Bekor qilingan buyurtma: keshbek qaytdi ‖ Заказ отменён: кешб�
 Keshbek balansidan foydalanish (Sizda {0} so'm bor) ‖ Использовать баланс кешбэка (у вас {0} сум) ‖ Use cashback balance (you have {0} UZS)
 Platforma xizmat haqidan {0} so'm qoplanadi; fermer, Hub va kuryer ulushlari o'zgarmaydi. ‖ Сервисный сбор платформы покрывается на {0} сум; доли фермера, Hub и курьера не меняются. ‖ {0} UZS of the platform service fee is covered; farmer, Hub and courier shares do not change.
 Keshbek balansi yetarli emas. Sahifani yangilang ‖ Недостаточно кешбэка. Обновите страницу ‖ Not enough cashback balance. Refresh the page
+Yorug' rejimga o'tish ‖ Включить светлую тему ‖ Switch to light mode
+Qorong'i rejimga o'tish ‖ Включить тёмную тему ‖ Switch to dark mode

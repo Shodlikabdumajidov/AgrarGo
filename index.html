@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Mavzu (qorong'i/yorug') sahifa chizilishidan oldin o'rnatiladi: miltillash bo'lmasin -->
+    <script>(function () { var t = 'dark'; try { var v = localStorage.getItem('agrargo_theme'); if (v === 'light' || v === 'dark') t = v; } catch (e) {} document.documentElement.setAttribute('data-theme', t); })();</script>
     <title>AgrarGo — Smart Agro-Logistics Ecosystem</title>
     <!-- PWA -->
     <link rel="manifest" href="manifest.json">
@@ -53,6 +55,35 @@
             backdrop-filter: blur(16px);
         }
 
+
+        /* ===== Interaktiv matematik kataklar: faqat kursor atrofida, "fonar" kabi (js/app.js: initGridFx) ===== */
+        :root { --grid-line: rgba(52,211,153,.34); --grid-glow: rgba(52,211,153,.12); --cell: 36px; }
+        html[data-theme="light"] { --grid-line: rgba(14,110,55,.34); --grid-glow: rgba(111,160,32,.20); color-scheme: light; }
+        html[data-theme="dark"] { color-scheme: dark; }
+        .grid-fx { --x: -999px; --y: -999px; position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: 0; transition: opacity .35s ease;
+            background-image: radial-gradient(circle 150px at var(--x) var(--y), var(--grid-glow), transparent 75%), linear-gradient(to right, var(--grid-line) 1px, transparent 1px), linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+            background-size: 100% 100%, var(--cell) var(--cell), var(--cell) var(--cell);
+            -webkit-mask-image: radial-gradient(circle 210px at var(--x) var(--y), #000 0%, rgba(0,0,0,.6) 45%, transparent 100%); mask-image: radial-gradient(circle 210px at var(--x) var(--y), #000 0%, rgba(0,0,0,.6) 45%, transparent 100%); }
+        html.fx-on .grid-fx { opacity: 1; }
+        @media (hover: none), (prefers-reduced-motion: reduce) { .grid-fx { display: none; } }
+
+        /* ===== Bosh sarlavha animatsiyasi: har 30-40 soniyada shimmer + rang o'zgarishi + porlash (js/app.js: initHeroShine) ===== */
+        .hero-title { --hero-ink: #f1f5f9; --hero-hi: #fff3b0; }
+        html[data-theme="light"] .hero-title { --hero-ink: #12301f; --hero-hi: #6fa022; }
+        .hero-title.shine .hero-lead { color: transparent; -webkit-background-clip: text; background-clip: text; background-size: 320% 100%;
+            background-image: linear-gradient(100deg, var(--hero-ink) 36%, var(--hero-hi) 50%, var(--hero-ink) 64%); animation: heroLead 1.7s cubic-bezier(.4,0,.2,1) 1 both; }
+        .hero-title.shine .hero-grad { background-size: 100% 100%, 100% 100%; background-repeat: no-repeat;
+            background-image: linear-gradient(100deg, transparent 40%, var(--hero-hi) 50%, transparent 60%), linear-gradient(to right, var(--tw-gradient-stops));
+            animation: heroGrad 3.4s ease-in-out 1 both; }
+        @keyframes heroLead { from { background-position: 100% 0; } to { background-position: 0% 0; } }
+        @keyframes heroGrad {
+            0% { background-position: 160% 0, 0 0; filter: hue-rotate(0deg) drop-shadow(0 0 0 rgba(52,211,153,0)); }
+            15% { background-position: 160% 0, 0 0; }
+            55% { background-position: -60% 0, 0 0; filter: hue-rotate(38deg) drop-shadow(0 0 14px rgba(52,211,153,.55)); }
+            75% { filter: hue-rotate(-28deg) drop-shadow(0 0 18px rgba(111,160,32,.55)); }
+            100% { background-position: -60% 0, 0 0; filter: hue-rotate(0deg) drop-shadow(0 0 0 rgba(52,211,153,0)); }
+        }
+        @media (prefers-reduced-motion: reduce) { .hero-title.shine .hero-lead, .hero-title.shine .hero-grad { animation: none; } }
         /* Sticky header: sahifa 50px dan ko'p aylantirilganda kichrayadi, xira shaffof fon oladi (js/app.js: initStickyHeader) */
         #main-nav { transition: padding .28s cubic-bezier(.16,1,.3,1), background-color .28s ease, box-shadow .28s ease, backdrop-filter .28s ease, margin-bottom .28s cubic-bezier(.16,1,.3,1); will-change: padding; }
         #main-nav #nav-left img { transition: height .28s cubic-bezier(.16,1,.3,1), padding .28s ease; }
@@ -1089,8 +1120,10 @@
         .filter-count { display: inline-flex; align-items: center; justify-content: center; min-width: 1.4rem; height: 1.4rem; padding: 0 .4rem; border-radius: 9999px; background: #10B981; color: #022c22; font-size: .72rem; font-weight: 900; }
         @media (max-width: 640px) { .filters-collapsed #filter-body { display: none; } }
     </style>
+    <link rel="stylesheet" href="css/light.css">
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans antialiased selection:bg-emerald-500 selection:text-slate-950">
+    <div class="grid-fx" aria-hidden="true"></div>
 
     <!-- SIDEBAR BACKDROP OVERLAY -->
     <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"></div>
@@ -1135,7 +1168,9 @@
                     <button onclick="toggleSidebar()" class="text-slate-200 hover:text-emerald-400 hover:scale-110 text-3xl transition focus:outline-none p-1.5 bg-slate-900/85 rounded-xl border border-white/10 shadow">
                         <i class="fa-solid fa-bars-staggered"></i>
                     </button>
-                    <img src="images/logo.png" alt="AgrarGo Logo" class="h-16 sm:h-20 w-auto rounded-2xl shadow-xl object-contain bg-slate-900 p-1.5 border border-white/15 hover:scale-105 transition duration-300">
+                    <a href="./" id="logo-link" aria-label="AgrarGo — bosh sahifaga qaytish" class="shrink-0 rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400">
+                        <img src="images/logo.png" alt="AgrarGo Logo" class="h-16 sm:h-20 w-auto rounded-2xl shadow-xl object-contain bg-slate-900 p-1.5 border border-white/15 hover:scale-105 transition duration-300">
+                    </a>
                 </div>
             </div>
 
@@ -1176,6 +1211,9 @@
             </div>
 
             <div id="nav-right" class="flex items-center gap-4 w-full xl:w-auto justify-end">
+                <button type="button" id="theme-toggle" aria-label="Yorug' rejimga o'tish" aria-pressed="false" class="flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-slate-900 hover:bg-slate-800 text-amber-300 border border-white/20 hover:border-emerald-500/50 transition active:scale-95 shrink-0">
+                    <i class="fa-solid fa-sun text-lg" id="theme-icon"></i>
+                </button>
                 <button type="button" id="nav-search-toggle" aria-label="Qidiruv" aria-controls="nav-search" aria-expanded="false"><i class="fa-solid fa-magnifying-glass"></i></button>
                 <button type="button" onclick="scrollToMarket(true)" class="hidden sm:flex items-center gap-2.5 bg-slate-900 hover:bg-slate-800 text-slate-100 px-5 py-4 rounded-2xl text-base font-semibold border border-white/20 hover:border-emerald-500 transition duration-300 shadow">
                     <i class="fa-solid fa-sliders text-sm text-emerald-400"></i> Filtrlar
@@ -1341,8 +1379,8 @@
                 <div class="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm font-bold uppercase tracking-widest shadow-xl">
                     <i class="fa-solid fa-seedling"></i> O'zbekistondagi Birinchi Raqamli Agro-Logistika Zanjiri
                 </div>
-                <h1 class="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight">
-                    Dehqondan Do'konga — <br class="hidden sm:inline"><span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-blue-400">Vositachilarsiz Kelajak</span>
+                <h1 id="hero-title" class="hero-title text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight">
+                    <span class="hero-lead">Dehqondan Do'konga —</span> <br class="hidden sm:inline"><span class="hero-grad text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-blue-400">Vositachilarsiz Kelajak</span>
                 </h1>
                 <p class="text-slate-300 text-base sm:text-xl max-w-2xl leading-relaxed font-medium">
                     Fermerlarning og'ir mehnatini qadrlash, narx monopoliyasiga barham berish va mahsulotni to'g'ridan-to'g'ri bozor hamda supermarketlarga yetkazishning ishonchli ekotizimi.
@@ -2576,6 +2614,7 @@
 
     <!-- DASHBOARD (rolga mos boshqaruv sahifasi) -->
     <div id="dashboard-view" class="fixed inset-0 z-[45] bg-slate-950 overflow-y-auto" aria-hidden="true">
+        <div class="grid-fx" aria-hidden="true"></div>
         <div class="sticky top-0 z-10 glass border-b border-white/15">
             <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-3">
                 <button type="button" onclick="closeDashboard()" class="flex items-center gap-2 text-slate-300 hover:text-emerald-400 font-bold text-sm transition">
@@ -2601,6 +2640,7 @@
 
     <!-- ROL SAHIFASI (tanishtiruv + sharhlar) -->
     <div id="role-page" class="fixed inset-0 z-[45] bg-slate-950 overflow-y-auto" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="rp-title">
+        <div class="grid-fx" aria-hidden="true"></div>
         <div class="sticky top-0 z-10 glass border-b border-white/15">
             <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-3">
                 <button type="button" onclick="closeRolePage()" class="flex items-center gap-2 text-slate-300 hover:text-emerald-400 font-bold text-sm transition">

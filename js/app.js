@@ -3562,7 +3562,7 @@
                 ['Fermer → Market', function (p) { return (p.farmer ? p.farmer.name : '—') + ' → ' + (p.market ? p.market.name : '—'); }],
                 ['Summa', function (p) { return bdChips(p.breakdown, 'ADMIN', function () { openPaymentDetail(p, 'ADMIN'); }); }],
                 ['Holat', function (p) { return whPill(PAYMENT_STATUS[p.status].short, PAYMENT_STATUS[p.status].cls, PAYMENT_STATUS[p.status].icon); }],
-                ['Yuk', function (p) { return p.shipmentStatus ? SHIPMENT_STATUS[p.shipmentStatus].label : '—'; }],
+                ['Yuk', function (p) { return p.shipmentStatus ? (SHIPMENT_STATUS[p.shipmentStatus] || { label: ((typeof LOCAL_STATUS !== 'undefined' && LOCAL_STATUS[p.shipmentStatus]) || {}).short || p.shipmentStatus }).label : '—'; }],
                 ['Yangilangan', function (p) { return admDate(p.updatedAt); }],
                 ['Amallar', function (p) {
                     const b = [admBtn('fa-receipt', 'Chek', function () { openPaymentDetail(p, 'ADMIN'); })];
@@ -4785,7 +4785,7 @@
                 const ship = el('div', 'flex items-center gap-2 text-xs text-slate-400');
                 ship.appendChild(el('i', 'fa-solid fa-truck-fast text-emerald-400'));
                 ship.appendChild(document.createTextNode('Yuk holati: '));
-                ship.appendChild(el('span', 'font-bold px-2.5 py-0.5 rounded-full border ' + SHIPMENT_STATUS[p.shipmentStatus].cls, SHIPMENT_STATUS[p.shipmentStatus].label));
+                (function () { const sm = SHIPMENT_STATUS[p.shipmentStatus] || (typeof LOCAL_STATUS !== 'undefined' && LOCAL_STATUS[p.shipmentStatus]) || { cls: '', label: p.shipmentStatus }; ship.appendChild(el('span', 'font-bold px-2.5 py-0.5 rounded-full border ' + sm.cls, sm.label || sm.short)); })();
                 card.appendChild(ship);
             }
 
@@ -6285,6 +6285,17 @@
 
         // ----- Diagrammalar (Chart.js, lazy) -----
         let chartLibPromise = null;
+        // Diagramma ranglari mavzuga mos (qorong'i / yorug')
+        function chartTheme() {
+            return currentTheme() === 'light'
+                ? { text: '#4a6650', grid: 'rgba(20,80,40,.14)', tip: 'rgba(243,242,228,.97)', tipText: '#12301f', tipBorder: 'rgba(10,95,48,.45)', slice: 'rgba(243,242,228,.95)' }
+                : { text: '#94a3b8', grid: 'rgba(255,255,255,.07)', tip: 'rgba(2,6,23,.94)', tipText: '#ffffff', tipBorder: 'rgba(16,185,129,.4)', slice: 'rgba(2,6,23,.9)' };
+        }
+        function applyChartTheme(C) {
+            const t = chartTheme();
+            C.defaults.color = t.text; C.defaults.borderColor = t.grid;
+            C.defaults.plugins.tooltip.backgroundColor = t.tip; C.defaults.plugins.tooltip.titleColor = t.tipText; C.defaults.plugins.tooltip.bodyColor = t.tipText; C.defaults.plugins.tooltip.borderColor = t.tipBorder;
+        }
         function loadChartLib() {
             if (window.Chart) return Promise.resolve(window.Chart);
             if (!chartLibPromise) chartLibPromise = loadScriptOnce('vendor/chart.umd.js').then(function () {
@@ -6358,6 +6369,7 @@
             loadChartLib().then(function (Chart) {
                 setTimeout(function () {
                     if (!canvas.isConnected) return;
+                    applyChartTheme(Chart);
                     const cfg = build(Chart);
                     cfg.options = Object.assign({ responsive: true, maintainAspectRatio: false }, cfg.options || {});
                     liveCharts.push(new Chart(canvas, cfg));
@@ -6402,7 +6414,7 @@
             return chartCard(title, sub, shown.length > 0, function () {
                 return {
                     type: 'doughnut',
-                    data: { labels: shown.map(function (x) { return T(x[0]); }), datasets: [{ data: shown.map(function (x) { return x[1]; }), backgroundColor: shown.map(function (x) { return x[2]; }), borderColor: 'rgba(2,6,23,.9)', borderWidth: 3, hoverOffset: 10 }] },
+                    data: { labels: shown.map(function (x) { return T(x[0]); }), datasets: [{ data: shown.map(function (x) { return x[1]; }), backgroundColor: shown.map(function (x) { return x[2]; }), borderColor: chartTheme().slice, borderWidth: 3, hoverOffset: 10 }] },
                     options: {
                         cutout: '66%',
                         plugins: { legend: { position: 'bottom', labels: { padding: 14 } },
@@ -9969,6 +9981,81 @@
             window.addEventListener('load', measure); // shrift/rasmlar yuklangach o'lcham o'zgaradi
             if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
         })();
+
+        // ===== Mavzu (qorong'i / yorug'): localStorage'da saqlanadi, sahifa chizilishidan oldin <head> skripti o'rnatadi =====
+        const THEME_KEY = 'agrargo_theme';
+        function currentTheme() { return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark'; }
+        function setTheme(t, persist) {
+            t = t === 'light' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', t);
+            if (persist !== false) { try { localStorage.setItem(THEME_KEY, t); } catch (e) { /* maxfiy rejim */ } }
+            const btn = document.getElementById('theme-toggle'), icon = document.getElementById('theme-icon');
+            if (btn) { btn.setAttribute('aria-pressed', String(t === 'light')); btn.setAttribute('aria-label', T(t === 'light' ? "Qorong'i rejimga o'tish" : "Yorug' rejimga o'tish")); btn.title = btn.getAttribute('aria-label'); }
+            if (icon) icon.className = 'fa-solid text-lg ' + (t === 'light' ? 'fa-moon' : 'fa-sun');
+            const meta = document.querySelector('meta[name="theme-color"]');
+            if (meta) meta.setAttribute('content', t === 'light' ? '#E8EDD8' : '#064E3B');
+            document.dispatchEvent(new CustomEvent('theme:change', { detail: { theme: t } }));
+        }
+        document.addEventListener('theme:change', function () { // diagrammalar yangi ranglar bilan qayta chiziladi
+            try { if (dashboardView.classList.contains('open') && (dashTab === 'overview' || dashTab === 'adm-dashboard')) selectDashTab(dashTab); } catch (e) { /* kabinet yopiq */ }
+        });
+        (function initTheme() {
+            const btn = document.getElementById('theme-toggle');
+            if (btn) btn.addEventListener('click', function () { setTheme(currentTheme() === 'light' ? 'dark' : 'light'); });
+            document.addEventListener('i18n:change', function () { setTheme(currentTheme(), false); }); // yorliq tilga mos yangilanadi
+            setTheme(currentTheme(), false);
+        })();
+
+        // ===== Logotip havolasi: har doim asosiy sahifaga qaytaradi =====
+        (function initLogoLink() {
+            const a = document.getElementById('logo-link');
+            if (!a) return;
+            a.addEventListener('click', function (e) {
+                if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return; // yangi tabda ochish brauzerga qoldiriladi
+                const atRoot = /(^|\/)(index\.html)?$/.test(location.pathname);
+                if (!atRoot) return; // boshqa sahifada oddiy havola sifatida ishlaydi
+                e.preventDefault();
+                try { bnCloseOverlays(); } catch (err) { /* ba'zi oynalar hali yaratilmagan */ }
+                try { [closeProductModal, closeBookingModal, closeWhModal].forEach(function (fn) { fn(); }); } catch (err) { /* */ }
+                if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        })();
+
+        // ===== Interaktiv matematik kataklar: kursor atrofida "fonar" (CSS: .grid-fx, --x/--y) =====
+        (function initGridFx() {
+            if (!window.matchMedia || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+            const hosts = Array.prototype.slice.call(document.querySelectorAll('.grid-fx'));
+            if (!hosts.length) return;
+            const root = document.documentElement;
+            let x = -999, y = -999, raf = 0, on = false;
+            const paint = function () { raf = 0; hosts.forEach(function (h) { h.style.setProperty('--x', x + 'px'); h.style.setProperty('--y', y + 'px'); }); };
+            window.addEventListener('mousemove', function (e) {
+                x = e.clientX; y = e.clientY;
+                if (!on) { on = true; root.classList.add('fx-on'); }
+                if (!raf) raf = requestAnimationFrame(paint);
+            }, { passive: true });
+            const off = function () { on = false; root.classList.remove('fx-on'); };
+            document.addEventListener('mouseleave', off);
+            window.addEventListener('blur', off);
+        })();
+
+        // ===== Bosh sarlavha: har 30-40 soniyada shimmer + rang o'zgarishi + porlash =====
+        (function initHeroShine() {
+            const h = document.getElementById('hero-title');
+            if (!h || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
+            const grad = h.querySelector('.hero-grad');
+            const play = function () {
+                const r = h.getBoundingClientRect();
+                if (document.hidden || r.bottom < 0 || r.top > window.innerHeight) return; // ko'rinmasa — navbatdagisiga
+                h.classList.remove('shine'); void h.offsetWidth; h.classList.add('shine');
+            };
+            if (grad) grad.addEventListener('animationend', function (e) { if (e.target === grad) h.classList.remove('shine'); });
+            const next = function () { setTimeout(function () { play(); next(); }, 30000 + Math.random() * 10000); };
+            setTimeout(play, 2500); // yuklangach bir marta ko'rsatiladi
+            next();
+        })();
+
 
         // ===== Mobil header: yig'iladigan qidiruv =====
         (function () {
