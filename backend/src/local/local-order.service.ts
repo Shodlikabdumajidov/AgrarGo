@@ -3,6 +3,8 @@ import { LocalOrderStatus, Prisma, ProductStatus, Role } from '@prisma/client';
 import { randomInt, randomUUID } from 'crypto';
 import { APP_ENV } from '../config/app-env.module';
 import { AppEnv } from '../config/env.validation';
+import { allocateCashback, maxSpendable } from '../cashback/cashback.math';
+import { CashbackService } from '../cashback/cashback.service';
 import { DockService } from '../hub/dock.service';
 import { dispatchStock, releaseReserve, reserveStock, returnStock } from '../hub/hub-stock';
 import { PaymentService } from '../payment/payment.service';
@@ -58,6 +60,7 @@ export class LocalOrderService {
     private readonly payments: PaymentService,
     private readonly notify: NotificationService,
     private readonly docks: DockService,
+    private readonly cashback: CashbackService,
     @Inject(APP_ENV) private readonly env: AppEnv,
   ) {
     this.fees = { hubPercent: env.LOCAL_HUB_FEE_PERCENT, hubMin: env.LOCAL_HUB_FEE_MIN, courierFee: env.LOCAL_COURIER_FEE, servicePercent: env.LOCAL_SERVICE_FEE_PERCENT, serviceMin: env.LOCAL_SERVICE_FEE_MIN };
@@ -125,15 +128,16 @@ export class LocalOrderService {
     const q = localQuote(this.fees, dto.quantityKg, o.price);
     const code = String(randomInt(1000, 10000));
     const id = await this.prisma.$transaction(async (tx) => {
+      const cb = dto.useCashback ? await this.cashback.spendable(tx, user.id, q.serviceFee) : new Prisma.Decimal(0);
       const order = await tx.localOrder.create({
         data: {
           consumerId: c.id, productId: o.product.id, hubId: o.hub.id, farmerId: o.product.farmerId, quantityKg: dto.quantityKg, pricePerKg: o.price,
-          productAmount: q.productAmount, hubFee: q.hubFee, courierFee: q.courierFee, serviceFee: q.serviceFee, totalPrice: q.total,
+          productAmount: q.productAmount, hubFee: q.hubFee, courierFee: q.courierFee, serviceFee: q.serviceFee, totalPrice: q.total, cashbackUsed: cb,
           deliveryRegion: o.hub.region, deliveryDistrict: dto.district, deliveryAddress: dto.address, contactPhone: dto.phone ?? user.phone, note: dto.note || null, deliveryCode: code,
         },
       });
       await reserveStock(tx, o.hub.id, o.product.id, dto.quantityKg, order.id);
-      await this.payments.holdForLocalOrder(tx, { id: order.id, farmerId: o.product.farmerId, hubId: o.hub.id }, q);
+      await this.payments.holdForLocalOrder(tx, { id: order.id, farmerId: o.product.farmerId, hubId: o.hub.id }, q, { userId: user.id, amount: cb });
       return order.id;
     });
     this.notify.localOrder(id, 'CREATED');
@@ -163,7 +167,7 @@ export class LocalOrderService {
     };
     if (v === 'consumer') {
       return {
-        ...base, ...money, splits, deliveryAddress: `${o.deliveryRegion}, ${o.deliveryDistrict}, ${o.deliveryAddress}`, contactPhone: o.contactPhone, note: o.note,
+        ...base, ...money, cashbackUsed: Number(o.cashbackUsed), payableTotal: money.totalPrice - Number(o.cashbackUsed), splits, deliveryAddress: `${o.deliveryRegion}, ${o.deliveryDistrict}, ${o.deliveryAddress}`, contactPhone: o.contactPhone, note: o.note,
         // Kod faqat xaridorga va faqat buyurtma faol paytida ko'rinadi
         deliveryCode: ACTIVE.includes(o.status) ? o.deliveryCode : null,
         courier: o.courier ? { name: o.courier.user.fullName, phone: o.courier.user.phone, vehicle: o.courier.vehicleType } : null,
@@ -443,7 +447,8 @@ export class LocalOrderService {
       lines.push({ productId: it.productId, name: o.product.name, quantityKg: it.quantityKg, pricePerKg: Number(o.price), minOrderKg: o.min, availableKg: o.available, hub: { id: o.hub.id, name: o.hub.name, region: o.hub.region }, sharedCourier: (size.get(o.hub.id) ?? 1) > 1, ok: true, ...this.money(q) });
     }
     const hubs = new Set(ok.map((l) => l.hubId));
-    return { lines, itemCount: lines.length, okCount: ok.length, hubCount: hubs.size, deliveryCount: hubs.size, productAmount: Number(product), totalPrice: Number(total), currency: 'UZS' };
+    const serviceFee = ok.reduce((a, l) => a.add(l.q.serviceFee), new Prisma.Decimal(0));
+    return { lines, itemCount: lines.length, okCount: ok.length, hubCount: hubs.size, deliveryCount: hubs.size, productAmount: Number(product), serviceFee: Number(serviceFee), totalPrice: Number(total), currency: 'UZS' };
   }
 
   /**
@@ -475,23 +480,29 @@ export class LocalOrderService {
         const groups = new Map<string, { id: string; code: string; n: number }>();
         lines.forEach((l) => { const g = groups.get(l.hubId); if (g) g.n++; else groups.set(l.hubId, { id: randomUUID(), code: String(randomInt(1000, 10000)), n: 1 }); });
         const total = lines.reduce((a, l) => a.add(l.q.total), new Prisma.Decimal(0));
-        const checkout = await tx.localCheckout.create({ data: { consumerId: c.id, idempotencyKey: dto.idempotencyKey ?? null, totalPrice: total, itemCount: lines.length } });
-        const created: { order: { id: string; farmerId: string; hubId: string }; q: (typeof lines)[number]['q'] }[] = [];
-        for (const { item, o, q } of lines) {
+        // Keshbek: umumiy chegara (balans va xizmat haqi) buyurtmalar o'rtasida xizmat haqiga mutanosib taqsimlanadi
+        const maxPct = this.env.CASHBACK_MAX_SPEND_PERCENT;
+        const caps = lines.map((l) => maxSpendable(l.q.serviceFee, l.q.serviceFee, maxPct));
+        const wanted = dto.useCashback ? await this.cashback.spendable(tx, user.id, lines.reduce((a, l) => a.add(l.q.serviceFee), new Prisma.Decimal(0))) : new Prisma.Decimal(0);
+        const shares = allocateCashback(wanted, caps);
+        const cbTotal = shares.reduce((a, x) => a.add(x), new Prisma.Decimal(0));
+        const checkout = await tx.localCheckout.create({ data: { consumerId: c.id, idempotencyKey: dto.idempotencyKey ?? null, totalPrice: total, cashbackUsed: cbTotal, itemCount: lines.length } });
+        const created: { order: { id: string; farmerId: string; hubId: string }; q: (typeof lines)[number]['q']; cashback: Prisma.Decimal }[] = [];
+        for (const [li, { item, o, q }] of lines.entries()) {
           const grp = groups.get(o.hub.id)!;
           const order = await tx.localOrder.create({
             data: {
               consumerId: c.id, checkoutId: checkout.id, productId: o.product.id, hubId: o.hub.id, farmerId: o.product.farmerId, quantityKg: item.quantityKg, pricePerKg: o.price,
-              productAmount: q.productAmount, hubFee: q.hubFee, courierFee: q.courierFee, serviceFee: q.serviceFee, totalPrice: q.total,
+              productAmount: q.productAmount, hubFee: q.hubFee, courierFee: q.courierFee, serviceFee: q.serviceFee, totalPrice: q.total, cashbackUsed: shares[li],
               deliveryRegion: o.hub.region, deliveryDistrict: dto.district, deliveryAddress: dto.address, contactPhone: dto.phone ?? user.phone, note: dto.note || null,
               deliveryCode: grp.n > 1 ? grp.code : String(randomInt(1000, 10000)), deliveryGroupId: grp.n > 1 ? grp.id : null,
             },
           });
           try { await reserveStock(tx, o.hub.id, o.product.id, item.quantityKg, order.id); }
           catch (e: any) { throw this.lineError(e, item.productId, o.product.name); }
-          created.push({ order: { id: order.id, farmerId: o.product.farmerId, hubId: o.hub.id }, q });
+          created.push({ order: { id: order.id, farmerId: o.product.farmerId, hubId: o.hub.id }, q, cashback: shares[li] });
         }
-        await this.payments.holdForCheckout(tx, checkout.id, created);
+        await this.payments.holdForCheckout(tx, checkout.id, created, user.id);
         return checkout.id;
       });
     } catch (e) {
@@ -526,6 +537,7 @@ export class LocalOrderService {
     return {
       checkoutId: co.id, createdAt: co.createdAt, itemCount: co.itemCount, totalPrice: Number(co.totalPrice), currency: 'UZS',
       productAmount: sum('productAmount'), hubFee: sum('hubFee'), courierFee: sum('courierFee'), serviceFee: sum('serviceFee'),
+      cashbackUsed: Number(co.cashbackUsed), payableTotal: Number(co.totalPrice) - Number(co.cashbackUsed),
       paymentRef: co.providerRef, orders,
     };
   }

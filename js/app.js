@@ -1422,17 +1422,17 @@
         const dashboardView = document.getElementById('dashboard-view');
         const dashContent = document.getElementById('dash-content');
         const DASH_TABS = {
-            FARMER: [['overview', 'fa-gauge', 'Umumiy'], ['bookings', 'fa-inbox', 'Kelgan bronlar'], ['hub', 'fa-store', "Hub ombori orqali sotish"],
+            FARMER: [['overview', 'fa-gauge', 'Umumiy'], ['cashback', 'fa-coins', 'Mening keshbeklarim'], ['bookings', 'fa-inbox', 'Kelgan bronlar'], ['hub', 'fa-store', "Hub ombori orqali sotish"],
                      ['shipments', 'fa-truck-ramp-box', 'Yuk tashish'], ['payments', 'fa-wallet', "To'lovlar"],
                      ['warehouse', 'fa-warehouse', 'Omborxona'], ['whorders', 'fa-clipboard-list', 'Ombor buyurtmalari'],
                      ['products', 'fa-boxes-stacked', "E'lonlarim"], ['guide', 'fa-book-open', "Qo'llanma"], ['drivers', 'fa-truck-field', 'Haydovchilar'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'], ['badges', 'fa-trophy', 'Ishonch badjlari'], ['subscription', 'fa-crown', 'Obuna'], ['profile', 'fa-id-card', 'Profil']],
-            MARKET: [['overview', 'fa-gauge', 'Umumiy'], ['bookings', 'fa-clipboard-list', 'Mening bronlarim'],
+            MARKET: [['overview', 'fa-gauge', 'Umumiy'], ['cashback', 'fa-coins', 'Mening keshbeklarim'], ['bookings', 'fa-clipboard-list', 'Mening bronlarim'],
                      ['shipments', 'fa-truck-ramp-box', 'Yuk tashish'], ['payments', 'fa-wallet', "To'lovlar"],
                      ['warehouse', 'fa-warehouse', 'Omborxona'], ['whorders', 'fa-clipboard-list', 'Ombor buyurtmalari'],
                      ['catalog', 'fa-store', 'Katalog'], ['guide', 'fa-book-open', "Qo'llanma"], ['drivers', 'fa-truck-field', 'Haydovchilar'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'], ['badges', 'fa-trophy', 'Ishonch badjlari'], ['subscription', 'fa-crown', 'Obuna'], ['profile', 'fa-id-card', 'Profil']],
-            DRIVER: [['overview', 'fa-gauge', 'Umumiy'], ['loads', 'fa-boxes-packing', 'Mavjud yuklar'], ['courier', 'fa-motorcycle', 'Shahar ichi kuryeri'],
+            DRIVER: [['overview', 'fa-gauge', 'Umumiy'], ['cashback', 'fa-coins', 'Mening keshbeklarim'], ['loads', 'fa-boxes-packing', 'Mavjud yuklar'], ['courier', 'fa-motorcycle', 'Shahar ichi kuryeri'],
                      ['myloads', 'fa-truck-fast', 'Mening yuklarim'], ['eld', 'fa-clock-rotate-left', 'Harakat jurnali'], ['verify', 'fa-id-card-clip', 'Shaxsni tasdiqlash'], ['badges', 'fa-trophy', 'Darajalar va mukofotlar'], ['guide', 'fa-book-open', "Qo'llanma"], ['drivers', 'fa-truck-field', 'Haydovchilar'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'], ['subscription', 'fa-crown', 'Obuna'], ['profile', 'fa-id-card', 'Profil']],
-            CONSUMER: [['lmarket', 'fa-basket-shopping', 'Mahalliy bozor'], ['lcart', 'fa-cart-shopping', 'Savatcha'], ['lorders', 'fa-box', 'Buyurtmalarim'], ['guide', 'fa-book-open', "Qo'llanma"], ['profile', 'fa-id-card', 'Profil']],
+            CONSUMER: [['lmarket', 'fa-basket-shopping', 'Mahalliy bozor'], ['lcart', 'fa-cart-shopping', 'Savatcha'], ['lorders', 'fa-box', 'Buyurtmalarim'], ['cashback', 'fa-coins', 'Mening keshbeklarim'], ['guide', 'fa-book-open', "Qo'llanma"], ['profile', 'fa-id-card', 'Profil']],
             DISPATCHER: [['hubops', 'fa-warehouse', 'Hub: chakana savdo'], ['hubdocks', 'fa-door-open', 'Rampalar'], ['whboard', 'fa-table-columns', 'Zonalar'], ['whunits', 'fa-temperature-half', 'Kameralar'],
                      ['whorders', 'fa-clipboard-list', 'Buyurtmalar'], ['whinventory', 'fa-chart-pie', 'Inventarizatsiya'], ['guide', 'fa-book-open', "Qo'llanma"], ['drivers', 'fa-truck-field', 'Haydovchilar'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'], ['profile', 'fa-id-card', 'Profil']]
         };
@@ -4640,7 +4640,7 @@
                 payBtn.appendChild(el('i', 'fa-solid fa-wallet'));
                 payBtn.appendChild(el('span', '', "To'lash"));
                 payBtn.addEventListener('click', function () {
-                    openPaymentModal({ bookingId: b.id, amount: pay.amount, currency: pay.currency, provider: pay.provider, productName: b.product.name });
+                    openPaymentModal({ bookingId: b.id, amount: pay.amount, total: pay.totalPrice, serviceFee: pay.serviceFee, currency: pay.currency, provider: pay.provider, productName: b.product.name });
                 });
                 strip.appendChild(payBtn);
             }
@@ -4652,17 +4652,40 @@
         const paymentAlert = document.getElementById('payment-alert');
         let paymentInfo = null;
 
+        let paymentCb = null; // keshbek katakchasi (bo'lsa)
+        function paymentRefresh(info, useCb, usable) {
+            const total = Number(info.total || info.amount);
+            const pay = total - (useCb ? usable : 0);
+            const cur = info.currency === 'UZS' ? "so'm" : info.currency;
+            const rows = [el('div', 'font-extrabold text-white text-lg', info.productName)];
+            if (useCb) {
+                rows.push(el('div', 'text-sm text-slate-400 line-through', formatNumber(total) + ' ' + cur));
+                rows.push(el('div', 'text-xs font-bold text-amber-300', '🪙 − ' + formatNumber(usable) + ' ' + cur + ' (' + T('keshbek') + ')'));
+            }
+            rows.push(el('div', 'text-3xl font-black text-emerald-400', formatNumber(pay) + ' ' + cur));
+            document.getElementById('payment-summary').replaceChildren.apply(document.getElementById('payment-summary'), rows);
+            document.getElementById('payment-submit').querySelector('span').innerText = "To'lash — " + formatNumber(pay) + " so'm";
+        }
+
         function openPaymentModal(info) {
             paymentInfo = info;
+            paymentCb = null;
             hideAuthAlert(paymentAlert);
-            document.getElementById('payment-summary').replaceChildren(
-                el('div', 'font-extrabold text-white text-lg', info.productName),
-                el('div', 'text-3xl font-black text-emerald-400', formatNumber(info.amount) + ' ' + (info.currency === 'UZS' ? "so'm" : info.currency))
-            );
+            const old = document.getElementById('payment-cb');
+            if (old) old.remove();
+            paymentRefresh(info, false, 0);
             document.getElementById('payment-test-note').classList.toggle('hidden', info.provider !== 'simulated');
-            document.getElementById('payment-submit').querySelector('span').innerText = "To'lash — " + formatNumber(info.amount) + " so'm";
             paymentModal.classList.add('open');
             syncScrollLock();
+            // Keshbek balansi bo'lsa: «Keshbek balansidan foydalanish» katakchasi (platforma xizmat haqini qoplaydi)
+            cbFetch(1).then(function (cb) {
+                if (paymentInfo !== info || !cb) return;
+                const box = cbCheckbox(cb, Number(info.serviceFee || 0), function (checked, usable) { paymentRefresh(info, checked, usable); });
+                if (!box) return;
+                paymentCb = box;
+                box.node.id = 'payment-cb'; box.node.classList.add('mb-4');
+                document.getElementById('payment-alert').before(box.node);
+            });
         }
 
         function closePaymentModal() {
@@ -4676,7 +4699,7 @@
             hideAuthAlert(paymentAlert);
             btn.disabled = true;
             try {
-                await authed('POST', '/payments/init', { bookingId: paymentInfo.bookingId });
+                await authed('POST', '/payments/init', { bookingId: paymentInfo.bookingId, useCashback: !!(paymentCb && paymentCb.checked()) });
                 closePaymentModal();
                 showSuccessCheck("To'lov Escrow'ga o'tdi", "Mablag' xavfsiz saqlanmoqda");
                 showToast("Mablag' escrow'ga o'tkazildi va xavfsiz saqlanmoqda. Yuk yetkazilgach fermerga o'tadi.", 5000);
@@ -4799,7 +4822,7 @@
                 actions.appendChild(btn('fa-xmark', "Yo'q", 'border-white/15 text-slate-300 hover:bg-white/10', function () { payConfirm = null; renderPaymentsView(currentUser()); }));
             } else {
                 if (a.canPay) actions.appendChild(btn('fa-wallet', "To'lash", 'bg-emerald-500 border-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-lg shadow-emerald-500/25', function () {
-                    openPaymentModal({ bookingId: p.bookingId, amount: p.amount, currency: p.currency, provider: p.provider, productName: p.order.productName });
+                    openPaymentModal({ bookingId: p.bookingId, amount: p.amount, total: p.totalPrice, serviceFee: p.serviceFee, currency: p.currency, provider: p.provider, productName: p.order.productName });
                 }));
                 if (a.canRelease) actions.appendChild(btn('fa-hand-holding-dollar', viewer === 'market' ? "Yuk qabul qilindi: pulni o'tkazish" : 'Pulni olish', 'bg-emerald-500 border-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-lg shadow-emerald-500/25', function () {
                     payConfirm = { bookingId: p.bookingId, kind: 'release' }; renderPaymentsView(currentUser());
@@ -9908,6 +9931,44 @@
             const tab = { DRIVER: 'eld', FARMER: 'shipments', MARKET: 'shipments', ADMIN: 'adm-shipments', DISPATCHER: 'whboard' }[user.role];
             openDashboard(tab);
         }
+
+        // ===== Sticky header: 50px dan ko'p aylantirilsa kichrayadi, tepaga qaytsa asl holiga =====
+        (function initStickyHeader() {
+            const nav = document.getElementById('main-nav');
+            if (!nav) return;
+            const ON = 50, OFF = 8; // gisterezis: chegarada titramasligi uchun
+            let shrunk = false, ticking = false, delta = 0;
+            // Kichrayganda header past bo'lib qoladi: sahifa tarkibi sakramasligi uchun farqni margin bilan qoplaymiz
+            const measure = function () {
+                const was = shrunk;
+                nav.classList.add('nav-measuring'); nav.classList.remove('nav-shrunk'); nav.style.marginBottom = '0px';
+                const full = nav.offsetHeight;
+                nav.classList.add('nav-shrunk');
+                const small = nav.offsetHeight;
+                nav.classList.toggle('nav-shrunk', was);
+                nav.style.marginBottom = was ? Math.max(0, full - small) + 'px' : '0px';
+                void nav.offsetHeight; nav.classList.remove('nav-measuring');
+                delta = Math.max(0, full - small);
+            };
+            const apply = function (y) {
+                const next = shrunk ? y > OFF : y > ON;
+                if (next === shrunk) return;
+                shrunk = next;
+                nav.classList.toggle('nav-shrunk', shrunk);
+                nav.style.marginBottom = shrunk ? delta + 'px' : '0px';
+            };
+            const onScroll = function () {
+                if (ticking) return;
+                ticking = true;
+                requestAnimationFrame(function () { ticking = false; apply(window.scrollY || document.documentElement.scrollTop || 0); });
+            };
+            window.addEventListener('scroll', onScroll, { passive: true });
+            window.addEventListener('resize', function () { clearTimeout(initStickyHeader.t); initStickyHeader.t = setTimeout(measure, 150); });
+            measure();
+            apply(window.scrollY || 0);
+            window.addEventListener('load', measure); // shrift/rasmlar yuklangach o'lcham o'zgaradi
+            if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
+        })();
 
         // ===== Mobil header: yig'iladigan qidiruv =====
         (function () {

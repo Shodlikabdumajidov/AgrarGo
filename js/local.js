@@ -44,9 +44,10 @@ function lcBreakdown(b, qtyText) {
     line('🏬 ' + T('Hub: saqlash va qadoqlash'), '', bdMoney(b.hubFee));
     line('🛵 ' + T('Shahar ichi yetkazish'), '', bdMoney(b.courierFee));
     line('🧾 ' + T('Platforma xizmat haqi'), '', bdMoney(b.serviceFee));
+    if (b.cashbackUsed > 0) line('🪙 ' + T('Keshbek qoplaydi'), '', '− ' + bdMoney(b.cashbackUsed));
     const tot = el('div', 'lc-total');
-    tot.appendChild(el('span', '', T('Jami')));
-    tot.appendChild(el('span', '', bdMoney(b.totalPrice)));
+    tot.appendChild(el('span', '', T(b.cashbackUsed > 0 ? "To'lanadi" : 'Jami')));
+    tot.appendChild(el('span', '', bdMoney(b.cashbackUsed > 0 ? b.totalPrice - b.cashbackUsed : b.totalPrice)));
     box.appendChild(tot);
     return box;
 }
@@ -188,6 +189,7 @@ function lcQuote() {
         try {
             const q = await apiRequest('GET', '/local/quote?productId=' + encodeURIComponent(item.productId) + '&quantityKg=' + encodeURIComponent(qty));
             if (seq !== lo.seq) return;
+            lo.serviceFee = q.serviceFee; lo.total = q.totalPrice;
             const nodes = [lcBreakdown(q, T('{0} × {1} so\'m', lcKg(qty), formatNumber(q.pricePerKg)))];
             nodes.push(el('p', 'text-[11px] text-slate-500 mt-2 leading-relaxed', T("To'lov Escrow'da muzlatiladi. Yetkazilgach: mahsulot puli fermerga, Hub haqi omborga, yetkazish haqi kuryerga o'tadi.")));
             box.replaceChildren.apply(box, nodes);
@@ -224,12 +226,24 @@ document.getElementById('lo-buy').addEventListener('click', async function () {
         lo.checkout = true;
         document.getElementById('lo-checkout').classList.remove('hidden');
         document.getElementById('lo-buy-label').textContent = T("To'lash va buyurtma berish");
+        // Keshbek balansidan foydalanish (platforma xizmat haqini qoplaydi)
+        lo.cb = null;
+        const oldCb = document.getElementById('lo-cbwrap'); if (oldCb) oldCb.remove();
+        cbFetch(1).then(function (cb) {
+            const box = cbCheckbox(cb, lo.serviceFee || 0, function (checked, usable) {
+                document.getElementById('lo-buy-label').textContent = T("To'lash va buyurtma berish") + (checked ? ': ' + bdMoney((lo.total || 0) - usable) : '');
+            });
+            if (!box || !lo.checkout) return;
+            lo.cb = box; box.node.id = 'lo-cbwrap';
+            document.getElementById('lo-checkout').appendChild(box.node);
+        });
         document.getElementById('lo-address').focus();
         return;
     }
     const body = { productId: item.productId, quantityKg: qty, district: document.getElementById('lo-district').value.trim(), address: document.getElementById('lo-address').value.trim(), phone: normalizePhone(document.getElementById('lo-phone').value) };
     const note = document.getElementById('lo-note').value.trim();
     if (note) body.note = note;
+    if (lo.cb && lo.cb.checked()) body.useCashback = true;
     const errors = [];
     if (body.district.length < 2) errors.push('Tuman yoki mahallani kiriting.');
     if (body.address.length < 5) errors.push("Manzilni to'liq kiriting.");
@@ -359,6 +373,7 @@ async function renderCartTab(user) {
     let quote;
     try { quote = await apiRequest('POST', '/local/cart/quote', { items: lines.map(function (l) { return { productId: l.productId, quantityKg: l.quantityKg }; }) }); }
     catch (err) { if (rid !== dashRenderId) return; return dashContent.replaceChildren(head, dashMessage('fa-triangle-exclamation text-rose-400', lcErr(err), function () { renderCartTab(user); })); }
+    const cbState = lcRequireConsumerSilent(user) ? await cbFetch(1) : null;
     if (rid !== dashRenderId) return;
     const byId = {}; quote.lines.forEach(function (q) { byId[q.productId] = q; });
     const sum = { productAmount: 0, hubFee: 0, courierFee: 0, serviceFee: 0, totalPrice: 0 };
@@ -432,7 +447,16 @@ async function renderCartTab(user) {
     const alertBox = el('div', 'hidden rounded-2xl px-4 py-3 text-sm font-medium'); alertBox.setAttribute('role', 'alert');
     form.appendChild(alertBox);
     const pay = el('button', 'lc-btn solid w-full'); pay.type = 'submit'; pay.disabled = bad || !quote.okCount;
-    pay.appendChild(el('i', 'fa-solid fa-lock')); pay.appendChild(el('span', '', T("To'lash va buyurtma berish: {0}", bdMoney(sum.totalPrice))));
+    const payLabel = el('span', '', T("To'lash va buyurtma berish: {0}", bdMoney(sum.totalPrice)));
+    pay.appendChild(el('i', 'fa-solid fa-lock')); pay.appendChild(payLabel);
+    // Keshbek: xizmat haqini qoplaydi; belgilansa to'lanadigan jami shuncha kamayadi
+    const cbBox = cbCheckbox(cbState, quote.serviceFee, function (checked, usable) {
+        payLabel.textContent = T("To'lash va buyurtma berish: {0}", bdMoney(sum.totalPrice - (checked ? usable : 0)));
+        total.replaceChildren(el('span', '', T('Keshbek qoplaydi') + ': −' + bdMoney(checked ? usable : 0)), el('b', 'text-white', T("To'lanadi") + ': ' + bdMoney(sum.totalPrice - (checked ? usable : 0))));
+        total.classList.toggle('hidden', !checked);
+    });
+    const total = el('div', 'hidden flex items-center justify-between gap-3 text-sm text-amber-200');
+    if (cbBox) { form.appendChild(cbBox.node); form.appendChild(total); }
     form.appendChild(pay);
     form.addEventListener('submit', async function (e) {
         e.preventDefault();
@@ -445,7 +469,8 @@ async function renderCartTab(user) {
         if (errors.length) return showAuthAlert(errors, 'error', alertBox);
         pay.disabled = true;
         const items = cartGet().map(function (l) { return { productId: l.productId, quantityKg: l.quantityKg }; });
-        const body = { items: items, district: dist.value.trim(), address: addr.value.trim(), phone: ph, idempotencyKey: lcIdemKey(JSON.stringify([items, dist.value, addr.value, ph])) };
+        const body = { items: items, district: dist.value.trim(), address: addr.value.trim(), phone: ph, idempotencyKey: lcIdemKey(JSON.stringify([items, dist.value, addr.value, ph, !!(cbBox && cbBox.checked())])) };
+        if (cbBox && cbBox.checked()) body.useCashback = true;
         if (note.value.trim()) body.note = note.value.trim();
         try {
             const co = await authed('POST', '/local/orders/checkout-bulk', body);
@@ -468,7 +493,7 @@ async function renderCartTab(user) {
 /** To'lov muvaffaqiyatli: yagona chek va har bir buyurtmaning topshirish kodi */
 function lcShowReceipt(co) {
     const box = el('div', 'space-y-3');
-    box.appendChild(el('p', 'text-sm text-slate-300', T('To\'langan: {0} · buyurtmalar: {1}', bdMoney(co.totalPrice), co.orders.length)));
+    box.appendChild(el('p', 'text-sm text-slate-300', T('To\'langan: {0} · buyurtmalar: {1}', bdMoney(co.payableTotal !== undefined ? co.payableTotal : co.totalPrice), co.orders.length)));
     co.orders.forEach(function (o) {
         const r = el('div', 'flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3');
         const l = el('div', 'min-w-0');
@@ -947,5 +972,5 @@ const normRegionClient = function (s) { return String(s || '').trim().toLowerCas
 // Kabinet tablari ro'yxati (app.js selectDashTab shu obyektdan chaqiradi)
 const LOCAL_TABS = {
     lmarket: renderLocalMarketTab, lcart: renderCartTab, lorders: renderLocalOrdersTab,
-    hub: renderDashHub, hubops: renderHubOps, hubdocks: renderHubDocks, 'adm-hubs': renderAdmHubs, courier: renderCourierTab
+    hub: renderDashHub, hubops: renderHubOps, hubdocks: renderHubDocks, cashback: renderCashbackTab, 'adm-hubs': renderAdmHubs, courier: renderCourierTab
 };

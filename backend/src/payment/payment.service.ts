@@ -1,3 +1,4 @@
+import { CashbackService } from '../cashback/cashback.service';
 import { BadGatewayException, ConflictException, ForbiddenException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { BookingStatus, PaymentStatus, Prisma, Role, ShipmentStatus, SplitStatus } from '@prisma/client';
 import { LocalQuote, localSplits } from '../local/local-pricing';
@@ -72,14 +73,16 @@ export class PaymentService {
     @Inject(APP_ENV) private readonly env: AppEnv,
     private readonly notify: NotificationService,
     private readonly pricing: PricingService,
+    private readonly cashback: CashbackService,
   ) {}
 
   // ---------- Ombor buyurtmalari (escrow) ----------
   // Bu amallar WarehouseOrderService'ning tranzaksiyasi ichida chaqiriladi: provayder xatosi butun amalni (zaxira ham) qaytaradi.
 
   /** Market to'laydigan jami summa: mahsulot + yetkazib berish + xizmat haqi (eski yozuvlarda faqat mahsulot) */
-  private total(row: { amount: Prisma.Decimal; deliveryFee: Prisma.Decimal; serviceFee: Prisma.Decimal; hubFee: Prisma.Decimal }) {
-    return row.amount.add(row.deliveryFee).add(row.serviceFee).add(row.hubFee);
+  private total(row: { amount: Prisma.Decimal; deliveryFee: Prisma.Decimal; serviceFee: Prisma.Decimal; hubFee: Prisma.Decimal; cashbackUsed?: Prisma.Decimal }) {
+    // Xaridordan haqiqatda yechiladigan (yoki qaytariladigan) summa: jami minus keshbek bilan qoplangan qism
+    return row.amount.add(row.deliveryFee).add(row.serviceFee).add(row.hubFee).sub(row.cashbackUsed ?? 0);
   }
 
   // ---------- Chakana (Hub) buyurtmalari: escrow va taqsimot ----------
@@ -89,18 +92,20 @@ export class PaymentService {
    * Buyurtma berilganda xaridor mablag'i darhol escrow'ga o'tadi (HELD) va jami summa to'rt ulushga bo'linadi
    * (fermer / Hub / kuryer / platforma). Ulushlar yig'indisi jamiga teng — hech qanday summa "yo'qolmaydi".
    */
-  async holdForLocalOrder(tx: Prisma.TransactionClient, order: { id: string; farmerId: string; hubId: string }, q: LocalQuote) {
+  async holdForLocalOrder(tx: Prisma.TransactionClient, order: { id: string; farmerId: string; hubId: string }, q: LocalQuote, cb: { userId: string; amount: Prisma.Decimal } | null = null) {
+    const cashbackUsed = cb?.amount ?? new Prisma.Decimal(0);
+    if (cb && cashbackUsed.gt(0)) await this.cashback.spend(tx, cb.userId, cashbackUsed, { type: 'LOCAL_ORDER', id: order.id }, 'Platforma xizmat haqi keshbek bilan qoplandi');
     const payment = await tx.payment.create({
       data: {
-        localOrderId: order.id, amount: q.productAmount, hubFee: q.hubFee, deliveryFee: q.courierFee, serviceFee: q.serviceFee,
+        localOrderId: order.id, amount: q.productAmount, hubFee: q.hubFee, deliveryFee: q.courierFee, serviceFee: q.serviceFee, cashbackUsed,
         distanceKm: 0, currency: 'UZS', status: PaymentStatus.HELD, heldAt: new Date(), provider: this.provider.name,
       },
     });
-    const res = await this.callProvider("Mablag' yechilmadi", () => this.provider.charge({ paymentId: payment.id, amount: q.total.toFixed(2), currency: payment.currency }));
+    const res = await this.callProvider("Mablag' yechilmadi", () => this.provider.charge({ paymentId: payment.id, amount: q.total.sub(cashbackUsed).toFixed(2), currency: payment.currency }));
     await tx.payment.update({ where: { id: payment.id }, data: { providerRef: res.ref } });
     const partyId = { FARMER: order.farmerId, HUB: order.hubId, COURIER: null, PLATFORM: null } as const;
-    await tx.paymentSplit.createMany({ data: localSplits(q).map((x) => ({ paymentId: payment.id, party: x.party, partyId: partyId[x.party], amount: x.amount, status: SplitStatus.HELD })) });
-    await this.event(tx, payment.id, PaymentStatus.HELD, 'CONSUMER', `Mablag' escrow'ga o'tkazildi: jami ${q.total.toFixed(2)} (${res.ref})`);
+    await tx.paymentSplit.createMany({ data: localSplits(q, cashbackUsed).map((x) => ({ paymentId: payment.id, party: x.party, partyId: partyId[x.party], amount: x.amount, status: SplitStatus.HELD })) });
+    await this.event(tx, payment.id, PaymentStatus.HELD, 'CONSUMER', `Mablag' escrow'ga o'tkazildi: jami ${q.total.toFixed(2)}${cashbackUsed.gt(0) ? `, keshbek ${cashbackUsed.toFixed(2)}, to'landi ${q.total.sub(cashbackUsed).toFixed(2)}` : ''} (${res.ref})`);
     return payment;
   }
 
@@ -109,15 +114,17 @@ export class PaymentService {
    * har bir buyurtma esa o'z escrow yozuviga (HELD) va 4 ulushli taqsimotga ega bo'ladi. Shunda har bir buyurtma alohida yetkaziladi,
    * alohida taqsimlanadi yoki qaytariladi, jami esa doim chekdagi summaga teng.
    */
-  async holdForCheckout(tx: Prisma.TransactionClient, checkoutId: string, lines: { order: { id: string; farmerId: string; hubId: string }; q: LocalQuote }[]) {
-    const total = lines.reduce((a, l) => a.add(l.q.total), new Prisma.Decimal(0));
+  async holdForCheckout(tx: Prisma.TransactionClient, checkoutId: string, lines: { order: { id: string; farmerId: string; hubId: string }; q: LocalQuote; cashback?: Prisma.Decimal }[], buyerUserId?: string) {
+    const total = lines.reduce((a, l) => a.add(l.q.total).sub(l.cashback ?? 0), new Prisma.Decimal(0));
     const ids: string[] = [];
-    for (const { order, q } of lines) {
+    for (const { order, q, cashback } of lines) {
+      const cb = cashback ?? new Prisma.Decimal(0);
+      if (cb.gt(0) && buyerUserId) await this.cashback.spend(tx, buyerUserId, cb, { type: 'LOCAL_ORDER', id: order.id }, 'Platforma xizmat haqi keshbek bilan qoplandi');
       const payment = await tx.payment.create({
-        data: { localOrderId: order.id, amount: q.productAmount, hubFee: q.hubFee, deliveryFee: q.courierFee, serviceFee: q.serviceFee, distanceKm: 0, currency: 'UZS', status: PaymentStatus.HELD, heldAt: new Date(), provider: this.provider.name },
+        data: { localOrderId: order.id, cashbackUsed: cb, amount: q.productAmount, hubFee: q.hubFee, deliveryFee: q.courierFee, serviceFee: q.serviceFee, distanceKm: 0, currency: 'UZS', status: PaymentStatus.HELD, heldAt: new Date(), provider: this.provider.name },
       });
       const partyId = { FARMER: order.farmerId, HUB: order.hubId, COURIER: null, PLATFORM: null } as const;
-      await tx.paymentSplit.createMany({ data: localSplits(q).map((x) => ({ paymentId: payment.id, party: x.party, partyId: partyId[x.party], amount: x.amount, status: SplitStatus.HELD })) });
+      await tx.paymentSplit.createMany({ data: localSplits(q, cb).map((x) => ({ paymentId: payment.id, party: x.party, partyId: partyId[x.party], amount: x.amount, status: SplitStatus.HELD })) });
       ids.push(payment.id);
     }
     const res = await this.callProvider("Mablag' yechilmadi", () => this.provider.charge({ paymentId: checkoutId, amount: total.toFixed(2), currency: 'UZS' }));
@@ -133,6 +140,7 @@ export class PaymentService {
     if (!row) throw new NotFoundException("Buyurtma to'lovi topilmadi");
     const claimed = await tx.payment.updateMany({ where: { id: row.id, status: PaymentStatus.HELD }, data: { status: PaymentStatus.RELEASED, releasedAt: new Date() } });
     if (claimed.count === 0) throw new ConflictException("To'lov holati o'zgargan. Sahifani yangilang");
+    await this.cashback.earnForPayment(tx, row.id);
     const refs: string[] = [];
     for (const sp of row.splits) {
       let ref: string | null = 'PLATFORM-INCOME';
@@ -154,6 +162,10 @@ export class PaymentService {
     const claimed = await tx.payment.updateMany({ where: { id: row.id, status: PaymentStatus.HELD }, data: { status: PaymentStatus.REFUNDED, refundedAt: new Date() } });
     if (claimed.count === 0) throw new ConflictException("To'lov holati o'zgargan. Sahifani yangilang");
     const res = await this.callProvider("Mablag' qaytarilmadi", () => this.provider.refund({ paymentId: row.id, amount: this.total(row).toFixed(2), currency: row.currency }));
+    if (row.cashbackUsed.gt(0)) {
+      const buyer = await tx.localOrder.findUnique({ where: { id: orderId }, select: { consumer: { select: { userId: true } } } });
+      if (buyer) await this.cashback.restore(tx, buyer.consumer.userId, { type: 'LOCAL_ORDER', id: orderId });
+    }
     await tx.paymentSplit.updateMany({ where: { paymentId: row.id }, data: { status: SplitStatus.REFUNDED, settledAt: new Date(), ref: res.ref } });
     await this.event(tx, row.id, PaymentStatus.REFUNDED, actor, `${reason?.trim() || "Mablag' xaridorga qaytarildi"} (${res.ref})`);
     return row.id;
@@ -193,6 +205,7 @@ export class PaymentService {
     if (!row) return null; // to'lov integratsiyasidan oldin yaratilgan eski buyurtma
     const claimed = await tx.payment.updateMany({ where: { id: row.id, status: PaymentStatus.HELD }, data: { status: PaymentStatus.RELEASED, releasedAt: new Date() } });
     if (claimed.count === 0) throw new ConflictException("To'lov holati o'zgargan. Sahifani yangilang");
+    await this.cashback.earnForPayment(tx, row.id);
     const farmerNet = row.amount.sub(row.feeAmount);
     const res = await this.callProvider("Mablag' fermerga o'tkazilmadi", () => this.provider.payout({ paymentId: row.id, amount: farmerNet.toFixed(2), currency: row.currency }));
     const ship = await tx.shipment.findFirst({ where: { warehouseOrderId: orderId }, select: { driverId: true } });
@@ -216,7 +229,7 @@ export class PaymentService {
   // ---------- Amallar ----------
 
   /** Xaridor to'laydi: PENDING -> HELD (mablag' escrow'da). Takroriy so'rov xavfsiz: allaqachon HELD bo'lsa o'sha natija qaytadi. */
-  async init(user: PaymentUser, bookingId: string) {
+  async init(user: PaymentUser, bookingId: string, useCashback = false) {
     const actor = this.actorOf(user);
     let newlyHeld = false;
     const id = await this.prisma.$transaction(async (tx) => {
@@ -234,9 +247,12 @@ export class PaymentService {
         if (fresh.status === PaymentStatus.HELD) return row.id;
         throw new ConflictException("To'lov holati o'zgargan. Sahifani yangilang");
       }
-      const res = await this.callProvider("Mablag' yechilmadi", () => this.provider.charge(this.providerRequest(row)));
-      await tx.payment.update({ where: { id: row.id }, data: { providerRef: res.ref, provider: this.provider.name } });
-      await this.event(tx, row.id, PaymentStatus.HELD, actor, `Mablag' escrow'ga o'tkazildi (${res.ref})`);
+      // Keshbek: faqat platformaning xizmat haqini qoplaydi (fermer va haydovchi ulushlari o'zgarmaydi)
+      const cb = useCashback ? await this.cashback.spendable(tx, user.id, row.serviceFee) : new Prisma.Decimal(0);
+      if (cb.gt(0)) await this.cashback.spend(tx, user.id, cb, { type: 'BOOKING', id: bookingId }, 'Platforma xizmat haqi keshbek bilan qoplandi');
+      const res = await this.callProvider("Mablag' yechilmadi", () => this.provider.charge(this.providerRequest(row, this.total(row).sub(cb))));
+      await tx.payment.update({ where: { id: row.id }, data: { providerRef: res.ref, provider: this.provider.name, cashbackUsed: cb } });
+      await this.event(tx, row.id, PaymentStatus.HELD, actor, `Mablag' escrow'ga o'tkazildi${cb.gt(0) ? ` (keshbek ${cb.toFixed(2)})` : ''} (${res.ref})`);
       newlyHeld = true;
       return row.id;
     });
@@ -256,6 +272,7 @@ export class PaymentService {
         data: { status: PaymentStatus.RELEASED, releasedAt: new Date() },
       });
       if (claimed.count === 0) throw new ConflictException("To'lov holati o'zgargan. Sahifani yangilang");
+      await this.cashback.earnForPayment(tx, row.id);
       const res = await this.callProvider("Mablag' fermerga o'tkazilmadi", () => this.provider.payout(this.providerRequest(row, row.amount)));
       const drv = await this.payDriver(row, this.bookingOf(row).shipment?.driverId);
       await this.event(tx, row.id, PaymentStatus.RELEASED, actor, `Mablag' fermerga o'tkazildi (${res.ref})` + (drv ? `; haydovchiga ${row.deliveryFee.toFixed(2)} o'tkazildi (${drv.ref})` : ''));
@@ -308,6 +325,10 @@ export class PaymentService {
       if (wasHeld) {
         const res = await this.callProvider("Mablag' qaytarilmadi", () => this.provider.refund(this.providerRequest(row)));
         note += ` (${res.ref})`;
+        if (row.cashbackUsed.gt(0)) {
+          const mk = await tx.booking.findUnique({ where: { id: bookingId }, select: { market: { select: { userId: true } } } });
+          if (mk) await this.cashback.restore(tx, mk.market.userId, { type: 'BOOKING', id: bookingId });
+        }
       }
       if (decision.effect === 'MONEY_ONLY') note += ". Buyurtma o'zgarmadi";
       await this.event(tx, row.id, decision.target, actor, note);
@@ -415,7 +436,8 @@ export class PaymentService {
     const b = breakdownOf({ productPrice: row.amount, deliveryFee: row.deliveryFee, serviceFee: row.serviceFee, distanceKm: row.distanceKm, currency: row.currency });
     const hub = Number(row.hubFee); // chakana buyurtmada Hub haqi mahsulot summasidan tashqari (qo'shimcha) qator
     const totalPrice = b.totalPrice + hub;
-    return { productPrice: b.productPrice, deliveryFee: b.deliveryFee, serviceFee: b.serviceFee, totalPrice, distanceKm: b.distanceKm, ...(hub > 0 && { hubFee: hub }), breakdown: { ...b, ...(hub > 0 && { hubFee: hub, hubShare: hub }), totalPrice, warehouseFee: Number(row.feeAmount), farmerShare: b.productPrice - Number(row.feeAmount), driverShare: b.deliveryFee, platformShare: b.serviceFee + Number(row.feeAmount) } };
+    const cashbackUsed = Number(row.cashbackUsed);
+    return { productPrice: b.productPrice, deliveryFee: b.deliveryFee, serviceFee: b.serviceFee, totalPrice, cashbackUsed, payableTotal: totalPrice - cashbackUsed, distanceKm: b.distanceKm, ...(hub > 0 && { hubFee: hub }), breakdown: { ...b, ...(hub > 0 && { hubFee: hub, hubShare: hub }), totalPrice, warehouseFee: Number(row.feeAmount), farmerShare: b.productPrice - Number(row.feeAmount), driverShare: b.deliveryFee, platformShare: b.serviceFee + Number(row.feeAmount) } };
   }
 
   /** Javob: holat, summa, tarix va foydalanuvchi uchun mumkin bo'lgan amallar (frontend qoidalarni takrorlamaydi). */

@@ -20,7 +20,7 @@ const head = html.replace(/<style[\s\S]*?<\/style>/g, '').replace(/<!--[\s\S]*?-
 const found = new Set();
 for (const m of head.matchAll(/>([^<>]+)</g)) found.add(m[1].replace(/&copy;/g, '©').replace(/\s+/g, ' ').trim());
 for (const m of head.matchAll(/\b(?:placeholder|title|aria-label|alt)="([^"]*)"/g)) found.add(m[1].trim());
-const asts = ['app.js', 'local.js', 'local-dock.js'].map((f) => acorn.parse(fs.readFileSync(path.join(root, 'js', f), 'utf8'), { ecmaVersion: 2022 }));
+const asts = ['app.js', 'local.js', 'local-dock.js', 'cashback.js'].map((f) => acorn.parse(fs.readFileSync(path.join(root, 'js', f), 'utf8'), { ecmaVersion: 2022 }));
 const strOf = (n) => (n.type === 'Literal' && typeof n.value === 'string' ? n.value : null);
 const flat = (n, a) => (n.type === 'BinaryExpression' && n.operator === '+' ? (flat(n.left, a), flat(n.right, a)) : a.push(n));
 const seen = new Set();

@@ -29,6 +29,10 @@ export class CreateLocalOrderDto extends QuoteQuery {
 
   @IsOptional() @Transform(clean) @IsString() @Length(0, 300)
   note?: string;
+
+  /** Keshbek balansidan platforma xizmat haqini qoplash */
+  @IsOptional() @IsBoolean()
+  useCashback?: boolean;
 }
 
 export class CancelOrderDto {
@@ -77,6 +81,10 @@ export class BulkCheckoutDto extends CartQuoteDto {
   /** Qayta yuborilgan so'rov ikki marta to'lamasligi uchun (mijoz har bir "To'lash" bosilishiga bitta kalit yaratadi) */
   @IsOptional() @Matches(/^[A-Za-z0-9_-]{8,64}$/, { message: "Idempotentlik kaliti 8-64 belgi (harf, raqam, - va _)" })
   idempotencyKey?: string;
+
+  /** Keshbek balansidan platforma xizmat haqini qoplash */
+  @IsOptional() @IsBoolean()
+  useCashback?: boolean;
 }
 
 export class AcceptOrderDto {

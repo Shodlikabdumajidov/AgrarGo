@@ -52,6 +52,18 @@
             background: rgba(15, 23, 42, 0.95);
             backdrop-filter: blur(16px);
         }
+
+        /* Sticky header: sahifa 50px dan ko'p aylantirilganda kichrayadi, xira shaffof fon oladi (js/app.js: initStickyHeader) */
+        #main-nav { transition: padding .28s cubic-bezier(.16,1,.3,1), background-color .28s ease, box-shadow .28s ease, backdrop-filter .28s ease, margin-bottom .28s cubic-bezier(.16,1,.3,1); will-change: padding; }
+        #main-nav #nav-left img { transition: height .28s cubic-bezier(.16,1,.3,1), padding .28s ease; }
+        #main-nav.nav-shrunk { padding-top: .5rem; padding-bottom: .5rem; background-color: rgba(15, 23, 42, .9); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); box-shadow: 0 12px 30px -18px rgba(0,0,0,.85); }
+        #main-nav.nav-shrunk #nav-left img { height: 2.5rem; padding: .25rem; }
+        #main-nav.nav-shrunk #nav-left button { padding: .3rem .55rem; font-size: 1.5rem; }
+        #main-nav.nav-shrunk #nav-search #dropdown-btn { padding-top: .55rem; padding-bottom: .55rem; }
+        #main-nav.nav-shrunk #nav-search input { padding-top: .55rem; padding-bottom: .55rem; }
+        @media (max-width: 768px) { #main-nav.nav-shrunk { padding-top: .25rem; padding-bottom: .25rem; } #main-nav.nav-shrunk #nav-left img { height: 2rem; } }
+        #main-nav.nav-measuring, #main-nav.nav-measuring * { transition: none !important; }
+        @media (prefers-reduced-motion: reduce) { #main-nav, #main-nav #nav-left img { transition: none; } }
         /* MacOS style smooth spring animation for Sidebar */
         #sidebar {
             transform: translateX(-100%) scale(0.95);
@@ -888,6 +900,9 @@
         .lc-steps span.on { color: #6ee7b7; } .lc-steps span.cur { color: #00E676; text-decoration: underline; text-underline-offset: 3px; }
         .lc-bar { height: .55rem; border-radius: 9999px; background: rgba(255,255,255,.1); overflow: hidden; display: flex; }
 
+        /* Keshbek */
+        .cb-balance { border-radius: 1.5rem; padding: 1.25rem 1.5rem; border: 1px solid rgba(251,191,36,.35); background: radial-gradient(ellipse at 20% 0%, rgba(251,191,36,.18), transparent 60%), rgba(15,23,42,.7); display: flex; flex-direction: column; gap: .5rem; }
+        .cb-amount { font-size: 2.3rem; line-height: 1.1; font-weight: 900; color: #fde68a; text-shadow: 0 0 24px rgba(251,191,36,.35); }
         /* Hub rampalari: yorliq, slot tanlagich, Gantt */
         .dk-badge { display: flex; align-items: center; gap: .6rem; padding: .45rem .8rem; border-radius: .9rem; border: 1px solid rgba(56,189,248,.35); background: rgba(14,165,233,.1); color: #bae6fd; font-size: .72rem; line-height: 1.25; max-width: 100%; }
         .dk-badge i { font-size: 1rem; flex: none; }
@@ -1075,7 +1090,7 @@
         @media (max-width: 640px) { .filters-collapsed #filter-body { display: none; } }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 font-sans antialiased overflow-x-hidden selection:bg-emerald-500 selection:text-slate-950">
+<body class="bg-slate-950 text-slate-100 font-sans antialiased selection:bg-emerald-500 selection:text-slate-950">
 
     <!-- SIDEBAR BACKDROP OVERLAY -->
     <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"></div>
@@ -2707,6 +2722,7 @@
     <!-- «Mening e'lonlarim» 3D kitobi (React Three Fiber): global AgrarBook obyektini beradi -->
     <script src="js/book/agrar-book.js?v=3" defer></script>
     <script src="js/app.js" defer></script>
+    <script src="js/cashback.js" defer></script>
     <script src="js/local-dock.js" defer></script>
     <script src="js/local.js" defer></script>
 </body>

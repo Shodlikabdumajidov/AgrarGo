@@ -1,9 +1,14 @@
 import { PaymentStatus } from '@prisma/client';
-import { IsEnum, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
+import { IsBoolean, IsEnum, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
 
 export class InitPaymentDto {
   @IsUUID(undefined, { message: "Bron identifikatori noto'g'ri" })
   bookingId: string;
+
+  /** Keshbek balansidan platforma xizmat haqini qoplash uchun foydalanish */
+  @IsOptional()
+  @IsBoolean()
+  useCashback?: boolean;
 }
 
 export class ReleasePaymentDto {

@@ -66,6 +66,9 @@ model User {
   hub                  Hub?                  @relation("HubStaff", fields: [hubId], references: [id], onDelete: SetNull)
   hubIntakesReceived   HubIntake[]
   dockAppointments     DockAppointment[]
+  // Keshbek: har bir muvaffaqiyatli yakunlangan buyurtmadan yig'iladi, platforma xizmat haqini qoplash uchun ishlatiladi
+  cashbackBalance      Decimal               @default(0) @db.Decimal(20, 2)
+  cashbackTransactions CashbackTransaction[]
 }
 
 model Farmer {
@@ -348,6 +351,8 @@ model Payment {
   localOrder       LocalOrder?     @relation(fields: [localOrderId], references: [id], onDelete: Restrict)
   // Hub omboriga saqlash va qadoqlash haqi (chakana buyurtmalarda mahsulot summasiga QO'SHIMCHA); jami = amount + deliveryFee + serviceFee + hubFee
   hubFee           Decimal         @default(0) @db.Decimal(20, 2)
+  // Keshbek hisobidan qoplangan qism (faqat platforma xizmat haqidan oshmaydi): xaridordan yechiladigan summa = jami - cashbackUsed
+  cashbackUsed     Decimal         @default(0) @db.Decimal(20, 2)
   splits           PaymentSplit[]
   feeAmount        Decimal         @default(0) @db.Decimal(20, 2) // omborxona xizmat haqi (summaning ichida): fermerga amount - feeAmount o'tadi
   amount           Decimal         @db.Decimal(20, 2) // server hisoblaydi: miqdor x bron narxi (= mahsulot summasi, fermerga tegishli)
@@ -927,6 +932,7 @@ model LocalOrder {
   courierFee    Decimal @db.Decimal(20, 2)
   serviceFee    Decimal @db.Decimal(20, 2)
   totalPrice    Decimal @db.Decimal(20, 2)
+  cashbackUsed  Decimal @default(0) @db.Decimal(20, 2) // jami (totalPrice) ning keshbek bilan qoplangan qismi
 
   deliveryRegion   String
   deliveryDistrict String
@@ -1003,6 +1009,7 @@ model LocalCheckout {
   idempotencyKey String? // qayta yuborilgan so'rov ikki marta to'lamasligi uchun
   totalPrice     Decimal  @db.Decimal(20, 2)
   itemCount      Int
+  cashbackUsed   Decimal  @default(0) @db.Decimal(20, 2)
   providerRef    String?
   createdAt      DateTime @default(now())
 
@@ -1069,4 +1076,26 @@ model DockAppointment {
   @@unique([dockId, startsAt, slotLock])
   @@index([hubId, startsAt])
   @@index([bookedById, startsAt])
+}
+
+enum CashbackType {
+  EARNED // buyurtma yakunlanganda yozildi
+  SPENT // xizmat haqini qoplash uchun ishlatildi
+  REFUNDED // buyurtma bekor bo'ldi: ishlatilgan keshbek qaytdi
+}
+
+/// Keshbek jurnali. (userId, type, sourceType, sourceId) UNIQUE: bir manbadan ikki marta yozilmaydi/ishlatilmaydi (idempotent).
+model CashbackTransaction {
+  id          String       @id @default(uuid())
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount      Decimal      @db.Decimal(20, 2) // doim musbat; yo'nalishni type belgilaydi
+  type        CashbackType
+  sourceType  String // LOCAL_ORDER | SHIPMENT | WAREHOUSE_ORDER | BOOKING
+  sourceId    String
+  description String
+  createdAt   DateTime     @default(now())
+
+  @@unique([userId, type, sourceType, sourceId])
+  @@index([userId, createdAt])
 }

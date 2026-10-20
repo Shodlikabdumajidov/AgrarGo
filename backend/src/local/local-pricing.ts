@@ -35,12 +35,13 @@ export function localQuote(cfg: LocalFeeConfig, quantityKg: Prisma.Decimal.Value
 }
 
 /** Escrow taqsimoti: kimga qancha (yig'indi = jami) */
-export function localSplits(q: LocalQuote): { party: 'FARMER' | 'HUB' | 'COURIER' | 'PLATFORM'; amount: Prisma.Decimal }[] {
+export function localSplits(q: LocalQuote, cashbackUsed: Prisma.Decimal.Value = 0): { party: 'FARMER' | 'HUB' | 'COURIER' | 'PLATFORM'; amount: Prisma.Decimal }[] {
   return [
     { party: 'FARMER', amount: q.productAmount },
     { party: 'HUB', amount: q.hubFee },
     { party: 'COURIER', amount: q.courierFee },
-    { party: 'PLATFORM', amount: q.serviceFee },
+    // Keshbek faqat platforma haqini qoplaydi: uchinchi tomon ulushlari o'zgarmaydi, yig'indi = xaridordan yechilgan summa
+    { party: 'PLATFORM', amount: q.serviceFee.sub(cashbackUsed) },
   ];
 }
 

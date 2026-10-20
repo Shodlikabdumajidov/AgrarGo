@@ -21,7 +21,7 @@ export class PaymentController {
   @ThrottleProfile('payment')
   @Roles(Role.MARKET)
   init(@CurrentUser() user: PaymentUser, @Body() dto: InitPaymentDto) {
-    return this.payments.init(user, dto.bookingId);
+    return this.payments.init(user, dto.bookingId, !!dto.useCashback);
   }
 
   /** Yuk yetkazilgach pulni fermerga chiqarish (xaridor tasdig'i, muddat o'tgach fermer, yoki administrator). */
