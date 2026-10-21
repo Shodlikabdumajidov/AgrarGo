@@ -69,3 +69,12 @@ export async function adjustStock(tx: Tx, stockId: string, deltaKg: Prisma.Decim
   if (!rows.length) throw new ConflictException("Qoldiq zaxiralangan miqdordan kam bo'lib qolmasligi kerak");
   await log(tx, stockId, HubMovementType.ADJUST, delta, undefined, note);
 }
+
+/** Zaxiralangan, lekin yaroqsiz chiqqan qism: ham mavjud qoldiq, ham zaxira kamayadi (ombordan hisobdan chiqariladi) */
+export async function writeOffReserved(tx: Tx, hubId: string, productId: string, qty: Prisma.Decimal.Value, orderId: string, note?: string) {
+  const rows = await tx.$queryRaw<{ id: string }[]>`
+    UPDATE "HubStock" SET "weightKg" = "weightKg" - ${D(qty)}, "reservedKg" = "reservedKg" - ${D(qty)}, "updatedAt" = now()
+    WHERE "hubId" = ${hubId} AND "productId" = ${productId} AND "reservedKg" >= ${D(qty)} AND "weightKg" >= ${D(qty)} RETURNING id`;
+  if (!rows.length) throw new ConflictException("Hub qoldig'i va zaxirasi mos kelmaydi. Administratorga murojaat qiling");
+  await log(tx, rows[0].id, HubMovementType.ADJUST, D(qty).neg(), { type: 'LOCAL_ORDER_DAMAGE', id: orderId }, note);
+}

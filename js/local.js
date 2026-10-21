@@ -778,6 +778,30 @@ async function renderHubOps(user) {
         }
     } catch (err) { if (err.status !== 401 && rid === dashRenderId) body.replaceChildren(dashMessage('fa-triangle-exclamation text-rose-400', lcErr(err), function () { renderHubOps(user); })); }
 }
+/** Qadoqlashda yaroqsiz qutilar: escrow qayta hisoblanadi — xaridorga ziyon qiymati qaytadi, fermer ulushi kamayadi */
+function openOrderDamageForm(o, user) {
+    openWhForm({
+        title: 'Ziyon (OS&D): yaroqsiz qutilar', sub: o.productName + ' · ' + lcKg(o.quantityKg) + ' · ' + T('Mahsulot summasi: {0}', bdMoney(o.productAmount)), icon: 'fa-triangle-exclamation', submit: 'Qayd etish va qayta hisoblash',
+        fields: [
+            { name: 'totalBoxes', label: 'Buyurtmadagi jami qutilar', type: 'number', required: true, min: 2, max: 100000, step: 1, value: 10 },
+            { name: 'damagedBoxes', label: 'Yaroqsiz qutilar soni', type: 'number', required: true, min: 1, max: 100000, step: 1, value: 1, hint: '…' },
+            { name: 'note', label: 'Sabab / izoh', maxLength: 300, placeholder: "Masalan: ezilgan, ho'l bo'lgan" }
+        ],
+        onBuilt: function (inputs) {
+            const paint = function () {
+                const t = Math.round(Number(inputs.totalBoxes.value)), d = Math.round(Number(inputs.damagedBoxes.value));
+                const hint = inputs.damagedBoxes._hint;
+                if (!(t >= 2 && d >= 1 && d <= t)) { hint.textContent = T("Yaroqsiz qutilar soni 1 dan jami qutilar soniga qadar bo'lsin."); return; }
+                if (d === t) { hint.textContent = T("Hamma quti yaroqsiz: buyurtma to'liq bekor qilinadi, butun summa xaridorga qaytadi."); return; }
+                const goods = Math.round(o.productAmount * d / t);
+                hint.textContent = T('Xaridorga qaytadi: {0} · fermerga qoladi: {1} · yo\'l haqi o\'zgarmaydi', bdMoney(goods), bdMoney(o.productAmount - goods));
+            };
+            inputs.totalBoxes.addEventListener('input', paint); inputs.damagedBoxes.addEventListener('input', paint); paint();
+        },
+        onSubmit: function (v) { return authed('POST', '/local/orders/' + o.id + '/damage', { totalBoxes: Math.round(v.totalBoxes), damagedBoxes: Math.round(v.damagedBoxes), note: v.note }); },
+        done: "Ziyon qayd etildi: to'lov qayta hisoblandi.", after: function () { renderHubOps(user); }
+    });
+}
 function hubOrderCard(o, user) {
     const card = el('article', 'glass rounded-2xl border border-white/10 p-4 space-y-3');
     const top = el('div', 'flex items-start justify-between gap-3');
@@ -796,6 +820,7 @@ function hubOrderCard(o, user) {
     const run = function (path, body) { return async function () { try { await authed('POST', path, body); renderHubOps(user); } catch (err) { if (err.status !== 401) showToast(lcErr(err), 4000, 'error'); } }; };
     if (o.status === 'PENDING') act.appendChild(actionBtn('fa-box', 'Qadoqlashni boshlash', true, run('/local/orders/' + o.id + '/pack-start')));
     if (o.status === 'PACKING' && !o.packed) act.appendChild(actionBtn('fa-check', 'Tayyor (kuryerga)', true, run('/local/orders/' + o.id + '/packed')));
+    if (o.status === 'PENDING' || o.status === 'PACKING') act.appendChild(actionBtn('fa-triangle-exclamation', 'Ziyon (OS&D)', false, function () { openOrderDamageForm(o, user); }));
     if (o.status === 'PENDING' || o.status === 'PACKING' || (o.status === 'DELIVERING' && user.role === 'ADMIN')) {
         act.appendChild(actionBtn('fa-ban', 'Bekor qilish', false, function () {
             openWhForm({ title: 'Buyurtmani bekor qilish', sub: T("To'lov xaridorga to'liq qaytariladi, qoldiq omborga qaytadi."), submit: 'Bekor qilish', icon: 'fa-ban',

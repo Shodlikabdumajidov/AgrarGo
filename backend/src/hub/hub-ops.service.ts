@@ -80,7 +80,11 @@ export class HubOpsService {
       this.prisma.hubOsd.groupBy({ by: ['type'], where, _count: true, _sum: { lossKg: true } }),
       this.prisma.hubOsd.findMany({
         where, orderBy: { createdAt: 'desc' }, skip: (page - 1) * limit, take: limit,
-        include: { hub: { select: { name: true } }, intake: { select: { masterQr: true, boxCount: true, product: { select: { name: true, farmer: { select: { farmName: true } } } }, receivedBy: { select: { fullName: true } } } } },
+        include: {
+          hub: { select: { name: true } },
+          intake: { select: { masterQr: true, boxCount: true, product: { select: { name: true, farmer: { select: { farmName: true } } } }, receivedBy: { select: { fullName: true } } } },
+          localOrder: { select: { product: { select: { name: true, farmer: { select: { farmName: true } } } } } },
+        },
       }),
     ]);
     const lossKg = num(agg._sum.lossKg) ?? 0, expectedKg = num(agg._sum.expectedKg) ?? 0;
@@ -89,11 +93,14 @@ export class HubOpsService {
         count: total, lossKg, damagedBoxes: agg._sum.damagedBoxes ?? 0, expectedKg, lossPercent: expectedKg ? Math.round((lossKg / expectedKg) * 1000) / 10 : 0,
         byType: Object.fromEntries(byType.map((t) => [t.type, { count: t._count, lossKg: num(t._sum.lossKg) ?? 0 }])),
       },
-      items: rows.map((r) => ({
-        id: r.id, intakeId: r.intakeId, type: r.type, createdAt: r.createdAt, hub: r.hub.name, masterQr: r.intake.masterQr,
-        productName: r.intake.product.name, farmName: r.intake.product.farmer.farmName, totalBoxes: r.totalBoxes, damagedBoxes: r.damagedBoxes,
-        expectedKg: num(r.expectedKg), receivedKg: num(r.receivedKg), lossKg: num(r.lossKg), note: r.note, reportedBy: r.intake.receivedBy?.fullName ?? null,
-      })),
+      items: rows.map((r) => {
+        const product = (r.intake ?? r.localOrder)!.product;
+        return {
+          id: r.id, intakeId: r.intakeId, localOrderId: r.localOrderId, source: r.intakeId ? ('INTAKE' as const) : ('ORDER' as const), type: r.type, createdAt: r.createdAt, hub: r.hub.name, masterQr: r.intake?.masterQr ?? null,
+          productName: product.name, farmName: product.farmer.farmName, totalBoxes: r.totalBoxes, damagedBoxes: r.damagedBoxes,
+          expectedKg: num(r.expectedKg), receivedKg: num(r.receivedKg), lossKg: num(r.lossKg), refundAmount: num(r.refundAmount), note: r.note, reportedBy: r.intake?.receivedBy?.fullName ?? null,
+        };
+      }),
       total, page, pages: Math.max(1, Math.ceil(total / limit)),
     };
   }

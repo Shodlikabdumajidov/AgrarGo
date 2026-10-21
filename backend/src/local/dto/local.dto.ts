@@ -1,6 +1,6 @@
 import { LocalOrderStatus } from '@prisma/client';
 import { Transform, Type } from 'class-transformer';
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsEnum, IsNumber, IsOptional, IsString, IsUUID, Length, Matches, Max, Min, ValidateNested } from 'class-validator';
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, IsString, IsUUID, Length, Matches, Max, Min, ValidateNested } from 'class-validator';
 
 const clean = ({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim().replace(/\s+/g, ' ') : value);
 
@@ -37,6 +37,13 @@ export class CreateLocalOrderDto extends QuoteQuery {
 
 export class CancelOrderDto {
   @IsOptional() @Transform(clean) @IsString() @Length(0, 300) reason?: string;
+}
+
+/** Qadoqlash paytida aniqlangan ziyon: shu buyurtmadagi qutilar soni va ulardan yaroqsizlari */
+export class DamageReportDto {
+  @Type(() => Number) @IsInt({ message: "Qutilar soni butun son bo'lsin" }) @Min(1) @Max(100000) totalBoxes!: number;
+  @Type(() => Number) @IsInt({ message: "Yaroqsiz qutilar soni butun son bo'lsin" }) @Min(1) @Max(100000) damagedBoxes!: number;
+  @IsOptional() @Transform(clean) @IsString() @Length(0, 300) note?: string;
 }
 
 export class DeliverDto {

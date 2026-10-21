@@ -34,6 +34,7 @@ import { SubscriptionModule } from './subscription/subscription.module';
 import { SmsModule } from './sms/sms.module';
 import { EBolModule } from './ebol/ebol.module';
 import { SafetyModule } from './safety/safety.module';
+import { FinanceModule } from './finance/finance.module';
 import { TelegramModule } from './telegram/telegram.module';
 import { WarehouseModule } from './warehouse/warehouse.module';
 
@@ -46,6 +47,7 @@ import { WarehouseModule } from './warehouse/warehouse.module';
     SmsModule,
     EBolModule,
     SafetyModule,
+    FinanceModule,
     TelegramModule,
     ThrottlerModule.forRootAsync({
       inject: [APP_ENV],

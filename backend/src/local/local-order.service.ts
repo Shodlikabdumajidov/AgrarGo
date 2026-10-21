@@ -7,12 +7,13 @@ import { allocateCashback, maxSpendable } from '../cashback/cashback.math';
 import { CashbackService } from '../cashback/cashback.service';
 import { EBolService } from '../ebol/ebol.service';
 import { DockService } from '../hub/dock.service';
-import { dispatchStock, releaseReserve, reserveStock, returnStock } from '../hub/hub-stock';
+import { dispatchStock, releaseReserve, reserveStock, returnStock, writeOffReserved } from '../hub/hub-stock';
+import { moneyTx } from '../payment/money-tx';
 import { PaymentService } from '../payment/payment.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationService } from '../telegram/notification.service';
 import { normRegion } from '../trust/geo';
-import { BulkCheckoutDto, CancelOrderDto, CartItemDto, CourierModeDto, CreateLocalOrderDto, ListLocalOrdersQuery, LocalMarketQuery } from './dto/local.dto';
+import { BulkCheckoutDto, CancelOrderDto, CartItemDto, CourierModeDto, CreateLocalOrderDto, DamageReportDto, ListLocalOrdersQuery, LocalMarketQuery } from './dto/local.dto';
 import { LocalFeeConfig, LocalQuote, codesMatch, localQuote, splitCourierFee, withCourierFee } from './local-pricing';
 
 export const MAX_ACTIVE_COURIER_ORDERS = 3;
@@ -265,6 +266,41 @@ export class LocalOrderService {
     return Promise.all(ids.map((x) => this.get(user, x)));
   }
 
+  // ---------- Ziyon (OS&D): qadoqlash paytida yaroqsiz qutilar ----------
+
+  /**
+   * Hub xodimi buyurtmani qadoqlayotganda yaroqsiz qutilarni qayd etadi (kuryer olmaguncha). Bitta serializable tranzaksiyada:
+   * escrow qayta hisoblanadi (xaridorga ziyon qiymati qaytadi, fermer ulushi kamayadi), buyurtma miqdori/summasi yangilanadi,
+   * yaroqsiz kg ombor qoldig'idan hisobdan chiqadi va OS&D yozuvi hosil bo'ladi. Xato bo'lsa hammasi qaytariladi.
+   * Hamma qutilar yaroqsiz bo'lsa buyurtma to'liq bekor qilinadi (butun summa qaytadi, yo'l haqi ham).
+   */
+  async reportDamage(user: LocalUser, id: string, dto: DamageReportDto) {
+    const o = await this.staffOrder(user, id);
+    if (o.status !== LocalOrderStatus.PENDING && o.status !== LocalOrderStatus.PACKING) throw new ConflictException("Ziyon faqat kuryer olmagan buyurtmada qayd etiladi");
+    if (dto.damagedBoxes > dto.totalBoxes) throw new BadRequestException("Yaroqsiz qutilar soni jami qutilardan oshmasin");
+    if (dto.damagedBoxes === dto.totalBoxes) return this.cancel(user, id, { reason: `Barcha qutilar yaroqsiz (${dto.totalBoxes} ta)${dto.note ? `: ${dto.note}` : ''}` });
+    const actor = user.role === Role.ADMIN ? 'ADMIN' : 'HUB';
+    await moneyTx(this.prisma, async (tx) => {
+      await tx.$queryRaw`SELECT id FROM "LocalOrder" WHERE id = ${id} FOR UPDATE`;
+      const cur = await tx.localOrder.findUniqueOrThrow({ where: { id }, include: { payment: { select: { id: true } }, osd: { select: { id: true } } } });
+      if (cur.status !== LocalOrderStatus.PENDING && cur.status !== LocalOrderStatus.PACKING) throw new ConflictException("Buyurtma holati o'zgargan. Sahifani yangilang");
+      if (cur.osd) throw new ConflictException('Bu buyurtma uchun ziyon allaqachon qayd etilgan');
+      if (!cur.payment) throw new NotFoundException("Buyurtma to'lovi topilmadi");
+      const damagedKg = cur.quantityKg.mul(dto.damagedBoxes).div(dto.totalBoxes).toDecimalPlaces(2, Prisma.Decimal.ROUND_HALF_UP);
+      // Chakana buyurtmada yo'l haqi (qat'iy) saqlanadi: yetkazish baribir bo'ladi
+      const adj = await this.payments.adjustForDamage(tx, cur.payment.id, { damagedBoxes: dto.damagedBoxes, totalBoxes: dto.totalBoxes, deliveryPolicy: 'KEEP', actor, actorUserId: user.id, note: dto.note });
+      await tx.localOrder.update({ where: { id }, data: { quantityKg: { decrement: damagedKg }, productAmount: { decrement: adj.goods }, totalPrice: { decrement: adj.goods } } });
+      await writeOffReserved(tx, cur.hubId, cur.productId, damagedKg, id, dto.note);
+      await tx.hubOsd.create({
+        data: {
+          localOrderId: id, hubId: cur.hubId, productId: cur.productId, farmerId: cur.farmerId, type: 'DAMAGED', totalBoxes: dto.totalBoxes, damagedBoxes: dto.damagedBoxes,
+          expectedKg: cur.quantityKg, receivedKg: cur.quantityKg.sub(damagedKg), lossKg: damagedKg, refundAmount: adj.refund, note: dto.note?.trim() || null, reportedById: user.id,
+        },
+      });
+    }, { serializable: true });
+    return this.get(user, id);
+  }
+
   // ---------- Bekor qilish (xaridor / Hub / administrator) ----------
 
   async cancel(user: LocalUser, id: string, dto: CancelOrderDto) {
@@ -276,7 +312,7 @@ export class LocalOrderService {
     if (!allowed) throw new ConflictException(v === 'consumer' ? "Buyurtma Hub tomonidan qabul qilingan: endi uni faqat Hub bekor qila oladi" : "Bu bosqichda buyurtmani bekor qilib bo'lmaydi");
     const actor = v === 'consumer' ? 'CONSUMER' : user.role === Role.ADMIN ? 'ADMIN' : 'HUB';
     const reason = dto.reason?.trim() || (v === 'consumer' ? 'Xaridor bekor qildi' : 'Hub bekor qildi');
-    await this.prisma.$transaction(async (tx) => {
+    await moneyTx(this.prisma, async (tx) => {
       const claimed = await tx.localOrder.updateMany({ where: { id, status: o.status }, data: { status: LocalOrderStatus.CANCELLED, cancelledAt: new Date(), cancelReason: reason } });
       if (claimed.count === 0) throw new ConflictException("Buyurtma holati o'zgargan. Sahifani yangilang");
       // Qoldiq: kuryer olmagan bo'lsa zaxira bo'shaydi, yo'ldagi buyurtmada yuk omborga qaytadi
@@ -439,7 +475,7 @@ export class LocalOrderService {
 
   /** Yakunlash: holat + escrow taqsimoti (fermer / Hub / kuryer / platforma) bitta tranzaksiyada (guruhdagi barcha buyurtma uchun) */
   private async complete(ids: string[], actor: string) {
-    await this.prisma.$transaction(async (tx) => {
+    await moneyTx(this.prisma, async (tx) => {
       for (const id of ids) {
         const claimed = await tx.localOrder.updateMany({ where: { id, status: LocalOrderStatus.DELIVERING }, data: { status: LocalOrderStatus.COMPLETED, deliveredAt: new Date() } });
         if (claimed.count === 0) throw new ConflictException("Buyurtma holati o'zgargan. Sahifani yangilang");

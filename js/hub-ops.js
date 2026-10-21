@@ -179,12 +179,13 @@ async function renderHubOsdTab(user) {
     const filter = admFilterBar([admSelect([['', 'Barcha vaqt'], ['7', "So'nggi 7 kun"], ['30', "So'nggi 30 kun"], ['90', "So'nggi 90 kun"]], hsOsd.days, function (v) { hsOsd.days = v; hsOsd.page = 1; again(); })]);
     const table = admTable([
         ['Sana', function (r) { return admDate(r.createdAt); }],
-        ['Master QR', function (r) { return r.masterQr ? el('span', 'font-mono text-xs text-sky-200', r.masterQr) : '—'; }],
+        ['Master QR / manba', function (r) { return r.masterQr ? el('span', 'font-mono text-xs text-sky-200', r.masterQr) : (r.source === 'ORDER' ? T('Chakana buyurtma') : '—'); }],
         ['Mahsulot', function (r) { return admName(r.productName, r.farmName + ' · ' + r.hub); }],
         ['Turi', function (r) { const t = HS_OSD_TYPE[r.type]; return whPill(t[0], t[1], t[2]); }],
         ['Qutilar', function (r) { return r.totalBoxes ? T('{0} / {1} yaroqsiz', r.damagedBoxes || 0, r.totalBoxes) : '—'; }],
         ['Kutilgan → qabul', function (r) { return lcKg(r.expectedKg) + ' → ' + lcKg(r.receivedKg); }],
         ["Yo'qotish", function (r) { return el('b', 'text-rose-300', lcKg(r.lossKg)); }],
+        ['Xaridorga qaytgan', function (r) { return r.refundAmount ? bdMoney(r.refundAmount) : '—'; }],
         ['Izoh / xodim', function (r) { return admName(r.note || '—', r.reportedBy || ''); }]
     ], d.items, "OS&D hisobotlari yo'q: hamma partiya to'liq qabul qilingan.");
     dashContent.replaceChildren(hsHead('OS&D hisobotlari', T("Qabul paytidagi yo'qotishlar: yaroqsiz va kam vaznli partiyalar"), again), stats, filter, table, admPager(d, function (p) { hsOsd.page = p; again(); }));

@@ -8,7 +8,7 @@ import { RolesGuard } from '../common/roles.guard';
 import { ThrottleProfile } from '../security/throttle-profile';
 import { SubscriptionGuard } from '../subscription/subscription.guard';
 import { SignEBolDto } from '../ebol/dto/ebol.dto';
-import { AcceptOrderDto, PackGroupDto, BulkCheckoutDto, CancelOrderDto, CartQuoteDto, CourierModeDto, CreateLocalOrderDto, DeliverDto, ListLocalOrdersQuery, LocalMarketQuery, QuoteQuery } from './dto/local.dto';
+import { AcceptOrderDto, DamageReportDto, PackGroupDto, BulkCheckoutDto, CancelOrderDto, CartQuoteDto, CourierModeDto, CreateLocalOrderDto, DeliverDto, ListLocalOrdersQuery, LocalMarketQuery, QuoteQuery } from './dto/local.dto';
 import { LocalOrderService } from './local-order.service';
 
 const STAFF = [Role.DISPATCHER, Role.ADMIN] as const;
@@ -71,6 +71,9 @@ export class LocalOrdersController {
   packGroup(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string, @Body() dto: PackGroupDto) { return this.local.packGroup(user, id, !!dto?.ready); }
 
   // --- Bekor qilish: xaridor (faqat PENDING), Hub, administrator ---
+  @Post('orders/:id/damage') @Roles(...STAFF) @HttpCode(200)
+  damage(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string, @Body() dto: DamageReportDto) { return this.local.reportDamage(user, id, dto); }
+
   @Post('orders/:id/cancel') @Roles(Role.CONSUMER, ...STAFF)
   cancel(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string, @Body() dto: CancelOrderDto) { return this.local.cancel(user, id, dto); }
 

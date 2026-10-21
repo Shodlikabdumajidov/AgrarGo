@@ -360,27 +360,30 @@ enum PaymentStatus {
 }
 
 model Payment {
-  id               String          @id @default(uuid())
+  id               String              @id @default(uuid())
   // Manba: bron yoki ombor buyurtmasi (aynan bittasi; CHECK)
-  bookingId        String?         @unique
-  booking          Booking?        @relation(fields: [bookingId], references: [id], onDelete: Restrict)
-  warehouseOrderId String?         @unique
-  warehouseOrder   WarehouseOrder? @relation(fields: [warehouseOrderId], references: [id], onDelete: Restrict)
-  localOrderId     String?         @unique
-  localOrder       LocalOrder?     @relation(fields: [localOrderId], references: [id], onDelete: Restrict)
+  bookingId        String?             @unique
+  booking          Booking?            @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+  warehouseOrderId String?             @unique
+  warehouseOrder   WarehouseOrder?     @relation(fields: [warehouseOrderId], references: [id], onDelete: Restrict)
+  localOrderId     String?             @unique
+  localOrder       LocalOrder?         @relation(fields: [localOrderId], references: [id], onDelete: Restrict)
   // Hub omboriga saqlash va qadoqlash haqi (chakana buyurtmalarda mahsulot summasiga QO'SHIMCHA); jami = amount + deliveryFee + serviceFee + hubFee
-  hubFee           Decimal         @default(0) @db.Decimal(20, 2)
+  hubFee           Decimal             @default(0) @db.Decimal(20, 2)
   // Keshbek hisobidan qoplangan qism (faqat platforma xizmat haqidan oshmaydi): xaridordan yechiladigan summa = jami - cashbackUsed
-  cashbackUsed     Decimal         @default(0) @db.Decimal(20, 2)
+  cashbackUsed     Decimal             @default(0) @db.Decimal(20, 2)
+  // Ziyon/nizo tufayli xaridorga qaytarilgan jami (qisman qaytarish); to'liq qaytarish status = REFUNDED bilan belgilanadi
+  refundedAmount   Decimal             @default(0) @db.Decimal(20, 2)
+  adjustments      PaymentAdjustment[]
   splits           PaymentSplit[]
-  feeAmount        Decimal         @default(0) @db.Decimal(20, 2) // omborxona xizmat haqi (summaning ichida): fermerga amount - feeAmount o'tadi
-  amount           Decimal         @db.Decimal(20, 2) // server hisoblaydi: miqdor x bron narxi (= mahsulot summasi, fermerga tegishli)
+  feeAmount        Decimal             @default(0) @db.Decimal(20, 2) // omborxona xizmat haqi (summaning ichida): fermerga amount - feeAmount o'tadi
+  amount           Decimal             @db.Decimal(20, 2) // server hisoblaydi: miqdor x bron narxi (= mahsulot summasi, fermerga tegishli)
   // To'lov tarkibi: market jami = amount + deliveryFee + serviceFee. Eski yozuvlarda 0 (jami = amount).
-  deliveryFee      Decimal         @default(0) @db.Decimal(20, 2) // haydovchiga: yetkazib berish haqi
-  serviceFee       Decimal         @default(0) @db.Decimal(20, 2) // platforma xizmat haqi (komissiya)
-  distanceKm       Int             @default(0) // hisoblangan marshrut masofasi
-  currency         String          @default("UZS")
-  status           PaymentStatus   @default(PENDING)
+  deliveryFee      Decimal             @default(0) @db.Decimal(20, 2) // haydovchiga: yetkazib berish haqi
+  serviceFee       Decimal             @default(0) @db.Decimal(20, 2) // platforma xizmat haqi (komissiya)
+  distanceKm       Int                 @default(0) // hisoblangan marshrut masofasi
+  currency         String              @default("UZS")
+  status           PaymentStatus       @default(PENDING)
   provider         String
   providerRef      String?
   heldAt           DateTime?
@@ -934,6 +937,7 @@ model HubIntake {
   packagingStatus PackagingStatus @default(NONE)
   packagedAt      DateTime?
   packagedById    String?
+  packagingPaid   Decimal         @default(0) @db.Decimal(20, 2) // fermer ulushidan allaqachon ushlab qolingan qadoqlash haqi
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -956,25 +960,61 @@ enum OsdType {
 
 /// OS&D (Over, Short & Damaged) hisoboti: qabul paytidagi yo'qotish. Har topshirishga bitta yozuv.
 model HubOsd {
-  id           String    @id @default(uuid())
-  intakeId     String    @unique
-  intake       HubIntake @relation(fields: [intakeId], references: [id], onDelete: Cascade)
+  id           String      @id @default(uuid())
+  // Manba: Hub'ga topshirish (qabul) yoki chakana buyurtma (qadoqlash paytida aniqlangan ziyon): aynan bittasi (CHECK)
+  intakeId     String?     @unique
+  intake       HubIntake?  @relation(fields: [intakeId], references: [id], onDelete: Cascade)
+  localOrderId String?     @unique
+  localOrder   LocalOrder? @relation(fields: [localOrderId], references: [id], onDelete: Cascade)
+  refundAmount Decimal?    @db.Decimal(20, 2) // buyurtma ziyonida xaridorga qaytarilgan summa
   hubId        String
-  hub          Hub       @relation(fields: [hubId], references: [id], onDelete: Restrict)
+  hub          Hub         @relation(fields: [hubId], references: [id], onDelete: Restrict)
   productId    String
   farmerId     String
   type         OsdType
   totalBoxes   Int?
   damagedBoxes Int?
-  expectedKg   Decimal   @db.Decimal(12, 2)
-  receivedKg   Decimal   @db.Decimal(12, 2)
-  lossKg       Decimal   @db.Decimal(12, 2)
+  expectedKg   Decimal     @db.Decimal(12, 2)
+  receivedKg   Decimal     @db.Decimal(12, 2)
+  lossKg       Decimal     @db.Decimal(12, 2)
   note         String?
   reportedById String?
-  createdAt    DateTime  @default(now())
+  createdAt    DateTime    @default(now())
 
   @@index([hubId, createdAt])
   @@index([farmerId])
+}
+
+enum AdjustmentKind {
+  DAMAGE // ziyon (OS&D): xaridorga qaytarish, fermer ulushi kamayadi
+  PACKAGING // qadoqlash haqi fermer ulushidan Hub ulushiga o'tkazildi
+  DISPUTE // moliya administratori nizoni qo'lda hal qildi
+}
+
+/// Escrow'ni qayta hisoblash jurnali: har bir o'zgarish (ziyon, qadoqlash haqi, nizo) summalari bilan. Yig'indilar tekshiruv (reconcile) uchun.
+model PaymentAdjustment {
+  id             String         @id @default(uuid())
+  paymentId      String
+  payment        Payment        @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  seq            Int // to'lov ichida tartib raqami: provayderga idempotent kalit (paymentId:adj:seq) va qayta bajarilishdan himoya
+  kind           AdjustmentKind
+  intakeId       String?
+  totalBoxes     Int?
+  damagedBoxes   Int?
+  goodsAmount    Decimal        @default(0) @db.Decimal(20, 2) // mahsulot summasidan ayirilgan (fermer ulushi kamaydi)
+  deliveryAmount Decimal        @default(0) @db.Decimal(20, 2) // yo'l haqidan qirqilgan
+  serviceAmount  Decimal        @default(0) @db.Decimal(20, 2) // platforma komissiyasidan qirqilgan
+  refundAmount   Decimal        @default(0) @db.Decimal(20, 2) // xaridorga haqiqatda qaytarilgan
+  transferAmount Decimal        @default(0) @db.Decimal(20, 2) // fermerdan Hub'ga o'tkazilgan (qadoqlash)
+  providerRef    String?
+  actor          String
+  actorUserId    String?
+  note           String?
+  createdAt      DateTime       @default(now())
+
+  @@unique([paymentId, seq])
+  @@index([kind, createdAt])
+  @@index([intakeId])
 }
 
 enum LocalOrderStatus {
@@ -1042,6 +1082,7 @@ model LocalOrder {
   pickupAppt      DockAppointment? @relation(fields: [pickupApptId], references: [id], onDelete: SetNull)
 
   payment Payment?
+  osd     HubOsd?
 
   @@index([checkoutId])
   @@index([deliveryGroupId])
