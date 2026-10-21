@@ -1,7 +1,8 @@
 import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Res, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { IsString, MaxLength, MinLength } from 'class-validator';
-import { Role } from '@prisma/client';
+import { AdminRole, Role } from '@prisma/client';
+import { AdminRoles } from '../common/admin-roles.decorator';
 import type { Response } from 'express';
 import { memoryStorage } from 'multer';
 import { StaffAuditInterceptor } from '../admin/audit.service';
@@ -30,6 +31,7 @@ export class KycController {
 
   @Get('pending')
   @Roles(Role.ADMIN)
+  @AdminRoles(AdminRole.SAFETY_ADMIN)
   pending() {
     return this.kyc.pending();
   }
@@ -51,6 +53,7 @@ export class KycController {
 
   @Get(':userId/documents/:type')
   @Roles(Role.ADMIN)
+  @AdminRoles(AdminRole.SAFETY_ADMIN)
   async ofUser(@CurrentUser() user: { id: string; role: Role }, @Param('userId', ParseUUIDPipe) userId: string, @Param('type') type: string, @Res() res: Response) {
     return this.send(res, await this.kyc.file(user, userId, this.kyc.parseType(type)));
   }
@@ -58,6 +61,7 @@ export class KycController {
   @Post(':userId/approve')
   @HttpCode(200)
   @Roles(Role.ADMIN)
+  @AdminRoles(AdminRole.SAFETY_ADMIN)
   approve(@Param('userId', ParseUUIDPipe) userId: string) {
     return this.kyc.approve(userId);
   }
@@ -65,6 +69,7 @@ export class KycController {
   @Post(':userId/reject')
   @HttpCode(200)
   @Roles(Role.ADMIN)
+  @AdminRoles(AdminRole.SAFETY_ADMIN)
   reject(@Param('userId', ParseUUIDPipe) userId: string, @Body() dto: RejectDto) {
     return this.kyc.reject(userId, dto.reason);
   }
@@ -72,6 +77,7 @@ export class KycController {
   @Post(':userId/revoke')
   @HttpCode(200)
   @Roles(Role.ADMIN)
+  @AdminRoles(AdminRole.SAFETY_ADMIN)
   revoke(@Param('userId', ParseUUIDPipe) userId: string) {
     return this.kyc.revoke(userId);
   }

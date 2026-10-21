@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma, Role } from '@prisma/client';
+import { AdminRole, Prisma, Role } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { roleTakenMessage } from '../common/role-labels';
 import { breakdownOf } from '../pricing/pricing';
@@ -161,17 +161,37 @@ export class AdminService {
 
   /** Bloklash/faollashtirish. Bloklanganda barcha sessiyalar darhol yopiladi (tokenVersion). */
   async setStatus(actor: Actor, id: string, isActive: boolean, reason?: string) {
-    const target = await this.prisma.user.findUnique({ where: { id }, select: { role: true, isActive: true } });
+    const target = await this.prisma.user.findUnique({ where: { id }, select: { role: true, isActive: true, adminRole: true } });
     if (!target) throw new NotFoundException('Foydalanuvchi topilmadi');
     if (!isActive) {
       if (id === actor.id) throw new ConflictException("O'zingizni bloklab bo'lmaydi");
       if (target.role === Role.ADMIN && target.isActive) {
-        const otherAdmins = await this.prisma.user.count({ where: { role: Role.ADMIN, isActive: true, id: { not: id } } });
-        if (otherAdmins === 0) throw new ConflictException("Oxirgi faol administratorni bloklab bo'lmaydi");
+        if (target.adminRole === AdminRole.SUPER_ADMIN) await this.assertOtherSuperAdmin(id, "Oxirgi faol administratorni bloklab bo'lmaydi");
       }
     }
     await this.prisma.user.update({ where: { id }, data: { isActive, ...(!isActive && { tokenVersion: { increment: 1 } }) } });
     await this.audit.log(actor, isActive ? 'user.activate' : 'user.block', 'user', id, reason ? { reason } : undefined);
+    return this.getUser(id);
+  }
+
+  /** Superadmin'dan boshqa faol SUPER_ADMIN qolmasligi kerak (panel qulflanib qolmasligi uchun). */
+  private async assertOtherSuperAdmin(excludeId: string, message: string) {
+    const others = await this.prisma.user.count({ where: { role: Role.ADMIN, adminRole: AdminRole.SUPER_ADMIN, isActive: true, id: { not: excludeId } } });
+    if (others === 0) throw new ConflictException(message);
+  }
+
+  /** Administrator panel rolini o'zgartirish (faqat SUPER_ADMIN). Sessiyalar yangi huquqlar bilan qayta kirishi uchun yopiladi. */
+  async setAdminRole(actor: Actor, id: string, adminRole: AdminRole) {
+    const target = await this.prisma.user.findUnique({ where: { id }, select: { role: true, adminRole: true, isActive: true } });
+    if (!target) throw new NotFoundException('Foydalanuvchi topilmadi');
+    if (target.role !== Role.ADMIN) throw new BadRequestException("Panel roli faqat administratorga beriladi");
+    if (id === actor.id) throw new ConflictException("O'z rolingizni o'zgartirib bo'lmaydi");
+    if (target.adminRole === adminRole) return this.getUser(id);
+    if (target.adminRole === AdminRole.SUPER_ADMIN && target.isActive) {
+      await this.assertOtherSuperAdmin(id, "Oxirgi faol superadministratorning rolini o'zgartirib bo'lmaydi");
+    }
+    await this.prisma.user.update({ where: { id }, data: { adminRole, tokenVersion: { increment: 1 } } });
+    await this.audit.log(actor, 'user.admin_role', 'user', id, { from: target.adminRole, to: adminRole });
     return this.getUser(id);
   }
 
@@ -188,10 +208,10 @@ export class AdminService {
     if (existing) throw new ConflictException(roleTakenMessage(existing.role));
     try {
       const u = await this.prisma.user.create({
-        data: { phone: dto.phone, fullName: dto.fullName, role: dto.role, passwordHash: await bcrypt.hash(dto.password, BCRYPT_ROUNDS) },
+        data: { phone: dto.phone, fullName: dto.fullName, role: dto.role, ...(dto.role === Role.ADMIN && { adminRole: dto.adminRole }), passwordHash: await bcrypt.hash(dto.password, BCRYPT_ROUNDS) },
         include: USER_LIST_INCLUDE,
       });
-      await this.audit.log(actor, 'staff.create', 'user', u.id, { role: dto.role });
+      await this.audit.log(actor, 'staff.create', 'user', u.id, { role: dto.role, ...(dto.role === Role.ADMIN && { adminRole: dto.adminRole }) });
       return this.userView(u);
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') throw new ConflictException("Bu telefon raqam allaqachon ro'yxatdan o'tgan");
@@ -302,7 +322,7 @@ export class AdminService {
 
   private userView(u: Prisma.UserGetPayload<{ include: typeof USER_LIST_INCLUDE }>) {
     return {
-      id: u.id, phone: u.phone, fullName: u.fullName, role: u.role, isActive: u.isActive, createdAt: u.createdAt, avatarUrl: u.avatarUrl,
+      id: u.id, phone: u.phone, fullName: u.fullName, role: u.role, adminRole: u.adminRole, isActive: u.isActive, createdAt: u.createdAt, avatarUrl: u.avatarUrl,
       isVerified: u.isVerified, kycStatus: u.kycStatus,
       org: u.farmer?.farmName ?? u.market?.companyName ?? u.driver?.plateNumber ?? null,
       region: u.farmer?.region ?? u.market?.region ?? u.driver?.region ?? null,

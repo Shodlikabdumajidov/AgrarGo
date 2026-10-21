@@ -32,6 +32,8 @@ import { ReviewsModule } from './reviews/reviews.module';
 import { ShipmentModule } from './shipment/shipment.module';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { SmsModule } from './sms/sms.module';
+import { EBolModule } from './ebol/ebol.module';
+import { SafetyModule } from './safety/safety.module';
 import { TelegramModule } from './telegram/telegram.module';
 import { WarehouseModule } from './warehouse/warehouse.module';
 
@@ -42,6 +44,8 @@ import { WarehouseModule } from './warehouse/warehouse.module';
     ConfigModule.forRoot({ isGlobal: true, ignoreEnvFile: process.env.NODE_ENV === 'test' }),
     AppEnvModule,
     SmsModule,
+    EBolModule,
+    SafetyModule,
     TelegramModule,
     ThrottlerModule.forRootAsync({
       inject: [APP_ENV],

@@ -1436,11 +1436,25 @@
             DISPATCHER: [['hubops', 'fa-warehouse', 'Hub: chakana savdo'], ['hubdocks', 'fa-door-open', 'Rampalar'], ['whboard', 'fa-table-columns', 'Zonalar'], ['whunits', 'fa-temperature-half', 'Kameralar'],
                      ['whorders', 'fa-clipboard-list', 'Buyurtmalar'], ['whinventory', 'fa-chart-pie', 'Inventarizatsiya'], ['guide', 'fa-book-open', "Qo'llanma"], ['drivers', 'fa-truck-field', 'Haydovchilar'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'], ['profile', 'fa-id-card', 'Profil']]
         };
-        DASH_TABS.ADMIN = [['adm-dashboard', 'fa-chart-line', 'Boshqaruv paneli'], ['adm-hubs', 'fa-warehouse', "Hub omborlar"], ['hubops', 'fa-basket-shopping', 'Hub: chakana savdo'], ['hubdocks', 'fa-door-open', 'Rampalar'], ['adm-users', 'fa-users', 'Foydalanuvchilar'],
+        const ADMIN_TABS_ALL = [['adm-dashboard', 'fa-chart-line', 'Boshqaruv paneli'], ['adm-hubs', 'fa-warehouse', "Hub omborlar"], ['hubops', 'fa-basket-shopping', 'Hub: chakana savdo'], ['hubdocks', 'fa-door-open', 'Rampalar'], ['adm-users', 'fa-users', 'Foydalanuvchilar'],
                      ['adm-products', 'fa-boxes-stacked', "E'lonlar"], ['adm-shipments', 'fa-truck-fast', 'Yuk tashish'], ['adm-payments', 'fa-wallet', "To'lovlar"],
                      ['whboard', 'fa-warehouse', 'Ombor: zonalar'], ['whunits', 'fa-temperature-half', 'Kameralar'], ['whorders', 'fa-clipboard-list', 'Ombor buyurtmalari'],
-                     ['whinventory', 'fa-chart-pie', 'Inventarizatsiya'], ['adm-reviews', 'fa-star', 'Sharhlar'], ['adm-kyc', 'fa-user-check', 'KYC arizalari'], ['adm-settings', 'fa-gear', 'Sayt sozlamalari'], ['adm-audit', 'fa-list-check', 'Audit jurnali'], ['guide', 'fa-book-open', "Qo'llanma"], ['drivers', 'fa-truck-field', 'Haydovchilar'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'],
+                     ['whinventory', 'fa-chart-pie', 'Inventarizatsiya'], ['adm-reviews', 'fa-star', 'Sharhlar'], ['adm-kyc', 'fa-user-check', 'KYC arizalari'], ['safety', 'fa-shield-halved', 'Safety: e-BOL va tasdiqlash'], ['adm-settings', 'fa-gear', 'Sayt sozlamalari'], ['adm-audit', 'fa-list-check', 'Audit jurnali'], ['guide', 'fa-book-open', "Qo'llanma"], ['drivers', 'fa-truck-field', 'Haydovchilar'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'],
                      ['profile', 'fa-id-card', 'Profil']];
+        // RBAC: administrator ichki roli (server ham har bir endpointni shu bo'yicha himoyalaydi; bu yerda faqat keraksiz bo'limlar yashiriladi)
+        const ADMIN_PROFILE_TAB = ['profile', 'fa-id-card', 'Profil'];
+        const ADMIN_TABS_BY_ROLE = {
+            SUPER_ADMIN: ADMIN_TABS_ALL,
+            SAFETY_ADMIN: [['safety', 'fa-shield-halved', 'Safety: e-BOL va tasdiqlash'], ADMIN_PROFILE_TAB],
+            FINANCE_ADMIN: [['adm-payments', 'fa-wallet', "To'lovlar"], ADMIN_PROFILE_TAB],
+            HUB_ADMIN: [['adm-hubs', 'fa-warehouse', "Hub omborlar"], ['hubops', 'fa-basket-shopping', 'Hub: chakana savdo'], ['hubdocks', 'fa-door-open', 'Rampalar'], ADMIN_PROFILE_TAB]
+        };
+        function dashTabsFor(user) {
+            if (user.role !== 'ADMIN') return DASH_TABS[user.role];
+            return ADMIN_TABS_BY_ROLE[user.adminRole] || ADMIN_TABS_ALL;
+        }
+        /** Kabinet ochilganda birinchi bo'lim: SUPER_ADMIN — boshqaruv paneli, boshqa adminlar — o'z bo'limi */
+        function adminHomeTab(user) { return dashTabsFor(user)[0][0]; }
         const BOOKING_STATUS = {
             PENDING:   { label: 'Kutilmoqda',      cls: 'bg-amber-500/15 text-amber-400 border-amber-500/30' },
             APPROVED:  { label: 'Tasdiqlangan',    cls: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' },
@@ -1469,7 +1483,7 @@
                 afterLoginAction = function () { openDashboard(tab); };
                 return openAuthModal('login');
             }
-            if (!DASH_TABS[user.role]) return showToast("Bu rol uchun kabinet mavjud emas.");
+            if (!dashTabsFor(user)) return showToast("Bu rol uchun kabinet mavjud emas.");
             closeAccountMenu();
             dashBookingFilter = 'ALL'; // oldingi foydalanuvchining filtrlari qolib ketmasin
             dashShipFilter = 'ALL';
@@ -1481,7 +1495,7 @@
             whFeedState = { q: '', category: '', storageType: '', page: 1 };
             renderDashHeader();
             const nav = document.getElementById('dash-tabs');
-            nav.replaceChildren.apply(nav, DASH_TABS[user.role].map(function (t) {
+            nav.replaceChildren.apply(nav, dashTabsFor(user).map(function (t) {
                 const b = el('button', 'dash-tab flex items-center gap-2.5 px-4 py-3 rounded-xl border border-white/10 text-sm font-bold text-slate-300 hover:border-emerald-500/40 transition whitespace-nowrap');
                 b.type = 'button';
                 b.dataset.tab = t[0];
@@ -1500,7 +1514,7 @@
             syncScrollLock();
             renderSubBanner();
             loadSubscription();
-            selectDashTab(tab || (user.role === 'ADMIN' ? 'adm-dashboard' : user.role === 'CONSUMER' ? 'lmarket' : isStaffRole(user) ? 'whboard' : 'overview'));
+            selectDashTab(tab || (user.role === 'ADMIN' ? adminHomeTab(user) : user.role === 'CONSUMER' ? 'lmarket' : isStaffRole(user) ? 'whboard' : 'overview'));
             setTimeout(function () { maybeStartTour(user); }, 1500); // birinchi kirishda interaktiv qo'llanma
         }
 
@@ -3172,12 +3186,12 @@
                 showAuthAlert("Omborxonadan foydalanish uchun tizimga kiring yoki ro'yxatdan o'ting.", 'info');
                 return;
             }
-            openDashboard(user.role === 'ADMIN' ? 'adm-dashboard' : isStaffRole(user) ? 'whboard' : user.role === 'DRIVER' ? 'loads' : 'warehouse');
+            openDashboard(user.role === 'ADMIN' ? adminHomeTab(user) : isStaffRole(user) ? 'whboard' : user.role === 'DRIVER' ? 'loads' : 'warehouse');
         }
         function openStaffHub() {
             if (sidebar.classList.contains('open')) toggleSidebar();
             const user = currentUser();
-            if (isStaffRole(user)) return openDashboard(user.role === 'ADMIN' ? 'adm-dashboard' : 'whboard');
+            if (isStaffRole(user)) return openDashboard(user.role === 'ADMIN' ? adminHomeTab(user) : 'whboard');
             if (user) return showToast("Dispetcher kabineti faqat ombor xodimlari uchun. Akkauntlar administrator tomonidan yaratiladi.", 5000);
             afterLoginAction = function () { const u = currentUser(); if (isStaffRole(u)) openDashboard('whboard'); };
             openAuthModal('login');
@@ -3185,6 +3199,8 @@
         }
 
         // ===== SUPER ADMIN PANELI =====
+        const ADM_PANEL_OPTIONS = [['SAFETY_ADMIN', 'Safety admin'], ['FINANCE_ADMIN', 'Finance admin'], ['HUB_ADMIN', 'Hub admin'], ['SUPER_ADMIN', 'Super admin']];
+        const ADM_PANEL_LABEL = { SUPER_ADMIN: 'Super admin', SAFETY_ADMIN: 'Safety admin', FINANCE_ADMIN: 'Finance admin', HUB_ADMIN: 'Hub admin' };
         const ADM_ROLE_LABEL = { FARMER: 'Fermer', MARKET: 'Market', DRIVER: 'Haydovchi', DISPATCHER: 'Dispetcher', ADMIN: 'Admin', CONSUMER: 'Xaridor' };
         const ADM_PRODUCT_STATUS = {
             ACTIVE: { label: 'Faol', cls: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' },
@@ -3416,6 +3432,14 @@
                 done: "Parol o'zgartirildi."
             });
         }
+        function admAdminRoleDialog(u) {
+            openWhForm({
+                title: 'Admin paneli roli', sub: u.fullName + ' · ' + u.phone, icon: 'fa-user-shield', submit: 'Saqlash',
+                fields: [{ name: 'adminRole', label: 'Panel roli', type: 'select', options: ADM_PANEL_OPTIONS, value: u.adminRole || 'SUPER_ADMIN', hint: "Rol o'zgarsa xodimning sessiyalari yopiladi: qayta kirishi kerak." }],
+                onSubmit: function (v) { return authed('PATCH', '/admin/users/' + u.id + '/admin-role', { adminRole: v.adminRole }); },
+                done: "Panel roli yangilandi."
+            });
+        }
         function admStaffDialog() {
             openWhForm({
                 title: "Xodim qo'shish", sub: "Dispetcher yoki administrator akkaunti yaratiladi.", icon: 'fa-user-plus', submit: 'Yaratish',
@@ -3423,9 +3447,10 @@
                     { name: 'fullName', label: 'Ism va familiya', required: true, maxLength: 100 },
                     { name: 'phone', label: 'Telefon (+998XXXXXXXXX)', required: true, placeholder: '+998901234567', maxLength: 13 },
                     { name: 'role', label: 'Rol', type: 'select', options: [['DISPATCHER', 'Dispetcher'], ['ADMIN', 'Admin']], value: 'DISPATCHER' },
+                    { name: 'adminRole', label: "Admin paneli (faqat Admin uchun)", type: 'select', options: ADM_PANEL_OPTIONS, value: 'SAFETY_ADMIN' },
                     { name: 'password', label: 'Vaqtinchalik parol', required: true, hint: 'Kamida 8 belgi, harf va raqam.', maxLength: 72 }
                 ],
-                onSubmit: function (v) { return authed('POST', '/admin/staff', { fullName: v.fullName, phone: v.phone.replace(/\s/g, ''), role: v.role, password: v.password }); },
+                onSubmit: function (v) { return authed('POST', '/admin/staff', Object.assign({ fullName: v.fullName, phone: v.phone.replace(/\s/g, ''), role: v.role, password: v.password }, v.role === 'ADMIN' ? { adminRole: v.adminRole } : {})); },
                 done: 'Xodim yaratildi.'
             });
         }
@@ -3444,7 +3469,7 @@
             ]));
             nodes.push(admTable([
                 ['Foydalanuvchi', function (u) { const n = admName(u.fullName, u.phone); if (u.isVerified) n.firstChild.appendChild(verifiedMark()); return n; }],
-                ['Rol', function (u) { return ADM_ROLE_LABEL[u.role]; }],
+                ['Rol', function (u) { return ADM_ROLE_LABEL[u.role] + (u.role === 'ADMIN' && u.adminRole ? ' · ' + T(ADM_PANEL_LABEL[u.adminRole] || u.adminRole) : ''); }],
                 ['Tashkilot / hudud', function (u) { return [u.org, u.region].filter(Boolean).join(' · ') || '—'; }],
                 ['Holat', function (u) { return admStatusPill(u.isActive); }],
                 ["Ro'yxatdan o'tgan", function (u) { return admDate(u.createdAt); }],
@@ -3452,6 +3477,7 @@
                     const me = currentUser();
                     const b = [admBtn('fa-pen', 'Tahrirlash', function () { admEditUser(u.id); }), admBtn('fa-key', 'Parol', function () { admPasswordDialog(u); })];
                     if (!me || me.id !== u.id) b.push(admBtn(u.isActive ? 'fa-user-lock' : 'fa-user-check', u.isActive ? 'Bloklash' : 'Faollashtirish', function () { admToggleUser(u); }, u.isActive ? 'danger' : 'ok'));
+                    if (u.role === 'ADMIN' && (!me || me.id !== u.id)) b.push(admBtn('fa-user-shield', 'Panel roli', function () { admAdminRoleDialog(u); }));
                     const vb = admVerifyButton(u);
                     if (vb) b.push(vb);
                     return admActions(b);
@@ -4444,7 +4470,11 @@
                     note.appendChild(el('i', 'fa-solid fa-warehouse mt-0.5'));
                     note.appendChild(document.createTextNode("Omborxonaga boring: dispetcher yukni yuklab, jo'natishni tasdiqlaydi. Shundan so'ng GPS kuzatuv va harakat jurnali ishga tushadi."));
                     actions.appendChild(note);
-                } else actions.appendChild(btn('fa-truck-fast', "Yo'lga chiqdim", 'bg-emerald-500 border-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-lg shadow-emerald-500/25', 'advance'));
+                } else {
+                    // e-BOL: fermer SMS-kodi bilan imzo. Majburiy bo'lmasa (ebolRequired=false) oddiy «Yo'lga chiqdim» ham ishlaydi
+                    actions.appendChild(ebolPanel({ kind: 'SHIPMENT', id: s.id, signed: s.isSigned, onSigned: function () { startTracker(s.id, 'gps'); selectDashTab(dashTab); } }));
+                    if (!s.isSigned && !s.ebolRequired) actions.appendChild(btn('fa-truck-fast', "Yo'lga chiqdim", 'bg-emerald-500 border-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-lg shadow-emerald-500/25', 'advance'));
+                }
                 actions.appendChild(btn('fa-rotate-left', 'Qaytarish', 'border-white/15 text-slate-300 hover:bg-white/10', 'release'));
             } else if (viewer === 'driver-own' && s.status === 'IN_TRANSIT') {
                 actions.appendChild(btn('fa-circle-check', 'Yetkazib berdim', 'bg-emerald-500 border-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-lg shadow-emerald-500/25', 'advance'));

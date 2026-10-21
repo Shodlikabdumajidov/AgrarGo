@@ -167,11 +167,11 @@ export const pay = (http: Http, market: Account, bookingId: string) =>
   http().post('/payments/init').set('Authorization', bearer(market)).send({ bookingId });
 
 /** Administrator API orqali ro'yxatdan o'tmaydi: bazada yaratiladi va oddiy login bilan kiradi */
-export async function createAdmin(t: TestApp, role: 'ADMIN' | 'DISPATCHER' = 'ADMIN'): Promise<Account> {
+export async function createAdmin(t: TestApp, role: 'ADMIN' | 'DISPATCHER' = 'ADMIN', adminRole: 'SUPER_ADMIN' | 'SAFETY_ADMIN' | 'FINANCE_ADMIN' | 'HUB_ADMIN' = 'SUPER_ADMIN'): Promise<Account> {
   const bcrypt = await import('bcrypt');
   const phone = nextPhone();
   const user = await t.prisma.user.create({
-    data: { phone, fullName: role === 'ADMIN' ? 'Admin' : 'Dispetcher', role, passwordHash: await bcrypt.hash(PASSWORD, 4) },
+    data: { phone, fullName: role === 'ADMIN' ? 'Admin' : 'Dispetcher', role, ...(role === 'ADMIN' && { adminRole }), passwordHash: await bcrypt.hash(PASSWORD, 4) },
   });
   const res = await t.http().post('/auth/login').send({ phone, password: PASSWORD });
   if (res.status !== 200) throw new Error(`createAdmin login ${res.status}`);

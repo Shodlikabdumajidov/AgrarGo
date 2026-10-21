@@ -956,6 +956,8 @@ async function renderCourierTab(user) {
         c.appendChild(el('div', 'text-sm text-sky-200', '👤 ' + o.consumerName + ' · ' + o.contactPhone));
         if (o.note) c.appendChild(el('div', 'text-xs text-slate-400', '💬 ' + o.note));
         c.appendChild(el('div', 'text-xs text-emerald-300 font-bold', T("Yetkazib berish haqi: {0}", bdMoney(grp.reduce(function (a, x) { return a + x.courierFee; }, 0)))));
+        // e-BOL: har bir mahsulot fermeri kodi bilan alohida imzolanadi
+        grp.forEach(function (x) { c.appendChild(ebolPanel({ kind: 'LOCAL', id: x.id, label: grp.length > 1 ? x.productName : '', signed: x.isSigned, onSigned: function () { renderCourierTab(user); } })); });
         c.appendChild(actionBtn('fa-key', 'Kod bilan topshirish', true, function () {
             openWhForm({ title: 'Buyurtmani topshirish', sub: T("Xaridordan 4 xonali topshirish kodini oling"), submit: 'Topshirish', icon: 'fa-check',
                 fields: [{ name: 'code', label: 'Topshirish kodi', required: true, maxLength: 4, placeholder: '0000' }],

@@ -42,6 +42,8 @@ export interface AppEnv {
   DOCK_GRACE_MIN: number;
   SMS_PROVIDER: 'simulated';
   SMS_ALLOW_SIMULATION: boolean;
+  EBOL_OTP_TTL_MIN: number;
+  EBOL_ENFORCE: boolean;
   OTP_TTL_SECONDS: number;
   OTP_MAX_ATTEMPTS: number;
   OTP_RESEND_COOLDOWN_SECONDS: number;
@@ -166,6 +168,8 @@ export function validateEnv(raw: Record<string, unknown>): AppEnv & Record<strin
   const smsAllowRaw = String(raw.SMS_ALLOW_SIMULATION ?? 'false').toLowerCase();
   if (!['true', 'false'].includes(smsAllowRaw)) errors.push("SMS_ALLOW_SIMULATION true yoki false bo'lishi kerak");
   const smsAllowSimulation = smsAllowRaw === 'true';
+  const ebolEnforceRaw = String(raw.EBOL_ENFORCE ?? 'false').toLowerCase();
+  if (!['true', 'false'].includes(ebolEnforceRaw)) errors.push("EBOL_ENFORCE true yoki false bo'lishi kerak");
   // Simulyatsiyada SMS yuborilmaydi: parolni tiklash kodlari kimgadir yetib bormaydi (yoki jurnalda qoladi)
   if (prod && smsProvider === 'simulated' && !smsAllowSimulation) {
     errors.push("Production'da simulyatsiya qilingan SMS taqiqlangan: haqiqiy SMS provayderini ulang (faqat demo uchun SMS_ALLOW_SIMULATION=true)");
@@ -219,6 +223,8 @@ export function validateEnv(raw: Record<string, unknown>): AppEnv & Record<strin
     THROTTLE_PAYMENT_LIMIT: intInRange(raw.THROTTLE_PAYMENT_LIMIT, 'THROTTLE_PAYMENT_LIMIT', 20, 1, 100000, errors),
     SMS_PROVIDER: 'simulated' as const,
     SMS_ALLOW_SIMULATION: smsAllowSimulation,
+    EBOL_OTP_TTL_MIN: intInRange(raw.EBOL_OTP_TTL_MIN, 'EBOL_OTP_TTL_MIN', 15, 1, 120, errors),
+    EBOL_ENFORCE: ebolEnforceRaw === 'true',
     OTP_TTL_SECONDS: intInRange(raw.OTP_TTL_SECONDS, 'OTP_TTL_SECONDS', 300, 60, 900, errors),
     OTP_MAX_ATTEMPTS: intInRange(raw.OTP_MAX_ATTEMPTS, 'OTP_MAX_ATTEMPTS', 5, 1, 10, errors),
     OTP_RESEND_COOLDOWN_SECONDS: intInRange(raw.OTP_RESEND_COOLDOWN_SECONDS, 'OTP_RESEND_COOLDOWN_SECONDS', 60, 5, 600, errors),

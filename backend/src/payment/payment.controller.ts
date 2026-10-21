@@ -1,5 +1,6 @@
 import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Query, UseGuards, UseInterceptors } from '@nestjs/common';
-import { Role } from '@prisma/client';
+import { AdminRole, Role } from '@prisma/client';
+import { AdminRoles } from '../common/admin-roles.decorator';
 import { StaffAuditInterceptor } from '../admin/audit.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/current-user.decorator';
@@ -10,6 +11,7 @@ import { InitPaymentDto, ListPaymentsQuery, RefundPaymentDto, ReleasePaymentDto 
 import { PaymentService, PaymentUser } from './payment.service';
 
 @Controller('payments')
+@AdminRoles(AdminRole.FINANCE_ADMIN)
 @UseGuards(JwtAuthGuard, RolesGuard)
 @UseInterceptors(StaffAuditInterceptor)
 export class PaymentController {

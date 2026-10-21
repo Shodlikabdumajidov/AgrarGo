@@ -16,12 +16,22 @@ enum Role {
   CONSUMER // mahalliy aholi: Hub omboridan kichik hajmli (chakana) xarid qiladi
 }
 
+/// Administrator ichki rollari (RBAC). Faqat User.role = ADMIN bo'lganlarda ma'noga ega; oddiy foydalanuvchilarda USER.
+enum AdminRole {
+  SUPER_ADMIN // hamma narsa
+  SAFETY_ADMIN // xavfsizlik: foydalanuvchilarni tasdiqlash (KYC), imzolangan e-BOL shartnomalari
+  FINANCE_ADMIN // moliya: to'lovlar, escrow, hisobotlar
+  HUB_ADMIN // Hub ombor, rampa va chakana buyurtmalar
+  USER // administrator emas (standart)
+}
+
 model User {
   id                         String    @id @default(uuid())
   phone                      String    @unique
   email                      String?   @unique
   passwordHash               String
   role                       Role      @default(FARMER)
+  adminRole                  AdminRole @default(USER)
   fullName                   String
   avatarUrl                  String?
   // Fermer va market uchun shaxsiy orqa fon muqovasi (cover banner), /uploads/covers/... yo'li
@@ -90,6 +100,7 @@ model Farmer {
   updatedAt      DateTime        @updatedAt
   warehouseItems WarehouseItem[]
   shipments      Shipment[]
+  ebols          EBolContract[]
 }
 
 model Driver {
@@ -113,6 +124,7 @@ model Driver {
   localOrders     LocalOrder[]
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
+  ebols           EBolContract[]
 }
 
 /// Mahalliy aholi (chakana xaridor) profili
@@ -127,8 +139,8 @@ model Consumer {
 
   orders    LocalOrder[]
   checkouts LocalCheckout[]
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
 }
 
 model Market {
@@ -261,6 +273,13 @@ model Shipment {
   assignedAt  DateTime?
   deliveredAt DateTime?
   events      ShipmentEvent[]
+
+  // e-BOL: haydovchi yetib kelganda fermer telefoniga 4 xonali kod yuboriladi (faqat HMAC xeshi saqlanadi); to'g'ri kiritilsa isSigned=true
+  pickupOtp          String?
+  pickupOtpExpiresAt DateTime?
+  pickupOtpAttempts  Int           @default(0)
+  isSigned           Boolean       @default(false)
+  ebol               EBolContract?
 
   // Yuk olinadigan joyning taxminiy nuqtasi (aniq manzil emas): radiusli qidiruv uchun
   originLat Float?
@@ -819,14 +838,14 @@ model Hub {
 
   docks        HubDock[]
   appointments DockAppointment[]
-  staff     User[]       @relation("HubStaff")
-  couriers  Driver[]     @relation("HubCouriers")
-  products  Product[]
-  stocks    HubStock[]
-  intakes   HubIntake[]
-  orders    LocalOrder[]
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+  staff        User[]            @relation("HubStaff")
+  couriers     Driver[]          @relation("HubCouriers")
+  products     Product[]
+  stocks       HubStock[]
+  intakes      HubIntake[]
+  orders       LocalOrder[]
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
 
   @@index([region, isActive])
 }
@@ -882,22 +901,22 @@ enum HubIntakeStatus {
 
 /// Fermerning Hub omboriga topshirishi: e'lon -> Hub qabul qiladi (haqiqiy vazn bilan)
 model HubIntake {
-  id           String          @id @default(uuid())
+  id           String           @id @default(uuid())
   hubId        String
-  hub          Hub             @relation(fields: [hubId], references: [id], onDelete: Restrict)
+  hub          Hub              @relation(fields: [hubId], references: [id], onDelete: Restrict)
   productId    String
-  product      Product         @relation(fields: [productId], references: [id], onDelete: Restrict)
+  product      Product          @relation(fields: [productId], references: [id], onDelete: Restrict)
   farmerId     String
-  declaredKg   Decimal         @db.Decimal(12, 2)
-  receivedKg   Decimal?        @db.Decimal(12, 2)
-  status       HubIntakeStatus @default(ANNOUNCED)
+  declaredKg   Decimal          @db.Decimal(12, 2)
+  receivedKg   Decimal?         @db.Decimal(12, 2)
+  status       HubIntakeStatus  @default(ANNOUNCED)
   note         String?
   receivedById String?
-  receivedBy   User?           @relation(fields: [receivedById], references: [id], onDelete: SetNull)
+  receivedBy   User?            @relation(fields: [receivedById], references: [id], onDelete: SetNull)
   receivedAt   DateTime?
   appointment  DockAppointment?
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
 
   @@index([hubId, status])
   @@index([farmerId, createdAt])
@@ -934,14 +953,20 @@ model LocalOrder {
   totalPrice    Decimal @db.Decimal(20, 2)
   cashbackUsed  Decimal @default(0) @db.Decimal(20, 2) // jami (totalPrice) ning keshbek bilan qoplangan qismi
 
-  deliveryRegion   String
-  deliveryDistrict String
-  deliveryAddress  String
-  contactPhone     String
-  note             String?
+  deliveryRegion     String
+  deliveryDistrict   String
+  deliveryAddress    String
+  contactPhone       String
+  note               String?
   // Topshirish kodi: faqat xaridor ko'radi; kuryer yetkazganda shu kodni kiritadi
-  deliveryCode     String
-  codeAttempts     Int     @default(0) // noto'g'ri kod urinishlari: 5 tadan keyin kuryer kodi bloklanadi (xaridor tasdiqlaydi)
+  deliveryCode       String
+  codeAttempts       Int           @default(0) // noto'g'ri kod urinishlari: 5 tadan keyin kuryer kodi bloklanadi (xaridor tasdiqlaydi)
+  // e-BOL (Shipment bilan bir xil): olish paytidagi raqamli imzo
+  pickupOtp          String?
+  pickupOtpExpiresAt DateTime?
+  pickupOtpAttempts  Int           @default(0)
+  isSigned           Boolean       @default(false)
+  ebol               EBolContract?
 
   status       LocalOrderStatus @default(PENDING)
   packedAt     DateTime?
@@ -955,11 +980,11 @@ model LocalOrder {
   // Bir checkout'dagi shu Hub'ning buyurtmalari bitta kuryer bilan bitta yetkaziladi: umumiy guruh, umumiy kod, kuryer haqi teng bo'lingan
   deliveryGroupId String?
   // Savat: bir martalik umumiy to'lovdan ajratilgan buyurtmalar bitta checkout'ga bog'lanadi
-  checkoutId String?
-  checkout   LocalCheckout? @relation(fields: [checkoutId], references: [id], onDelete: Restrict)
+  checkoutId      String?
+  checkout        LocalCheckout?   @relation(fields: [checkoutId], references: [id], onDelete: Restrict)
   // Kuryer Hub'dan yukni qaysi rampa/vaqt bilan oladi
-  pickupApptId String?
-  pickupAppt   DockAppointment? @relation(fields: [pickupApptId], references: [id], onDelete: SetNull)
+  pickupApptId    String?
+  pickupAppt      DockAppointment? @relation(fields: [pickupApptId], references: [id], onDelete: SetNull)
 
   payment Payment?
 
@@ -1098,4 +1123,31 @@ model CashbackTransaction {
 
   @@unique([userId, type, sourceType, sourceId])
   @@index([userId, createdAt])
+}
+
+enum EBolStatus {
+  SIGNED // imzolangan (kuchda)
+  VOID // bekor qilingan (administrator)
+}
+
+/// Elektron yuk xati (e-BOL): fermer telefoniga yuborilgan OTP haydovchi tomonidan kiritilgach yoziladi. Aynan bitta manba (shipmentId yoki localOrderId; CHECK).
+/// contractHash — shartnoma tarkibining SHA-256 izi (keyin o'zgartirilsa aniqlanadi).
+model EBolContract {
+  id           String      @id @default(uuid())
+  shipmentId   String?     @unique
+  shipment     Shipment?   @relation(fields: [shipmentId], references: [id], onDelete: Restrict)
+  localOrderId String?     @unique
+  localOrder   LocalOrder? @relation(fields: [localOrderId], references: [id], onDelete: Restrict)
+  driverId     String
+  driver       Driver      @relation(fields: [driverId], references: [id], onDelete: Restrict)
+  farmerId     String
+  farmer       Farmer      @relation(fields: [farmerId], references: [id], onDelete: Restrict)
+  signedAt     DateTime
+  status       EBolStatus  @default(SIGNED)
+  contractHash String
+  createdAt    DateTime    @default(now())
+
+  @@index([signedAt])
+  @@index([driverId])
+  @@index([farmerId])
 }

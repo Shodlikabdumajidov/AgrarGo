@@ -1,5 +1,6 @@
 import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
-import { Role } from '@prisma/client';
+import { AdminRole, Role } from '@prisma/client';
+import { AdminRoles } from '../common/admin-roles.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/current-user.decorator';
 import { Roles } from '../common/roles.decorator';
@@ -14,6 +15,7 @@ const STAFF = [Role.DISPATCHER, Role.ADMIN] as const;
 
 /** Hub'lar ro'yxati va boshqaruvi (administrator) */
 @Controller('hubs')
+@AdminRoles(AdminRole.HUB_ADMIN)
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class HubsController {
   constructor(private readonly hubs: HubService, private readonly docks: DockService) {}
@@ -60,6 +62,7 @@ export class HubsController {
 
 /** Fermer: Hub omboriga topshirish va chakana sotuv; Hub xodimi: qabul va qoldiq */
 @Controller('hub')
+@AdminRoles(AdminRole.HUB_ADMIN)
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class HubOpsController {
   constructor(private readonly hubs: HubService, private readonly docks: DockService) {}

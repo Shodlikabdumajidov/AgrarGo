@@ -6,6 +6,7 @@ import { SubscriptionGuard } from '../subscription/subscription.guard';
 import { Roles } from '../common/roles.decorator';
 import { RolesGuard } from '../common/roles.guard';
 import { ThrottleProfile } from '../security/throttle-profile';
+import { SignEBolDto } from '../ebol/dto/ebol.dto';
 import { ChainAcceptDto } from './dto/chain-accept.dto';
 import { EldQuery, SendLocationDto } from './dto/location.dto';
 import { LocationService } from './tracking/location.service';
@@ -69,6 +70,24 @@ export class ShipmentController {
   @Roles(Role.DRIVER)
   advance(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string) {
     return this.shipments.advance(this.driver(user).id, id);
+  }
+
+  /** e-BOL: yuklash joyiga yetib keldim — fermer telefoniga kod yuboriladi */
+  @Post(':id/arrived')
+  @HttpCode(200)
+  @Roles(Role.DRIVER)
+  @ThrottleProfile('verify')
+  arrived(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string) {
+    return this.shipments.arrived(this.driver(user).id, id);
+  }
+
+  /** e-BOL: fermerdan olingan kodni kiritish — imzo + yo'lga chiqish */
+  @Post(':id/sign')
+  @HttpCode(200)
+  @Roles(Role.DRIVER)
+  @ThrottleProfile('verify')
+  sign(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string, @Body() dto: SignEBolDto) {
+    return this.shipments.sign(this.driver(user).id, id, dto.code);
   }
 
   // --- GPS (live tracking) va ELD ---

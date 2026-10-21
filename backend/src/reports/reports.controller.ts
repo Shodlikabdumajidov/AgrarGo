@@ -1,5 +1,6 @@
 import { Controller, Get, Query, Res, UseGuards } from '@nestjs/common';
-import { Role } from '@prisma/client';
+import { AdminRole, Role } from '@prisma/client';
+import { AdminRoles } from '../common/admin-roles.decorator';
 import type { Response } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/current-user.decorator';
@@ -30,6 +31,7 @@ export class ReportsController {
   @Get('admin.xlsx')
   @ThrottleProfile('upload')
   @Roles(Role.ADMIN)
+  @AdminRoles(AdminRole.FINANCE_ADMIN)
   async admin(@Query('from') from: string | undefined, @Query('to') to: string | undefined, @Res() res: Response) {
     this.send(res, await this.reports.admin(from, to), `AgrarGo-admin-${new Date().toISOString().slice(0, 10)}.xlsx`);
   }

@@ -4,7 +4,7 @@
  *   ADMIN_PASSWORD='...' npm run admin:create -- --role=DISPATCHER +998901234567 "Ism Familiya"
  * Parol buyruq satriga emas, muhit o'zgaruvchisiga yoziladi (shell tarixi va jarayonlar ro'yxatida ko'rinmasligi uchun).
  */
-import { PrismaClient, Role } from '@prisma/client';
+import { AdminRole, PrismaClient, Role } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 async function main() {
@@ -15,6 +15,8 @@ async function main() {
   const password = process.env.ADMIN_PASSWORD ?? '';
 
   const problems: string[] = [];
+  const adminRoleArg = args.find((a) => a.startsWith('--admin-role='))?.slice('--admin-role='.length) ?? 'SUPER_ADMIN';
+  if (roleArg === 'ADMIN' && !['SUPER_ADMIN', 'SAFETY_ADMIN', 'FINANCE_ADMIN', 'HUB_ADMIN'].includes(adminRoleArg)) problems.push("--admin-role: SUPER_ADMIN | SAFETY_ADMIN | FINANCE_ADMIN | HUB_ADMIN");
   if (roleArg !== 'ADMIN' && roleArg !== 'DISPATCHER') problems.push("--role faqat ADMIN yoki DISPATCHER bo'lishi mumkin");
   if (!/^\+998\d{9}$/.test(phone ?? '')) problems.push('telefon +998XXXXXXXXX formatida bo\'lishi kerak');
   if (fullName.length < 2) problems.push('ism va familiyani kiriting');
@@ -32,8 +34,8 @@ async function main() {
       process.exit(1);
     }
     const user = await prisma.user.create({
-      data: { phone, fullName, role: roleArg as Role, passwordHash: await bcrypt.hash(password, 10) },
-      select: { id: true, phone: true, fullName: true, role: true },
+      data: { phone, fullName, role: roleArg as Role, ...(roleArg === 'ADMIN' && { adminRole: adminRoleArg as AdminRole }), passwordHash: await bcrypt.hash(password, 10) },
+      select: { id: true, phone: true, fullName: true, role: true, adminRole: true },
     });
     console.log(`${roleArg} yaratildi:`, user);
   } finally {

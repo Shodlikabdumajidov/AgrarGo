@@ -1,9 +1,11 @@
-import { ProductStatus, Role, ShipmentStatus } from '@prisma/client';
+import { AdminRole, ProductStatus, Role, ShipmentStatus } from '@prisma/client';
 import { Transform, Type } from 'class-transformer';
 import {
-  IsBoolean, IsEnum, IsIn, IsInt, IsNumber, IsOptional, IsPositive, IsString, Matches, Max, MaxLength, Min, MinLength,
+  IsBoolean, IsEnum, IsIn, IsInt, IsNumber, IsOptional, IsPositive, IsString, Matches, Max, MaxLength, Min, MinLength, ValidateIf,
 } from 'class-validator';
 import { IsStrongPassword } from '../../auth/password/password-policy';
+
+export const STAFF_ADMIN_ROLES: AdminRole[] = [AdminRole.SUPER_ADMIN, AdminRole.SAFETY_ADMIN, AdminRole.FINANCE_ADMIN, AdminRole.HUB_ADMIN];
 
 const emptyToUndefined = ({ value }: { value: unknown }) => (typeof value === 'string' && value.trim() === '' ? undefined : value);
 const trim = ({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value);
@@ -47,6 +49,16 @@ export class CreateStaffDto {
 
   @IsIn([Role.DISPATCHER, Role.ADMIN])
   role!: Role;
+
+  /** ADMIN uchun majburiy (qaysi panel); DISPATCHER uchun berilmaydi. */
+  @ValidateIf((o) => o.role === Role.ADMIN)
+  @IsIn(STAFF_ADMIN_ROLES, { message: "adminRole: SUPER_ADMIN, SAFETY_ADMIN, FINANCE_ADMIN yoki HUB_ADMIN bo'lishi kerak" })
+  adminRole?: AdminRole;
+}
+
+export class SetAdminRoleDto {
+  @IsIn(STAFF_ADMIN_ROLES, { message: "adminRole: SUPER_ADMIN, SAFETY_ADMIN, FINANCE_ADMIN yoki HUB_ADMIN bo'lishi kerak" })
+  adminRole!: AdminRole;
 }
 
 export class SetPasswordDto {

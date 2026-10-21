@@ -11,6 +11,7 @@ import { haversineKm } from '../trust/geo';
 import { RatesService } from '../rates/rates.service';
 import { compareRate } from '../rates/rates';
 import { randomUUID } from 'crypto';
+import { EBolService } from '../ebol/ebol.service';
 import { reserveLtl, restoreLtl } from './ltl';
 import { TriLoad, TriOption, evaluate, hasDirectReturn, triOptions } from './trihaul';
 import { AvailableShipmentsQuery, ListShipmentsQuery } from './dto/list-shipments.query';
@@ -36,7 +37,7 @@ type Viewer = 'driver-open' | 'driver-own' | 'farmer' | 'market';
 
 @Injectable()
 export class ShipmentService {
-  constructor(private readonly prisma: PrismaService, private readonly settings: SettingsService, private readonly notify: NotificationService, private readonly trust: TrustService, private readonly pricing: PricingService, private readonly rates: RatesService) {}
+  constructor(private readonly prisma: PrismaService, private readonly settings: SettingsService, private readonly notify: NotificationService, private readonly trust: TrustService, private readonly pricing: PricingService, private readonly rates: RatesService, private readonly ebol: EBolService) {}
 
   // ---------- Haydovchi ----------
 
@@ -143,8 +144,9 @@ export class ShipmentService {
   async advance(driverId: string, id: string) {
     let reached = null as ShipmentStatus | null;
     await this.prisma.$transaction(async (tx) => {
-      const current = await tx.shipment.findFirst({ where: { id, driverId }, select: { status: true, warehouseOrderId: true, chainId: true, chainSeq: true } });
+      const current = await tx.shipment.findFirst({ where: { id, driverId }, select: { status: true, warehouseOrderId: true, chainId: true, chainSeq: true, isSigned: true } });
       if (!current) throw new NotFoundException('Yuk topilmadi');
+      if (this.ebol.enforced && current.status === ShipmentStatus.LOADING && !current.isSigned) throw new ConflictException("Yo'lga chiqish uchun e-BOL imzolanishi kerak: fermer kodini kiriting");
       // Zanjirli bron: ikkinchi yuk birinchisi yetkazilmaguncha yo'lga chiqmaydi
       if (current.chainId && current.chainSeq === 2 && current.status === ShipmentStatus.LOADING) {
         const first = await tx.shipment.findFirst({ where: { chainId: current.chainId, chainSeq: 1 }, select: { status: true } });
@@ -183,6 +185,46 @@ export class ShipmentService {
     if (reached === ShipmentStatus.DELIVERED) await this.invalidateTrust(id); // yangi bitim: status va badjlar qayta hisoblansin
     if (reached) this.notify.shipmentStatus(id, reached);
     return this.reload(id, 'driver-own');
+  }
+
+  // ---------- e-BOL: fermer SMS-kodi bilan raqamli imzo ----------
+
+  /** Yuklash joyiga yetib keldi: fermer telefoniga 4 xonali kod yuboriladi. Ombor yuki dispetcher tomonidan jo'natiladi, shuning uchun kerak emas. */
+  async arrived(driverId: string, id: string) {
+    const s = await this.prisma.shipment.findFirst({
+      where: { id, driverId }, select: { status: true, isSigned: true, warehouseOrderId: true, farmer: { select: { user: { select: { phone: true } } } } },
+    });
+    if (!s) throw new NotFoundException('Yuk topilmadi');
+    this.assertSignable(s);
+    return this.ebol.issue('SHIPMENT', id, s.farmer.user.phone);
+  }
+
+  /** Haydovchi kodni kiritadi: to'g'ri bo'lsa yuk imzolanadi, EBolContract yoziladi va yuk yo'lga (IN_TRANSIT) chiqadi — bir tranzaksiyada. */
+  async sign(driverId: string, id: string, code: string) {
+    const s = await this.prisma.shipment.findFirst({ where: { id, driverId }, select: { status: true, isSigned: true, warehouseOrderId: true } });
+    if (!s) throw new NotFoundException('Yuk topilmadi');
+    this.assertSignable(s);
+    await this.ebol.verify('SHIPMENT', id, code);
+    await this.prisma.$transaction(async (tx) => {
+      const cur = await tx.shipment.findFirst({ where: { id, driverId }, select: { status: true, farmerId: true, chainId: true, chainSeq: true } });
+      if (!cur || cur.status !== ShipmentStatus.LOADING) throw new ConflictException("Yuk holati o'zgargan. Sahifani yangilang");
+      if (cur.chainId && cur.chainSeq === 2) {
+        const first = await tx.shipment.findFirst({ where: { chainId: cur.chainId, chainSeq: 1 }, select: { status: true } });
+        if (first && first.status !== ShipmentStatus.DELIVERED && first.status !== ShipmentStatus.CANCELLED) throw new ConflictException('Zanjirli bron: avval birinchi yukni yetkazing');
+      }
+      await this.ebol.finalize(tx, { kind: 'SHIPMENT', id, driverId, farmerId: cur.farmerId });
+      const moved = await tx.shipment.updateMany({ where: { id, driverId, status: ShipmentStatus.LOADING }, data: { status: ShipmentStatus.IN_TRANSIT } });
+      if (moved.count === 0) throw new ConflictException("Yuk holati allaqachon o'zgargan. Sahifani yangilang");
+      await tx.shipmentEvent.create({ data: { shipmentId: id, status: ShipmentStatus.IN_TRANSIT } });
+    });
+    this.notify.shipmentStatus(id, ShipmentStatus.IN_TRANSIT);
+    return this.reload(id, 'driver-own');
+  }
+
+  private assertSignable(s: { status: ShipmentStatus; isSigned: boolean; warehouseOrderId: string | null }) {
+    if (s.warehouseOrderId) throw new ConflictException("Ombor yukini dispetcher yuklab jo'natadi: e-BOL talab qilinmaydi");
+    if (s.isSigned) throw new ConflictException('Yuk allaqachon imzolangan');
+    if (s.status !== ShipmentStatus.LOADING) throw new ConflictException('e-BOL faqat yuklash bosqichida imzolanadi');
   }
 
   // ---------- Barcha rollar: o'ziga tegishli yuklar ----------
@@ -402,6 +444,8 @@ export class ShipmentService {
       createdAt: s.createdAt,
       assignedAt: s.assignedAt,
       deliveredAt: s.deliveredAt,
+      isSigned: s.isSigned,
+      ebolRequired: this.ebol.enforced && !s.warehouseOrderId,
       events: s.events.map((e) => ({ status: e.status, createdAt: e.createdAt })),
       paymentStatus: s.booking?.payment?.status ?? s.warehouseOrder?.payment?.status ?? null, // haydovchi uchun: to'lov kafolatlanganmi
       price: this.priceOf(s, viewer),

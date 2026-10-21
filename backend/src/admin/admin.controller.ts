@@ -1,7 +1,8 @@
 import {
   Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Patch, Post, Put, Query, UseGuards, UseInterceptors,
 } from '@nestjs/common';
-import { Role } from '@prisma/client';
+import { AdminRole, Role } from '@prisma/client';
+import { AdminRoles } from '../common/admin-roles.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/current-user.decorator';
 import { Roles } from '../common/roles.decorator';
@@ -13,7 +14,7 @@ import { UpdateSettingsDto } from '../settings/settings.dto';
 import { AdminService } from './admin.service';
 import { Actor, AuditService, NoStoreInterceptor } from './audit.service';
 import {
-  AuditQuery, CreateStaffDto, ProductsQuery, SetPasswordDto, SetStatusDto, ShipmentsQuery, UpdateProductDto, UsersQuery,
+  AuditQuery, CreateStaffDto, ProductsQuery, SetAdminRoleDto, SetPasswordDto, SetStatusDto, ShipmentsQuery, UpdateProductDto, UsersQuery,
 } from './dto/admin.dto';
 
 const uuid = new ParseUUIDPipe();
@@ -32,6 +33,7 @@ export class AdminController {
   ) {}
 
   @Get('stats')
+  @AdminRoles(AdminRole.SAFETY_ADMIN, AdminRole.FINANCE_ADMIN, AdminRole.HUB_ADMIN)
   stats() { return this.admin.stats(); }
 
   // ----- Foydalanuvchilar -----
@@ -50,6 +52,11 @@ export class AdminController {
   @Patch('users/:id/status')
   setStatus(@CurrentUser() me: Actor, @Param('id', uuid) id: string, @Body() dto: SetStatusDto) {
     return this.admin.setStatus(me, id, dto.isActive, dto.reason);
+  }
+
+  @Patch('users/:id/admin-role')
+  setAdminRole(@CurrentUser() me: Actor, @Param('id', uuid) id: string, @Body() dto: SetAdminRoleDto) {
+    return this.admin.setAdminRole(me, id, dto.adminRole);
   }
 
   @Post('users/:id/password')

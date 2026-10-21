@@ -5,6 +5,7 @@ import { APP_ENV } from '../config/app-env.module';
 import { AppEnv } from '../config/env.validation';
 import { allocateCashback, maxSpendable } from '../cashback/cashback.math';
 import { CashbackService } from '../cashback/cashback.service';
+import { EBolService } from '../ebol/ebol.service';
 import { DockService } from '../hub/dock.service';
 import { dispatchStock, releaseReserve, reserveStock, returnStock } from '../hub/hub-stock';
 import { PaymentService } from '../payment/payment.service';
@@ -61,6 +62,7 @@ export class LocalOrderService {
     private readonly notify: NotificationService,
     private readonly docks: DockService,
     private readonly cashback: CashbackService,
+    private readonly ebol: EBolService,
     @Inject(APP_ENV) private readonly env: AppEnv,
   ) {
     this.fees = { hubPercent: env.LOCAL_HUB_FEE_PERCENT, hubMin: env.LOCAL_HUB_FEE_MIN, courierFee: env.LOCAL_COURIER_FEE, servicePercent: env.LOCAL_SERVICE_FEE_PERCENT, serviceMin: env.LOCAL_SERVICE_FEE_MIN };
@@ -162,6 +164,7 @@ export class LocalOrderService {
       productId: o.productId, productName: o.product.name, category: o.product.category, quantityKg: Number(o.quantityKg), pricePerKg: Number(o.pricePerKg),
       hub: v === 'farmer' ? { id: o.hub.id, name: o.hub.name, region: o.hub.region } : o.hub, paymentStatus: o.payment?.status ?? null,
       checkoutId: o.checkoutId, deliveryGroupId: o.deliveryGroupId,
+      isSigned: o.isSigned, ebolRequired: this.ebol.enforced,
       // Rampa va vaqt: kuryer va Hub xodimi uchun "Samarqand Hub, 2-rampa, 10:00-11:00"
       ...(v === 'staff' || v === 'courier' || v === 'courier-open' ? { dock: o.pickupAppt ? this.docks.brief(o.pickupAppt) : null } : {}),
     };
@@ -379,11 +382,41 @@ export class LocalOrderService {
     return rows.map((r) => r.id);
   }
 
+  // ---------- e-BOL (fermer SMS-kodi bilan raqamli imzo) ----------
+
+  private async ebolOrder(user: LocalUser, id: string) {
+    const o = await this.prisma.localOrder.findUnique({ where: { id }, select: { courierId: true, status: true, isSigned: true, farmerId: true } });
+    if (!o || o.courierId !== this.driver(user).id) throw new NotFoundException('Buyurtma topilmadi');
+    if (o.status !== LocalOrderStatus.DELIVERING) throw new ConflictException("Buyurtma yo'lda emas");
+    if (o.isSigned) throw new ConflictException('Buyurtma allaqachon imzolangan');
+    const farmer = await this.prisma.farmer.findUniqueOrThrow({ where: { id: o.farmerId }, select: { user: { select: { phone: true } } } });
+    return { ...o, farmerPhone: farmer.user.phone };
+  }
+
+  /** Kuryer yukni olganda fermer telefoniga 4 xonali kod yuboriladi (har buyurtma alohida imzolanadi) */
+  async ebolRequest(user: LocalUser, id: string) {
+    const o = await this.ebolOrder(user, id);
+    return this.ebol.issue('LOCAL', id, o.farmerPhone);
+  }
+
+  /** Kuryer kodni kiritadi: isSigned=true va EBolContract yoziladi. Buyurtma holati o'zgarmaydi (u allaqachon DELIVERING). */
+  async ebolSign(user: LocalUser, id: string, code: string) {
+    const o = await this.ebolOrder(user, id);
+    await this.ebol.verify('LOCAL', id, code);
+    await this.prisma.$transaction(async (tx) => {
+      const live = await tx.localOrder.findFirst({ where: { id, courierId: this.driver(user).id, status: LocalOrderStatus.DELIVERING }, select: { id: true } });
+      if (!live) throw new ConflictException("Buyurtma holati o'zgargan. Sahifani yangilang");
+      await this.ebol.finalize(tx, { kind: 'LOCAL', id, driverId: this.driver(user).id, farmerId: o.farmerId });
+    });
+    return this.get(user, id);
+  }
+
   /** Yetkazish: kuryer xaridordan olgan 4 xonali kodni kiritadi (guruhga bitta kod). 5 ta xato urinishdan keyin kod bloklanadi. */
   async courierDeliver(user: LocalUser, id: string, code: string) {
     const o = await this.load(id);
     if (this.viewerOf(user, o) !== 'courier') throw new NotFoundException('Buyurtma topilmadi');
     if (o.status !== LocalOrderStatus.DELIVERING) throw new ConflictException('Buyurtma yo\'lda emas');
+    if (this.ebol.enforced && !o.isSigned) throw new ConflictException("Yetkazishdan oldin e-BOL imzolanishi kerak: fermer kodini kiriting");
     const ids = await this.deliveringGroup(id, o.deliveryGroupId, o.courierId);
     const attempts = Math.max(...(await this.prisma.localOrder.findMany({ where: { id: { in: ids } }, select: { codeAttempts: true } })).map((r) => r.codeAttempts));
     if (attempts >= MAX_CODE_ATTEMPTS) throw new ConflictException("Juda ko'p noto'g'ri urinish. Xaridor yetkazilganini ilovada tasdiqlashi kerak");
