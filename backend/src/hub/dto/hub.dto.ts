@@ -1,6 +1,6 @@
 import { HubIntakeStatus } from '@prisma/client';
 import { Transform, Type } from 'class-transformer';
-import { IsBoolean, IsEnum, IsNumber, IsOptional, IsString, IsUUID, Length, Max, Min, ValidateNested } from 'class-validator';
+import { IsBoolean, IsDateString, IsEnum, IsIn, IsInt, IsNumber, IsOptional, IsString, IsUUID, Length, Matches, Max, Min, ValidateNested } from 'class-validator';
 import { DockSlotInput } from './dock.dto';
 
 const clean = ({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim().replace(/\s+/g, ' ') : value);
@@ -32,6 +32,8 @@ export class UpdateHubDto {
   @IsOptional() @Transform(clean) @IsString() @Length(0, 80) district?: string;
   @IsOptional() @Transform(clean) @IsString() @Length(0, 200) address?: string;
   @IsOptional() @IsBoolean() isActive?: boolean;
+  /** PaaS: qadoqlash xizmati narxi (so'm/kg) */
+  @IsOptional() @Type(() => Number) @IsNumber(kg) @Min(0) @Max(1_000_000) packagingFeePerKg?: number;
 }
 
 export class AssignStaffDto {
@@ -52,6 +54,14 @@ export class AnnounceIntakeDto {
 
   @IsOptional() @Type(() => Number) @IsNumber(kg) @Min(1) @Max(5000)
   minOrderKg?: number;
+
+  /** Partiyadagi quti (tara) soni: berilsa Master QR avtomatik yaratiladi */
+  @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(100000)
+  boxCount?: number;
+
+  /** PaaS: Hub'da qadoqlash xizmatidan foydalanish */
+  @IsOptional() @IsBoolean()
+  usePackaging?: boolean;
 
   /** Yuk tushiriladigan rampa va vaqt (Hub majburiy qilsa — shart) */
   @IsOptional() @ValidateNested() @Type(() => DockSlotInput)
@@ -85,4 +95,33 @@ export class AdjustStockDto {
 export class ListIntakesQuery {
   @IsOptional() @IsEnum(HubIntakeStatus) status?: HubIntakeStatus;
   @IsOptional() @IsUUID('all') hubId?: string;
+}
+
+/** Master QR biriktirish: quti soni majburiy; kod berilmasa tizim yaratadi (yorliq oldindan bosilgan bo'lsa — skanerlangan kod) */
+export class MasterQrDto {
+  @Type(() => Number) @IsInt({ message: "Quti soni butun son bo'lsin" }) @Min(1) @Max(100000)
+  boxCount!: number;
+
+  @IsOptional() @Transform(({ value }) => (typeof value === 'string' ? value.trim().replace(/\s+/g, '').toUpperCase() : value)) @Matches(/^[A-Z0-9][A-Z0-9._-]{5,39}$/, { message: "QR kod 6-40 ta lotin harf/raqamdan iborat bo'lsin" })
+  code?: string;
+}
+
+/** Skaner orqali qabul: to'liq yoki qisman ziyon (yaroqsiz qutilar soni bilan) */
+export class ScanReceiveDto {
+  @IsIn(['FULL', 'PARTIAL'], { message: "Rejim FULL yoki PARTIAL bo'lsin" })
+  mode!: 'FULL' | 'PARTIAL';
+
+  @IsOptional() @Type(() => Number) @IsInt({ message: "Yaroqsiz qutilar soni butun son bo'lsin" }) @Min(1) @Max(100000)
+  damagedBoxes?: number;
+
+  @IsOptional() @Transform(clean) @IsString() @Length(0, 300)
+  note?: string;
+}
+
+export class OsdQuery {
+  @IsOptional() @IsUUID('all') hubId?: string;
+  @IsOptional() @IsDateString() from?: string;
+  @IsOptional() @IsDateString() to?: string;
+  @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(100000) page?: number;
+  @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(100) limit?: number;
 }

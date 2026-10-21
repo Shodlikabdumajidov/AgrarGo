@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { AdminRole, Role } from '@prisma/client';
 import { AdminRoles } from '../common/admin-roles.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -6,9 +6,10 @@ import { CurrentUser } from '../common/current-user.decorator';
 import { Roles } from '../common/roles.decorator';
 import { RolesGuard } from '../common/roles.guard';
 import { ThrottleProfile } from '../security/throttle-profile';
-import { AdjustStockDto, AnnounceIntakeDto, AssignStaffDto, CreateHubDto, ListIntakesQuery, ReceiveIntakeDto, RejectIntakeDto, SetRetailDto, UpdateHubDto } from './dto/hub.dto';
+import { AdjustStockDto, AnnounceIntakeDto, AssignStaffDto, CreateHubDto, ListIntakesQuery, MasterQrDto, OsdQuery, ReceiveIntakeDto, ScanReceiveDto, RejectIntakeDto, SetRetailDto, UpdateHubDto } from './dto/hub.dto';
 import { BookDockDto, CancelDockDto, CreateDockDto, DayQuery, DockSettingsDto, UpdateDockDto } from './dto/dock.dto';
 import { DockService } from './dock.service';
+import { HubOpsService } from './hub-ops.service';
 import { HubService } from './hub.service';
 
 const STAFF = [Role.DISPATCHER, Role.ADMIN] as const;
@@ -65,7 +66,7 @@ export class HubsController {
 @AdminRoles(AdminRole.HUB_ADMIN)
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class HubOpsController {
-  constructor(private readonly hubs: HubService, private readonly docks: DockService) {}
+  constructor(private readonly hubs: HubService, private readonly docks: DockService, private readonly ops: HubOpsService) {}
 
   // --- Rampa yozuvlari ---
   @Post('dock-bookings') @Roles(Role.FARMER, Role.DRIVER) @ThrottleProfile('booking')
@@ -106,6 +107,25 @@ export class HubOpsController {
 
   @Post('intakes/:id/reject') @Roles(...STAFF)
   reject(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string, @Body() dto: RejectIntakeDto) { return this.hubs.reject(user, id, dto); }
+
+  // --- Master QR (pallet), skaner orqali qabul, OS&D, qadoqlash (PaaS) ---
+  @Post('intakes/:id/master-qr') @Roles(Role.FARMER, ...STAFF) @HttpCode(200)
+  masterQr(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string, @Body() dto: MasterQrDto) { return this.ops.attachMasterQr(user, id, dto); }
+
+  @Get('qr/:code') @Roles(...STAFF)
+  qrLookup(@CurrentUser() user: any, @Param('code') code: string) { return this.ops.lookup(user, code); }
+
+  @Post('qr/:code/receive') @Roles(...STAFF) @HttpCode(200) @ThrottleProfile('booking')
+  qrReceive(@CurrentUser() user: any, @Param('code') code: string, @Body() dto: ScanReceiveDto) { return this.ops.receiveByQr(user, code, dto); }
+
+  @Get('osd') @Roles(...STAFF)
+  osd(@CurrentUser() user: any, @Query() q: OsdQuery) { return this.ops.osdReport(user, q); }
+
+  @Get('packaging') @Roles(...STAFF)
+  packaging(@CurrentUser() user: any, @Query('hubId') hubId?: string) { return this.ops.packagingQueue(user, hubId); }
+
+  @Post('packaging/:id/done') @Roles(...STAFF) @HttpCode(200)
+  packaged(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string) { return this.ops.markPackaged(user, id); }
 
   @Get('stock') @Roles(...STAFF)
   stock(@CurrentUser() user: any, @Query('hubId') hubId?: string) { return this.hubs.stock(user, hubId); }

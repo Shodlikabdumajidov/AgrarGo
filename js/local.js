@@ -632,8 +632,11 @@ async function renderDashHub(user) {
             l.appendChild(el('div', 'font-bold text-white', x.productName + ' · ' + lcKg(x.receivedKg !== null ? x.receivedKg : x.declaredKg)));
             l.appendChild(el('div', 'text-xs text-slate-400', '🏬 ' + x.hub.name + ' · ' + formatDateTime(x.createdAt) + (x.note ? ' · ' + x.note : '')));
             if (x.dock) l.appendChild(dockBadge(x.dock));
+            const tags = hubIntakeTags(x);
+            if (tags) l.appendChild(tags);
             r.appendChild(l);
             const rt = el('div', 'flex items-center gap-2');
+            if (x.status === 'ANNOUNCED') rt.appendChild(actionBtn('fa-qrcode', x.masterQr ? 'Master QR' : 'Master QR yaratish', false, function () { openMasterQr(x, function () { renderDashHub(user); }); }));
             const meta = { ANNOUNCED: ["Hub qabulini kutmoqda", 'text-amber-300'], RECEIVED: ['Qabul qilindi', 'text-emerald-300'], REJECTED: ['Rad etildi', 'text-rose-300'], CANCELLED: ['Bekor qilindi', 'text-slate-400'] }[x.status];
             rt.appendChild(el('span', ['text-xs font-bold', meta[1]].join(' '), T(meta[0])));
             if (x.status === 'ANNOUNCED') rt.appendChild(actionBtn('fa-door-open', x.dock ? "Vaqtni o'zgartirish" : 'Rampa va vaqt', false, function () { openIntakeDockForm(x, function () { renderDashHub(user); }); }));
@@ -692,6 +695,10 @@ function hubProductCard(p, hubs, i) {
     c.appendChild(act);
     return c;
 }
+/** PaaS narxi: Hub bazasidagi so'm/kg (fermer e'lon paytida ko'radi) */
+function hubPackagingHint(h) {
+    return T("Narx: {0} so'm/kg (qabul qilingan vaznga hisoblanadi). Hub xodimi yukni siz uchun qadoqlaydi.", formatNumber(Number(h.packagingFeePerKg) || 0));
+}
 function openIntakeForm(p, hubs) {
     const active = hubs.filter(function (h) { return h.isActive; });
     if (!active.length) return showToast(T("Hozircha faol Hub ombori yo'q."), 4000, 'error');
@@ -699,15 +706,17 @@ function openIntakeForm(p, hubs) {
     const picker = dockPicker({ hubId: hub0.id, requireDock: hub0.requireDockBooking });
     openWhForm({
         title: "Hub omboriga topshirish", sub: p.name + ' · ' + T('Sizda mavjud: {0}', lcKg(p.quantityKg)), icon: 'fa-truck-ramp-box', submit: "Topshirishni e'lon qilish",
-        onBuilt: function (inputs) { inputs.hubId.addEventListener('change', function () { const h = active.filter(function (x) { return x.id === inputs.hubId.value; })[0]; picker.setHub(inputs.hubId.value, h && h.requireDockBooking); }); },
+        onBuilt: function (inputs) { inputs.hubId.addEventListener('change', function () { const h = active.filter(function (x) { return x.id === inputs.hubId.value; })[0]; picker.setHub(inputs.hubId.value, h && h.requireDockBooking); if (h && inputs.usePackaging._hint) inputs.usePackaging._hint.textContent = hubPackagingHint(h); }); },
         fields: [
             { name: 'hubId', label: 'Hub ombori', type: 'select', options: active.map(function (h) { return [h.id, h.name + ' — ' + h.region]; }), value: p.hub ? p.hub.id : active[0].id },
             { name: 'declaredKg', label: 'Topshiriladigan miqdor (kg)', type: 'number', required: true, min: 1, max: p.quantityKg, value: Math.min(p.quantityKg, 1000), hint: "Haqiqiy vaznni Hub qabul paytida tekshiradi." },
             { name: 'retailPricePerKg', label: "Chakana narx (so'm / kg)", type: 'number', required: true, min: 1, value: p.retailPricePerKg || Math.round(p.pricePerKg * 1.4), hint: "Xaridorlar shu narxda oladi. Hub haqi, kuryer va platforma haqi xaridordan alohida olinadi — sizga to'liq shu narx o'tadi." },
             { name: 'minOrderKg', label: 'Eng kam buyurtma (kg)', type: 'number', min: 1, value: p.minOrderKg || 10 },
+            { name: 'boxCount', label: "Quti (tara) soni — Master QR uchun", type: 'number', min: 1, max: 100000, step: 1, hint: "Butun partiyaga bitta Master QR yorlig'i beriladi: «1 QR = N quti». Bo'sh qoldirsangiz, QR ni Hub xodimi biriktiradi." },
+            { name: 'usePackaging', label: "Hub'da qadoqlash xizmatidan foydalanish", type: 'checkbox', value: false, hint: hubPackagingHint(hub0) },
             { name: 'dock', label: 'Rampa va vaqt', type: 'custom', node: picker.node, get: picker.get }
         ],
-        onSubmit: function (v) { const body = { productId: p.id, hubId: v.hubId, declaredKg: v.declaredKg, retailPricePerKg: v.retailPricePerKg }; if (v.minOrderKg) body.minOrderKg = v.minOrderKg; if (v.dock) body.dockSlot = v.dock; return authed('POST', '/hub/intakes', body); },
+        onSubmit: function (v) { const body = { productId: p.id, hubId: v.hubId, declaredKg: v.declaredKg, retailPricePerKg: v.retailPricePerKg }; if (v.boxCount) body.boxCount = Math.round(v.boxCount); if (v.usePackaging) body.usePackaging = true; if (v.minOrderKg) body.minOrderKg = v.minOrderKg; if (v.dock) body.dockSlot = v.dock; return authed('POST', '/hub/intakes', body); },
         done: "Topshirish e'lon qilindi. Mahsulotni Hub omboriga olib boring."
     });
 }
@@ -797,6 +806,29 @@ function hubOrderCard(o, user) {
     if (act.children.length) card.appendChild(act);
     return card;
 }
+/** Master QR / quti / qadoqlash / ziyon belgilari (fermer va Hub xodimi kartalarida bir xil) */
+function hubIntakeTags(x) {
+    const row = el('div', 'flex flex-wrap gap-1.5 pt-1');
+    const chip = function (cls, text) { row.appendChild(el('span', 'text-[11px] font-bold px-2 py-0.5 rounded-full border ' + cls, text)); };
+    if (x.masterQr) chip('border-sky-400/40 text-sky-200 bg-sky-400/10', '🔳 ' + x.masterQr + ' · ' + T('{0} quti', x.boxCount));
+    else if (x.boxCount) chip('border-white/15 text-slate-300', T('{0} quti', x.boxCount));
+    if (x.usePackaging) chip(x.packagingStatus === 'DONE' ? 'border-emerald-400/40 text-emerald-200 bg-emerald-400/10' : 'border-amber-400/40 text-amber-200 bg-amber-400/10', '📦 ' + T(x.packagingStatus === 'DONE' ? 'Qadoqlangan' : 'Qadoqlanadi') + (x.packagingFee !== null ? ' · ' + bdMoney(x.packagingFee) : ''));
+    if (x.damagedBoxes > 0) chip('border-rose-400/40 text-rose-200 bg-rose-400/10', '⚠ ' + T('Yaroqsiz: {0} quti', x.damagedBoxes));
+    return row.childNodes.length ? row : null;
+}
+/** Master QR: yorliqni ko'rsatish/chop etish yoki (hali yo'q bo'lsa) quti sonini kiritib yaratish */
+function openMasterQr(x, done) {
+    if (x.masterQr) {
+        const body = el('div', 'space-y-3');
+        body.appendChild(el('p', 'text-sm text-slate-300', T("«1 QR = {0} quti». QR yorlig'ini butun partiyaga (pallet) yopishtiring: Hub xodimi uni skanerlab qabul qiladi.", x.boxCount)));
+        body.appendChild(buildCodeVisual(x.masterQr, x.productName, T('{0} quti', x.boxCount) + ' · ' + lcKg(x.declaredKg), 'qr'));
+        return openWhModal('Master QR', x.productName, body, false);
+    }
+    openWhForm({ title: 'Master QR biriktirish', sub: x.productName + ' · ' + lcKg(x.declaredKg), icon: 'fa-qrcode', submit: 'QR yaratish',
+        fields: [{ name: 'boxCount', label: 'Quti (tara) soni', type: 'number', required: true, min: 1, max: 100000, step: 1 }, { name: 'code', label: "QR kod (ixtiyoriy: oldindan bosilgan yorliq bo'lsa)", maxLength: 40, placeholder: 'MQ-XXXXXXXX' }],
+        onSubmit: function (v) { return authed('POST', '/hub/intakes/' + x.id + '/master-qr', { boxCount: Math.round(v.boxCount), code: v.code || undefined }); },
+        done: 'Master QR biriktirildi.', after: function () { if (done) done(); } });
+}
 function hubIntakeCard(x, user) {
     const c = el('div', 'glass rounded-2xl border border-white/10 p-4 space-y-2');
     const top = el('div', 'flex items-start justify-between gap-3');
@@ -807,8 +839,12 @@ function hubIntakeCard(x, user) {
     c.appendChild(el('div', 'text-xs text-slate-400', '🏬 ' + x.hub.name + ' · ' + T("E'lon qilingan: {0}", lcKg(x.declaredKg)) + (x.receivedKg !== null ? ' · ' + T('Qabul: {0}', lcKg(x.receivedKg)) : '') + ' · ' + formatDateTime(x.createdAt)));
     if (x.note) c.appendChild(el('div', 'text-xs text-slate-300', '💬 ' + x.note));
     if (x.dock) c.appendChild(dockBadge(x.dock));
+    const tags = hubIntakeTags(x);
+    if (tags) c.appendChild(tags);
     if (x.status === 'ANNOUNCED') {
         const act = el('div', 'flex flex-wrap gap-2');
+        act.appendChild(actionBtn('fa-qrcode', x.masterQr ? 'Master QR' : 'Master QR biriktirish', false, function () { openMasterQr(x, function () { renderHubOps(user); }); }));
+        if (x.masterQr && x.boxCount) act.appendChild(actionBtn('fa-boxes-packing', 'Skaner bilan qabul', true, function () { hubScan.code = x.masterQr; selectDashTab('hubscan'); }));
         act.appendChild(actionBtn('fa-clipboard-check', 'Qabul qilish', true, function () {
             openWhForm({ title: 'Mahsulotni qabul qilish', sub: x.productName + ' · ' + T("E'lon qilingan: {0}", lcKg(x.declaredKg)), submit: 'Qabul qilish', icon: 'fa-clipboard-check',
                 fields: [{ name: 'receivedKg', label: 'Haqiqiy vazn (kg)', type: 'number', required: true, min: 0.01, max: x.declaredKg, value: x.declaredKg, hint: "Qoldiq balansga shu vazn yoziladi va fermer e'lonidagi miqdordan ayriladi." }, { name: 'note', label: 'Izoh (ixtiyoriy)', maxLength: 300 }],

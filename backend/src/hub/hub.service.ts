@@ -1,14 +1,15 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { HubIntakeStatus, Prisma, ProductStatus, Role } from '@prisma/client';
+import { HubIntakeStatus, OsdType, PackagingStatus, Prisma, ProductStatus, Role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { regionCenter } from '../trust/geo';
 import { AdjustStockDto, AnnounceIntakeDto, CreateHubDto, ListIntakesQuery, ReceiveIntakeDto, RejectIntakeDto, SetRetailDto, UpdateHubDto } from './dto/hub.dto';
 import { DockService } from './dock.service';
 import { addStock, adjustStock } from './hub-stock';
+import { generateMasterQr, osdSplit, packagingFee } from './osd';
 
 export interface HubUser { id: string; role: Role; hubId?: string | null; farmer?: { id: string } | null }
 
-const HUB_PUBLIC = { id: true, name: true, region: true, district: true, address: true, isActive: true, requireDockBooking: true } satisfies Prisma.HubSelect;
+const HUB_PUBLIC = { id: true, name: true, region: true, district: true, address: true, isActive: true, requireDockBooking: true, packagingFeePerKg: true } satisfies Prisma.HubSelect;
 const num = (d: Prisma.Decimal | null | undefined) => (d === null || d === undefined ? null : Number(d));
 
 @Injectable()
@@ -107,7 +108,15 @@ export class HubService {
     if (hub.requireDockBooking && !dto.dockSlot) throw new ConflictException("Bu Hub'ga yuk topshirish uchun rampa va vaqtni tanlang");
     const intake = await this.prisma.$transaction(async (tx) => {
       await tx.product.update({ where: { id: product.id }, data: { hubId: hub.id, retailPricePerKg: dto.retailPricePerKg, minOrderKg: dto.minOrderKg ?? null } });
-      const created = await tx.hubIntake.create({ data: { hubId: hub.id, productId: product.id, farmerId, declaredKg: dto.declaredKg } });
+      const created = await tx.hubIntake.create({
+        data: {
+          hubId: hub.id, productId: product.id, farmerId, declaredKg: dto.declaredKg,
+          // Master QR: quti soni ma'lum bo'lsa pallet yorlig'i darhol yaratiladi
+          ...(dto.boxCount && { boxCount: dto.boxCount, masterQr: generateMasterQr(), masterQrAt: new Date() }),
+          // PaaS: e'lon paytidagi narx qayd etiladi (keyin Hub narxini o'zgartirsa ham bu topshirish uchun o'zgarmaydi)
+          ...(dto.usePackaging && { usePackaging: true, packagingStatus: PackagingStatus.PENDING, packagingRate: hub.packagingFeePerKg, packagingFee: packagingFee(Number(hub.packagingFeePerKg), dto.declaredKg) }),
+        },
+      });
       // Rampa band bo'lsa butun e'lon bekor bo'ladi (yarim holat qolmaydi)
       if (dto.dockSlot) await this.docks.bookTx(tx, user, { hubId: hub.id, purpose: 'INTAKE', intakeId: created.id, startsAt: new Date(dto.dockSlot.startsAt), dockId: dto.dockSlot.dockId, vehiclePlate: dto.dockSlot.vehiclePlate });
       return created;
@@ -143,9 +152,12 @@ export class HubService {
 
   // ---------- Hub xodimi ----------
 
-  private async intakeView(id: string) {
+  async intakeView(id: string) {
     const i = await this.prisma.hubIntake.findUniqueOrThrow({ where: { id }, include: { hub: { select: HUB_PUBLIC }, product: { select: { name: true, category: true, farmer: { select: { farmName: true } } } }, appointment: { include: { hub: { select: { name: true } }, dock: { select: { number: true, name: true } } } } } });
-    return { id: i.id, dock: i.appointment ? this.docks.brief(i.appointment) : null, status: i.status, declaredKg: num(i.declaredKg), receivedKg: num(i.receivedKg), note: i.note, createdAt: i.createdAt, receivedAt: i.receivedAt, hub: i.hub, productId: i.productId, productName: i.product.name, category: i.product.category, farmName: i.product.farmer.farmName };
+    return { id: i.id, dock: i.appointment ? this.docks.brief(i.appointment) : null, status: i.status, declaredKg: num(i.declaredKg), receivedKg: num(i.receivedKg), note: i.note, createdAt: i.createdAt, receivedAt: i.receivedAt, hub: { ...i.hub, packagingFeePerKg: num(i.hub.packagingFeePerKg) },
+      boxCount: i.boxCount, masterQr: i.masterQr, damagedBoxes: i.damagedBoxes, kgPerBox: i.boxCount ? Math.round((Number(i.declaredKg) / i.boxCount) * 100) / 100 : null,
+      usePackaging: i.usePackaging, packagingStatus: i.packagingStatus, packagingRate: num(i.packagingRate), packagingFee: num(i.packagingFee), packagedAt: i.packagedAt,
+      productId: i.productId, productName: i.product.name, category: i.product.category, farmName: i.product.farmer.farmName };
   }
 
   async listIntakes(user: HubUser, q: ListIntakesQuery) {
@@ -162,17 +174,46 @@ export class HubService {
     if (!intake) throw new NotFoundException('Topshirish topilmadi');
     this.assertAccess(user, intake.hubId);
     if (dto.receivedKg > Number(intake.declaredKg)) throw new BadRequestException(`Qabul qilingan vazn e'lon qilingan miqdordan (${Number(intake.declaredKg)} kg) oshmasligi kerak`);
-    await this.prisma.$transaction(async (tx) => {
-      const claimed = await tx.hubIntake.updateMany({ where: { id, status: HubIntakeStatus.ANNOUNCED }, data: { status: HubIntakeStatus.RECEIVED, receivedKg: dto.receivedKg, receivedAt: new Date(), receivedById: user.id, note: dto.note || null } });
-      if (claimed.count === 0) throw new ConflictException("Bu topshirish allaqachon ko'rib chiqilgan");
-      const dec = await tx.$executeRaw`UPDATE "Product" SET "quantityKg" = "quantityKg" - ${new Prisma.Decimal(dto.receivedKg)}, "updatedAt" = now() WHERE id = ${intake.productId} AND "quantityKg" >= ${new Prisma.Decimal(dto.receivedKg)}`;
-      if (dec === 0) throw new ConflictException("Fermer e'lonida yetarli qoldiq yo'q: miqdor allaqachon boshqa bronlarga ketgan bo'lishi mumkin");
-      await tx.product.updateMany({ where: { id: intake.productId, quantityKg: 0, status: ProductStatus.ACTIVE }, data: { status: ProductStatus.BOOKED } });
-      await tx.product.update({ where: { id: intake.productId }, data: { isRetail: true, hubId: intake.hubId } });
-      await addStock(tx, intake.hubId, intake.productId, dto.receivedKg, { type: 'HUB_INTAKE', id }, dto.note);
-      await this.docks.closeForIntake(tx, id, 'DONE');
-    });
+    await this.prisma.$transaction((tx) => this.finishIntake(tx, intake, { receivedKg: dto.receivedKg, damagedKg: 0, damagedBoxes: 0, note: dto.note, userId: user.id }));
     return this.intakeView(id);
+  }
+
+  /**
+   * Qabulni yakunlash (oddiy va QR-skaner orqali qabul uchun umumiy), chaqiruvchining tranzaksiyasida:
+   * holat o'zgaradi, fermer e'lonidagi miqdor (qabul qilingan + yaroqsiz) kamayadi, Hub qoldig'iga faqat yaroqli qism qo'shiladi,
+   * OS&D yozuvi yoziladi va qadoqlash haqi haqiqiy vaznga qayta hisoblanadi.
+   */
+  async finishIntake(
+    tx: Prisma.TransactionClient,
+    intake: { id: string; hubId: string; productId: string; farmerId: string; declaredKg: Prisma.Decimal; boxCount: number | null; usePackaging: boolean; packagingRate: Prisma.Decimal | null },
+    r: { receivedKg: number; damagedKg: number; damagedBoxes: number; note?: string; userId: string },
+  ) {
+    const claimed = await tx.hubIntake.updateMany({
+      where: { id: intake.id, status: HubIntakeStatus.ANNOUNCED },
+      data: {
+        status: HubIntakeStatus.RECEIVED, receivedKg: r.receivedKg, receivedAt: new Date(), receivedById: r.userId, note: r.note || null, damagedBoxes: r.damagedBoxes,
+        ...(intake.usePackaging && { packagingFee: packagingFee(Number(intake.packagingRate ?? 0), r.receivedKg) }),
+      },
+    });
+    if (claimed.count === 0) throw new ConflictException("Bu topshirish allaqachon ko'rib chiqilgan");
+    const debit = new Prisma.Decimal(r.receivedKg).add(r.damagedKg); // yaroqsiz qism ham fermer qoldig'idan chiqadi (jismonan topshirilgan)
+    const dec = await tx.$executeRaw`UPDATE "Product" SET "quantityKg" = "quantityKg" - ${debit}, "updatedAt" = now() WHERE id = ${intake.productId} AND "quantityKg" >= ${debit}`;
+    if (dec === 0) throw new ConflictException("Fermer e'lonida yetarli qoldiq yo'q: miqdor allaqachon boshqa bronlarga ketgan bo'lishi mumkin");
+    await tx.product.updateMany({ where: { id: intake.productId, quantityKg: 0, status: ProductStatus.ACTIVE }, data: { status: ProductStatus.BOOKED } });
+    await tx.product.update({ where: { id: intake.productId }, data: { isRetail: true, hubId: intake.hubId } });
+    await addStock(tx, intake.hubId, intake.productId, r.receivedKg, { type: 'HUB_INTAKE', id: intake.id }, r.note);
+    const declared = Number(intake.declaredKg);
+    const lossKg = r.damagedKg > 0 ? r.damagedKg : Math.round((declared - r.receivedKg) * 100) / 100;
+    if (lossKg > 0) {
+      await tx.hubOsd.create({
+        data: {
+          intakeId: intake.id, hubId: intake.hubId, productId: intake.productId, farmerId: intake.farmerId,
+          type: r.damagedKg > 0 ? OsdType.DAMAGED : OsdType.SHORT, totalBoxes: intake.boxCount, damagedBoxes: r.damagedBoxes || null,
+          expectedKg: declared, receivedKg: r.receivedKg, lossKg, note: r.note || null, reportedById: r.userId,
+        },
+      });
+    }
+    await this.docks.closeForIntake(tx, intake.id, 'DONE');
   }
 
   async reject(user: HubUser, id: string, dto: RejectIntakeDto) {
