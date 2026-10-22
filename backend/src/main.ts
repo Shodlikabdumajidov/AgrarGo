@@ -8,6 +8,7 @@ import { AppEnv } from './config/env.validation';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   configureApp(app);
-  await app.listen(app.get<AppEnv>(APP_ENV).PORT);
+  // YANGI:
+await app.listen(app.get<AppEnv>(APP_ENV).PORT, '0.0.0.0');
 }
 bootstrap();
