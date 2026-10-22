@@ -129,7 +129,7 @@ async function renderHubScanTab(user) {
     const head = hsHead('QR Skaner (qabul qilish)', T("Partiyaning Master QR kodini skanerlang: «1 QR = N quti». Kamera, USB skaner yoki qo'lda kiritish."), again);
     const form = el('form', 'glass rounded-3xl border border-white/10 p-4 flex flex-wrap items-stretch gap-3');
     const input = el('input', 'auth-input flex-1 min-w-[12rem] font-mono text-lg tracking-wider uppercase');
-    input.type = 'text'; input.placeholder = 'MQ-XXXXXXXX'; input.maxLength = 40; input.autocomplete = 'off'; input.value = hubScan.code || '';
+    input.type = 'text'; input.setAttribute('data-no-alphabet', ''); input.placeholder = 'MQ-XXXXXXXX'; input.maxLength = 40; input.autocomplete = 'off'; input.value = hubScan.code || '';
     input.setAttribute('aria-label', T('Master QR kodi'));
     const go = el('button', 'px-5 py-3 rounded-2xl bg-emerald-500 text-slate-950 font-extrabold hover:bg-emerald-400 transition flex items-center gap-2');
     go.type = 'submit'; go.appendChild(el('i', 'fa-solid fa-magnifying-glass')); go.appendChild(el('span', '', T('Topish')));

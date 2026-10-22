@@ -89,6 +89,12 @@
         #main-nav { transition: padding .28s cubic-bezier(.16,1,.3,1), background-color .28s ease, box-shadow .28s ease, backdrop-filter .28s ease, margin-bottom .28s cubic-bezier(.16,1,.3,1); will-change: padding; }
         #main-nav #nav-left img { transition: height .28s cubic-bezier(.16,1,.3,1), padding .28s ease; }
         /* Logotip (images/newlogo.png, 502x123): faqat balandlik beriladi, eni nisbat bo'yicha; object-contain siqilishni oldini oladi */
+        /* «Yangi Alifbo» o'chirgichi (menyuda) */
+        .na-track { position: relative; width: 2.6rem; height: 1.45rem; border-radius: 999px; background: rgba(148,163,184,.35); transition: background .2s ease; flex-shrink: 0; }
+        .na-thumb { position: absolute; top: .18rem; left: .2rem; width: 1.09rem; height: 1.09rem; border-radius: 50%; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45); transition: transform .2s cubic-bezier(.16,1,.3,1); }
+        [data-new-alphabet-toggle].on .na-track { background: #10b981; }
+        [data-new-alphabet-toggle].on .na-thumb { transform: translateX(1.15rem); }
+        @media (prefers-reduced-motion: reduce) { .na-track, .na-thumb { transition: none; } }
         .brand-logo { display: block; width: auto; max-width: 100%; object-fit: contain; background: #fff; border: 1px solid rgba(255,255,255,.2); box-shadow: 0 10px 24px -12px rgba(0,0,0,.7); }
         #main-nav #nav-left { flex-shrink: 0; } /* qator tor bo'lsa qidiruv maydoni qisqaradi, logotip emas */
         #main-nav #nav-search { min-width: 0; }
@@ -1253,6 +1259,10 @@
                         </button>
                         <button type="button" role="menuitem" onclick="replayTour()" class="w-full flex items-center gap-3 px-4 py-3.5 text-left text-slate-200 hover:bg-white/10 hover:text-emerald-400 font-semibold border-t border-white/5 transition">
                             <i class="fa-solid fa-circle-play w-5 text-emerald-400"></i> Qo'llanma
+                        </button>
+                        <button type="button" role="switch" aria-checked="false" data-new-alphabet-toggle title="o' g' sh ch → ö ğ ş ç" class="w-full flex items-center gap-3 px-4 py-3.5 text-left text-slate-200 hover:bg-white/10 hover:text-emerald-400 font-semibold border-t border-white/5 transition">
+                            <i class="fa-solid fa-language w-5 text-emerald-400"></i> <span class="flex-1">Yangi Alifbo</span>
+                            <span class="na-track" aria-hidden="true"><span class="na-thumb"></span></span>
                         </button>
                         <button type="button" role="menuitem" onclick="logout()" class="w-full flex items-center gap-3 px-4 py-3.5 text-left text-slate-200 hover:bg-rose-500/10 hover:text-rose-400 font-semibold border-t border-white/5 transition">
                             <i class="fa-solid fa-right-from-bracket w-5 text-rose-400"></i> Chiqish
@@ -2782,5 +2792,6 @@
     <script src="js/finance.js" defer></script>
     <script src="js/ebol.js" defer></script>
     <script src="js/safety.js" defer></script>
+    <script src="js/new-alphabet.js" defer></script>
 </body>
 </html>

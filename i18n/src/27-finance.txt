@@ -87,3 +87,4 @@ Hold, Released va Refunded holatidagi to'lovlar; nizoli to'lovga qaror chiqarish
 Qayta hisoblashlar jurnali ‖ Журнал пересчётов ‖ Recalculation log
 Ziyon, qadoqlash haqi ushlanmasi va nizo qarorlari ‖ Ущерб, удержания платы за упаковку и решения по спорам ‖ Damage, packaging fee deductions and dispute rulings
 {0} ta ‖ {0} шт. ‖ {0}
+Yangi Alifbo ‖ Новый алфавит ‖ New alphabet
