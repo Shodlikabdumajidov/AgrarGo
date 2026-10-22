@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas } from '@react-three/fiber';
 import * as THREE from 'three';
 import BookScene from './Scene.jsx';
-import { TW, faceSignature, paintFace } from './paint.js';
+import { TW, faceSignature, logoReady, onLogoReady, paintFace } from './paint.js';
 import { buildFaces, folioOf, spreadFaces, turnsForFace } from './model.js';
 import ListingForm from '../ListingForm.jsx';
 import MetalButton from '../MetalButton.jsx';
@@ -67,7 +67,10 @@ export default function Book3D({ products, onCreate, onUpdate, onArchive, onDele
 
   const faces = useMemo(() => buildFaces(products), [products]);
   const L = faces.length / 2;
-  const textures = useTextures(faces, lang, t);
+  // Muqovadagi logotip rasmi yuklangach teksturalar qayta chiziladi (imzoga qo'shiladi)
+  const [logoOk, setLogoOk] = useState(logoReady);
+  useEffect(() => { let on = true; onLogoReady(() => { if (on) setLogoOk(true); }); return () => { on = false; }; }, []);
+  const textures = useTextures(faces, lang + (logoOk ? '|logo' : ''), t);
 
   const [turns, setTurns] = useState(0);
   const [side, setSide] = useState('R');

@@ -31,7 +31,9 @@ export default function Cover({ coverA, left, pw, ph, onOpen, children }) {
             <div className="bk-gold" style={{ width: '4.6em', height: '4.6em', color: '#f3c75a' }}><Wheat /></div>
             <div className="bk-gold" style={{ fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: '2.15em', lineHeight: 1.1, letterSpacing: '.01em', maxWidth: '6.4em' }}>Mening E'lonlarim</div>
             <div aria-hidden="true" style={{ width: '6em', height: '.14em', background: 'linear-gradient(90deg, transparent, #e8c25a, transparent)' }} />
-            <div className="bk-emboss" style={{ fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: '1.25em', letterSpacing: '.38em', textTransform: 'uppercase', color: '#0b6b45' }}>AgrarGo</div>
+            <div style={{ background: '#f7f4e8', border: '.1em solid rgba(232,194,90,.9)', borderRadius: '.7em', padding: '.5em .9em', boxShadow: '0 .3em .8em rgba(0,0,0,.45)' }}>
+              <img src="images/newlogo.png" alt="AgrarGo" draggable="false" style={{ display: 'block', height: '3em', width: 'auto', maxWidth: '8.5em', objectFit: 'contain' }} />
+            </div>
           </div>
           <motion.div style={{ position: 'absolute', inset: 0, opacity: shade, background: 'linear-gradient(90deg, rgba(0,0,0,.1), rgba(0,0,0,.7))' }} />
         </div>

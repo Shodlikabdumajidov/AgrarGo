@@ -100,6 +100,40 @@ function wheat(ctx, cx, cy, s, color) {
   ctx.restore();
 }
 
+// ---------------- logotip ----------------
+
+/** Muqovadagi logotip: images/newlogo.png. Rasm yuklangach `onLogoReady` qayta chizishni boshlaydi (canvas sinxron chizadi). */
+export const LOGO_URL = 'images/newlogo.png';
+let logo = null;
+const logoWaiters = [];
+export function loadLogo() {
+  if (!logo) {
+    logo = new Image();
+    logo.decoding = 'async';
+    logo.onload = () => logoWaiters.splice(0).forEach((f) => f());
+    logo.src = LOGO_URL;
+  }
+  return logo;
+}
+export const logoReady = () => !!logo && logo.complete && logo.naturalWidth > 0;
+export function onLogoReady(cb) { if (logoReady()) return cb(); loadLogo(); logoWaiters.push(cb); }
+
+/** Logotipni (nisbati saqlangan, siqilmaydi) och plashkada chizadi: qora «Agrar» yozuvi to'q muqovada ham o'qiladi */
+function drawLogoPlaque(ctx, cx, y, w, h) {
+  ctx.save();
+  ctx.shadowColor = 'rgba(0,0,0,.45)'; ctx.shadowBlur = 18; ctx.shadowOffsetY = 6;
+  ctx.fillStyle = '#f7f4e8'; roundRect(ctx, cx - w / 2, y, w, h, 26); ctx.fill();
+  ctx.shadowColor = 'transparent';
+  ctx.strokeStyle = 'rgba(232,194,90,.9)'; ctx.lineWidth = 3; roundRect(ctx, cx - w / 2 + 8, y + 8, w - 16, h - 16, 20); ctx.stroke();
+  if (logoReady()) {
+    const pad = 22, bw = w - pad * 2, bh = h - pad * 2;
+    const k = Math.min(bw / logo.naturalWidth, bh / logo.naturalHeight);
+    const dw = logo.naturalWidth * k, dh = logo.naturalHeight * k;
+    ctx.drawImage(logo, cx - dw / 2, y + (h - dh) / 2, dw, dh);
+  }
+  ctx.restore();
+}
+
 // ---------------- sahifa turlari ----------------
 
 function drawCover(ctx, { t }) {
@@ -126,9 +160,7 @@ function drawCover(ctx, { t }) {
   const ly = 520 + lines.length * 104 - 40;
   const lg = ctx.createLinearGradient(260, 0, 660, 0); lg.addColorStop(0, 'rgba(232,194,90,0)'); lg.addColorStop(0.5, '#e8c25a'); lg.addColorStop(1, 'rgba(232,194,90,0)');
   ctx.fillStyle = lg; ctx.fillRect(260, ly, 400, 4);
-  ctx.fillStyle = EMERALD; ctx.font = `800 44px ${SERIF}`; if ('letterSpacing' in ctx) ctx.letterSpacing = '16px';
-  ctx.shadowColor = 'rgba(0,230,118,.55)'; ctx.shadowBlur = 24; ctx.fillText('AGRARGO', 470, ly + 100); ctx.shadowColor = 'transparent';
-  if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+  drawLogoPlaque(ctx, 460, ly + 36, 440, 190);
   ctx.fillStyle = 'rgba(230,244,236,.55)'; ctx.font = `600 24px ${SANS}`; ctx.fillText(t('Ochish uchun bosing yoki suring'), 460, TH - 118);
   ctx.textAlign = 'left';
   return [];

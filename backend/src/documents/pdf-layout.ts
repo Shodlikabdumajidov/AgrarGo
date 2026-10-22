@@ -5,7 +5,7 @@ import { join } from 'path';
 export const ASSETS_DIR = join(process.cwd(), 'assets');
 const FONT = join(ASSETS_DIR, 'fonts', 'DejaVuSans.ttf');
 const FONT_BOLD = join(ASSETS_DIR, 'fonts', 'DejaVuSans-Bold.ttf');
-export const LOGO = join(ASSETS_DIR, 'logo.png');
+export const LOGO = join(ASSETS_DIR, 'newlogo.png');
 
 export const C = { brand: '#059669', dark: '#0f172a', muted: '#64748b', line: '#cbd5e1', soft: '#ecfdf5' };
 export const MARGIN = 40;
@@ -21,9 +21,9 @@ export function newDoc(title: string) {
 export const pageWidth = (doc: PDFKit.PDFDocument) => doc.page.width - MARGIN * 2;
 
 export function header(doc: PDFKit.PDFDocument, title: string, subtitle: string) {
-  doc.image(LOGO, MARGIN, MARGIN, { height: 44 });
-  doc.font('b').fontSize(10).fillColor(C.brand).text('AgrarGo', MARGIN + 54, MARGIN + 4);
-  doc.font('r').fontSize(8).fillColor(C.muted).text('Fermerdan to\'g\'ridan-to\'g\'ri B2B platforma', MARGIN + 54, MARGIN + 18);
+  // Logotip (502x123): faqat balandlik beriladi, eni nisbat bo'yicha (~139 pt); yozuv logotipning ichida
+  doc.image(LOGO, MARGIN, MARGIN, { height: 34 });
+  doc.font('r').fontSize(8).fillColor(C.muted).text('Fermerdan to\'g\'ridan-to\'g\'ri B2B platforma', MARGIN, MARGIN + 38);
   doc.font('b').fontSize(15).fillColor(C.dark).text(title, MARGIN, MARGIN + 6, { width: pageWidth(doc), align: 'right' });
   doc.font('r').fontSize(9).fillColor(C.muted).text(subtitle, MARGIN, MARGIN + 28, { width: pageWidth(doc), align: 'right' });
   const y = MARGIN + 56;

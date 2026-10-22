@@ -12,10 +12,9 @@ function cover(doc: PDFKit.PDFDocument, lang: Lang, roles: GuideRole[]) {
   doc.rect(0, 0, W, 330).fill(C.brand);
   doc.circle(W - 60, 70, 120).fillOpacity(0.12).fill('#ffffff').fillOpacity(1);
   doc.circle(80, 300, 80).fillOpacity(0.1).fill('#ffffff').fillOpacity(1);
-  doc.roundedRect(MARGIN, 60, 76, 76, 14).fill('#ffffff');
-  doc.image(LOGO, MARGIN + 8, 68, { height: 60 });
-  doc.font('b').fontSize(34).fillColor('#ffffff').text('AgrarGo', MARGIN + 94, 74);
-  doc.font('r').fontSize(12).fillColor('#d1fae5').text(UI_TEXT.subtitle[lang], MARGIN + 94, 118);
+  doc.roundedRect(MARGIN, 60, 200, 66, 14).fill('#ffffff');
+  doc.image(LOGO, MARGIN + 10, 71, { height: 44 }); // 502x123 logotip: eni ~180 pt, nisbat saqlanadi
+  doc.font('r').fontSize(12).fillColor('#d1fae5').text(UI_TEXT.subtitle[lang], MARGIN, 140);
   doc.font('b').fontSize(26).fillColor('#ffffff').text(UI_TEXT.title[lang], MARGIN, 210, { width: W - MARGIN * 2 });
   doc.font('b').fontSize(12).fillColor(C.brand).text(UI_TEXT.contents[lang].toUpperCase(), MARGIN, 370, { characterSpacing: 1 });
   let y = 396;

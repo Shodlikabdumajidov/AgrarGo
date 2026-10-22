@@ -15,6 +15,7 @@
     <meta name="apple-mobile-web-app-title" content="AgrarGo">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="images/icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/icons/favicon-32.png">
     <link rel="icon" type="image/png" sizes="192x192" href="images/icons/icon-192.png">
     <link rel="icon" type="image/png" sizes="512x512" href="images/icons/icon-512.png">
     <link rel="shortcut icon" href="images/icons/icon-192.png">
@@ -87,12 +88,22 @@
         /* Sticky header: sahifa 50px dan ko'p aylantirilganda kichrayadi, xira shaffof fon oladi (js/app.js: initStickyHeader) */
         #main-nav { transition: padding .28s cubic-bezier(.16,1,.3,1), background-color .28s ease, box-shadow .28s ease, backdrop-filter .28s ease, margin-bottom .28s cubic-bezier(.16,1,.3,1); will-change: padding; }
         #main-nav #nav-left img { transition: height .28s cubic-bezier(.16,1,.3,1), padding .28s ease; }
+        /* Logotip (images/newlogo.png, 502x123): faqat balandlik beriladi, eni nisbat bo'yicha; object-contain siqilishni oldini oladi */
+        .brand-logo { display: block; width: auto; max-width: 100%; object-fit: contain; background: #fff; border: 1px solid rgba(255,255,255,.2); box-shadow: 0 10px 24px -12px rgba(0,0,0,.7); }
+        #main-nav #nav-left { flex-shrink: 0; } /* qator tor bo'lsa qidiruv maydoni qisqaradi, logotip emas */
+        #main-nav #nav-search { min-width: 0; }
+        .brand-logo-nav { height: 2.75rem; max-width: none; flex-shrink: 0; padding: .35rem .75rem; border-radius: .9rem; }
+        .brand-logo-footer { height: 3rem; padding: .35rem .7rem; border-radius: .8rem; }
+        .brand-logo-auth { height: 2.75rem; padding: .3rem .7rem; border-radius: .8rem; margin: 0 auto .9rem; }
+        .brand-logo-dash { display: none; height: 2rem; padding: .2rem .5rem; border-radius: .6rem; box-shadow: none; flex-shrink: 0; }
+        @media (min-width: 420px) { .brand-logo-dash { display: block; } }
+        @media (min-width: 640px) { .brand-logo-nav { height: 3.25rem; padding: .4rem .85rem; border-radius: 1rem; } .brand-logo-dash { height: 2.4rem; } }
         #main-nav.nav-shrunk { padding-top: .5rem; padding-bottom: .5rem; background-color: rgba(15, 23, 42, .9); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); box-shadow: 0 12px 30px -18px rgba(0,0,0,.85); }
-        #main-nav.nav-shrunk #nav-left img { height: 2.5rem; padding: .25rem; }
+        #main-nav.nav-shrunk #nav-left img { height: 2.1rem; padding: .2rem .55rem; }
         #main-nav.nav-shrunk #nav-left button { padding: .3rem .55rem; font-size: 1.5rem; }
         #main-nav.nav-shrunk #nav-search #dropdown-btn { padding-top: .55rem; padding-bottom: .55rem; }
         #main-nav.nav-shrunk #nav-search input { padding-top: .55rem; padding-bottom: .55rem; }
-        @media (max-width: 768px) { #main-nav.nav-shrunk { padding-top: .25rem; padding-bottom: .25rem; } #main-nav.nav-shrunk #nav-left img { height: 2rem; } }
+        @media (max-width: 768px) { #main-nav.nav-shrunk { padding-top: .25rem; padding-bottom: .25rem; } #main-nav.nav-shrunk #nav-left img { height: 1.7rem; } }
         #main-nav.nav-measuring, #main-nav.nav-measuring * { transition: none !important; }
         @media (prefers-reduced-motion: reduce) { #main-nav, #main-nav #nav-left img { transition: none; } }
         /* MacOS style smooth spring animation for Sidebar */
@@ -318,7 +329,7 @@
         .logo-face {
             object-fit: contain;
             background: #fff;
-            padding: 14px;
+            padding: 14px 18px;
             box-sizing: border-box;
             border: 2px solid rgba(16, 185, 129, 0.55);
             backface-visibility: hidden;
@@ -1169,7 +1180,7 @@
                         <i class="fa-solid fa-bars-staggered"></i>
                     </button>
                     <a href="./" id="logo-link" aria-label="AgrarGo — bosh sahifaga qaytish" class="shrink-0 rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400">
-                        <img src="images/logo.png" alt="AgrarGo Logo" class="h-16 sm:h-20 w-auto rounded-2xl shadow-xl object-contain bg-slate-900 p-1.5 border border-white/15 hover:scale-105 transition duration-300">
+                        <img src="images/newlogo.png" alt="AgrarGo" width="502" height="123" class="brand-logo brand-logo-nav hover:scale-105 transition duration-300">
                     </a>
                 </div>
             </div>
@@ -1344,7 +1355,7 @@
                     
                     <!-- Rotating 3D Logo -->
                     <div class="logo-glow relative">
-                        <div class="logo-stage relative w-44 h-44 sm:w-52 sm:h-52">
+                        <div class="logo-stage relative w-60 h-28 sm:w-72 sm:h-32">
                             <div class="logo-ring" aria-hidden="true"></div>
                             <div class="logo-tilt">
                             <div class="logo-3d">
@@ -1359,8 +1370,8 @@
                                     <span class="logo-edge" style="--z:4.00px"></span>
                                     <span class="logo-edge" style="--z:5.50px"></span>
                                     <span class="logo-edge" style="--z:7.00px"></span>
-                                <img src="images/logo.png" alt="AgrarGo Logo" class="logo-face front">
-                                <img src="images/logo.png" alt="" aria-hidden="true" class="logo-face back">
+                                <img src="images/newlogo.png" alt="AgrarGo" class="logo-face front">
+                                <img src="images/newlogo.png" alt="" aria-hidden="true" class="logo-face back">
                             </div>
                             </div>
                             <div class="logo-shadow"></div>
@@ -1889,7 +1900,7 @@
         <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
             <div class="space-y-4">
                 <div class="flex items-center gap-3">
-                    <img src="images/logo.png" alt="AgrarGo Logo" class="h-12 w-auto rounded-xl object-contain bg-slate-950 p-1 border border-white/10">
+                    <img src="images/newlogo.png" alt="AgrarGo" width="502" height="123" class="brand-logo brand-logo-footer">
                     <span id="site-name" class="font-extrabold text-xl tracking-wider text-white" translate="no">AgrarGo</span>
                 </div>
                 <p class="text-slate-400 text-sm leading-relaxed">O'zbekiston agrar sektori uchun zamonaviy raqamli logistika va ta'minot ekotizimi.</p>
@@ -1933,6 +1944,7 @@
             </button>
 
             <div class="text-center space-y-2 mb-6">
+                <img src="images/newlogo.png" alt="AgrarGo" width="502" height="123" class="brand-logo brand-logo-auth">
                 <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold uppercase tracking-widest">
                     <i id="auth-role-icon" class="fa-solid fa-user"></i> <span id="auth-role-badge">AgrarGo</span>
                 </div>
@@ -2620,7 +2632,8 @@
                 <button type="button" onclick="closeDashboard()" class="flex items-center gap-2 text-slate-300 hover:text-emerald-400 font-bold text-sm transition">
                     <i class="fa-solid fa-arrow-left"></i> <span class="hidden sm:inline">Saytga qaytish</span>
                 </button>
-                <div class="flex items-center gap-2 text-emerald-400 font-extrabold uppercase tracking-widest text-xs sm:text-sm">
+                <div class="flex items-center gap-2 sm:gap-3 min-w-0 text-emerald-400 font-extrabold uppercase tracking-widest text-xs sm:text-sm">
+                    <img src="images/newlogo.png" alt="AgrarGo" width="502" height="123" class="brand-logo brand-logo-dash">
                     <i id="dash-role-icon" class="fa-solid fa-gauge"></i> <span id="dash-role-title">Kabinet</span>
                 </div>
                 <div class="flex items-center gap-3">
