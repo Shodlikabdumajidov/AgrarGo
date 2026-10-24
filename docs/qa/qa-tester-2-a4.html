@@ -1,0 +1,41 @@
+<!doctype html><html lang="uz"><head><meta charset="utf-8"><title>AgrarGo QA — 2-TESTER (A4)</title><style>
+@page { size: A4 portrait; margin: 8mm; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body { font-family: "Segoe UI", Arial, Helvetica, sans-serif; color: #111; }
+.page { width: 194mm; height: 281mm; page-break-after: always; display: flex; flex-direction: column; gap: 2.2mm; overflow: hidden; }
+.page:last-child { page-break-after: auto; }
+.head { color: #fff; border-radius: 3mm; padding: 2.6mm 5mm; display: flex; justify-content: space-between; align-items: center; }
+.head b { font-size: 19pt; letter-spacing: .5px; } .head small { display: block; font-size: 10pt; font-weight: 600; opacity: .95; margin-top: .4mm; }
+.head .app { text-align: right; font-size: 8.8pt; line-height: 1.35; opacity: .95; }
+.meta { display: flex; gap: 5mm; font-size: 9.5pt; align-items: flex-end; }
+.meta span { flex: 1; border-bottom: .3mm solid #111; padding-bottom: .4mm; white-space: nowrap; }
+.pre { display: flex; gap: 4mm; font-size: 9pt; align-items: center; border: .4mm dashed #555; border-radius: 2mm; padding: 1.2mm 2.5mm; }
+.pre b { font-size: 9pt; } .pre label { display: flex; gap: 1.4mm; align-items: center; white-space: nowrap; }
+.box { flex: 0 0 5mm; width: 5mm; height: 5mm; border: .6mm solid #111; border-radius: 1mm; background: #fff; }
+.body { display: flex; flex-direction: column; gap: 1.8mm; flex: 1 1 auto; min-height: 0; }
+.head, .meta, .pre, .bugs, .foot, .blk { flex-shrink: 0; }
+.blk h3 { color: #fff; font-size: 10.5pt; padding: .8mm 2.5mm; border-radius: 1.4mm; display: flex; justify-content: space-between; }
+.blk h3 em { font-style: normal; font-weight: 400; font-size: 8.5pt; opacity: .9; }
+ul { list-style: none; }
+li { display: flex; align-items: center; gap: 2.4mm; font-size: 10pt; line-height: 1.18; padding: .8mm 0 .8mm 1mm; border-bottom: .2mm dotted #999; }
+li .tx { flex: 1; } li .bug { flex: 0 0 24mm; font-size: 7.6pt; color: #666; border-bottom: .25mm solid #888; height: 4.2mm; }
+.bugs { border: .5mm solid #b91c1c; border-radius: 2.5mm; overflow: hidden; }
+.bugs h4 { background: #b91c1c; color: #fff; font-size: 9pt; padding: .7mm 3mm; }
+table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+th, td { border: .3mm solid #444; height: 5.4mm; font-size: 8.4pt; padding: 0 1mm; }
+th { background: #fee2e2; text-align: left; height: 4.6mm; }
+col.a { width: 15mm; } col.b { width: 34mm; } col.d { width: 28mm; } col.e { width: 13mm; }
+td:first-child { font-weight: 700; } td.ok { text-align: center; } td.ok .box { display: inline-block; width: 3.8mm; height: 3.8mm; margin-top: .8mm; }
+.foot { display: flex; justify-content: space-between; gap: 5mm; font-size: 9.2pt; align-items: flex-end; }
+.foot span { flex: 1; border-top: .3mm solid #111; padding-top: .5mm; }
+.foot b { flex: 0 0 auto; font-size: 11pt; }
+</style></head><body><section class="page">
+ <div class="head" style="background:#1d4ed8"><div><b>2-TESTER</b><small>DRIVER (Haydovchi) + Logistika / e-BOL (QR)</small></div><div class="app">AgrarGo · QA test yo'l xaritasi<br>Varaq 2 / 4 · A4</div></div>
+ <div class="meta"><span>Tester: </span><span>Sana: </span><span>Qurilma / brauzer: </span></div>
+ <div class="pre"><b>Tayyorlik:</b><label><span class="box"></span>Sayt (Vercel) ochiladi</label><label><span class="box"></span>API (Render) /health ok</label><label><span class="box"></span>Test hisob</label><label><span class="box"></span>OTP usuli</label></div>
+ <div class="body"><section class="blk"><h3 style="background:#1d4ed8"><span>1. Auth &amp; OTP</span><em>4 ta band</em></h3><ul><li><span class="box"></span><span class="tx">Haydovchi ro&#x27;yxati: mashina turi, davlat raqami, sig&#x27;im, viloyat</span><span class="bug">Bug №</span></li><li><span class="box"></span><span class="tx">KYC: ID, guvohnoma, tex-pasport, Face ID yuklanadi</span><span class="bug">Bug №</span></li><li><span class="box"></span><span class="tx">Obuna holati; «Tasdiqlangan haydovchi» belgisi</span><span class="bug">Bug №</span></li><li><span class="box"></span><span class="tx">Login/Logout; haydovchi ↔ boshqa rol alohida telefon</span><span class="bug">Bug №</span></li></ul></section><section class="blk"><h3 style="background:#1d4ed8"><span>2. Yuklar va Qidiruv</span><em>4 ta band</em></h3><ul><li><span class="box"></span><span class="tx">«Mavjud yuklar»: viloyat, sig&#x27;im, masofa filtri; yo&#x27;l haqi ko&#x27;rinadi</span><span class="bug">Bug №</span></li><li><span class="box"></span><span class="tx">Sig&#x27;imga sig&#x27;maydigan yuk «Olish» tugmasi o&#x27;chiq</span><span class="bug">Bug №</span></li><li><span class="box"></span><span class="tx">Haydovchi e&#x27;loni (qaytish yo&#x27;li) va LTL / zanjir takliflari</span><span class="bug">Bug №</span></li><li><span class="box"></span><span class="tx">Boshqa haydovchi olgan yuk yo&#x27;qoladi (poyga holati)</span><span class="bug">Bug №</span></li></ul></section><section class="blk"><h3 style="background:#1d4ed8"><span>3. Logistika va e-BOL (QR)</span><em>7 ta band</em></h3><ul><li><span class="box"></span><span class="tx">Yukni olish — faqat to&#x27;lov HELD bo&#x27;lsa; bitta faol yuk limiti</span><span class="bug">Bug №</span></li><li><span class="box"></span><span class="tx">«Yetib keldim» → fermerga 4 xonali kod; 60 s kutish</span><span class="bug">Bug №</span></li><li><span class="box"></span><span class="tx">Kod kiritish: imzo ✓ → status «Yo&#x27;lda» (IN_TRANSIT)</span><span class="bug">Bug №</span></li><li><span class="box"></span><span class="tx">Noto&#x27;g&#x27;ri kod 5 marta → blok; muddati o&#x27;tgan kod rad</span><span class="bug">Bug №</span></li><li><span class="box"></span><span class="tx">GPS joylashuv, jonli kuzatuv, «Yetkazib berdim», ELD jurnali</span><span class="bug">Bug №</span></li><li><span class="box"></span><span class="tx">Kuryer rejimi: «Hammasini olish», har buyurtmaga e-BOL, kod bilan topshirish</span><span class="bug">Bug №</span></li><li><span class="box"></span><span class="tx">Ombor yuki Master QR / shtrix-kod yorlig&#x27;i skanerlanadi</span><span class="bug">Bug №</span></li></ul></section><section class="blk"><h3 style="background:#1d4ed8"><span>4. To&#x27;lov va CashBack</span><em>3 ta band</em></h3><ul><li><span class="box"></span><span class="tx">Yetkazilgach yo&#x27;l haqi haydovchi ulushiga tushadi</span><span class="bug">Bug №</span></li><li><span class="box"></span><span class="tx">Kuryer daromadi va 1% keshbek hisobda ko&#x27;rinadi</span><span class="bug">Bug №</span></li><li><span class="box"></span><span class="tx">Bekor/ziyon holatida yo&#x27;l haqi qoidasi to&#x27;g&#x27;ri</span><span class="bug">Bug №</span></li></ul></section><section class="blk"><h3 style="background:#1d4ed8"><span>5. Boshqaruv va e-BOL nazorati</span><em>3 ta band</em></h3><ul><li><span class="box"></span><span class="tx">Bloklangan haydovchi tokeni yopiladi, kira olmaydi</span><span class="bug">Bug №</span></li><li><span class="box"></span><span class="tx">Safety panelda imzolangan e-BOL: ID + vaqt tamg&#x27;asi</span><span class="bug">Bug №</span></li><li><span class="box"></span><span class="tx">Boshqa haydovchining yukiga kirish = 404</span><span class="bug">Bug №</span></li></ul></section></div>
+ <div class="bugs"><h4>XATOLIKLAR (Bug ID · Qaysi modul · Qisqa xato · Mas'ul) — bandning «Bug №» joyiga ham yozing</h4>
+  <table><colgroup><col class="a"><col class="b"><col><col class="d"><col class="e"></colgroup><tr><th>Bug ID</th><th>Qaysi modul</th><th>Qisqa xato</th><th>Mas'ul</th><th>Hal ✓</th></tr><tr><td>2-1</td><td></td><td></td><td></td><td class="ok"><span class="box"></span></td></tr><tr><td>2-2</td><td></td><td></td><td></td><td class="ok"><span class="box"></span></td></tr><tr><td>2-3</td><td></td><td></td><td></td><td class="ok"><span class="box"></span></td></tr><tr><td>2-4</td><td></td><td></td><td></td><td class="ok"><span class="box"></span></td></tr><tr><td>2-5</td><td></td><td></td><td></td><td class="ok"><span class="box"></span></td></tr></table></div>
+ <div class="foot"><b>Bajarildi: ____ / 21</b><span>Tester imzosi</span><span>Jamoa rahbari ✓</span></div>
+</section></body></html>
