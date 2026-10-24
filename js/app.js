@@ -40,7 +40,7 @@
         });
 
         // ===== AUTH (Login / Register) =====
-        const API_URL = 'http://localhost:3000'; // production'da backend manziliga almashtiring
+        const API_URL = 'https://agrargo-backend.onrender.com'; // production'da backend manziliga almashtiring
         const TOKEN_KEY = 'agrargo_token';
         const USER_KEY = 'agrargo_user';
 
