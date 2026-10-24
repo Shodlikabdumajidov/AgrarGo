@@ -1,0 +1,108 @@
+# --- Haydovchi daromadi va formula ---
+Nima uchun bu narx? ‖ Почему такая цена? ‖ Why this price?
+Sizning daromadingiz: ‖ Ваш доход: ‖ Your earnings:
+Baza tarifi ‖ Базовый тариф ‖ Base fee
+Masofa ({0} km) ‖ Расстояние ({0} км) ‖ Distance ({0} km)
+{0} km × {1} ‖ {0} км × {1} ‖ {0} km × {1}
+Og'irlik ({0} t) ‖ Вес ({0} т) ‖ Weight ({0} t)
+{0} t × {1} km × {2} ‖ {0} т × {1} км × {2} ‖ {0} t × {1} km × {2}
+Yaxlitlash / tarif tuzatishi ‖ Округление / корректировка тарифа ‖ Rounding / tariff adjustment
+Jami ‖ Итого ‖ Total
+Ushbu narx joriy yoqilg'i xarajatlari va masofa uchun adolatli o'rtacha bozor stavkasi bo'yicha hisoblangan. ‖ Эта цена рассчитана по справедливой средней рыночной ставке с учётом текущих расходов на топливо и расстояния. ‖ This price is calculated at a fair average market rate based on current fuel costs and distance.
+Yo'l haqi formulasi ‖ Формула платы за рейс ‖ Delivery fee formula
+Taxminiy yo'l haqi ({0} km) ‖ Ориентировочная плата за рейс ({0} км) ‖ Estimated delivery fee ({0} km)
+Taxminiy jami ‖ Ориентировочный итог ‖ Estimated total
+# --- Haydovchilar katalogi ---
+Haydovchilar ‖ Водители ‖ Drivers
+Haydovchilar katalogi ‖ Каталог водителей ‖ Drivers catalog
+Bo'sh sig'im va xizmatlar: mos haydovchini toping va to'g'ridan-to'g'ri bog'laning ‖ Свободная вместимость и услуги: найдите подходящего водителя и свяжитесь напрямую ‖ Free capacity and services: find a suitable driver and contact them directly
+E'lon joylash ‖ Разместить объявление ‖ Post a listing
+Xizmat e'loni ‖ Объявление об услугах ‖ Service listing
+Fermer va marketlar sizni katalogdan topib, to'g'ridan-to'g'ri bog'lanadi. ‖ Фермеры и маркеты найдут вас в каталоге и свяжутся напрямую. ‖ Farmers and markets will find you in the catalog and contact you directly.
+Yo'nalish, shahar yoki haydovchi ismi bo'yicha qidiring... ‖ Ищите по маршруту, городу или имени водителя... ‖ Search by route, city or driver name...
+Holat ‖ Статус ‖ Status
+🟢 Bo'sh / Yuk kutmoqda ‖ 🟢 Свободен / Ждёт груз ‖ 🟢 Available / Awaiting cargo
+🔵 Yo'lda (qaytish yuki kerak) ‖ 🔵 В пути (нужен обратный груз) ‖ 🔵 On route (needs a backhaul)
+Tirkama turi ‖ Тип прицепа ‖ Trailer type
+Dry Van (yopiq furgon) ‖ Dry Van (закрытый фургон) ‖ Dry Van (enclosed van)
+Reefer (sovutgichli) ‖ Reefer (рефрижератор) ‖ Reefer (refrigerated)
+Flatbed (ochiq platforma) ‖ Flatbed (открытая платформа) ‖ Flatbed (open platform)
+Drop-Deck (past platforma) ‖ Drop-Deck (низкая платформа) ‖ Drop-Deck (low platform)
+Tent (tentli) ‖ Tent (тентованный) ‖ Tent (curtain-side)
+Box Truck (kichik furgon) ‖ Box Truck (малый фургон) ‖ Box Truck (small van)
+Tipper (samosval) ‖ Tipper (самосвал) ‖ Tipper (dump truck)
+Boshqa ‖ Другое ‖ Other
+Sig'im (kg) ‖ Вместимость (кг) ‖ Capacity (kg)
+Masalan: 20000 ‖ Например: 20000 ‖ E.g. 20000
+Ish vaqti ‖ Время работы ‖ Working hours
+Masalan: 06:00–22:00 ‖ Например: 06:00–22:00 ‖ E.g. 06:00–22:00
+Yo'nalishlar ‖ Маршруты ‖ Routes
+Vergul bilan ajrating (8 tagacha). ‖ Разделяйте запятыми (до 8). ‖ Separate with commas (up to 8).
+Hozirgi joylashuv ‖ Текущее местоположение ‖ Current location
+Masalan: Samarqand sh. ‖ Например: г. Самарканд ‖ E.g. Samarkand city
+Yuklash joyiga yetib borish (daqiqa) ‖ Время подъезда к месту загрузки (мин) ‖ Time to reach the loading point (min)
+Masalan: 30 ‖ Например: 30 ‖ E.g. 30
+Joriy yukni yetkazish vaqti ‖ Время доставки текущего груза ‖ Current cargo delivery time
+Qaytish yukini olish vaqti ‖ Время получения обратного груза ‖ Backhaul pickup time
+Narx (so'm / km) ‖ Цена (сум / км) ‖ Price (UZS / km)
+Masalan: 4500 ‖ Например: 4500 ‖ E.g. 4500
+Narx izohi ‖ Комментарий к цене ‖ Price note
+Masalan: Toshkent ↔ Samarqand 1 200 000 so'm ‖ Например: Ташкент ↔ Самарканд 1 200 000 сум ‖ E.g. Tashkent ↔ Samarkand 1,200,000 UZS
+Qo'shimcha xizmatlar ‖ Дополнительные услуги ‖ Extra services
+Yuklovchi xizmati ‖ Услуги грузчиков ‖ Loader service
+Harorat nazorati ‖ Контроль температуры ‖ Temperature control
+Tasmalash va Brezent ‖ Ремни и брезент ‖ Straps and tarps
+Gidravlik bort (Liftgate) ‖ Гидроборт (Liftgate) ‖ Hydraulic liftgate
+24/7 GPS kuzatuv va shoshilinch yetkazib berish ‖ GPS-отслеживание 24/7 и срочная доставка ‖ 24/7 GPS tracking and urgent delivery
+Tavsif ‖ Описание ‖ Description
+Tajriba, mashina holati, shartlar... ‖ Опыт, состояние машины, условия... ‖ Experience, vehicle condition, terms...
+Mashina va tirkama rasmlari ‖ Фото машины и прицепа ‖ Vehicle and trailer photos
+6 tagacha, 4 MB ‖ до 6, 4 МБ ‖ up to 6, 4 MB
+Rasmlarni tanlang (JPG, PNG, WEBP) ‖ Выберите фото (JPG, PNG, WEBP) ‖ Choose photos (JPG, PNG, WEBP)
+E'lonni saqlash ‖ Сохранить объявление ‖ Save listing
+{0} daqiqada yetib boradi ‖ Доедет за {0} мин ‖ Arrives in {0} min
+{0} soat {1} daqiqada yetib boradi ‖ Доедет за {0} ч {1} мин ‖ Arrives in {0} h {1} min
+Oldingi rasm ‖ Предыдущее фото ‖ Previous photo
+Keyingi rasm ‖ Следующее фото ‖ Next photo
+Assalomu alaykum! AgrarGo'dagi e'loningiz bo'yicha yuk taklif qilmoqchiman ({0}). ‖ Здравствуйте! Хочу предложить груз по вашему объявлению на AgrarGo ({0}). ‖ Hello! I'd like to offer a cargo for your AgrarGo listing ({0}).
+Bo'sh ‖ Свободен ‖ Available
+{0} kg ‖ {0} кг ‖ {0} kg
+{0} so'm / km ‖ {0} сум / км ‖ {0} UZS / km
+Bo'sh / Yuk kutmoqda ‖ Свободен / Ждёт груз ‖ Available / Awaiting cargo
+Yo'lda — qaytish yukini qidirmoqda ‖ В пути — ищет обратный груз ‖ On route — looking for a backhaul
+Joriy yuk yetkaziladi: {0} ‖ Текущий груз будет доставлен: {0} ‖ Current cargo delivered: {0}
+Qaytish yukini olish: {0} ‖ Получение обратного груза: {0} ‖ Backhaul pickup: {0}
+Tahrirlash ‖ Редактировать ‖ Edit
+Yashirish ‖ Скрыть ‖ Hide
+Faollashtirish ‖ Активировать ‖ Activate
+Yuk taklif qilish ‖ Предложить груз ‖ Offer a cargo
+E'lonni o'chirasizmi? ‖ Удалить объявление? ‖ Delete this listing?
+Boshqa haydovchilar ‖ Другие водители ‖ Other drivers
+Hammasi ‖ Все ‖ All
+Barcha tirkamalar ‖ Все прицепы ‖ All trailers
+Haydovchi e'lonlari hali yo'q ‖ Объявлений водителей пока нет ‖ No driver listings yet
+Haydovchilar bo'sh sig'imini shu yerda e'lon qiladi. ‖ Водители публикуют здесь свободную вместимость. ‖ Drivers publish their free capacity here.
+Filtrlarni o'zgartirib ko'ring. ‖ Попробуйте изменить фильтры. ‖ Try changing the filters.
+Sig'imni kg da kiriting (kamida 100). ‖ Укажите вместимость в кг (не менее 100). ‖ Enter capacity in kg (at least 100).
+Kamida bitta yo'nalish kiriting. ‖ Укажите хотя бы один маршрут. ‖ Enter at least one route.
+Yo'nalishlar 8 tadan oshmasligi kerak. ‖ Маршрутов должно быть не более 8. ‖ No more than 8 routes.
+Har bir yo'nalish 2-60 belgi bo'lsin. ‖ Каждый маршрут должен быть от 2 до 60 символов. ‖ Each route must be 2–60 characters.
+Hozirgi joylashuvni kiriting. ‖ Укажите текущее местоположение. ‖ Enter your current location.
+Qaytish yukini olish vaqti yetkazish vaqtidan oldin bo'lmasligi kerak. ‖ Время получения обратного груза не может быть раньше времени доставки. ‖ Backhaul pickup cannot be before the delivery time.
+Rasm hajmi 4 MB dan oshmasligi kerak. ‖ Размер фото не должен превышать 4 МБ. ‖ Photo size must not exceed 4 MB.
+Ko'pi bilan 6 ta rasm yuklash mumkin. ‖ Можно загрузить не более 6 фото. ‖ You can upload at most 6 photos.
+Obuna muddati tugagan. E'lon joylash uchun obunani uzaytiring. ‖ Подписка истекла. Продлите подписку, чтобы размещать объявления. ‖ Your subscription has expired. Renew it to post listings.
+E'lon saqlandi! ‖ Объявление сохранено! ‖ Listing saved!
+Endi fermer va marketlar sizni katalogdan topadi. ‖ Теперь фермеры и маркеты найдут вас в каталоге. ‖ Farmers and markets can now find you in the catalog.
+Raqamni olib bo'lmadi ‖ Не удалось получить номер ‖ Could not get the number
+Hech narsa topilmadi ‖ Ничего не найдено ‖ Nothing found
+E'lon joylash uchun obuna kerak ‖ Для размещения нужна подписка ‖ A subscription is required to post
+E'lonni tahrirlash oynasi ‖ Окно редактирования объявления ‖ Edit listing window
+E'lonlar ‖ Объявления ‖ Listings
+# --- O'quv qo'llanma ---
+Qo'llanma ‖ Руководство ‖ Guide
+O'quv qo'llanma ‖ Обучающее руководство ‖ User guide
+Qadamma-qadam yo'riqnoma: e'lon, bron, Escrow, to'lovlar va ELD ‖ Пошаговая инструкция: объявление, бронь, эскроу, выплаты и ELD ‖ Step-by-step guide: listings, booking, Escrow, payouts and ELD
+PDF yuklab olish ‖ Скачать PDF ‖ Download PDF
+{0} ta qadam ‖ Шагов: {0} ‖ {0} steps
+Qo'llanmani yuklab bo'lmadi. ‖ Не удалось загрузить руководство. ‖ Could not load the guide.

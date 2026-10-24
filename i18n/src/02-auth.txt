@@ -1,0 +1,102 @@
+# --- Kirish / ro'yxatdan o'tish oynasi ---
+Telefon raqamingiz va parolingiz bilan kiring. ‖ Войдите по номеру телефона и паролю. ‖ Sign in with your phone number and password.
+Kirish ‖ Вход ‖ Sign In
+Ro'yxatdan o'tish ‖ Регистрация ‖ Sign Up
+Fermer ‖ Фермер ‖ Farmer
+Haydovchi ‖ Водитель ‖ Driver
+Telefon raqam ‖ Номер телефона ‖ Phone number
+Parol ‖ Пароль ‖ Password
+Parolni unutdingizmi? ‖ Забыли пароль? ‖ Forgot your password?
+Hisobingiz yo'qmi? ‖ Нет аккаунта? ‖ Don't have an account?
+Ro'yxatdan o'ting ‖ Зарегистрируйтесь ‖ Sign up
+Ism va familiya ‖ Имя и фамилия ‖ Full name
+Xo'jalik nomi ‖ Название хозяйства ‖ Farm name
+Viloyat ‖ Область ‖ Region
+Tanlang... ‖ Выберите... ‖ Select...
+Tuman ‖ Район ‖ District
+STIR ‖ ИНН (STIR) ‖ TIN (STIR)
+(ixtiyoriy) ‖ (необязательно) ‖ (optional)
+Hisobingiz bormi? ‖ Уже есть аккаунт? ‖ Already have an account?
+Transport turi ‖ Тип транспорта ‖ Vehicle type
+Labo / Damas ‖ Labo / Damas ‖ Labo / Damas
+Isuzu (kichik yuk) ‖ Isuzu (малотоннажный) ‖ Isuzu (light truck)
+Furgon ‖ Фургон ‖ Van
+Fura (katta) ‖ Фура (большая) ‖ Semi-truck (large)
+Sovutgichli (Ref) ‖ Рефрижератор (Ref) ‖ Refrigerated (Ref)
+Davlat raqami ‖ Госномер ‖ Licence plate
+Yuk sig'imi (kg) ‖ Грузоподъёмность (кг) ‖ Load capacity (kg)
+Faoliyat viloyati ‖ Область деятельности ‖ Operating region
+Haydovchilik guvohnomasi ‖ Водительское удостоверение ‖ Driver's licence
+Mas'ul shaxs (ism va familiya) ‖ Ответственное лицо (имя и фамилия) ‖ Contact person (full name)
+Kompaniya / do'kon nomi ‖ Название компании / магазина ‖ Company / store name
+Manzil ‖ Адрес ‖ Address
+Kod yuborish ‖ Отправить код ‖ Send code
+← Kirishga qaytish ‖ ← Вернуться ко входу ‖ ← Back to sign in
+Test rejimi: ‖ Тестовый режим: ‖ Test mode:
+SMS yuborilmaydi. Tasdiqlash kodi: ‖ SMS не отправляется. Код подтверждения: ‖ No SMS is sent. Verification code:
+SMS kod ‖ SMS-код ‖ SMS code
+Tasdiqlash ‖ Подтвердить ‖ Confirm
+Kodni qayta yuborish ‖ Отправить код повторно ‖ Resend code
+Raqamni o'zgartirish ‖ Изменить номер ‖ Change number
+Yangi parol ‖ Новый пароль ‖ New password
+Yangi parolni takrorlang ‖ Повторите новый пароль ‖ Repeat the new password
+Parolni yangilash ‖ Обновить пароль ‖ Update password
+9 ta raqam ‖ 9 цифр ‖ 9 digits
+Kamida 8 ta belgi ‖ Не менее 8 символов ‖ At least 8 characters
+Masalan: Fresh Market ‖ Например: Fresh Market ‖ For example: Fresh Market
+Ko'cha, uy ‖ Улица, дом ‖ Street, house
+Yana bir bor kiriting ‖ Введите ещё раз ‖ Enter it again
+Yuborilmoqda... ‖ Отправка... ‖ Sending...
+Kamida bitta harf ‖ Хотя бы одна буква ‖ At least one letter
+Kamida bitta raqam ‖ Хотя бы одна цифра ‖ At least one digit
+Parolni ko'rsatish ‖ Показать пароль ‖ Show password
+Parolni berkitish ‖ Скрыть пароль ‖ Hide password
+Parolni tiklash ‖ Восстановление пароля ‖ Password recovery
+Telefon raqamingizga SMS orqali tasdiqlash kodi yuboramiz. ‖ Мы отправим на ваш номер код подтверждения по SMS. ‖ We'll send a verification code to your phone by SMS.
+Kodni tasdiqlang ‖ Подтвердите код ‖ Confirm the code
+Yangi parol o'rnating ‖ Установите новый пароль ‖ Set a new password
+Kod tasdiqlandi. Endi yangi parol tanlang. ‖ Код подтверждён. Теперь выберите новый пароль. ‖ Code confirmed. Now choose a new password.
+{0} raqamiga yuborilgan 6 xonali kodni kiriting. ‖ Введите 6-значный код, отправленный на номер {0}. ‖ Enter the 6-digit code sent to {0}.
+Qayta yuborish: {0} s ‖ Повторная отправка: {0} с ‖ Resend in {0} s
+Kodni to'liq kiriting (6 ta raqam). ‖ Введите код полностью (6 цифр). ‖ Enter the full code (6 digits).
+Parollar bir xil emas. ‖ Пароли не совпадают. ‖ Passwords do not match.
+Parol yangilandi. Yangi parol bilan tizimga kiring. ‖ Пароль обновлён. Войдите в систему с новым паролем. ‖ Password updated. Sign in with your new password.
+Parol kamida 8 ta belgidan iborat bo'lishi kerak. ‖ Пароль должен содержать не менее 8 символов. ‖ The password must be at least 8 characters long.
+Ism va familiyani kiriting. ‖ Введите имя и фамилию. ‖ Enter your full name.
+Xo'jalik nomini kiriting. ‖ Введите название хозяйства. ‖ Enter the farm name.
+Viloyatni tanlang. ‖ Выберите область. ‖ Select a region.
+Tumanni kiriting. ‖ Введите район. ‖ Enter the district.
+STIR 9 ta raqamdan iborat bo'lishi kerak. ‖ ИНН (STIR) должен состоять из 9 цифр. ‖ The TIN (STIR) must consist of 9 digits.
+Transport turini tanlang. ‖ Выберите тип транспорта. ‖ Select the vehicle type.
+Davlat raqamini to'g'ri kiriting (masalan, 01A123BC). ‖ Введите госномер правильно (например, 01A123BC). ‖ Enter the licence plate correctly (e.g. 01A123BC).
+Yuk sig'imini kiriting (kg). ‖ Введите грузоподъёмность (кг). ‖ Enter the load capacity (kg).
+Mas'ul shaxs ismini kiriting. ‖ Введите имя ответственного лица. ‖ Enter the contact person's name.
+Kompaniya nomini kiriting. ‖ Введите название компании. ‖ Enter the company name.
+Muvaffaqiyatli ro'yxatdan o'tdingiz! ‖ Вы успешно зарегистрировались! ‖ You have signed up successfully!
+E'lon joylash uchun avval tizimga kiring. ‖ Чтобы разместить объявление, сначала войдите в систему. ‖ Sign in first to post a listing.
+Tizimdan chiqdingiz. ‖ Вы вышли из системы. ‖ You have signed out.
+Telefon raqamni to'liq kiriting (9 ta raqam). ‖ Введите номер телефона полностью (9 цифр). ‖ Enter the full phone number (9 digits).
+Parolni kiriting. ‖ Введите пароль. ‖ Enter your password.
+Xush kelibsiz, {0}! ‖ Добро пожаловать, {0}! ‖ Welcome, {0}!
+{0} sifatida kirish ‖ Вход как {0} ‖ Sign in as {0}
+Fermer sifatida ro'yxatdan o'tish ‖ Регистрация фермера ‖ Sign up as a Farmer
+Bepul ro'yxatdan o'ting va mahsulotingizni vositachisiz soting. ‖ Зарегистрируйтесь бесплатно и продавайте продукцию без посредников. ‖ Sign up for free and sell your produce without middlemen.
+Haydovchi sifatida ro'yxatdan o'tish ‖ Регистрация водителя ‖ Sign up as a Driver
+Transport ma'lumotlaringizni kiriting va yuk buyurtmalarini oling. ‖ Укажите данные транспорта и получайте заказы на перевозку. ‖ Enter your vehicle details and receive cargo orders.
+Market sifatida ro'yxatdan o'tish ‖ Регистрация маркета ‖ Sign up as a Market
+Kompaniyangiz nomidan fermerlardan bevosita xarid qiling. ‖ Закупайте напрямую у фермеров от имени вашей компании. ‖ Buy directly from farmers on behalf of your company.
+Dispetcher ‖ Диспетчер ‖ Dispatcher
+Admin ‖ Админ ‖ Admin
+AgrarGo Ombor ‖ AgrarGo Склад ‖ AgrarGo Warehouse
+AgrarGo Admin ‖ AgrarGo Админ ‖ AgrarGo Admin
+{0} kabinetiga kirish uchun telefon raqam va parolingizni kiriting. ‖ Для входа в кабинет «{0}» введите номер телефона и пароль. ‖ Enter your phone number and password to sign in to the {0} dashboard.
+{0} uchun ma'lumotlarni to'ldirib, ro'yxatdan o'ting. ‖ Заполните данные и зарегистрируйтесь для «{0}». ‖ Fill in your details and sign up for {0}.
+Ushbu raqam allaqachon {0} sifatida ro'yxatdan o'tgan. {1} sifatida foydalanish uchun tizimdan chiqib, boshqa raqam bilan ro'yxatdan o'ting. ‖ Этот номер уже зарегистрирован как «{0}». Чтобы использовать роль «{1}», выйдите из системы и зарегистрируйтесь с другим номером. ‖ This number is already registered as {0}. To use {1}, sign out and sign up with another number.
+Sessiya tugagan. Iltimos, qayta kiring. ‖ Сессия истекла. Пожалуйста, войдите снова. ‖ Your session has expired. Please sign in again.
+# --- Parol qoidalari (frontend va server) ---
+Parol kamida 8 ta belgidan iborat bo'lishi kerak ‖ Пароль должен содержать не менее 8 символов ‖ The password must be at least 8 characters long
+Parol juda uzun (ko'pi bilan 72 bayt) ‖ Пароль слишком длинный (не более 72 байт) ‖ The password is too long (72 bytes at most)
+Parolda kamida bitta harf bo'lishi kerak ‖ В пароле должна быть хотя бы одна буква ‖ The password must contain at least one letter
+Parolda kamida bitta raqam bo'lishi kerak ‖ В пароле должна быть хотя бы одна цифра ‖ The password must contain at least one digit
+Bu parol juda oddiy va ko'p ishlatiladi. Boshqasini tanlang ‖ Этот пароль слишком простой и часто используется. Выберите другой ‖ This password is too simple and commonly used. Choose another one
+Parolda juda kam xil belgi bor ‖ В пароле слишком мало разных символов ‖ The password has too few distinct characters

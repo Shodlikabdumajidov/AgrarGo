@@ -1,0 +1,137 @@
+# --- UX: bo'sh holatlar, diagrammalar, 404, onboarding ---
+Qo'llanma ‖ Руководство ‖ Guide
+Bu sahifa topilmadi ‖ Эта страница не найдена ‖ This page was not found
+Ehtimol, hosil hali pishmagandir yoki havola noto'g'ri yozilgan. Haydovchimiz ham bu manzilni xaritadan topa olmadi. ‖ Возможно, урожай ещё не созрел или ссылка введена неверно. Наш водитель тоже не нашёл этот адрес на карте. ‖ Maybe the harvest isn't ripe yet or the link is mistyped. Our driver couldn't find this address on the map either.
+Bosh sahifaga qaytish ‖ Вернуться на главную ‖ Back to home page
+Bozorga o'tish ‖ Перейти на рынок ‖ Go to the market
+Yangi bron so'rovlari yo'q ‖ Новых запросов на бронь нет ‖ No new booking requests
+Do'konlar e'loningizni ko'rishi bilan bronlar shu yerda paydo bo'ladi. ‖ Брони появятся здесь, как только магазины увидят ваше объявление. ‖ Bookings will appear here as soon as shops see your listing.
+Hali e'lon qo'shmagansiz. Birinchi e'loningizni joylang: do'konlar bron qila boshlaydi. ‖ Вы ещё не добавили объявлений. Разместите первое — магазины начнут бронировать. ‖ You haven't added any listings yet. Post your first one and shops will start booking.
+Birinchi e'loningizni joylang ‖ Разместите первое объявление ‖ Post your first listing
+Hali bron qilmagansiz ‖ Вы ещё ничего не бронировали ‖ You haven't booked anything yet
+Katalogdan yangi mahsulot tanlab, fermerdan to'g'ridan-to'g'ri bron qiling. ‖ Выберите свежий товар в каталоге и забронируйте напрямую у фермера. ‖ Choose fresh produce in the catalogue and book directly from the farmer.
+Hozir faol yuk yo'q ‖ Сейчас нет активных грузов ‖ No active cargo right now
+To'lovi kafolatlangan yuklar ro'yxatidan o'zingizga mosini tanlang. ‖ Выберите подходящий груз из списка с гарантированной оплатой. ‖ Pick a suitable load from the list of cargo with guaranteed payment.
+Bu holatdagi bronlar yo'q ‖ Броней с этим статусом нет ‖ No bookings with this status
+Boshqa holatni tanlab ko'ring. ‖ Выберите другой статус. ‖ Try another status.
+Hali bron so'rovlari kelmagan ‖ Запросов на бронь пока нет ‖ No booking requests yet
+E'lon joylang: do'konlar uni ko'rib, bron qila boshlaydi. ‖ Разместите объявление: магазины увидят его и начнут бронировать. ‖ Post a listing: shops will see it and start booking.
+Omborxonada yukingiz yo'q ‖ На складе нет вашего груза ‖ You have no cargo in the warehouse
+Hosilingizni sifat nazorati va sovutgichli saqlash uchun omborga yuboring: narx ko'tarilganda soting. ‖ Отправьте урожай на склад для контроля качества и холодного хранения: продавайте, когда цена вырастет. ‖ Send your harvest to the warehouse for quality control and cold storage: sell when prices rise.
+Bu zonada yuklaringiz yo'q ‖ В этой зоне нет ваших грузов ‖ You have no cargo in this zone
+Boshqa zonani tanlab ko'ring. ‖ Выберите другую зону. ‖ Try another zone.
+Filtrga mos mahsulot topilmadi ‖ Товары по фильтру не найдены ‖ No products match the filter
+So'rovni o'zgartirib ko'ring. ‖ Измените запрос. ‖ Try changing your search.
+Filtrlarni tozalash ‖ Сбросить фильтры ‖ Clear filters
+Hozircha jo'natishga tayyor mahsulot yo'q ‖ Пока нет товаров, готовых к отгрузке ‖ No products ready for dispatch yet
+Fermerlar yuk yuborib, u tekshiruvdan o'tgach mahsulotlar shu yerda ko'rinadi. ‖ Продукция появится здесь после того, как фермеры отправят груз и он пройдёт проверку. ‖ Products appear here once farmers send cargo and it passes inspection.
+Hali buyurtma bermagansiz ‖ Вы ещё не делали заказов ‖ You haven't placed any orders yet
+Omborxonadan saralangan va sifat nazoratidan o'tgan mahsulotni buyurtma qiling. ‖ Заказывайте со склада отсортированную продукцию, прошедшую контроль качества. ‖ Order sorted, quality-checked produce from the warehouse.
+Omborxonaga o'tish ‖ Перейти на склад ‖ Go to the warehouse
+Hali buyurtmalar yo'q ‖ Заказов пока нет ‖ No orders yet
+Marketlar buyurtma berganda ular shu yerda ko'rinadi. ‖ Когда магазины сделают заказы, они появятся здесь. ‖ Orders will appear here when markets place them.
+Hali kamera/ombor yaratilmagan ‖ Камеры/склады ещё не созданы ‖ No chambers/storage units created yet
+Quruq ombor va sovutgichli kameralarni bir bosishda yarating, keyin harorat/namlikni kuzating. ‖ Создайте сухой склад и холодильные камеры одним нажатием, затем следите за температурой и влажностью. ‖ Create the dry warehouse and cold rooms in one click, then monitor temperature and humidity.
+Bu holatdagi buyurtmalar yo'q ‖ Заказов с этим статусом нет ‖ No orders with this status
+Bu holatdagi yuklar yo'q ‖ Грузов с этим статусом нет ‖ No cargo with this status
+Hali yuk biriktirmagansiz ‖ Вы ещё не взяли ни одного груза ‖ You haven't taken any cargo yet
+Hali yuk tashish buyurtmalari yo'q ‖ Заказов на перевозку пока нет ‖ No transport orders yet
+Bronni tasdiqlaganingizda yuk tashish buyurtmasi avtomatik yaratiladi. ‖ Когда вы подтвердите бронь, заказ на перевозку создаётся автоматически. ‖ When you confirm a booking, a transport order is created automatically.
+Kelgan bronlarni ko'rish ‖ Посмотреть поступившие брони ‖ View incoming bookings
+Fermer bronni tasdiqlaganda yuk tashish buyurtmasi avtomatik yaratiladi. ‖ Когда фермер подтвердит бронь, заказ на перевозку создаётся автоматически. ‖ When the farmer confirms a booking, a transport order is created automatically.
+Bu hududdan bo'sh yuk yo'q ‖ Свободных грузов из этого региона нет ‖ No free cargo from this region
+Boshqa hududni tanlab ko'ring. ‖ Выберите другой регион. ‖ Try another region.
+Barcha hududlar ‖ Все регионы ‖ All regions
+Hozircha bo'sh yuklar yo'q ‖ Свободных грузов пока нет ‖ No free cargo yet
+Fermer bronni tasdiqlaganda yangi yuk shu yerda paydo bo'ladi. ‖ Когда фермер подтвердит бронь, здесь появится новый груз. ‖ A new load appears here when a farmer confirms a booking.
+Hali to'lovlar yo'q ‖ Платежей пока нет ‖ No payments yet
+Bron tasdiqlanganda to'lov avtomatik yaratiladi va Escrow'da xavfsiz saqlanadi. ‖ При подтверждении брони платёж создаётся автоматически и надёжно хранится в Escrow. ‖ When a booking is confirmed a payment is created automatically and held safely in Escrow.
+E'lon qo'shish ‖ Добавить объявление ‖ Add listing
+Bu holatdagi to'lovlar yo'q ‖ Платежей с этим статусом нет ‖ No payments with this status
+Hali harakat jurnali yo'q ‖ Журнала движения пока нет ‖ No driving log yet
+Yukni yo'lga olib chiqqaningizda joylashuv avtomatik yozib boriladi. ‖ Когда вы отправитесь с грузом, местоположение будет записываться автоматически. ‖ Your location is logged automatically once you set off with cargo.
+Hali e'lon qo'shmagansiz ‖ Вы ещё не добавили объявлений ‖ You haven't added any listings yet
+Mahsulotingizni joylang: do'konlar uni darhol ko'rib, bron qila boshlaydi. ‖ Разместите продукцию: магазины сразу увидят её и начнут бронировать. ‖ Post your produce: shops will see it right away and start booking.
+Ma'lumot paydo bo'lishi bilan diagramma shu yerda ko'rinadi. ‖ Диаграмма появится здесь, как только будут данные. ‖ The chart appears here as soon as there is data.
+Diagrammani yuklab bo'lmadi. ‖ Не удалось загрузить диаграмму. ‖ Could not load the chart.
+{0} mlrd ‖ {0} млрд ‖ {0}B
+{0} mln ‖ {0} млн ‖ {0}M
+{0} ming ‖ {0} тыс. ‖ {0}K
+Oylik savdolar ‖ Продажи по месяцам ‖ Monthly sales
+So'nggi 6 oy: hisobingizga o'tgan mablag' ‖ Последние 6 месяцев: средства, поступившие на ваш счёт ‖ Last 6 months: funds received on your account
+Savdo summasi ‖ Сумма продаж ‖ Sales amount
+Birinchi savdo amalga oshgach oylik diagramma shu yerda ko'rinadi. ‖ После первой продажи здесь появится диаграмма по месяцам. ‖ After the first sale, the monthly chart appears here.
+Bronlar taqsimoti ‖ Распределение броней ‖ Booking distribution
+Holat bo'yicha ‖ По статусам ‖ By status
+Ombor qoldiqlari ‖ Остатки на складе ‖ Warehouse stock
+Omborga yuk yuborganingizda qoldiqlar shu yerda ko'rinadi. ‖ Когда вы отправите груз на склад, остатки появятся здесь. ‖ When you send cargo to the warehouse, the stock appears here.
+Oylik xaridlar ‖ Закупки по месяцам ‖ Monthly purchases
+So'nggi 6 oy: to'langan va Escrow'dagi summa ‖ Последние 6 месяцев: оплаченная сумма и сумма в Escrow ‖ Last 6 months: paid amount and amount in Escrow
+To'langan ‖ Оплачено ‖ Paid
+Birinchi xarid amalga oshgach oylik diagramma shu yerda ko'rinadi. ‖ После первой покупки здесь появится диаграмма по месяцам. ‖ After the first purchase, the monthly chart appears here.
+Ombor buyurtmalari ‖ Заказы со склада ‖ Warehouse orders
+Omborxonadan buyurtma berganingizda taqsimot shu yerda ko'rinadi. ‖ Когда вы закажете со склада, распределение появится здесь. ‖ When you order from the warehouse, the distribution appears here.
+Oylik savdolar va bronlar ‖ Продажи и брони по месяцам ‖ Monthly sales and bookings
+Chiqarilgan to'lovlar (ustun) va yangi bronlar soni (chiziq) ‖ Выплаченные платежи (столбцы) и число новых броней (линия) ‖ Released payments (bars) and number of new bookings (line)
+Bronlar soni ‖ Количество броней ‖ Number of bookings
+Zonalar bo'yicha, kg ‖ По зонам, кг ‖ By zone, kg
+Qoldiq (kg) ‖ Остаток (кг) ‖ Stock (kg)
+Omborga yuk qabul qilinganda qoldiqlar shu yerda ko'rinadi. ‖ Когда на склад будет принят груз, остатки появятся здесь. ‖ Stock appears here once cargo is received at the warehouse.
+Foydalanuvchilar ‖ Пользователи ‖ Users
+Rollar bo'yicha ‖ По ролям ‖ By role
+1. Bu yerdan e'lon qo'shasiz ‖ 1. Здесь вы добавляете объявления ‖ 1. Add listings from here
+Mahsulot turi, miqdori va narxini kiriting: do'konlar e'loningizni darhol ko'radi. ‖ Укажите вид, количество и цену продукции: магазины сразу увидят ваше объявление. ‖ Enter the product type, quantity and price: shops see your listing right away.
+2. Bronlarni shu yerda tasdiqlaysiz ‖ 2. Здесь вы подтверждаете брони ‖ 2. Confirm bookings here
+Market bron qilganda xabar keladi. Tasdiqlagach yuk tashish buyurtmasi avtomatik yaratiladi. ‖ Когда магазин забронирует, придёт уведомление. После подтверждения заказ на перевозку создаётся автоматически. ‖ You get a notification when a market books. After you confirm, a transport order is created automatically.
+3. Bu yerdan yuklaringizni kuzatasiz ‖ 3. Здесь вы отслеживаете грузы ‖ 3. Track your cargo from here
+Haydovchi, yuk holati va jonli xarita shu bo'limda. ‖ Водитель, статус груза и живая карта — в этом разделе. ‖ The driver, cargo status and live map are in this section.
+4. To'lovlar va Escrow ‖ 4. Платежи и Escrow ‖ 4. Payments and Escrow
+Xaridor puli xavfsiz saqlanadi va yuk yetkazilgach hisobingizga o'tadi. ‖ Деньги покупателя надёжно хранятся и после доставки груза поступают на ваш счёт. ‖ The buyer's money is held safely and goes to your account after delivery.
+5. Omborxona ‖ 5. Склад ‖ 5. Warehouse
+Hosilni sifat nazorati bilan saqlang va narx ko'tarilganda soting. ‖ Храните урожай с контролем качества и продавайте, когда цена вырастет. ‖ Store the harvest with quality control and sell when prices rise.
+6. Profil va Telegram ‖ 6. Профиль и Telegram ‖ 6. Profile and Telegram
+Ma'lumotlaringizni yangilang va Telegram botni ulab, xabarnomalarni oling. ‖ Обновите данные и подключите Telegram-бота, чтобы получать уведомления. ‖ Update your details and connect the Telegram bot to get notifications.
+1. Bu yerdan mahsulot tanlaysiz ‖ 1. Здесь вы выбираете товары ‖ 1. Choose products from here
+Katalogda fermerlarning e'lonlarini ko'ring, filtrlang va bron qiling. ‖ Просматривайте объявления фермеров в каталоге, фильтруйте и бронируйте. ‖ Browse farmers' listings in the catalogue, filter and book.
+2. Bronlaringiz shu yerda ‖ 2. Ваши брони здесь ‖ 2. Your bookings are here
+Barcha bronlar, ularning holati va fermer aloqa ma'lumotlari. ‖ Все брони, их статус и контакты фермера. ‖ All bookings, their status and the farmer's contact details.
+3. Bu yerdan yuklarni kuzatasiz ‖ 3. Здесь вы отслеживаете грузы ‖ 3. Track cargo from here
+Yuk yo'lga chiqqach jonli xaritada ko'rasiz. ‖ Когда груз отправится в путь, вы увидите его на живой карте. ‖ Once the cargo is on its way you'll see it on the live map.
+4. Xavfsiz to'lov (Escrow) ‖ 4. Безопасная оплата (Escrow) ‖ 4. Secure payment (Escrow)
+Pul yuk yetkazilguncha muzlatiladi va qabul qilganingizdan keyin fermerga o'tadi. ‖ Деньги замораживаются до доставки и переходят фермеру после вашего подтверждения получения. ‖ Money is frozen until delivery and goes to the farmer after you confirm receipt.
+5. Omborxonadan buyurtma ‖ 5. Заказ со склада ‖ 5. Order from the warehouse
+Saralangan va shtrix-kodli mahsulotlarni to'g'ridan-to'g'ri ombordan oling. ‖ Получайте отсортированную продукцию со штрихкодом прямо со склада. ‖ Get sorted, barcoded produce directly from the warehouse.
+1. Bu yerdan yuklarni ko'rasiz ‖ 1. Здесь вы видите грузы ‖ 1. See loads from here
+Hududingizdagi to'lovi kafolatlangan yuklar ro'yxati. ‖ Список грузов в вашем регионе с гарантированной оплатой. ‖ A list of cargo in your region with guaranteed payment.
+2. Mening yuklarim ‖ 2. Мои грузы ‖ 2. My loads
+Qabul qilgan yuklaringiz, yo'lga chiqish va yetkazish tugmalari shu yerda. ‖ Взятые вами грузы и кнопки выезда и доставки находятся здесь. ‖ Your accepted loads and the set-off and deliver buttons are here.
+3. Harakat jurnali (ELD) ‖ 3. Журнал движения (ELD) ‖ 3. Driving log (ELD)
+GPS orqali yozilgan haydash va dam olish vaqtlari. ‖ Время вождения и отдыха, записанное по GPS. ‖ Driving and rest times recorded via GPS.
+4. Profil ‖ 4. Профиль ‖ 4. Profile
+Transport ma'lumotlari va Telegram xabarnomalar. ‖ Данные транспорта и уведомления в Telegram. ‖ Vehicle details and Telegram notifications.
+1. Ombor zonalari ‖ 1. Зоны склада ‖ 1. Warehouse zones
+Yukni qabul qilish, tekshirish, saqlash va jo'natish zonalari bo'yicha boshqaring. ‖ Управляйте грузом по зонам приёмки, проверки, хранения и отгрузки. ‖ Manage cargo across the receiving, inspection, storage and dispatch zones.
+2. Kameralar ‖ 2. Камеры ‖ 2. Chambers
+Harorat va namlik ko'rsatkichlarini kuzating. ‖ Следите за показателями температуры и влажности. ‖ Monitor temperature and humidity readings.
+3. Buyurtmalar ‖ 3. Заказы ‖ 3. Orders
+Market buyurtmalarini yig'ing, haydovchi biriktiring va jo'nating. ‖ Собирайте заказы магазинов, назначайте водителя и отправляйте. ‖ Pick market orders, assign a driver and dispatch.
+4. Inventarizatsiya ‖ 4. Инвентаризация ‖ 4. Inventory
+Qoldiq va muddati yaqin yuklar hisobi. ‖ Учёт остатков и грузов с истекающим сроком. ‖ Stock levels and cargo nearing expiry.
+1. Boshqaruv paneli ‖ 1. Панель управления ‖ 1. Dashboard
+Platforma bo'yicha statistika va diagrammalar. ‖ Статистика и диаграммы по платформе. ‖ Platform statistics and charts.
+2. Foydalanuvchilar ‖ 2. Пользователи ‖ 2. Users
+Akkauntlarni qidirish, tahrirlash va bloklash. ‖ Поиск, редактирование и блокировка аккаунтов. ‖ Search, edit and block accounts.
+3. Sharhlar ‖ 3. Отзывы ‖ 3. Reviews
+Spam yoki nomaqbul sharhlarni yashirish va o'chirish. ‖ Скрытие и удаление спама и неподобающих отзывов. ‖ Hide and delete spam or inappropriate reviews.
+4. Sayt sozlamalari ‖ 4. Настройки сайта ‖ 4. Site settings
+Aloqa, ijtimoiy tarmoqlar va omborxona joylashuvi. ‖ Контакты, соцсети и местоположение склада. ‖ Contacts, social networks and warehouse location.
+Xush kelibsiz, {0}! ‖ Добро пожаловать, {0}! ‖ Welcome, {0}!
+AgrarGo kabinetiga xush kelibsiz. 1 daqiqada asosiy bo'limlarni ko'rsatamiz. ‖ Добро пожаловать в кабинет AgrarGo. За минуту покажем основные разделы. ‖ Welcome to your AgrarGo dashboard. In one minute we'll show you the main sections.
+{0} / {1} ‖ {0} / {1} ‖ {0} / {1}
+Hammasi tayyor! ‖ Всё готово! ‖ All set!
+Qo'llanmani istalgan payt hisob menyusidagi "Qo'llanma" tugmasi orqali qayta ko'rishingiz mumkin. ‖ Руководство можно снова открыть в любой момент кнопкой «Руководство» в меню аккаунта. ‖ You can reopen the guide any time with the "Guide" button in the account menu.
+Qo'llanma yakunlandi. Muvaffaqiyatlar! ‖ Руководство завершено. Успехов! ‖ Guide complete. Good luck!
+O'tkazib yuborish ‖ Пропустить ‖ Skip
+Orqaga ‖ Назад ‖ Back
+Keyingi ‖ Далее ‖ Next
+Boshladik! ‖ Начинаем! ‖ Let's go!

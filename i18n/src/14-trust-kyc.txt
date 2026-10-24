@@ -1,0 +1,145 @@
+# --- KYC, ishonch statusi, badjlar, baholash ---
+Yangi ‖ Новичок ‖ New
+Doimiy ‖ Постоянный ‖ Regular
+Qadrdon ‖ Ветеран ‖ Veteran
+Yangi haydovchi ‖ Новый водитель ‖ New driver
+{0} • {1}/{2} badjlar ochilgan ‖ {0} • открыто бейджей: {1}/{2} ‖ {0} • {1}/{2} badges unlocked
+{0}/{1} badjlar ochilgan ‖ открыто бейджей: {0}/{1} ‖ {0}/{1} badges unlocked
+Ochildi ✓ ‖ Открыто ✓ ‖ Unlocked ✓
+badjlar ‖ бейджи ‖ badges
+Badjlar yuklanmoqda... ‖ Загрузка бейджей... ‖ Loading badges...
+Ma'lumotni yuklab bo'lmadi. ‖ Не удалось загрузить данные. ‖ Could not load the data.
+Mening Darajalarim va Mukofotlarim ‖ Мои уровни и награды ‖ My Levels and Rewards
+Ishonchlilik badjlari ‖ Бейджи доверия ‖ Trust badges
+Shartlarni bajaring: qulflangan badjlar yaltirab ochiladi. ‖ Выполняйте условия: заблокированные бейджи разблокируются со вспышкой. ‖ Complete the conditions: locked badges unlock with a shine.
+Bitimlar, reyting va tasdiqlash asosida badjlar ochiladi. ‖ Бейджи открываются по сделкам, рейтингу и подтверждению. ‖ Badges unlock based on deals, rating and verification.
+Bitimlar: {0} ‖ Сделок: {0} ‖ Deals: {0}
+Reyting: {0} ({1} baho) ‖ Рейтинг: {0} (оценок: {1}) ‖ Rating: {0} ({1} ratings)
+Akkaunt yoshi: {0} kun ‖ Возраст аккаунта: {0} дн. ‖ Account age: {0} days
+Doimiy bo'lish: 30 kundan keyin, tasdiqlangan va 5 ta muvaffaqiyatli bitim. ‖ Чтобы стать «Постоянным»: через 30 дней, подтверждённый аккаунт и 5 успешных сделок. ‖ To become Regular: after 30 days, verified, with 5 successful deals.
+Qadrdon bo'lish: 180 kundan keyin, 30+ bitim va 4.8+ reyting. ‖ Чтобы стать «Ветераном»: через 180 дней, 30+ сделок и рейтинг 4.8+. ‖ To become Veteran: after 180 days, 30+ deals and a 4.8+ rating.
+Siz eng yuqori ishonch darajasidasiz. ‖ Вы на высшем уровне доверия. ‖ You are at the highest trust level.
+Hujjatlarni tasdiqlang: «Tasdiqlangan Haydovchi» badji va ishonch ortadi. ‖ Подтвердите документы: получите бейдж «Проверенный водитель» и больше доверия. ‖ Verify your documents: earn the "Verified Pro" badge and more trust.
+Shaxsni tasdiqlash ‖ Подтверждение личности ‖ Identity verification
+Yangi badj ochildi: {0} ‖ Новый бейдж: {0} ‖ New badge unlocked: {0}
+Tasdiqlangan Haydovchi (Verified Pro) ‖ Проверенный водитель (Verified Pro) ‖ Verified Driver (Verified Pro)
+ID karta, guvohnoma, tex-pasport va Face ID'dan muvaffaqiyatli o'ting. ‖ Успешно пройдите проверку ID-карты, прав, техпаспорта и Face ID. ‖ Successfully pass ID card, license, vehicle registration and Face ID checks.
+Eng Tezkor (Speedy Delivery) ‖ Самый быстрый (Speedy Delivery) ‖ Fastest (Speedy Delivery)
+10 ta yukni o'z vaqtida yoki tezroq yetkazing. ‖ Доставьте 10 грузов вовремя или быстрее. ‖ Deliver 10 loads on time or faster.
+Eng Xavfsiz (Safe Hauler) ‖ Самый безопасный (Safe Hauler) ‖ Safest (Safe Hauler)
+25 ta qatnovda yukka biror marta zarar yetkazmang. ‖ Ни разу не повредите груз за 25 рейсов. ‖ Never damage a load across 25 trips.
+Boshlovchi Haydovchi (Rookie Driver) ‖ Начинающий водитель (Rookie Driver) ‖ Rookie Driver
+Birinchi muvaffaqiyatli reysni yakunlang. ‖ Завершите первый успешный рейс. ‖ Complete your first successful trip.
+Usta Haydovchi (Master Driver) ‖ Мастер-водитель (Master Driver) ‖ Master Driver
+25 ta muvaffaqiyatli reys bajaring. ‖ Выполните 25 успешных рейсов. ‖ Complete 25 successful trips.
+Afsonaviy Haydovchi (Legendary Pro) ‖ Легендарный водитель (Legendary Pro) ‖ Legendary Driver (Legendary Pro)
+100 ta reys va 4.9+ reytingga erishing. ‖ Достигните 100 рейсов и рейтинга 4.9+. ‖ Reach 100 trips and a 4.9+ rating.
+Kecha Qahramoni (Night Rider) ‖ Ночной герой (Night Rider) ‖ Night Hero (Night Rider)
+Tunda (22:00–06:00) 5 ta uzoq (200+ km) reysga chiqing. ‖ Совершите 5 дальних (200+ км) рейсов ночью (22:00–06:00). ‖ Make 5 long (200+ km) trips at night (22:00–06:00).
+Muzqaymoq Ustasi (Reefer Expert) ‖ Мастер холода (Reefer Expert) ‖ Ice-Cream Master (Reefer Expert)
+Sovutgichli (Reefer) tirkama bilan 10 ta sifatli yetkazib bering. ‖ Доставьте 10 грузов качественно на рефрижераторе (Reefer). ‖ Make 10 quality deliveries with a refrigerated (Reefer) trailer.
+Qaytmas Eko-Haydovchi (Eco-Return) ‖ Эко-водитель (Eco-Return) ‖ Eco Driver (Eco-Return)
+Bo'sh qaytmasdan, qaytishda 10 marta yuk topib tashing. ‖ Не возвращайтесь порожняком: 10 раз найдите груз на обратном пути. ‖ Don't return empty: find a load on the way back 10 times.
+Yil Haydovchisi (Top Rated) ‖ Водитель года (Top Rated) ‖ Driver of the Year (Top Rated)
+50 ta 5 yulduzli baho oling. ‖ Получите 50 оценок в 5 звёзд. ‖ Get 50 five-star ratings.
+Uzoq Yo'l Ustasi (Long Distance) ‖ Мастер дальних дорог (Long Distance) ‖ Long Distance Master
+Jami 3000+ km masofani bosib o'ting. ‖ Проедьте в сумме 3000+ км. ‖ Cover 3000+ km in total.
+Intizomli Operator (ELD Master) ‖ Дисциплинированный оператор (ELD Master) ‖ Disciplined Operator (ELD Master)
+ELD jurnalini 14 kun uzluksiz to'liq yuriting. ‖ Ведите журнал ELD 14 дней подряд. ‖ Keep the ELD log for 14 consecutive days.
+Do'stona Muloqot (Friendly Driver) ‖ Дружелюбный водитель (Friendly Driver) ‖ Friendly Driver
+Mijozlardan 15 ta «Juda xushmuomala» tegi oling. ‖ Получите 15 меток «Очень вежливый» от клиентов. ‖ Get 15 "Very polite" tags from customers.
+Favqulodda Yordamchi (Emergency Transporter) ‖ Экстренный помощник (Emergency Transporter) ‖ Emergency Transporter
+Shoshilinch bronlarni 5 marta muvaffaqiyatli bajaring. ‖ Успешно выполните 5 срочных броней. ‖ Successfully complete 5 urgent bookings.
+AgrarGo Faxri (VIP Champion) ‖ Гордость AgrarGo (VIP Champion) ‖ AgrarGo Pride (VIP Champion)
+Hujjatlar tasdiqlangan, 1 yillik faol obuna va 50+ reys. ‖ Документы подтверждены, годовая активная подписка и 50+ рейсов. ‖ Verified documents, a 1-year active subscription and 50+ trips.
+Sifat Kafolati ‖ Гарантия качества ‖ Quality Guarantee
+10 va undan ko'p baho, o'rtacha 4.7+. ‖ 10 и более оценок, в среднем 4.7+. ‖ 10 or more ratings, 4.7+ on average.
+Katta Hosil do'sti ‖ Друг большого урожая ‖ Big Harvest Friend
+Jami 50 000 kg (50 tonna) yukni yetkazing. ‖ Доставьте в сумме 50 000 кг (50 тонн) груза. ‖ Deliver 50,000 kg (50 tons) in total.
+Halol Fermer ‖ Честный фермер ‖ Honest Farmer
+Tasdiqlangan, 10 ta bitim, bronlarni rad etish ulushi 10% dan kam. ‖ Подтверждён, 10 сделок, доля отклонённых броней менее 10%. ‖ Verified, 10 deals, under 10% of bookings rejected.
+Tezkor Yuklovchi ‖ Быстрый погрузчик ‖ Fast Loader
+10 ta bronni 2 soat ichida tasdiqlang. ‖ Подтвердите 10 броней в течение 2 часов. ‖ Approve 10 bookings within 2 hours.
+Kafolatlangan To'lovchi (Escrow Master) ‖ Гарантированный плательщик (Escrow Master) ‖ Guaranteed Payer (Escrow Master)
+10 ta to'lov Escrow'ga o'tgan va birortasi qaytarilmagan. ‖ 10 платежей прошли через Escrow, ни один не возвращён. ‖ 10 payments went through Escrow with none refunded.
+Ulgurji Xaridor ‖ Оптовый покупатель ‖ Wholesale Buyer
+Jami 20 000 kg yukni qabul qiling. ‖ Примите в сумме 20 000 кг груза. ‖ Receive 20,000 kg of cargo in total.
+Ishonchli Hamkor ‖ Надёжный партнёр ‖ Reliable Partner
+10 ta bitim va 4.5+ reyting (kamida 5 ta baho). ‖ 10 сделок и рейтинг 4.5+ (минимум 5 оценок). ‖ 10 deals and a 4.5+ rating (at least 5 ratings).
+Shaxsni tasdiqlash ‖ Подтверждение личности ‖ Identity verification
+ID karta, guvohnoma, tex-pasport va Face ID orqali tasdiqlangan haydovchi bo'ling. ‖ Станьте проверенным водителем через ID-карту, права, техпаспорт и Face ID. ‖ Become a verified driver with your ID card, license, vehicle registration and Face ID.
+Shaxsingiz tasdiqlangan ‖ Ваша личность подтверждена ‖ Your identity is verified
+Hujjatlar tekshirilmoqda ‖ Документы проверяются ‖ Documents are under review
+Tasdiqlash rad etildi ‖ Подтверждение отклонено ‖ Verification rejected
+Hali tasdiqlanmagan ‖ Ещё не подтверждено ‖ Not verified yet
+Sabab: {0} ‖ Причина: {0} ‖ Reason: {0}
+Tasdiqlangan sana: {0} ‖ Дата подтверждения: {0} ‖ Verified on: {0}
+{0}/4 qadam bajarildi ‖ Выполнено шагов: {0}/4 ‖ {0}/4 steps completed
+{0}-qadam ‖ Шаг {0} ‖ Step {0}
+ID karta / Pasport ‖ ID-карта / Паспорт ‖ ID card / Passport
+Shaxsni tasdiqlovchi hujjatning old tomoni (aniq, yorug'da). ‖ Лицевая сторона документа, удостоверяющего личность (чётко, при хорошем свете). ‖ Front side of your ID document (clear, well lit).
+Guvohnomaning old tomoni. ‖ Лицевая сторона удостоверения. ‖ Front side of the license.
+Tex-pasport ‖ Техпаспорт ‖ Vehicle registration
+Transport vositasi texnik pasporti. ‖ Технический паспорт транспортного средства. ‖ The vehicle registration document.
+Face ID ‖ Face ID ‖ Face ID
+Kamerada yuzingizni skanerlang. ‖ Отсканируйте лицо камерой. ‖ Scan your face with the camera.
+Yuklandi: {0} ‖ Загружено: {0} ‖ Uploaded: {0}
+Face ID skanerlash ‖ Сканировать Face ID ‖ Scan Face ID
+Qayta skanerlash ‖ Сканировать снова ‖ Scan again
+Rasm yuklash ‖ Загрузить фото ‖ Upload photo
+Qayta yuklash ‖ Загрузить снова ‖ Upload again
+Hujjat rasmlari shifrlanmagan ommaviy papkada emas, alohida yopiq saqlanadi va faqat siz hamda administrator ko'ra oladi. ‖ Фото документов хранятся не в публичной папке, а отдельно и закрыто; их видите только вы и администратор. ‖ Document photos are not stored in a public folder; they are kept separately and only you and the administrator can see them.
+Rasm hajmi 5 MB dan oshmasligi kerak. ‖ Размер изображения не должен превышать 5 МБ. ‖ The image must not exceed 5 MB.
+Serverga ulanib bo'lmadi. Internet aloqasini tekshiring. ‖ Не удалось подключиться к серверу. Проверьте интернет. ‖ Could not reach the server. Check your internet connection.
+Yuklab bo'lmadi. ‖ Не удалось загрузить. ‖ Upload failed.
+Shaxs tasdiqlandi! ‖ Личность подтверждена! ‖ Identity verified!
+«Tasdiqlangan Haydovchi» badji ochildi ‖ Открыт бейдж «Проверенный водитель» ‖ "Verified Pro" badge unlocked
+Hujjatlar topshirildi. Administrator tekshiradi. ‖ Документы отправлены. Администратор проверит. ‖ Documents submitted. An administrator will review them.
+Hujjat yuklandi ‖ Документ загружен ‖ Document uploaded
+Tasdiqlash ma'lumotlari yuklanmoqda... ‖ Загрузка данных подтверждения... ‖ Loading verification details...
+Kamerani yoqing va yuzingizni doira ichida ushlab turing. ‖ Включите камеру и держите лицо внутри круга. ‖ Turn on the camera and keep your face inside the circle.
+Kamerani yoqish ‖ Включить камеру ‖ Turn on camera
+Skanerlashni boshlash ‖ Начать сканирование ‖ Start scanning
+Yuzingizni doira ichiga joylashtiring. ‖ Расположите лицо внутри круга. ‖ Place your face inside the circle.
+Kameraga ruxsat berilmadi. Selfi rasm yuklashingiz mumkin. ‖ Нет доступа к камере. Можно загрузить селфи. ‖ Camera access denied. You can upload a selfie instead.
+Kamera yo'q: selfi rasm yuklash ‖ Нет камеры: загрузить селфи ‖ No camera: upload a selfie
+Demo rejim: yuz haqiqiy ma'lumot bazasi bilan solishtirilmaydi. ‖ Демо-режим: лицо не сверяется с реальной базой. ‖ Demo mode: the face is not compared with a real database.
+To'g'ri qarab turing... ‖ Смотрите прямо... ‖ Look straight ahead...
+Sekin chapga buriling... ‖ Медленно поверните голову влево... ‖ Slowly turn left...
+Endi o'ngga buriling... ‖ Теперь поверните вправо... ‖ Now turn right...
+Yaxshi! Tahlil qilinmoqda... ‖ Отлично! Идёт анализ... ‖ Good! Analyzing...
+Yuz aniqlandi ✓ ‖ Лицо распознано ✓ ‖ Face recognized ✓
+Baholash ‖ Оценка ‖ Rating
+Juda xushmuomala ‖ Очень вежливый ‖ Very polite
+Yukka zarar yetdi ‖ Груз был повреждён ‖ The cargo was damaged
+Baho yuborish ‖ Отправить оценку ‖ Submit rating
+{0}ni baholang: {1} ‖ Оцените: {0} — {1} ‖ Rate the {0}: {1}
+{0}ni baholash ‖ Оценить: {0} ‖ Rate the {0}
+{0}: {1} ★ ‖ {0}: {1} ★ ‖ {0}: {1} ★
+Haydovchi ‖ Водитель ‖ Driver
+Fermer ‖ Фермер ‖ Farmer
+Yulduzchalar orqali baho bering. ‖ Поставьте оценку звёздами. ‖ Rate using the stars.
+Baho yuborildi. Rahmat! ‖ Оценка отправлена. Спасибо! ‖ Rating submitted. Thank you!
+Shoshilinch ‖ Срочно ‖ Urgent
+Shoshilinch bron ‖ Срочная бронь ‖ Urgent booking
+(yuk tezroq yetkazilishi kerak) ‖ (груз нужно доставить быстрее) ‖ (the cargo must be delivered faster)
+KYC arizalari ‖ Заявки KYC ‖ KYC applications
+Haydovchilar yuborgan hujjatlar. Tasdiqlansa «Tasdiqlangan haydovchi» badji ochiladi. ‖ Документы, отправленные водителями. После подтверждения открывается бейдж «Проверенный водитель». ‖ Documents submitted by drivers. When approved, the "Verified Driver" badge unlocks.
+Hujjatlar ‖ Документы ‖ Documents
+Yuborilgan ‖ Отправлено ‖ Submitted
+Rad etish ‖ Отклонить ‖ Reject
+Tasdiqlandi ‖ Подтверждено ‖ Approved
+Rad etish sababi ‖ Причина отказа ‖ Rejection reason
+Sabab ‖ Причина ‖ Reason
+Ariza rad etildi. ‖ Заявка отклонена. ‖ Application rejected.
+Tekshirishni kutayotgan arizalar yo'q. ‖ Заявок на проверку нет. ‖ No applications awaiting review.
+Hujjat topilmadi. ‖ Документ не найден. ‖ Document not found.
+Tasdiqni bekor qilish ‖ Отозвать подтверждение ‖ Revoke verification
+Tasdiq bekor qilindi ‖ Подтверждение отозвано ‖ Verification revoked
+Davlat raqamini to'g'ri kiriting: faqat KATTA lotin harflari va raqamlar (01A777AA yoki 70777AAA). ‖ Введите номер правильно: только ЗАГЛАВНЫЕ латинские буквы и цифры (01A777AA или 70777AAA). ‖ Enter the plate number correctly: only CAPITAL Latin letters and digits (01A777AA or 70777AAA).
+
+Master Pro ‖ Master Pro ‖ Master Pro
+Legendary Pro ‖ Legendary Pro ‖ Legendary Pro
+Rookie ‖ Rookie ‖ Rookie
+Ishonch badjlari ‖ Бейджи доверия ‖ Trust badges
+Darajalar va mukofotlar ‖ Уровни и награды ‖ Levels and rewards
