@@ -1,7 +1,7 @@
 import { RadiusQuery } from '../../common/geo-search';
 import { ShipmentStatus } from '@prisma/client';
 import { Transform } from 'class-transformer';
-import { IsEnum, IsNumber, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
+import { IsEnum, IsNumber, IsUUID, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
 
 const emptyNumber = ({ value }: { value: unknown }) => (value === undefined || (typeof value === 'string' && value.trim() === '') ? undefined : Number(value));
 const emptyToUndefined = ({ value }: { value: unknown }) =>
@@ -36,4 +36,24 @@ export class AvailableShipmentsFilterQuery extends AvailableShipmentsQuery {
 
   @IsOptional() @Transform(emptyNumber) @IsNumber() @Min(0) @Max(1_000_000)
   maxKg?: number;
+}
+
+export class AssignDriverDto {
+  @IsUUID()
+  driverId!: string;
+}
+
+export class AvailableDriversQuery {
+  // Shu og'irlikni (kg) ko'tara oladigan haydovchilar
+  @IsOptional()
+  @Transform(emptyNumber)
+  @IsNumber()
+  @Min(0)
+  weightKg?: number;
+
+  @IsOptional()
+  @Transform(emptyToUndefined)
+  @IsString()
+  @MaxLength(50)
+  region?: string;
 }

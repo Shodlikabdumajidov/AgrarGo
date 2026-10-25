@@ -131,6 +131,26 @@ export class NotificationService {
     });
   }
 
+  /** Dispetcher/administrator yukni haydovchiga biriktirdi */
+  shipmentAssigned(shipmentId: string) {
+    this.run(async () => {
+      const s = await this.prisma.shipment.findUnique({
+        where: { id: shipmentId },
+        select: { cargoName: true, weightKg: true, originRegion: true, originDistrict: true, destRegion: true, destDistrict: true, driver: { select: { userId: true } } },
+      });
+      if (!s?.driver) return;
+      const lines = [
+        `📦 <b>Sizga yuk biriktirildi</b>`,
+        `• Mahsulot: <b>${h(s.cargoName)}</b>`,
+        `• Hajmi: <b>${num(s.weightKg)} kg</b>`,
+        `• Qayerdan: ${h(s.originRegion)}, ${h(s.originDistrict)}`,
+        `• Qayerga: ${h(s.destRegion)}, ${h(s.destDistrict)}`,
+        `Manzil va aloqa ma'lumotlari kabinetdagi «Mening zakazlarim» bo'limida.`,
+      ];
+      await this.sendTo([s.driver.userId], lines.join('\n'));
+    });
+  }
+
   // ---------- Haydovchiga yuk taklifi ----------
 
   driverOffer(offerId: string) {

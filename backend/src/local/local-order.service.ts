@@ -26,6 +26,7 @@ export interface LocalUser {
   id: string; role: Role; phone: string; fullName?: string; hubId?: string | null;
   consumer?: { id: string; region: string; district: string; address: string | null } | null;
   farmer?: { id: string } | null;
+  market?: { id: string; region: string; district: string; address: string | null } | null;
   driver?: { id: string; region: string; courierMode: boolean; courierHubId: string | null } | null;
 }
 
@@ -117,14 +118,27 @@ export class LocalOrderService {
 
   // ---------- Xaridor ----------
 
-  private consumer(user: LocalUser) {
-    if (!user.consumer) throw new ForbiddenException('Xaridor profili topilmadi');
-    return user.consumer;
+  /**
+   * Xaridor profili. Market (B2B xaridor) ham Hub zaxirasidan buyuradi: unga birinchi buyurtmada Market profili asosida
+   * (viloyat, tuman, manzil) xaridor profili ochiladi — shundan so'ng buyurtma, to'lov va keshbek mantig'i Consumer bilan bir xil.
+   */
+  private async consumer(user: LocalUser) {
+    if (user.consumer) return user.consumer;
+    if (user.role === Role.MARKET && user.market) {
+      const m = user.market;
+      user.consumer = await this.prisma.consumer.upsert({
+        where: { userId: user.id }, update: {},
+        create: { userId: user.id, region: m.region, district: m.district, address: m.address ?? null },
+        select: { id: true, region: true, district: true, address: true },
+      });
+      return user.consumer;
+    }
+    throw new ForbiddenException('Xaridor profili topilmadi');
   }
 
   /** Buyurtma: qoldiq zaxiralanadi + to'lov escrow'ga o'tadi + 4 ulushga bo'linadi — bitta tranzaksiyada */
   async create(user: LocalUser, dto: CreateLocalOrderDto) {
-    const c = this.consumer(user);
+    const c = (await this.consumer(user));
     const o = await this.orderable(dto.productId, dto.quantityKg);
     const region = dto.region ?? c.region;
     if (normRegion(region) !== normRegion(o.hub.region)) throw new BadRequestException(`Bu Hub faqat ${o.hub.region} bo'yicha yetkazib beradi`);
@@ -150,7 +164,7 @@ export class LocalOrderService {
   // ---------- O'qish ----------
 
   private viewerOf(user: LocalUser, o: OrderRow): Viewer {
-    if (user.role === Role.CONSUMER && user.consumer?.id === o.consumerId) return 'consumer';
+    if ((user.role === Role.CONSUMER || user.role === Role.MARKET) && user.consumer?.id === o.consumerId) return 'consumer';
     if (user.role === Role.ADMIN || (user.role === Role.DISPATCHER && (!user.hubId || user.hubId === o.hubId))) return 'staff';
     if (user.role === Role.FARMER && user.farmer?.id === o.farmerId) return 'farmer';
     if (user.role === Role.DRIVER && user.driver && o.courier?.id === user.driver.id) return 'courier';
@@ -206,7 +220,7 @@ export class LocalOrderService {
   }
 
   async mine(user: LocalUser, q: ListLocalOrdersQuery) {
-    const rows = await this.prisma.localOrder.findMany({ where: { consumerId: this.consumer(user).id, ...(q.status && { status: q.status }) }, orderBy: { createdAt: 'desc' }, take: 100, include: ORDER_INCLUDE });
+    const rows = await this.prisma.localOrder.findMany({ where: { consumerId: (await this.consumer(user)).id, ...(q.status && { status: q.status }) }, orderBy: { createdAt: 'desc' }, take: 100, include: ORDER_INCLUDE });
     return rows.map((o) => this.shape(o, 'consumer'));
   }
 
@@ -526,7 +540,7 @@ export class LocalOrderService {
    * Biror qator (qoldiq tugagan, narx o'zgargan...) o'tmasa — hech narsa yozilmaydi va xaridor qaysi mahsulot to'sqinlik qilganini bilib oladi.
    */
   async checkoutBulk(user: LocalUser, dto: BulkCheckoutDto) {
-    const c = this.consumer(user);
+    const c = (await this.consumer(user));
     if (dto.idempotencyKey) {
       const prior = await this.prisma.localCheckout.findUnique({ where: { consumerId_idempotencyKey: { consumerId: c.id, idempotencyKey: dto.idempotencyKey } }, select: { id: true } });
       if (prior) return this.checkoutView(user, prior.id);
@@ -598,7 +612,7 @@ export class LocalOrderService {
 
   /** Xaridorning bitta chek ko'rinishi: umumiy summa + har bir buyurtma (kodlar, taqsimot) */
   async checkoutView(user: LocalUser, id: string) {
-    const c = this.consumer(user);
+    const c = (await this.consumer(user));
     const co = await this.prisma.localCheckout.findFirst({ where: { id, consumerId: c.id }, include: { orders: { include: ORDER_INCLUDE, orderBy: { createdAt: 'asc' } } } });
     if (!co) throw new NotFoundException('Buyurtma topilmadi');
     const orders = co.orders.map((o) => this.shape(o, 'consumer'));

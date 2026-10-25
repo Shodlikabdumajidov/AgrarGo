@@ -36,20 +36,20 @@ export class LocalOrdersController {
   constructor(private readonly local: LocalOrderService) {}
 
   // --- Xaridor ---
-  @Post('orders') @Roles(Role.CONSUMER) @ThrottleProfile('booking')
+  @Post('orders') @Roles(Role.CONSUMER, Role.MARKET) @ThrottleProfile('booking')
   create(@CurrentUser() user: any, @Body() dto: CreateLocalOrderDto) { return this.local.create(user, dto); }
 
   /** Savat: bir nechta mahsulot — bitta umumiy to'lov; buyurtmalar Hub/fermer bo'yicha avtomatik ajratiladi */
-  @Post('orders/checkout-bulk') @Roles(Role.CONSUMER) @ThrottleProfile('booking')
+  @Post('orders/checkout-bulk') @Roles(Role.CONSUMER, Role.MARKET) @ThrottleProfile('booking')
   checkoutBulk(@CurrentUser() user: any, @Body() dto: BulkCheckoutDto) { return this.local.checkoutBulk(user, dto); }
 
-  @Get('checkouts/:id') @Roles(Role.CONSUMER)
+  @Get('checkouts/:id') @Roles(Role.CONSUMER, Role.MARKET)
   checkout(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string) { return this.local.checkoutView(user, id); }
 
-  @Get('orders/mine') @Roles(Role.CONSUMER)
+  @Get('orders/mine') @Roles(Role.CONSUMER, Role.MARKET)
   mine(@CurrentUser() user: any, @Query() q: ListLocalOrdersQuery) { return this.local.mine(user, q); }
 
-  @Post('orders/:id/confirm') @Roles(Role.CONSUMER)
+  @Post('orders/:id/confirm') @Roles(Role.CONSUMER, Role.MARKET)
   confirm(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string) { return this.local.consumerConfirm(user, id); }
 
   // --- Fermer ---
@@ -74,7 +74,7 @@ export class LocalOrdersController {
   @Post('orders/:id/damage') @Roles(...STAFF) @HttpCode(200)
   damage(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string, @Body() dto: DamageReportDto) { return this.local.reportDamage(user, id, dto); }
 
-  @Post('orders/:id/cancel') @Roles(Role.CONSUMER, ...STAFF)
+  @Post('orders/:id/cancel') @Roles(Role.CONSUMER, Role.MARKET, ...STAFF)
   cancel(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string, @Body() dto: CancelOrderDto) { return this.local.cancel(user, id, dto); }
 
   // --- Shahar ichi kuryeri (haydovchi) ---
@@ -103,6 +103,6 @@ export class LocalOrdersController {
   ebolSign(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string, @Body() dto: SignEBolDto) { return this.local.ebolSign(user, id, dto.code); }
 
   /** Bitta buyurtma (rolga mos ko'rinishda) */
-  @Get('orders/:id') @Roles(Role.CONSUMER, Role.FARMER, Role.DRIVER, ...STAFF)
+  @Get('orders/:id') @Roles(Role.CONSUMER, Role.MARKET, Role.FARMER, Role.DRIVER, ...STAFF)
   one(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string) { return this.local.get(user, id); }
 }

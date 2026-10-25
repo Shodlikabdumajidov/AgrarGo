@@ -119,8 +119,9 @@ describe('Hub ombori va chakana (B2C) savdo (e2e)', () => {
     expect((await w.order(10, { region: 'Buxoro' })).status).toBe(400); // Hub boshqa viloyatda
     expect((await w.order(10, { address: 'x' })).status).toBe(400);
     expect((await send('post', null, '/local/orders', {})).status).toBe(401);
-    const market = await registerMarket(t.http);
-    expect((await send('post', market, '/local/orders', { productId: w.product.id, quantityKg: 10, district: 'x', address: 'abcdef' })).status).toBe(403);
+    // Market endi Hub zaxirasidan buyura oladi (market-hub-dispatch.e2e-spec.ts); fermer va haydovchi — yo'q
+    expect((await send('post', w.farmer, '/local/orders', { productId: w.product.id, quantityKg: 10, district: 'x', address: 'abcdef' })).status).toBe(403);
+    expect((await send('post', w.courier, '/local/orders', { productId: w.product.id, quantityKg: 10, district: 'x', address: 'abcdef' })).status).toBe(403);
     // parallel: 25 kg dan ikki marta 15 kg
     const c2 = await registerConsumer(t.http);
     const mk = (who: any) => send('post', who, '/local/orders', { productId: w.product.id, quantityKg: 15, district: 'Siyob', address: "Registon ko'chasi 10" });

@@ -1433,11 +1433,11 @@
             // Haydovchi: 4 ta asosiy ekran (ELD, boshqa haydovchilar ro'yxati va Bozor narxlari olib tashlandi)
             DRIVER: [['loads', 'fa-boxes-packing', 'Mavjud yuklar'], ['myloads', 'fa-truck-fast', "Mening zakazlarim / Yo'lim"], ['dfinance', 'fa-wallet', 'Balans va Moliya'], ['profile', 'fa-id-card', 'Profil']],
             CONSUMER: [['lmarket', 'fa-basket-shopping', 'Mahalliy bozor'], ['lcart', 'fa-cart-shopping', 'Savatcha'], ['lorders', 'fa-box', 'Buyurtmalarim'], ['cashback', 'fa-coins', 'Mening keshbeklarim'], ['guide', 'fa-book-open', "Qo'llanma"], ['profile', 'fa-id-card', 'Profil']],
-            DISPATCHER: [['hubscan', 'fa-qrcode', 'QR Skaner (qabul qilish)'], ['hubpack', 'fa-box-archive', "Qadoqlanishi kerak bo'lganlar"], ['hubosd', 'fa-file-circle-exclamation', 'OS&D hisobotlari'], ['hubops', 'fa-warehouse', 'Hub: chakana savdo'], ['hubdocks', 'fa-door-open', 'Rampalar'], ['whboard', 'fa-table-columns', 'Zonalar'], ['whunits', 'fa-temperature-half', 'Kameralar'],
+            DISPATCHER: [['dispatch', 'fa-user-plus', 'Dispetcher paneli'], ['hubscan', 'fa-qrcode', 'QR Skaner (qabul qilish)'], ['hubpack', 'fa-box-archive', "Qadoqlanishi kerak bo'lganlar"], ['hubosd', 'fa-file-circle-exclamation', 'OS&D hisobotlari'], ['hubops', 'fa-warehouse', 'Hub: chakana savdo'], ['hubdocks', 'fa-door-open', 'Rampalar'], ['whboard', 'fa-table-columns', 'Zonalar'], ['whunits', 'fa-temperature-half', 'Kameralar'],
                      ['whorders', 'fa-clipboard-list', 'Buyurtmalar'], ['whinventory', 'fa-chart-pie', 'Inventarizatsiya'], ['guide', 'fa-book-open', "Qo'llanma"], ['drivers', 'fa-truck-field', 'Haydovchilar'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'], ['profile', 'fa-id-card', 'Profil']]
         };
         const ADMIN_TABS_ALL = [['adm-dashboard', 'fa-chart-line', 'Boshqaruv paneli'], ['finance', 'fa-scale-balanced', 'Moliya paneli'], ['adm-hubs', 'fa-warehouse', "Hub omborlar"], ['hubscan', 'fa-qrcode', 'QR Skaner (qabul qilish)'], ['hubosd', 'fa-file-circle-exclamation', 'OS&D hisobotlari'], ['hubstock', 'fa-warehouse', 'Ombor qoldiqlari'], ['hubpack', 'fa-box-archive', "Qadoqlanishi kerak bo'lganlar"], ['hubops', 'fa-basket-shopping', 'Hub: chakana savdo'], ['hubdocks', 'fa-door-open', 'Rampalar'], ['adm-users', 'fa-users', 'Foydalanuvchilar'],
-                     ['adm-products', 'fa-boxes-stacked', "E'lonlar"], ['adm-shipments', 'fa-truck-fast', 'Yuk tashish'], ['adm-payments', 'fa-wallet', "To'lovlar"],
+                     ['adm-products', 'fa-boxes-stacked', "E'lonlar"], ['adm-shipments', 'fa-truck-fast', 'Yuk tashish'], ['dispatch', 'fa-user-plus', 'Dispetcher paneli'], ['adm-payments', 'fa-wallet', "To'lovlar"],
                      ['whboard', 'fa-warehouse', 'Ombor: zonalar'], ['whunits', 'fa-temperature-half', 'Kameralar'], ['whorders', 'fa-clipboard-list', 'Ombor buyurtmalari'],
                      ['whinventory', 'fa-chart-pie', 'Inventarizatsiya'], ['adm-reviews', 'fa-star', 'Sharhlar'], ['adm-kyc', 'fa-user-check', 'KYC arizalari'], ['safety', 'fa-shield-halved', 'Safety: e-BOL va tasdiqlash'], ['adm-settings', 'fa-gear', 'Sayt sozlamalari'], ['adm-audit', 'fa-list-check', 'Audit jurnali'], ['guide', 'fa-book-open', "Qo'llanma"], ['drivers', 'fa-truck-field', 'Haydovchilar'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'],
                      ['profile', 'fa-id-card', 'Profil']];
@@ -1447,7 +1447,7 @@
             SUPER_ADMIN: ADMIN_TABS_ALL,
             SAFETY_ADMIN: [['safety', 'fa-shield-halved', 'Safety: e-BOL va tasdiqlash'], ADMIN_PROFILE_TAB],
             FINANCE_ADMIN: [['finance', 'fa-scale-balanced', 'Moliya paneli'], ['adm-payments', 'fa-wallet', "To'lovlar"], ADMIN_PROFILE_TAB],
-            HUB_ADMIN: [['hubscan', 'fa-qrcode', 'QR Skaner (qabul qilish)'], ['hubosd', 'fa-file-circle-exclamation', 'OS&D hisobotlari'], ['hubstock', 'fa-warehouse', 'Ombor qoldiqlari'], ['hubpack', 'fa-box-archive', "Qadoqlanishi kerak bo'lganlar"], ['adm-hubs', 'fa-warehouse', "Hub omborlar"], ['hubops', 'fa-basket-shopping', 'Hub: chakana savdo'], ['hubdocks', 'fa-door-open', 'Rampalar'], ADMIN_PROFILE_TAB]
+            HUB_ADMIN: [['dispatch', 'fa-user-plus', 'Dispetcher paneli'], ['hubscan', 'fa-qrcode', 'QR Skaner (qabul qilish)'], ['hubosd', 'fa-file-circle-exclamation', 'OS&D hisobotlari'], ['hubstock', 'fa-warehouse', 'Ombor qoldiqlari'], ['hubpack', 'fa-box-archive', "Qadoqlanishi kerak bo'lganlar"], ['adm-hubs', 'fa-warehouse', "Hub omborlar"], ['hubops', 'fa-basket-shopping', 'Hub: chakana savdo'], ['hubdocks', 'fa-door-open', 'Rampalar'], ADMIN_PROFILE_TAB]
         };
         function dashTabsFor(user) {
             if (user.role !== 'ADMIN') return DASH_TABS[user.role];
@@ -1467,8 +1467,8 @@
                 profile: [['profile', 'Profil'], ['subscription', 'Obuna'], ['badges', 'Ishonch badjlari'], ['guide', "Qo'llanma (PDF)"]]
             },
             MARKET: {
-                overview: [['overview', 'Bosh sahifa'], ['catalog', 'Katalog'], ['prices', 'Bozor narxlari']],
-                bookings: [['bookings', 'Bronlarim'], ['shipments', "Yo'ldagi va yetib kelgan yuklar"]],
+                overview: [['overview', 'Bosh sahifa'], ['catalog', "Fermer e'lonlari"], ['lmarket', 'Hub zaxirasi'], ['lcart', 'Savatcha'], ['prices', 'Bozor narxlari']],
+                bookings: [['bookings', 'Bronlarim'], ['lorders', 'Hub buyurtmalari'], ['shipments', "Yo'ldagi va yetib kelgan yuklar"]],
                 payments: [['payments', "To'lovlar (Escrow)"], ['cashback', 'Keshbek']],
                 profile: [['profile', 'Profil'], ['subscription', 'Obuna'], ['badges', 'Ishonch badjlari'], ['guide', "Qo'llanma (PDF)"]]
             },
@@ -1561,7 +1561,7 @@
             syncScrollLock();
             renderSubBanner();
             loadSubscription();
-            selectDashTab(tab || (user.role === 'ADMIN' ? adminHomeTab(user) : user.role === 'CONSUMER' ? 'lmarket' : user.role === 'DRIVER' ? 'loads' : isStaffRole(user) ? 'whboard' : 'overview'));
+            selectDashTab(tab || (user.role === 'ADMIN' ? adminHomeTab(user) : user.role === 'CONSUMER' ? 'lmarket' : user.role === 'DRIVER' ? 'loads' : isStaffRole(user) ? (user.role === 'DISPATCHER' ? 'dispatch' : 'whboard') : 'overview'));
             setTimeout(function () { maybeStartTour(user); }, 1500); // birinchi kirishda interaktiv qo'llanma
         }
 
@@ -1773,7 +1773,8 @@
                     actions.appendChild(actionBtn('fa-wallet', "To'lovlar", false, function () { selectDashTab('payments'); }));
                     nodes.push(actions);
                     // Katalog: fermerlarning tayyor mahsulotlari (to'g'ridan-to'g'ri kabinetdan bron qilinadi)
-                    nodes.push(sectionTitle("Fermerlarning tayyor mahsulotlari"));
+                    nodes.push(sectionTitle("Fermerlarning tayyor mahsulotlari", T("Hub zaxirasidan ham buyurtma berishingiz mumkin")));
+                    nodes.push(actionBtn('fa-warehouse', 'Hub zaxirasi (qadoqlangan)', false, function () { selectDashTab('lmarket'); }));
                     const catBox = el('div', 'grid sm:grid-cols-2 xl:grid-cols-3 gap-4');
                     catBox.id = 'mk-catalog-preview';
                     catBox.appendChild(el('p', 'text-sm text-slate-500 col-span-full', 'Yuklanmoqda...'));
@@ -10217,7 +10218,7 @@
             if (sidebar.classList.contains('open')) toggleSidebar();
             const user = currentUser();
             if (!user) return openRolePage('DRIVER');
-            const tab = { DRIVER: 'eld', FARMER: 'shipments', MARKET: 'shipments', ADMIN: 'adm-shipments', DISPATCHER: 'whboard' }[user.role];
+            const tab = { DRIVER: 'eld', FARMER: 'shipments', MARKET: 'shipments', ADMIN: 'adm-shipments', DISPATCHER: 'dispatch' }[user.role];
             openDashboard(tab);
         }
 

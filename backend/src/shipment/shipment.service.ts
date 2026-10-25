@@ -33,7 +33,7 @@ const SHIPMENT_INCLUDE = {
 } satisfies Prisma.ShipmentInclude;
 
 type ShipmentRow = Prisma.ShipmentGetPayload<{ include: typeof SHIPMENT_INCLUDE }>;
-type Viewer = 'driver-open' | 'driver-own' | 'farmer' | 'market';
+type Viewer = 'driver-open' | 'driver-own' | 'farmer' | 'market' | 'staff';
 
 @Injectable()
 export class ShipmentService {
@@ -75,6 +75,62 @@ export class ShipmentService {
     }
     const out = rows.map((s) => ({ ...this.shape(s, 'driver-open', fit, wh), ...(distances && { distanceKm: distances.get(s.id) }) }));
     return this.withRate(out);
+  }
+
+  // ---------- Dispetcher / administrator ----------
+
+  /** Platformadagi hali haydovchisiz ochiq yuklar (to'lov holati ko'rinadi: faqat HELD yuk biriktiriladi) */
+  async listUnassigned() {
+    const rows = await this.prisma.shipment.findMany({
+      where: { status: ShipmentStatus.OPEN, driverId: null },
+      orderBy: { createdAt: 'desc' },
+      take: 200,
+      include: SHIPMENT_INCLUDE,
+    });
+    const wh = await this.warehouseContact(rows);
+    return rows.map((r) => this.shape(r, 'staff', undefined, wh));
+  }
+
+  /**
+   * Yuk olishga tayyor haydovchilar: faol (LOADING/IN_TRANSIT) yuki yo'q (LTL e'loni bor haydovchi — bo'sh joyi bor),
+   * ixtiyoriy: shu og'irlikka sig'adigan va/yoki viloyat bo'yicha
+   */
+  async availableDrivers(query: { weightKg?: number; region?: string }) {
+    const drivers = await this.prisma.driver.findMany({
+      where: {
+        user: { isActive: true },
+        ...(query.region && { region: { equals: query.region, mode: 'insensitive' } }),
+      },
+      include: {
+        user: { select: { fullName: true, phone: true } },
+        posts: { where: { isActive: true, loadMode: 'LTL' }, select: { availableCapacityKg: true } },
+        shipments: { where: { status: { in: ACTIVE } }, select: { id: true, ltlKg: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 300,
+    });
+    const trust = await this.trust.summaries(drivers.map((d) => d.userId));
+    return drivers.flatMap((d) => {
+      const ltlRoom = d.posts.length ? Math.max(...d.posts.map((p) => p.availableCapacityKg)) : null;
+      const busy = d.shipments.some((x) => (ltlRoom === null ? true : x.ltlKg === null));
+      if (busy) return [];
+      const room = ltlRoom ?? Number(d.capacityKg);
+      if (query.weightKg !== undefined && query.weightKg > room) return [];
+      return [{
+        id: d.id, userId: d.userId, fullName: d.user.fullName, phone: d.user.phone, vehicleType: d.vehicleType, plateNumber: d.plateNumber,
+        capacityKg: Number(d.capacityKg), freeKg: room, region: d.region, trust: trust.get(d.userId) ?? null,
+      }];
+    });
+  }
+
+  /** Dispetcher/admin yukni to'g'ridan-to'g'ri haydovchiga biriktiradi (OPEN -> LOADING; qoidalar haydovchi o'zi olgandagidek) */
+  async assignDriver(id: string, driverId: string) {
+    const driver = await this.prisma.driver.findUnique({ where: { id: driverId }, select: { id: true, userId: true, capacityKg: true, user: { select: { isActive: true } } } });
+    if (!driver || !driver.user.isActive) throw new NotFoundException('Haydovchi topilmadi');
+    await this.prisma.$transaction((tx) => this.acceptTx(tx, driver, id));
+    this.notify.shipmentAssigned(id);
+    const row = await this.prisma.shipment.findUniqueOrThrow({ where: { id }, include: SHIPMENT_INCLUDE });
+    return this.shape(row, 'staff', undefined, await this.warehouseContact([row]));
   }
 
   /** Yukni o'ziga biriktirish: OPEN -> LOADING */
@@ -453,13 +509,13 @@ export class ShipmentService {
       paymentStatus: s.booking?.payment?.status ?? s.warehouseOrder?.payment?.status ?? null, // haydovchi uchun: to'lov kafolatlanganmi
       price: this.priceOf(s, viewer),
       ...(viewer === 'driver-open' && capacityKg ? { fitsCapacity: s.weightKg.lte(capacityKg) } : {}),
-      farmer: viewer === 'driver-own' || viewer === 'market'
+      farmer: viewer === 'driver-own' || viewer === 'market' || viewer === 'staff'
         ? { farmName: farmer.farmName, fullName: farmer.user.fullName, phone: farmer.user.phone }
         : null,
-      market: viewer === 'driver-own' || viewer === 'farmer'
+      market: viewer === 'driver-own' || viewer === 'farmer' || viewer === 'staff'
         ? { companyName: market.companyName, fullName: market.user.fullName, phone: market.user.phone }
         : null,
-      driver: (viewer === 'farmer' || viewer === 'market') && s.driver
+      driver: (viewer === 'farmer' || viewer === 'market' || viewer === 'staff') && s.driver
         ? {
             userId: s.driver.userId,
             fullName: s.driver.user.fullName,
