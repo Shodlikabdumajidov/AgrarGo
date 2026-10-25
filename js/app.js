@@ -992,6 +992,7 @@
                     hideAuthAlert(productAlert);
                 }, 1000);
                 if (bookInst) refreshBook();
+                if (dashboardView.classList.contains('open') && dashTab === 'products') setTimeout(function () { selectDashTab('products'); }, 1100); // E'lonlarim ro'yxati yangilansin
             } catch (err) {
                 if (err.status === 401) {
                     // Tahrirlashda kiritilgan qiymatlar yo'qolmasligi uchun forma qayta ochilganda eski holatga qaytadi
@@ -1423,16 +1424,15 @@
         const dashContent = document.getElementById('dash-content');
         const dashScroll = document.getElementById('dash-scroll'); // Main: alohida scroll konteyneri (Sidebar'dan mustaqil)
         const DASH_TABS = {
-            FARMER: [['overview', 'fa-gauge', 'Umumiy'], ['cashback', 'fa-coins', 'Mening keshbeklarim'], ['bookings', 'fa-inbox', 'Kelgan bronlar'], ['hub', 'fa-store', "Hub ombori orqali sotish"],
-                     ['shipments', 'fa-truck-ramp-box', 'Yuk tashish'], ['payments', 'fa-wallet', "To'lovlar"],
-                     ['warehouse', 'fa-warehouse', 'Omborxona'], ['whorders', 'fa-clipboard-list', 'Ombor buyurtmalari'],
-                     ['products', 'fa-boxes-stacked', "E'lonlarim"], ['guide', 'fa-book-open', "Qo'llanma"], ['drivers', 'fa-truck-field', 'Haydovchilar'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'], ['badges', 'fa-trophy', 'Ishonch badjlari'], ['subscription', 'fa-crown', 'Obuna'], ['profile', 'fa-id-card', 'Profil']],
+            // Fermer: 5 ta asosiy bo'lim. Qolgan ekranlar (Hub, Omborxona, Yuk tashish, Keshbek, Obuna, Badjlar, Qo'llanma) DASH_GROUPS orqali ichki bo'limlar sifatida ochiladi
+            FARMER: [['overview', 'fa-gauge', 'Bosh sahifa'], ['products', 'fa-seedling', "Mening e'lonlarim"], ['bookings', 'fa-truck-ramp-box', 'Zakazlar / Yuk tashish'],
+                     ['payments', 'fa-wallet', "Moliya va To'lovlar"], ['profile', 'fa-id-card', 'Profil va Sozlamalar']],
             MARKET: [['overview', 'fa-gauge', 'Umumiy'], ['cashback', 'fa-coins', 'Mening keshbeklarim'], ['bookings', 'fa-clipboard-list', 'Mening bronlarim'],
                      ['shipments', 'fa-truck-ramp-box', 'Yuk tashish'], ['payments', 'fa-wallet', "To'lovlar"],
                      ['warehouse', 'fa-warehouse', 'Omborxona'], ['whorders', 'fa-clipboard-list', 'Ombor buyurtmalari'],
                      ['catalog', 'fa-store', 'Katalog'], ['guide', 'fa-book-open', "Qo'llanma"], ['drivers', 'fa-truck-field', 'Haydovchilar'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'], ['badges', 'fa-trophy', 'Ishonch badjlari'], ['subscription', 'fa-crown', 'Obuna'], ['profile', 'fa-id-card', 'Profil']],
-            DRIVER: [['overview', 'fa-gauge', 'Umumiy'], ['cashback', 'fa-coins', 'Mening keshbeklarim'], ['loads', 'fa-boxes-packing', 'Mavjud yuklar'], ['courier', 'fa-motorcycle', 'Shahar ichi kuryeri'],
-                     ['myloads', 'fa-truck-fast', 'Mening yuklarim'], ['eld', 'fa-clock-rotate-left', 'Harakat jurnali'], ['verify', 'fa-id-card-clip', 'Shaxsni tasdiqlash'], ['badges', 'fa-trophy', 'Darajalar va mukofotlar'], ['guide', 'fa-book-open', "Qo'llanma"], ['drivers', 'fa-truck-field', 'Haydovchilar'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'], ['subscription', 'fa-crown', 'Obuna'], ['profile', 'fa-id-card', 'Profil']],
+            // Haydovchi: 4 ta asosiy ekran (ELD, boshqa haydovchilar ro'yxati va Bozor narxlari olib tashlandi)
+            DRIVER: [['loads', 'fa-boxes-packing', 'Mavjud yuklar'], ['myloads', 'fa-truck-fast', "Mening zakazlarim / Yo'lim"], ['dfinance', 'fa-wallet', 'Balans va Moliya'], ['profile', 'fa-id-card', 'Profil']],
             CONSUMER: [['lmarket', 'fa-basket-shopping', 'Mahalliy bozor'], ['lcart', 'fa-cart-shopping', 'Savatcha'], ['lorders', 'fa-box', 'Buyurtmalarim'], ['cashback', 'fa-coins', 'Mening keshbeklarim'], ['guide', 'fa-book-open', "Qo'llanma"], ['profile', 'fa-id-card', 'Profil']],
             DISPATCHER: [['hubscan', 'fa-qrcode', 'QR Skaner (qabul qilish)'], ['hubpack', 'fa-box-archive', "Qadoqlanishi kerak bo'lganlar"], ['hubosd', 'fa-file-circle-exclamation', 'OS&D hisobotlari'], ['hubops', 'fa-warehouse', 'Hub: chakana savdo'], ['hubdocks', 'fa-door-open', 'Rampalar'], ['whboard', 'fa-table-columns', 'Zonalar'], ['whunits', 'fa-temperature-half', 'Kameralar'],
                      ['whorders', 'fa-clipboard-list', 'Buyurtmalar'], ['whinventory', 'fa-chart-pie', 'Inventarizatsiya'], ['guide', 'fa-book-open', "Qo'llanma"], ['drivers', 'fa-truck-field', 'Haydovchilar'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'], ['profile', 'fa-id-card', 'Profil']]
@@ -1456,6 +1456,46 @@
         }
         /** Kabinet ochilganda birinchi bo'lim: SUPER_ADMIN — boshqaruv paneli, boshqa adminlar — o'z bo'limi */
         function adminHomeTab(user) { return dashTabsFor(user)[0][0]; }
+        /**
+         * Asosiy menyu bo'limi -> uning ichki ekranlari (sahifa tepasidagi «pill» navigatsiya). Kalit = menyudagi tab id'si.
+         * Guruhda bo'lmagan ekranlar o'zi uchun alohida bo'lim hisoblanadi. Eski ekranlar (renderer'lar) o'zgarmagan, faqat menyudan olib tashlangan.
+         */
+        const DASH_GROUPS = {
+            FARMER: {
+                products: [['products', "E'lonlarim"], ['hub', 'Hub orqali sotish'], ['warehouse', 'Omborxona']],
+                bookings: [['bookings', 'Bronlar'], ['shipments', 'Yuk tashish'], ['whorders', 'Ombor buyurtmalari']],
+                payments: [['payments', "To'lovlar (Escrow)"], ['cashback', 'Keshbek']],
+                profile: [['profile', 'Profil'], ['subscription', 'Obuna'], ['badges', 'Ishonch badjlari'], ['guide', "Qo'llanma (PDF)"]]
+            },
+            DRIVER: {
+                myloads: [['myloads', 'Yuklarim'], ['courier', 'Shahar ichi kuryeri']],
+                dfinance: [['dfinance', 'Balans'], ['cashback', 'Keshbek']],
+                profile: [['profile', 'Profil'], ['verify', 'Hujjatlar (KYC)'], ['subscription', 'Obuna'], ['badges', 'Darajalar'], ['guide', "Qo'llanma"]]
+            }
+        };
+        /** Ekran qaysi menyu bo'limiga tegishli (menyuda uni ajratib ko'rsatish uchun) */
+        function dashGroupOf(role, tab) {
+            const g = DASH_GROUPS[role];
+            if (!g) return tab;
+            const keys = Object.keys(g);
+            for (let i = 0; i < keys.length; i++) if (g[keys[i]].some(function (x) { return x[0] === tab; })) return keys[i];
+            return tab;
+        }
+        /** Bo'lim ichki ekranlari: ikkitadan ko'p bo'lsa sahifa tepasida «pill» tugmalar ko'rinadi */
+        function renderDashSubnav(user, tab) {
+            const box = document.getElementById('dash-subnav');
+            if (!box) return;
+            const g = DASH_GROUPS[user.role], key = dashGroupOf(user.role, tab), items = g && g[key];
+            if (!items || items.length < 2) { box.replaceChildren(); box.classList.add('hidden'); return; }
+            box.classList.remove('hidden');
+            box.replaceChildren.apply(box, items.map(function (it) {
+                const b = el('button', 'dp-pill' + (it[0] === tab ? ' on' : ''), T(it[1]));
+                b.type = 'button';
+                b.setAttribute('aria-current', it[0] === tab ? 'page' : 'false');
+                b.addEventListener('click', function () { dashBookingFilter = 'ALL'; dashShipFilter = 'ALL'; dashPayFilter = 'ALL'; payConfirm = null; selectDashTab(it[0]); });
+                return b;
+            }));
+        }
         const BOOKING_STATUS = {
             PENDING:   { label: 'Kutilmoqda',      cls: 'bg-amber-500/15 text-amber-400 border-amber-500/30' },
             APPROVED:  { label: 'Tasdiqlangan',    cls: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' },
@@ -1491,6 +1531,7 @@
             dashPayFilter = 'ALL';
             payConfirm = null;
             dashLoadsRegion = '';
+            dashLoadsFilter = { dest: '', category: '', tonnage: '' };
             whOrderFilter = 'ALL';
             whFarmerZone = 'ALL';
             whFeedState = { q: '', category: '', storageType: '', page: 1 };
@@ -1515,7 +1556,7 @@
             syncScrollLock();
             renderSubBanner();
             loadSubscription();
-            selectDashTab(tab || (user.role === 'ADMIN' ? adminHomeTab(user) : user.role === 'CONSUMER' ? 'lmarket' : isStaffRole(user) ? 'whboard' : 'overview'));
+            selectDashTab(tab || (user.role === 'ADMIN' ? adminHomeTab(user) : user.role === 'CONSUMER' ? 'lmarket' : user.role === 'DRIVER' ? 'loads' : isStaffRole(user) ? 'whboard' : 'overview'));
             setTimeout(function () { maybeStartTour(user); }, 1500); // birinchi kirishda interaktiv qo'llanma
         }
 
@@ -1528,21 +1569,24 @@
 
         function selectDashTab(tab) {
             destroyCharts();
-            if (tab === 'products') return openMyProducts();
             if (tab !== 'prices') stopPricesBg();
             if (tab === 'catalog') { closeDashboard(); return scrollToMarket(); }
             const user = currentUser();
             if (!user) return;
             dashTab = tab;
             try { bnSync(); } catch (e) {}
+            renderDashSubnav(user, tab);
+            const menuTab = dashGroupOf(user.role, tab);
             document.querySelectorAll('.dash-tab').forEach(function (b) {
-                const on = b.dataset.tab === tab;
+                const on = b.dataset.tab === menuTab;
                 b.classList.toggle('active', on);
                 if (on) b.scrollIntoView({ inline: 'center', block: 'nearest' }); // pastki panelda (mobil) / Sidebar'da (desktop) faol tab ko'rinib turadi
             });
             dashScroll.scrollTo({ top: 0, behavior: 'auto' }); // faqat Main tepaga qaytadi, Sidebar o'z joyida
             renderSubBanner();
-            if (tab === 'bookings') renderDashBookings(user);
+            if (tab === 'products') renderFarmerListings(user);
+            else if (tab === 'dfinance') renderDriverFinance(user);
+            else if (tab === 'bookings') renderDashBookings(user);
             else if (tab === 'shipments' || tab === 'myloads') renderDashShipments(user);
             else if (tab === 'loads') renderDashLoads(user);
             else if (tab === 'eld') renderDashEld(user);
@@ -1680,10 +1724,19 @@
                     const addBtn = actionBtn('fa-plus', "Yangi e'lon qo'shish", true, function () { openProductModal(); });
                     addBtn.dataset.tour = 'primary';
                     actions.appendChild(addBtn);
-                    actions.appendChild(actionBtn('fa-boxes-stacked', "Mening e'lonlarim", false, openMyProducts));
+                    actions.appendChild(actionBtn('fa-boxes-stacked', "Mening e'lonlarim", false, function () { selectDashTab('products'); }));
                     actions.appendChild(actionBtn('fa-truck-ramp-box', 'Yuk tashish', false, function () { selectDashTab('shipments'); }));
                     actions.appendChild(actionBtn('fa-wallet', "To'lovlar", false, function () { selectDashTab('payments'); }));
                     nodes.push(actions);
+                    // Ikkinchi darajali bo'limlar: kichik havolalar (menyuda alohida bo'lim emas)
+                    const more = el('div', 'flex flex-wrap items-center gap-x-5 gap-y-2 text-sm');
+                    [['fa-file-pdf', "Qo'llanma (PDF)", 'guide'], ['fa-trophy', 'Ishonch badjlari', 'badges'], ['fa-arrow-trend-up', 'Bozor narxlari', 'prices'], ['fa-paper-plane', 'Telegram bot', 'profile']].forEach(function (x) {
+                        const a = el('button', 'flex items-center gap-2 font-bold text-slate-300 hover:text-emerald-300 transition');
+                        a.type = 'button'; a.appendChild(el('i', 'fa-solid text-emerald-400 ' + x[0])); a.appendChild(el('span', '', x[1]));
+                        a.addEventListener('click', function () { selectDashTab(x[2]); });
+                        more.appendChild(a);
+                    });
+                    nodes.push(more);
                     const farmerCharts = el('div');
                     farmerCharts.appendChild(chartSkeletonGrid());
                     nodes.push(farmerCharts);
@@ -4548,13 +4601,23 @@
 
         // Mavjud yuklar (haydovchi): bo'sh yuklarni ko'rish va biriktirish
         let dashLoadsRegion = '';
+        let dashLoadsFilter = { dest: '', category: '', tonnage: '' }; // Qayerga / Yuk turi / Tonnaj
+        const TONNAGE_RANGES = [['', 'Barcha tonnaj'], ['0-1000', '1 t gacha'], ['1000-3000', '1-3 t'], ['3000-5000', '3-5 t'], ['5000-10000', '5-10 t'], ['10000-', '10 t dan ko\'p']];
+        function loadsFilterQuery() {
+            const q = [], f = dashLoadsFilter;
+            if (dashLoadsRegion) q.push('originRegion=' + encodeURIComponent(dashLoadsRegion));
+            if (f.dest) q.push('destRegion=' + encodeURIComponent(f.dest));
+            if (f.category) q.push('category=' + encodeURIComponent(f.category));
+            if (f.tonnage) { const r = f.tonnage.split('-'); if (r[0]) q.push('minKg=' + r[0]); if (r[1]) q.push('maxKg=' + r[1]); }
+            return q;
+        }
         let loadsRadar = null;
         async function renderDashLoads(user) {
             const rid = ++dashRenderId;
             dashContent.replaceChildren(dashMessage('fa-spinner fa-spin', "Bo'sh yuklar yuklanmoqda..."));
             let list;
             try {
-                const lq = (dashLoadsRegion ? ['originRegion=' + encodeURIComponent(dashLoadsRegion)] : []).concat(radarQuery(radarLoads));
+                const lq = loadsFilterQuery().concat(radarQuery(radarLoads));
                 list = await authed('GET', '/shipments/available' + (lq.length ? '?' + lq.join('&') : ''));
             } catch (err) {
                 if (err.status === 401 || rid !== dashRenderId) return;
@@ -4569,13 +4632,28 @@
             row.appendChild(refreshButton(function () { renderDashLoads(user); }));
             head.appendChild(row);
             head.appendChild(el('p', 'text-sm text-slate-400', "Yukni biriktirganingizdan keyin manzil va aloqa ma'lumotlari ochiladi. Oddiy rejimda bir vaqtda bitta yuk olib yura olasiz; LTL e'loni bo'lsa — bo'sh joy yetguncha bir nechta."));
-            const select = el('select', 'auth-input !w-auto min-w-[14rem]');
-            select.setAttribute('aria-label', 'Yuk olinadigan viloyat');
-            select.appendChild(new Option('Barcha hududlardan', ''));
-            REGIONS.forEach(function (r) { select.appendChild(new Option(r + ' dan', r)); });
-            select.value = dashLoadsRegion;
-            select.addEventListener('change', function () { dashLoadsRegion = select.value; renderDashLoads(user); });
-            head.appendChild(select);
+            // Filtrlar: Yo'nalish (qayerdan -> qayerga), Yuk turi, Tonnaj
+            const filters = el('div', 'grid grid-cols-2 lg:grid-cols-4 gap-3');
+            const mkSelect = function (label, options, value, onChange) {
+                const wrap = el('label', 'block');
+                wrap.appendChild(el('span', 'block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1', T(label)));
+                const sel = el('select', 'auth-input');
+                options.forEach(function (o) { sel.appendChild(new Option(T(o[1]), o[0])); });
+                sel.value = value;
+                sel.addEventListener('change', function () { onChange(sel.value); renderDashLoads(user); });
+                wrap.appendChild(sel);
+                return wrap;
+            };
+            const regionOpts = function (all, suffix) { return [['', all]].concat(REGIONS.map(function (r) { return [r, r + suffix]; })); };
+            const cats = Array.prototype.map.call(productForm.category.options, function (o) { return o.value; }).filter(Boolean);
+            filters.appendChild(mkSelect('Qayerdan', regionOpts('Barcha hududlardan', ' dan'), dashLoadsRegion, function (v) { dashLoadsRegion = v; }));
+            filters.appendChild(mkSelect('Qayerga', regionOpts('Barcha yo\'nalishlar', ' ga'), dashLoadsFilter.dest, function (v) { dashLoadsFilter.dest = v; }));
+            filters.appendChild(mkSelect('Yuk turi', [['', 'Barcha yuk turlari']].concat(cats.map(function (c) { return [c, c]; })), dashLoadsFilter.category, function (v) { dashLoadsFilter.category = v; }));
+            filters.appendChild(mkSelect('Tonnaj', TONNAGE_RANGES, dashLoadsFilter.tonnage, function (v) { dashLoadsFilter.tonnage = v; }));
+            filters.dataset.tour = 'primary';
+            head.appendChild(filters);
+            const filtered = loadsFilterQuery().length > 0;
+            if (filtered) head.appendChild(actionBtn('fa-filter-circle-xmark', 'Filtrlarni tozalash', false, function () { dashLoadsRegion = ''; dashLoadsFilter = { dest: '', category: '', tonnage: '' }; renderDashLoads(user); }));
 
             if (loadsRadar) loadsRadar.destroy();
             loadsRadar = createRadar(radarLoads, function () { renderDashLoads(user); }, 'load');
@@ -4585,12 +4663,108 @@
             if (rid !== dashRenderId) return;
             if (widget) nodes.push(widget);
             if (list.length) list.forEach(function (s) { nodes.push(buildShipmentCard(s, 'driver-open')); });
-            else nodes.push(dashLoadsRegion
-                ? emptyState({ art: 'search', compact: true, title: "Bu hududdan bo'sh yuk yo'q", text: "Boshqa hududni tanlab ko'ring.", cta: { label: 'Barcha hududlar', icon: 'fa-globe', fn: function () { dashLoadsRegion = ''; renderDashLoads(user); } } })
+            else nodes.push(filtered
+                ? emptyState({ art: 'search', compact: true, title: "Filtrga mos yuk yo'q", text: "Yo'nalish, yuk turi yoki tonnajni o'zgartirib ko'ring.", cta: { label: 'Filtrlarni tozalash', icon: 'fa-filter-circle-xmark', fn: function () { dashLoadsRegion = ''; dashLoadsFilter = { dest: '', category: '', tonnage: '' }; renderDashLoads(user); } } })
                 : emptyState({ art: 'shipments', title: "Hozircha bo'sh yuklar yo'q", text: "Fermer bronni tasdiqlaganda yangi yuk shu yerda paydo bo'ladi.", cta: { label: 'Yangilash', icon: 'fa-rotate', fn: function () { renderDashLoads(user); } } }));
             dashContent.replaceChildren.apply(dashContent, nodes);
             mountTriHaul(list);
             loadsRadar.update(list.map(function (s) { return { id: s.id, cardId: 'shc-' + s.id, lat: s.origin.lat, lng: s.origin.lng, title: s.cargoName, sub: s.origin.region + ' → ' + s.destination.region + ' · ' + formatNumber(s.weightKg) + ' kg' }; }));
+        }
+
+        // ----- Fermer: «Mening e'lonlarim» (oddiy ro'yxat; 3D kitob hisob menyusida qoldi) -----
+        const LISTING_STATUS = {
+            ACTIVE: ['Faol', 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'], BOOKED: ['Bron qilingan', 'bg-amber-500/15 text-amber-300 border-amber-500/30'],
+            SOLD: ['Sotilgan', 'bg-slate-500/20 text-slate-300 border-slate-500/30'], ARCHIVED: ['Arxivda', 'bg-slate-500/20 text-slate-400 border-slate-500/30']
+        };
+        async function renderFarmerListings(user) {
+            const rid = ++dashRenderId;
+            const again = function () { renderFarmerListings(user); };
+            const head = el('div', 'flex flex-wrap items-center justify-between gap-3');
+            head.appendChild(sectionTitle("Mening e'lonlarim", T("Hosilni sotuvga qo'ying, narx va qoldiqni boshqaring")));
+            const hb = el('div', 'flex flex-wrap gap-2');
+            const add = actionBtn('fa-plus', "Yangi e'lon qo'shish", true, function () { openProductModal(); });
+            add.dataset.tour = 'primary';
+            hb.appendChild(add); hb.appendChild(refreshButton(again));
+            head.appendChild(hb);
+            dashContent.replaceChildren(head, skeleton('list'));
+            let list;
+            try { list = await authed('GET', '/products'); }
+            catch (err) { if (err.status === 401 || rid !== dashRenderId) return; return dashContent.replaceChildren(head, dashMessage('fa-triangle-exclamation text-rose-400', err.messages[0], again)); }
+            if (rid !== dashRenderId) return;
+            if (!list.length) return dashContent.replaceChildren(head, emptyState({ art: 'listings', title: "Hali e'lon yo'q", text: "Birinchi e'loningizni joylang: do'konlar uni darhol ko'radi va bron qiladi.", cta: { label: "E'lon joylash", icon: 'fa-plus', fn: function () { openProductModal(); } } }));
+            const grid = el('div', 'grid grid-cols-1 lg:grid-cols-2 gap-4');
+            list.forEach(function (p) {
+                const st = LISTING_STATUS[p.status] || LISTING_STATUS.ACTIVE;
+                const c = el('article', 'glass rounded-2xl border border-white/10 p-4 space-y-3');
+                const top = el('div', 'flex items-start justify-between gap-3');
+                const tt = el('div', 'min-w-0');
+                tt.appendChild(el('h3', 'font-extrabold text-white text-lg break-words', p.name));
+                tt.appendChild(el('p', 'text-xs text-slate-400', p.category + (p.harvestDate ? ' · ' + T('Hosil: {0}', formatDateTime(p.harvestDate).slice(0, 10)) : '')));
+                top.appendChild(tt);
+                top.appendChild(whPill(T(st[0]), st[1]));
+                c.appendChild(top);
+                const nums = el('div', 'grid grid-cols-2 gap-3 text-sm');
+                [[T('Qoldiq'), formatNumber(Number(p.quantityKg)) + ' kg'], [T('Narx'), T("{0} so'm/kg", formatNumber(Number(p.pricePerKg)))]].forEach(function (x) {
+                    const cell = el('div', 'rounded-xl bg-slate-950/40 border border-white/10 px-3 py-2');
+                    cell.appendChild(el('div', 'text-[11px] uppercase tracking-wider text-slate-400', x[0]));
+                    cell.appendChild(el('div', 'font-black text-white', x[1]));
+                    nums.appendChild(cell);
+                });
+                c.appendChild(nums);
+                const act = el('div', 'flex flex-wrap gap-2');
+                act.appendChild(actionBtn('fa-pen', 'Tahrirlash', false, function () { openProductModal(p); }));
+                act.appendChild(actionBtn(p.status === 'ARCHIVED' ? 'fa-box-open' : 'fa-box-archive', p.status === 'ARCHIVED' ? 'Faollashtirish' : 'Arxivlash', false, async function () {
+                    try { await authed('PUT', '/products/' + p.id, { status: p.status === 'ARCHIVED' ? 'ACTIVE' : 'ARCHIVED' }); showToast(T(p.status === 'ARCHIVED' ? "E'lon qayta faollashtirildi." : "E'lon arxivlandi.")); again(); }
+                    catch (err) { if (err.status !== 401) showToast(err.messages[0], 4500, 'error'); }
+                }));
+                act.appendChild(actionBtn('fa-trash', "O'chirish", false, async function () {
+                    if (!window.confirm(T("E'lon o'chirilsinmi? Bronlari bo'lsa o'chirib bo'lmaydi."))) return;
+                    try { await authed('DELETE', '/products/' + p.id); showToast(T("E'lon o'chirildi.")); again(); }
+                    catch (err) { if (err.status !== 401) showToast(err.messages[0], 4500, 'error'); }
+                }));
+                c.appendChild(act);
+                grid.appendChild(c);
+            });
+            dashContent.replaceChildren(head, grid);
+        }
+
+        // ----- Haydovchi: Balans va moliya (yuklar va shahar ichi yetkazishlar bo'yicha tushum) -----
+        async function renderDriverFinance(user) {
+            const rid = ++dashRenderId;
+            const again = function () { renderDriverFinance(user); };
+            const head = el('div', 'flex flex-wrap items-center justify-between gap-3');
+            head.appendChild(sectionTitle('Balans va moliya', T("Hisobingizga tushgan va escrow'da kutilayotgan yo'l haqi")));
+            head.appendChild(refreshButton(again));
+            dashContent.replaceChildren(head, skeleton('list'));
+            let ships, local, cb;
+            try {
+                const all = await Promise.all([authed('GET', '/shipments/mine'), authed('GET', '/local/courier/mine').catch(function () { return []; }), cbFetch(5)]);
+                ships = all[0]; local = all[1]; cb = all[2];
+            } catch (err) { if (err.status === 401 || rid !== dashRenderId) return; return dashContent.replaceChildren(head, dashMessage('fa-triangle-exclamation text-rose-400', err.messages[0], again)); }
+            if (rid !== dashRenderId) return;
+            const fee = function (s) { return s.price ? Number(s.price.deliveryFee) || 0 : 0; };
+            const paid = ships.filter(function (s) { return s.paymentStatus === 'RELEASED' && s.status === 'DELIVERED'; });
+            const held = ships.filter(function (s) { return s.paymentStatus === 'HELD' && s.status !== 'CANCELLED'; });
+            const sum = function (a, f) { return a.reduce(function (t, x) { return t + f(x); }, 0); };
+            const lDone = local.filter(function (o) { return o.status === 'COMPLETED'; }), lWay = local.filter(function (o) { return o.status === 'DELIVERING'; });
+            const earned = sum(paid, fee) + sum(lDone, function (o) { return o.courierFee || 0; });
+            const pending = sum(held, fee) + sum(lWay, function (o) { return o.courierFee || 0; });
+            const stats = el('div', 'grid grid-cols-1 sm:grid-cols-3 gap-4');
+            stats.appendChild(statCard('fa-circle-check', "Hisobga tushgan", bdMoney(earned), 'text-emerald-400'));
+            stats.appendChild(statCard('fa-shield-halved', "Escrow'da kutilmoqda", bdMoney(pending), 'text-blue-400'));
+            stats.appendChild(statCard('fa-coins', 'Keshbek balansi', bdMoney(cb ? cb.balance : 0), 'text-amber-300'));
+            const rows = paid.map(function (s) { return { at: s.deliveredAt, title: s.cargoName + ' · ' + s.origin.region + ' → ' + s.destination.region, amount: fee(s), kind: T('Yuk tashish') }; })
+                .concat(lDone.map(function (o) { return { at: o.deliveredAt, title: o.productName, amount: o.courierFee || 0, kind: T('Shahar ichi') }; }))
+                .sort(function (a, b) { return new Date(b.at) - new Date(a.at); }).slice(0, 15);
+            const nodes = [head, stats, sectionTitle("So'nggi tushumlar", T("Yetkazilgan va to'lov yopilgan yuklar"))];
+            if (!rows.length) nodes.push(emptyState({ art: 'payments', compact: true, title: "Hali tushum yo'q", text: "Birinchi yukni yetkazganingizdan keyin yo'l haqi shu yerda ko'rinadi.", cta: { label: 'Mavjud yuklar', icon: 'fa-boxes-packing', fn: function () { selectDashTab('loads'); } } }));
+            else nodes.push(admTable([
+                ['Sana', function (r) { return r.at ? formatDateTime(r.at) : '—'; }],
+                ['Tur', function (r) { return r.kind; }],
+                ['Yuk', function (r) { return r.title; }],
+                ["Yo'l haqi", function (r) { return el('b', 'text-emerald-300 whitespace-nowrap', bdMoney(r.amount)); }]
+            ], rows, ''));
+            dashContent.replaceChildren.apply(dashContent, nodes);
         }
 
         // ----- To'lovlar (kafolatlangan to'lov / escrow) -----
@@ -6563,11 +6737,10 @@
         const TOUR_STEPS = {
             FARMER: [
                 { sel: '#dash-content [data-tour="primary"]', title: "1. Bu yerdan e'lon qo'shasiz", text: "Mahsulot turi, miqdori va narxini kiriting: do'konlar e'loningizni darhol ko'radi." },
-                tabStep('bookings', "2. Bronlarni shu yerda tasdiqlaysiz", "Market bron qilganda xabar keladi. Tasdiqlagach yuk tashish buyurtmasi avtomatik yaratiladi."),
-                tabStep('shipments', '3. Bu yerdan yuklaringizni kuzatasiz', "Haydovchi, yuk holati va jonli xarita shu bo'limda."),
-                tabStep('payments', "4. To'lovlar va Escrow", "Xaridor puli xavfsiz saqlanadi va yuk yetkazilgach hisobingizga o'tadi."),
-                tabStep('warehouse', '5. Omborxona', "Hosilni sifat nazorati bilan saqlang va narx ko'tarilganda soting."),
-                tabStep('profile', '6. Profil va Telegram', "Ma'lumotlaringizni yangilang va Telegram botni ulab, xabarnomalarni oling.")
+                tabStep('products', "2. Mening e'lonlarim", "E'lonlar, Hub orqali sotish va omborxona shu bo'limda: yuqoridagi tugmalar bilan almashtirasiz."),
+                tabStep('bookings', '3. Zakazlar va yuk tashish', "Bronlarni tasdiqlaysiz, haydovchi va yuk holatini kuzatasiz, ombor buyurtmalarini ko'rasiz."),
+                tabStep('payments', "4. Moliya va to'lovlar", "Xaridor puli xavfsiz (Escrow) saqlanadi va yuk yetkazilgach hisobingizga o'tadi; keshbek ham shu yerda."),
+                tabStep('profile', '5. Profil va sozlamalar', "Ma'lumotlar, Telegram bot, obuna, ishonch badjlari va qo'llanma (PDF) shu bo'limda.")
             ],
             MARKET: [
                 { sel: '#dash-content [data-tour="primary"]', title: '1. Bu yerdan mahsulot tanlaysiz', text: "Katalogda fermerlarning e'lonlarini ko'ring, filtrlang va bron qiling." },
@@ -6578,10 +6751,10 @@
                 tabStep('profile', '6. Profil va Telegram', "Telegram botni ulab, bron va yuk holati xabarlarini oling.")
             ],
             DRIVER: [
-                { sel: '#dash-content [data-tour="primary"]', title: "1. Bu yerdan yuklarni ko'rasiz", text: "Hududingizdagi to'lovi kafolatlangan yuklar ro'yxati." },
-                tabStep('myloads', "2. Mening yuklarim", "Qabul qilgan yuklaringiz, yo'lga chiqish va yetkazish tugmalari shu yerda."),
-                tabStep('eld', '3. Harakat jurnali (ELD)', "GPS orqali yozilgan haydash va dam olish vaqtlari."),
-                tabStep('profile', '4. Profil', "Transport ma'lumotlari va Telegram xabarnomalar.")
+                { sel: '#dash-content [data-tour="primary"]', title: "1. Bu yerdan yuklarni ko'rasiz", text: "Hududingizdagi to'lovi kafolatlangan yuklar; yo'nalish, yuk turi va tonnaj bo'yicha filtrlang." },
+                tabStep('myloads', "2. Mening zakazlarim / Yo'lim", "Qabul qilgan yuklaringiz, yo'lga chiqish va yetkazish tugmalari, shahar ichi kuryeri shu yerda."),
+                tabStep('dfinance', '3. Balans va moliya', "Hisobingizga tushgan va escrow'da kutilayotgan pul, keshbek."),
+                tabStep('profile', '4. Profil', "Mashina ma'lumotlari, hujjatlar (KYC), obuna va Telegram xabarnomalar.")
             ],
             DISPATCHER: [
                 tabStep('whboard', '1. Ombor zonalari', "Yukni qabul qilish, tekshirish, saqlash va jo'natish zonalari bo'yicha boshqaring."),

@@ -14,7 +14,7 @@ import { randomUUID } from 'crypto';
 import { EBolService } from '../ebol/ebol.service';
 import { reserveLtl, restoreLtl } from './ltl';
 import { TriLoad, TriOption, evaluate, hasDirectReturn, triOptions } from './trihaul';
-import { AvailableShipmentsQuery, ListShipmentsQuery } from './dto/list-shipments.query';
+import { AvailableShipmentsFilterQuery, ListShipmentsQuery } from './dto/list-shipments.query';
 
 // Haydovchi bir vaqtda nechta yakunlanmagan yukni olib yura oladi
 export const MAX_ACTIVE_SHIPMENTS = 1;
@@ -42,7 +42,7 @@ export class ShipmentService {
   // ---------- Haydovchi ----------
 
   /** Bo'sh yuklar: marshrut (viloyat/tuman) va og'irlik ko'rinadi, aniq manzil va telefonlar yashirin. */
-  async listAvailable(driver: { id?: string; capacityKg: Prisma.Decimal }, query: AvailableShipmentsQuery) {
+  async listAvailable(driver: { id?: string; capacityKg: Prisma.Decimal }, query: AvailableShipmentsFilterQuery) {
     // Radiusli qidiruv ("Yuk radari"): olib ketish nuqtasi Haversine bo'yicha radius ichida bo'lgan ochiq yuklar
     const radius = parseRadius(query);
     let distances: Map<string, number> | undefined;
@@ -58,6 +58,9 @@ export class ShipmentService {
         driverId: null,
         ...idFilter,
         ...(query.originRegion && { originRegion: { equals: query.originRegion, mode: 'insensitive' } }),
+        ...(query.destRegion && { destRegion: { equals: query.destRegion, mode: 'insensitive' } }),
+        ...(query.category && { category: { equals: query.category, mode: 'insensitive' } }),
+        ...((query.minKg !== undefined || query.maxKg !== undefined) && { weightKg: { ...(query.minKg !== undefined && { gte: query.minKg }), ...(query.maxKg !== undefined && { lte: query.maxKg }) } }),
       },
       orderBy: { createdAt: 'desc' },
       include: SHIPMENT_INCLUDE,

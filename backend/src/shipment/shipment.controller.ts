@@ -10,7 +10,7 @@ import { SignEBolDto } from '../ebol/dto/ebol.dto';
 import { ChainAcceptDto } from './dto/chain-accept.dto';
 import { EldQuery, SendLocationDto } from './dto/location.dto';
 import { LocationService } from './tracking/location.service';
-import { AvailableShipmentsQuery, ListShipmentsQuery } from './dto/list-shipments.query';
+import { AvailableShipmentsFilterQuery, ListShipmentsQuery } from './dto/list-shipments.query';
 import { ShipmentService } from './shipment.service';
 
 @Controller('shipments')
@@ -21,7 +21,7 @@ export class ShipmentController {
   // --- Haydovchi (DRIVER) ---
   @Get('available')
   @Roles(Role.DRIVER)
-  available(@CurrentUser() user: any, @Query() query: AvailableShipmentsQuery) {
+  available(@CurrentUser() user: any, @Query() query: AvailableShipmentsFilterQuery) {
     return this.shipments.listAvailable(this.driver(user), query);
   }
 
