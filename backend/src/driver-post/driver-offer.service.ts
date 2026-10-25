@@ -30,7 +30,8 @@ export class DriverOfferService {
   private ownerWhere(user: { role: Role; farmer?: { id: string } | null; market?: { id: string } | null }): Prisma.ShipmentWhereInput {
     if (user.role === Role.FARMER && user.farmer) return { farmerId: user.farmer.id };
     if (user.role === Role.MARKET && user.market) return { marketId: user.market.id };
-    throw new ForbiddenException('Yuk taklif qilish faqat fermer va market uchun');
+    if (user.role === Role.DISPATCHER || user.role === Role.ADMIN) return {}; // dispetcher/admin: istalgan ochiq yukni haydovchiga biriktirish uchun taklif qiladi
+    throw new ForbiddenException('Yuk taklif qilish faqat fermer, market va dispetcher uchun');
   }
 
   /** Taklif qilish mumkin bo'lgan o'z yuklari (haydovchisiz, ochiq). postId berilsa — sig'adimi belgisi bilan */

@@ -25,7 +25,7 @@ export class DriverPostController {
 
   /** Fermer/market: taklif qilish mumkin bo'lgan o'z ochiq yuklari (postId bo'lsa — sig'ish belgisi bilan) */
   @Get('offerable')
-  @Roles(Role.FARMER, Role.MARKET)
+  @Roles(Role.FARMER, Role.MARKET, Role.DISPATCHER, Role.ADMIN)
   offerable(@CurrentUser() user: any, @Query('postId') postId?: string) {
     return this.offers.offerable(user, postId);
   }
@@ -85,7 +85,7 @@ export class DriverPostController {
   @Post(':id/offers')
   @ThrottleProfile('booking')
   @UseGuards(SubscriptionGuard)
-  @Roles(Role.FARMER, Role.MARKET)
+  @Roles(Role.FARMER, Role.MARKET, Role.DISPATCHER, Role.ADMIN)
   offer(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string, @Body() dto: CreateOfferDto) {
     return this.offers.create(user, id, dto);
   }

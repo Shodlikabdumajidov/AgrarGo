@@ -1427,10 +1427,9 @@
             // Fermer: 5 ta asosiy bo'lim. Qolgan ekranlar (Hub, Omborxona, Yuk tashish, Keshbek, Obuna, Badjlar, Qo'llanma) DASH_GROUPS orqali ichki bo'limlar sifatida ochiladi
             FARMER: [['overview', 'fa-gauge', 'Bosh sahifa'], ['products', 'fa-seedling', "Mening e'lonlarim"], ['bookings', 'fa-truck-ramp-box', 'Zakazlar / Yuk tashish'],
                      ['payments', 'fa-wallet', "Moliya va To'lovlar"], ['profile', 'fa-id-card', 'Profil va Sozlamalar']],
-            MARKET: [['overview', 'fa-gauge', 'Umumiy'], ['cashback', 'fa-coins', 'Mening keshbeklarim'], ['bookings', 'fa-clipboard-list', 'Mening bronlarim'],
-                     ['shipments', 'fa-truck-ramp-box', 'Yuk tashish'], ['payments', 'fa-wallet', "To'lovlar"],
-                     ['warehouse', 'fa-warehouse', 'Omborxona'], ['whorders', 'fa-clipboard-list', 'Ombor buyurtmalari'],
-                     ['catalog', 'fa-store', 'Katalog'], ['guide', 'fa-book-open', "Qo'llanma"], ['drivers', 'fa-truck-field', 'Haydovchilar'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'], ['badges', 'fa-trophy', 'Ishonch badjlari'], ['subscription', 'fa-crown', 'Obuna'], ['profile', 'fa-id-card', 'Profil']],
+            // Market: 4 ta asosiy bo'lim (Haydovchilar, Postlar va Omborxona olib tashlandi — market haydovchi qidirmaydi, sotib oladi va yetkazilishini kuzatadi)
+            MARKET: [['overview', 'fa-store', 'Katalog / Bosh sahifa'], ['bookings', 'fa-clipboard-list', 'Mening buyurtmalarim'],
+                     ['payments', 'fa-wallet', "Moliya va To'lovlar"], ['profile', 'fa-id-card', 'Profil va Sozlamalar']],
             // Haydovchi: 4 ta asosiy ekran (ELD, boshqa haydovchilar ro'yxati va Bozor narxlari olib tashlandi)
             DRIVER: [['loads', 'fa-boxes-packing', 'Mavjud yuklar'], ['myloads', 'fa-truck-fast', "Mening zakazlarim / Yo'lim"], ['dfinance', 'fa-wallet', 'Balans va Moliya'], ['profile', 'fa-id-card', 'Profil']],
             CONSUMER: [['lmarket', 'fa-basket-shopping', 'Mahalliy bozor'], ['lcart', 'fa-cart-shopping', 'Savatcha'], ['lorders', 'fa-box', 'Buyurtmalarim'], ['cashback', 'fa-coins', 'Mening keshbeklarim'], ['guide', 'fa-book-open', "Qo'llanma"], ['profile', 'fa-id-card', 'Profil']],
@@ -1464,6 +1463,12 @@
             FARMER: {
                 products: [['products', "E'lonlarim"], ['hub', 'Hub orqali sotish'], ['warehouse', 'Omborxona']],
                 bookings: [['bookings', 'Bronlar'], ['shipments', 'Yuk tashish'], ['whorders', 'Ombor buyurtmalari']],
+                payments: [['payments', "To'lovlar (Escrow)"], ['cashback', 'Keshbek']],
+                profile: [['profile', 'Profil'], ['subscription', 'Obuna'], ['badges', 'Ishonch badjlari'], ['guide', "Qo'llanma (PDF)"]]
+            },
+            MARKET: {
+                overview: [['overview', 'Bosh sahifa'], ['catalog', 'Katalog'], ['prices', 'Bozor narxlari']],
+                bookings: [['bookings', 'Bronlarim'], ['shipments', "Yo'ldagi va yetib kelgan yuklar"]],
                 payments: [['payments', "To'lovlar (Escrow)"], ['cashback', 'Keshbek']],
                 profile: [['profile', 'Profil'], ['subscription', 'Obuna'], ['badges', 'Ishonch badjlari'], ['guide', "Qo'llanma (PDF)"]]
             },
@@ -1763,10 +1768,21 @@
                     const catBtn = actionBtn('fa-store', "Katalogga o'tish", true, function () { closeDashboard(); scrollToMarket(); });
                     catBtn.dataset.tour = 'primary';
                     actions.appendChild(catBtn);
-                    actions.appendChild(actionBtn('fa-clipboard-list', 'Barcha bronlarim', false, function () { selectDashTab('bookings'); }));
-                    actions.appendChild(actionBtn('fa-truck-ramp-box', 'Yuk tashish', false, function () { selectDashTab('shipments'); }));
+                    actions.appendChild(actionBtn('fa-clipboard-list', 'Mening buyurtmalarim', false, function () { selectDashTab('bookings'); }));
+                    actions.appendChild(actionBtn('fa-truck-ramp-box', "Yo'ldagi yuklar", false, function () { selectDashTab('shipments'); }));
                     actions.appendChild(actionBtn('fa-wallet', "To'lovlar", false, function () { selectDashTab('payments'); }));
                     nodes.push(actions);
+                    // Katalog: fermerlarning tayyor mahsulotlari (to'g'ridan-to'g'ri kabinetdan bron qilinadi)
+                    nodes.push(sectionTitle("Fermerlarning tayyor mahsulotlari"));
+                    const catBox = el('div', 'grid sm:grid-cols-2 xl:grid-cols-3 gap-4');
+                    catBox.id = 'mk-catalog-preview';
+                    catBox.appendChild(el('p', 'text-sm text-slate-500 col-span-full', 'Yuklanmoqda...'));
+                    nodes.push(catBox);
+                    apiRequest('GET', '/marketplace?sort=newest&page=1&limit=6').then(function (d) {
+                        if (rid !== dashRenderId) return;
+                        if (!d.items.length) { catBox.replaceChildren(el('p', 'text-sm text-slate-500 col-span-full', "Hozircha e'lonlar yo'q.")); return; }
+                        catBox.replaceChildren.apply(catBox, d.items.map(buildMarketCard));
+                    }).catch(function () { catBox.replaceChildren(el('p', 'text-sm text-rose-400 col-span-full', "Katalogni yuklab bo'lmadi.")); });
                     const marketCharts = el('div');
                     marketCharts.appendChild(chartSkeletonGrid());
                     nodes.push(marketCharts);
@@ -4392,8 +4408,15 @@
         };
 
         async function shipmentAction(s, kind, button) {
+            if (kind === 'assign') return openAssignModal(s);
             button.disabled = true;
             try {
+                if (kind === 'receive') {
+                    await authed('POST', '/payments/release', { bookingId: s.bookingId });
+                    showToast("Yuk qabul qilindi: to'lov haydovchi va fermerga o'tkazildi", 4500);
+                    selectDashTab(dashTab);
+                    return;
+                }
                 const done = kind === 'advance' ? await authed('PATCH', '/shipments/' + s.id + '/advance') : await authed('POST', '/shipments/' + s.id + '/' + kind);
                 if (done && done.__queued) { button.disabled = false; return; }
                 showToast(SHIPMENT_DONE_MSG[kind === 'advance' ? s.status : kind], 3500);
@@ -4533,6 +4556,16 @@
             } else if (viewer === 'driver-own' && s.status === 'IN_TRANSIT') {
                 actions.appendChild(btn('fa-circle-check', 'Yetkazib berdim', 'bg-emerald-500 border-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-lg shadow-emerald-500/25', 'advance'));
             }
+            if ((viewer === 'farmer' || viewer === 'dispatcher') && s.status === 'OPEN' && !s.driver) {
+                actions.appendChild(btn('fa-user-plus', 'Haydovchiga biriktirish', 'border-sky-500/40 bg-sky-500/10 text-sky-200 hover:bg-sky-500/20', 'assign'));
+            }
+            if (viewer === 'market' && s.status === 'DELIVERED' && s.paymentStatus === 'HELD' && s.bookingId) {
+                const note = el('p', 'w-full rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-2.5 text-xs font-semibold text-emerald-200 flex items-start gap-2');
+                note.appendChild(el('i', 'fa-solid fa-box-open mt-0.5'));
+                note.appendChild(document.createTextNode("Yuk yetib keldi. Qabul qilganingizdan so'ng escrow'dagi pul avtomatik bo'linadi: haydovchiga yetkazish haqi, fermerga mahsulot puli."));
+                actions.appendChild(note);
+                actions.appendChild(btn('fa-box-open', 'Yukni qabul qildim', 'bg-emerald-500 border-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-lg shadow-emerald-500/25', 'receive'));
+            }
             if (actions.childNodes.length) card.appendChild(actions);
             if (viewer !== 'driver-open' && s.status !== 'CANCELLED') card.appendChild(buildDocActions(s));
             if (viewer !== 'driver-open' && s.status === 'DELIVERED') card.appendChild(buildRateActions(s, viewer));
@@ -4566,7 +4599,7 @@
 
             const head = el('div', 'space-y-3');
             const row = el('div', 'flex items-center justify-between gap-3 flex-wrap');
-            row.appendChild(el('h2', 'text-2xl font-extrabold text-white', driver ? 'Mening yuklarim' : 'Yuk tashish'));
+            row.appendChild(el('h2', 'text-2xl font-extrabold text-white', driver ? 'Mening yuklarim' : user.role === 'MARKET' ? "Yo'ldagi va yetib kelgan yuklar" : 'Yuk tashish'));
             row.appendChild(refreshButton(function () { renderDashShipments(user); }));
             head.appendChild(row);
             if (!driver) head.appendChild(el('p', 'text-sm text-slate-400', "Tasdiqlangan bronlar uchun yuk tashish buyurtmalari va ularning holati."));
@@ -4661,6 +4694,10 @@
             const nodes = [head];
             const widget = await ltlWidget();
             if (rid !== dashRenderId) return;
+            // Fermer/dispetcher biriktirgan (taklif qilgan) yuklar eng tepada
+            const myOffers = (await authed('GET', '/driver-posts/offers/mine').catch(function () { return []; })).filter(function (o) { return o.open; });
+            if (rid !== dashRenderId) return;
+            if (myOffers.length) nodes.push(buildOffersSection(myOffers, true));
             if (widget) nodes.push(widget);
             if (list.length) list.forEach(function (s) { nodes.push(buildShipmentCard(s, 'driver-open')); });
             else nodes.push(filtered
@@ -6743,12 +6780,10 @@
                 tabStep('profile', '5. Profil va sozlamalar', "Ma'lumotlar, Telegram bot, obuna, ishonch badjlari va qo'llanma (PDF) shu bo'limda.")
             ],
             MARKET: [
-                { sel: '#dash-content [data-tour="primary"]', title: '1. Bu yerdan mahsulot tanlaysiz', text: "Katalogda fermerlarning e'lonlarini ko'ring, filtrlang va bron qiling." },
-                tabStep('bookings', '2. Bronlaringiz shu yerda', "Barcha bronlar, ularning holati va fermer aloqa ma'lumotlari."),
-                tabStep('shipments', '3. Bu yerdan yuklarni kuzatasiz', "Yuk yo'lga chiqqach jonli xaritada ko'rasiz."),
-                tabStep('payments', '4. Xavfsiz to\'lov (Escrow)', "Pul yuk yetkazilguncha muzlatiladi va qabul qilganingizdan keyin fermerga o'tadi."),
-                tabStep('warehouse', '5. Omborxonadan buyurtma', "Saralangan va shtrix-kodli mahsulotlarni to'g'ridan-to'g'ri ombordan oling."),
-                tabStep('profile', '6. Profil va Telegram', "Telegram botni ulab, bron va yuk holati xabarlarini oling.")
+                { sel: '#dash-content [data-tour="primary"]', title: '1. Bu yerdan mahsulot tanlaysiz', text: "Katalogda fermerlarning tayyor mahsulotlarini ko'ring va bron qiling." },
+                tabStep('bookings', '2. Buyurtmalaringiz shu yerda', "Kutilayotgan, yo'ldagi va yetib kelgan yuklar; yo'lda jonli xarita, yetib kelganda «Yukni qabul qildim» tugmasi."),
+                tabStep('payments', '3. Moliya va to\'lovlar', "Escrow hisob, hisob-fakturalar va oylik Excel hisobotlar. Pul yukni qabul qilganingizdan keyin avtomatik haydovchi va fermerga bo'linadi."),
+                tabStep('profile', '4. Profil va sozlamalar', "Telegram botni ulab, bron va yuk holati xabarlarini oling.")
             ],
             DRIVER: [
                 { sel: '#dash-content [data-tour="primary"]', title: "1. Bu yerdan yuklarni ko'rasiz", text: "Hududingizdagi to'lovi kafolatlangan yuklar; yo'nalish, yuk turi va tonnaj bo'yicha filtrlang." },
@@ -7312,7 +7347,7 @@
         };
         const SUB_PERKS = {
             FARMER: ["Cheksiz e'lon joylash", "Omborxonaga yuk topshirish", "To'lov kafolati (Escrow) va GPS kuzatuv"],
-            MARKET: ["Fermerlardan to'g'ridan-to'g'ri bron qilish", "Escrow to'lov va yuk kuzatuvi", "Omborxona buyurtmalari va hisobotlar"],
+            MARKET: ["Fermerlardan to'g'ridan-to'g'ri bron qilish", "Escrow to'lov va yuk kuzatuvi", "Moliya hisobotlari va Excel"],
             DRIVER: ["To'lovi kafolatlangan yuklarni qabul qilish", "GPS va harakat jurnali (ELD)", "Marshrut va daromad statistikasi"]
         };
         let subState = null;
@@ -10088,6 +10123,40 @@
                 return row;
             }));
         }
+        /** Fermer / dispetcher: yukka haydovchi biriktirish. Haydovchi e'lonlaridan birini tanlaydi, haydovchi esa «Mavjud yuklar»da qabul qiladi */
+        async function openAssignModal(s) {
+            ofState.post = null; ofState.items = [s]; ofState.picked = null;
+            hideAuthAlert(ofAlert);
+            ofForm.reset();
+            document.getElementById('of-title').textContent = s.cargoName + ' · ' + T('{0} kg', formatNumber(s.weightKg));
+            const list = document.getElementById('of-list');
+            list.replaceChildren(el('div', 'text-center text-sm text-slate-400 py-5', T('Haydovchilar yuklanmoqda...')));
+            document.getElementById('of-extra').classList.add('hidden');
+            ofModal.classList.add('open'); syncScrollLock();
+            let posts;
+            try { posts = await authed('GET', '/driver-posts'); }
+            catch (err) { if (err.status !== 401) list.replaceChildren(el('div', 'text-center text-sm text-rose-300 py-5', (err.messages && err.messages[0]) || 'Xatolik')); return; }
+            if (ofState.items[0] !== s) return;
+            if (!posts.length) return list.replaceChildren(el('div', 'text-center text-sm text-slate-300 py-5', T("Hozircha faol haydovchi e'lonlari yo'q.")));
+            list.replaceChildren.apply(list, posts.map(function (p) {
+                const room = p.loadMode === 'LTL' ? p.availableCapacityKg : p.capacityKg;
+                const fits = Number(s.weightKg) <= room;
+                const row = el('label', ['of-item', fits ? '' : 'off'].join(' '));
+                const radio = el('input'); radio.type = 'radio'; radio.name = 'of-pick'; radio.value = p.id; radio.disabled = !fits;
+                radio.addEventListener('change', function () {
+                    ofState.post = p; ofState.picked = s.id;
+                    list.querySelectorAll('.of-item').forEach(function (n) { n.classList.toggle('on', n === row); });
+                    document.getElementById('of-extra').classList.remove('hidden');
+                });
+                row.appendChild(radio);
+                const mid = el('div', 'min-w-0 flex-1 space-y-0.5');
+                mid.appendChild(el('div', 'font-extrabold text-white break-words', p.driver.fullName));
+                mid.appendChild(el('div', 'text-xs text-slate-400', [p.currentLocation, T(TRAILER_LABEL[p.trailerType] || ''), T('{0} kg', formatNumber(room))].filter(Boolean).join(' · ')));
+                if (!fits) mid.appendChild(el('span', 'dp-chip !text-rose-300', T("Sig'maydi")));
+                row.appendChild(mid);
+                return row;
+            }));
+        }
         ofForm.addEventListener('submit', async function (e) {
             e.preventDefault();
             hideAuthAlert(ofAlert);
@@ -10108,7 +10177,7 @@
         });
 
         // Haydovchi kabineti: kelgan takliflar
-        function buildOffersSection(offers) {
+        function buildOffersSection(offers, inLoads) {
             const box = el('div', 'space-y-3 mb-8');
             box.id = 'dp-offers';
             const unread = offers.filter(function (o) { return !o.readAt; }).length;
@@ -10129,7 +10198,11 @@
                 if (o.pickupAt) c.appendChild(el('div', 'text-xs font-semibold text-emerald-300', '🕒 ' + T('Olish vaqti: {0}', formatDateTime(o.pickupAt))));
                 if (o.note) c.appendChild(el('div', 'text-xs text-slate-300 break-words', '💬 ' + o.note));
                 const act = el('div', 'flex flex-wrap gap-2 pt-1');
-                if (o.open) act.appendChild(actionBtn('fa-truck-fast', "Mavjud yuklarda ochish", true, function () { authed('POST', '/driver-posts/offers/' + o.id + '/read').catch(function () {}); selectDashTab('loads'); }));
+                if (o.open && inLoads) act.appendChild(actionBtn('fa-hand', o.shipment.ready ? 'Yukni olish' : "To'lov kutilmoqda", true, async function () {
+                    authed('POST', '/driver-posts/offers/' + o.id + '/read').catch(function () {});
+                    const fake = el('button'); await shipmentAction({ id: o.shipment.id, status: 'OPEN' }, 'accept', fake);
+                }));
+                else if (o.open) act.appendChild(actionBtn('fa-truck-fast', "Mavjud yuklarda ochish", true, function () { authed('POST', '/driver-posts/offers/' + o.id + '/read').catch(function () {}); selectDashTab('loads'); }));
                 else act.appendChild(el('span', 'dp-chip', T('Yuk band qilingan')));
                 if (!o.readAt) act.appendChild(actionBtn('fa-check', "O'qildi", false, async function () { try { await authed('POST', '/driver-posts/offers/' + o.id + '/read'); loadDriverPosts(); } catch (e) {} }));
                 c.appendChild(act);
