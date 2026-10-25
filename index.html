@@ -50,6 +50,7 @@
     <!-- AOS Animation Library CSS -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <script src="js/tailwind-config.js"></script>
+    <script src="js/perf.js"></script>
     <style>
         .glass {
             background: rgba(15, 23, 42, 0.95);
@@ -86,14 +87,14 @@
         }
         @media (prefers-reduced-motion: reduce) { .hero-title.shine .hero-lead, .hero-title.shine .hero-grad { animation: none; } }
         /* Sticky header: sahifa 50px dan ko'p aylantirilganda kichrayadi, xira shaffof fon oladi (js/app.js: initStickyHeader) */
-        #main-nav { transition: padding .28s cubic-bezier(.16,1,.3,1), background-color .28s ease, box-shadow .28s ease, backdrop-filter .28s ease, margin-bottom .28s cubic-bezier(.16,1,.3,1); will-change: padding; }
+        #main-nav { transition: padding .28s cubic-bezier(.16,1,.3,1), background-color .28s ease, box-shadow .28s ease, margin-bottom .28s cubic-bezier(.16,1,.3,1); }
         #main-nav #nav-left img { transition: height .28s cubic-bezier(.16,1,.3,1), padding .28s ease; }
         /* Logotip (images/newlogo.png, 502x123): faqat balandlik beriladi, eni nisbat bo'yicha; object-contain siqilishni oldini oladi */
         /* «Yangi Alifbo» o'chirgichi (menyuda) */
         .na-track { position: relative; width: 2.6rem; height: 1.45rem; border-radius: 999px; background: rgba(148,163,184,.35); transition: background .2s ease; flex-shrink: 0; }
         .na-thumb { position: absolute; top: .18rem; left: .2rem; width: 1.09rem; height: 1.09rem; border-radius: 50%; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45); transition: transform .2s cubic-bezier(.16,1,.3,1); }
-        [data-new-alphabet-toggle].on .na-track { background: #10b981; }
-        [data-new-alphabet-toggle].on .na-thumb { transform: translateX(1.15rem); }
+        [data-new-alphabet-toggle].on .na-track, [data-perf-toggle].on .na-track { background: #10b981; }
+        [data-new-alphabet-toggle].on .na-thumb, [data-perf-toggle].on .na-thumb { transform: translateX(1.15rem); }
         @media (prefers-reduced-motion: reduce) { .na-track, .na-thumb { transition: none; } }
         .brand-logo { display: block; width: auto; max-width: 100%; object-fit: contain; background: #fff; border: 1px solid rgba(255,255,255,.2); box-shadow: 0 10px 24px -12px rgba(0,0,0,.7); }
         #main-nav #nav-left { flex-shrink: 0; } /* qator tor bo'lsa qidiruv maydoni qisqaradi, logotip emas */
@@ -489,7 +490,6 @@
         @keyframes logo-orbit { to { transform: rotate(360deg); } }
 
         /* Sahifa va modal almashinuvi: sakramasdan fade */
-        #dashboard-view, #role-page { will-change: opacity, transform; }
         #sidebar { transition: transform .5s cubic-bezier(.16,1,.3,1); }
         #sidebar-overlay { transition: opacity .35s ease, visibility .35s ease; }
         #custom-dropdown-menu, #lang-menu, #account-menu { transform-origin: top; }
@@ -810,7 +810,6 @@
         #price-modal.open { opacity: 1; visibility: visible; }
         #price-modal .auth-card { transform: translateY(20px) scale(.96); transition: transform .4s cubic-bezier(.16,1,.3,1); }
         #price-modal.open .auth-card { transform: none; }
-        #dashboard-view > .max-w-6xl { position: relative; z-index: 2; }
         #pr-bg.pr-off { display: none; }
         #dp-modal { opacity: 0; visibility: hidden; transition: opacity .3s ease, visibility .3s ease; }
         #dp-modal.open { opacity: 1; visibility: visible; }
@@ -1138,6 +1137,7 @@
         @media (max-width: 640px) { .filters-collapsed #filter-body { display: none; } }
     </style>
     <link rel="stylesheet" href="css/light.css">
+    <link rel="stylesheet" href="css/perf-layout.css">
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans antialiased selection:bg-emerald-500 selection:text-slate-950">
     <div class="grid-fx" aria-hidden="true"></div>
@@ -1262,6 +1262,10 @@
                         </button>
                         <button type="button" role="switch" aria-checked="false" data-new-alphabet-toggle title="o' g' sh ch → ö ğ ş ç" class="w-full flex items-center gap-3 px-4 py-3.5 text-left text-slate-200 hover:bg-white/10 hover:text-emerald-400 font-semibold border-t border-white/5 transition">
                             <i class="fa-solid fa-language w-5 text-emerald-400"></i> <span class="flex-1">Yangi Alifbo</span>
+                            <span class="na-track" aria-hidden="true"><span class="na-thumb"></span></span>
+                        </button>
+                        <button type="button" role="switch" aria-checked="false" data-perf-toggle title="Yengil rejim: effektlar va animatsiyalar kamayadi" class="w-full flex items-center gap-3 px-4 py-3.5 text-left text-slate-200 hover:bg-white/10 hover:text-emerald-400 font-semibold border-t border-white/5 transition">
+                            <i class="fa-solid fa-bolt w-5 text-emerald-400"></i> <span class="flex-1">Yengil rejim</span>
                             <span class="na-track" aria-hidden="true"><span class="na-thumb"></span></span>
                         </button>
                         <button type="button" role="menuitem" onclick="logout()" class="w-full flex items-center gap-3 px-4 py-3.5 text-left text-slate-200 hover:bg-rose-500/10 hover:text-rose-400 font-semibold border-t border-white/5 transition">
@@ -2635,10 +2639,10 @@
     </div>
 
     <!-- DASHBOARD (rolga mos boshqaruv sahifasi) -->
-    <div id="dashboard-view" class="fixed inset-0 z-[45] bg-slate-950 overflow-y-auto" aria-hidden="true">
+    <div id="dashboard-view" class="fixed inset-0 z-[45] bg-slate-950 flex flex-col overflow-hidden" aria-hidden="true">
         <div class="grid-fx" aria-hidden="true"></div>
-        <div class="sticky top-0 z-10 glass border-b border-white/15">
-            <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-3">
+        <header class="dash-head glass border-b border-white/15">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-3">
                 <button type="button" onclick="closeDashboard()" class="flex items-center gap-2 text-slate-300 hover:text-emerald-400 font-bold text-sm transition">
                     <i class="fa-solid fa-arrow-left"></i> <span class="hidden sm:inline">Saytga qaytish</span>
                 </button>
@@ -2652,12 +2656,14 @@
                     <button type="button" onclick="logout()" title="Chiqish" aria-label="Chiqish" class="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-rose-400 hover:bg-white/5 transition text-lg"><i class="fa-solid fa-right-from-bracket"></i></button>
                 </div>
             </div>
-        </div>
-        <div id="pr-bg" class="rp-bg-wrap pr-off" aria-hidden="true"><div class="rp-bg"><div class="rp-bg-layer"></div><div class="rp-bg-layer"></div></div></div>
-        <div id="sub-banner-slot" class="max-w-6xl mx-auto px-4 sm:px-6 pt-6 empty:hidden"></div>
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8 grid lg:grid-cols-[15rem_minmax(0,1fr)] gap-6">
-            <nav id="dash-tabs" class="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-1 lg:pb-0 lg:sticky lg:top-24 self-start" aria-label="Kabinet bo'limlari"></nav>
-            <main id="dash-content" class="min-w-0 space-y-6"></main>
+        </header>
+        <div id="dash-shell" class="dash-shell">
+            <nav id="dash-tabs" class="dash-side" aria-label="Kabinet bo'limlari"></nav>
+            <div id="dash-scroll" class="dash-main">
+                <div id="pr-bg" class="rp-bg-wrap pr-off" aria-hidden="true"><div class="rp-bg"><div class="rp-bg-layer"></div><div class="rp-bg-layer"></div></div></div>
+                <div id="sub-banner-slot" class="pt-4 empty:hidden"></div>
+                <main id="dash-content" class="min-w-0 space-y-6"></main>
+            </div>
         </div>
     </div>
 

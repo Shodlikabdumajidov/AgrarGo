@@ -1421,6 +1421,7 @@
         // ===== KABINET (rolga mos boshqaruv sahifasi) =====
         const dashboardView = document.getElementById('dashboard-view');
         const dashContent = document.getElementById('dash-content');
+        const dashScroll = document.getElementById('dash-scroll'); // Main: alohida scroll konteyneri (Sidebar'dan mustaqil)
         const DASH_TABS = {
             FARMER: [['overview', 'fa-gauge', 'Umumiy'], ['cashback', 'fa-coins', 'Mening keshbeklarim'], ['bookings', 'fa-inbox', 'Kelgan bronlar'], ['hub', 'fa-store', "Hub ombori orqali sotish"],
                      ['shipments', 'fa-truck-ramp-box', 'Yuk tashish'], ['payments', 'fa-wallet', "To'lovlar"],
@@ -1537,9 +1538,9 @@
             document.querySelectorAll('.dash-tab').forEach(function (b) {
                 const on = b.dataset.tab === tab;
                 b.classList.toggle('active', on);
-                if (on) b.scrollIntoView({ inline: 'center', block: 'nearest' }); // mobilda gorizontal tab satrida ko'rinib turadi
+                if (on) b.scrollIntoView({ inline: 'center', block: 'nearest' }); // pastki panelda (mobil) / Sidebar'da (desktop) faol tab ko'rinib turadi
             });
-            dashboardView.scrollTo({ top: 0 });
+            dashScroll.scrollTo({ top: 0, behavior: 'auto' }); // faqat Main tepaga qaytadi, Sidebar o'z joyida
             renderSubBanner();
             if (tab === 'bookings') renderDashBookings(user);
             else if (tab === 'shipments' || tab === 'myloads') renderDashShipments(user);
