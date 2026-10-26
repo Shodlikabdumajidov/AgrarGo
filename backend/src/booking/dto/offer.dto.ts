@@ -1,4 +1,4 @@
-import { IsNumber, IsOptional, IsPositive, IsString, IsUUID, Max, MaxLength } from 'class-validator';
+import { IsBoolean, IsNumber, IsOptional, IsPositive, IsString, IsUUID, Max, MaxLength } from 'class-validator';
 
 export class CreateOfferDto {
   @IsUUID(undefined, { message: "E'lon identifikatori noto'g'ri" })
@@ -18,6 +18,11 @@ export class CreateOfferDto {
   @IsString()
   @MaxLength(500)
   message?: string;
+
+  /** Fermer 2+ qizil yulduzga ega bo'lsa, DQQ ogohlantirishi tasdiqlangani */
+  @IsOptional()
+  @IsBoolean()
+  acknowledgeRisk?: boolean;
 }
 
 export class CounterOfferDto {

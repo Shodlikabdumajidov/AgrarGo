@@ -1,3 +1,4 @@
+import { assertRiskAcknowledged } from '../complaint/risk';
 import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PaymentStatus, Prisma, Role, ShipmentStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
@@ -44,8 +45,9 @@ export class DriverOfferService {
   }
 
   async create(user: any, postId: string, dto: CreateOfferDto) {
-    const post = await this.prisma.driverPost.findUnique({ where: { id: postId }, include: { driver: { select: { userId: true } } } });
+    const post = await this.prisma.driverPost.findUnique({ where: { id: postId }, include: { driver: { select: { userId: true, user: { select: { penaltyPoints: true } } } } } });
     if (!post || !post.isActive) throw new NotFoundException("E'lon topilmadi");
+    assertRiskAcknowledged(post.driver.user.penaltyPoints, dto.acknowledgeRisk);
     const s = await this.prisma.shipment.findFirst({ where: { id: dto.shipmentId, ...this.ownerWhere(user) }, select: SHIPMENT_SEL });
     if (!s) throw new NotFoundException('Yuk topilmadi yoki u sizga tegishli emas');
     if (s.status !== ShipmentStatus.OPEN || s.driverId) throw new ConflictException('Bu yukka allaqachon haydovchi biriktirilgan');
@@ -71,13 +73,13 @@ export class DriverOfferService {
       include: {
         post: { select: { id: true, routes: true, trailerType: true } },
         shipment: { select: SHIPMENT_SEL },
-        fromUser: { select: { fullName: true, role: true, farmer: { select: { farmName: true } }, market: { select: { companyName: true } } } },
+        fromUser: { select: { fullName: true, role: true, penaltyPoints: true, farmer: { select: { farmName: true } }, market: { select: { companyName: true } } } },
       },
     });
     return rows.map((o) => ({
       id: o.id, createdAt: o.createdAt, readAt: o.readAt, pickupAt: o.pickupAt, note: o.note,
       post: { id: o.post.id, route: o.post.routes[0] ?? null, trailerType: o.post.trailerType },
-      from: { role: o.fromUser.role, name: o.fromUser.farmer?.farmName ?? o.fromUser.market?.companyName ?? o.fromUser.fullName },
+      from: { role: o.fromUser.role, penaltyPoints: o.fromUser.penaltyPoints, name: o.fromUser.farmer?.farmName ?? o.fromUser.market?.companyName ?? o.fromUser.fullName },
       shipment: this.brief(o.shipment), open: o.shipment.status === ShipmentStatus.OPEN && !o.shipment.driverId,
     }));
   }

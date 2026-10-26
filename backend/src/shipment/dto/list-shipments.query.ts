@@ -1,7 +1,7 @@
 import { RadiusQuery } from '../../common/geo-search';
 import { ShipmentStatus } from '@prisma/client';
 import { Transform } from 'class-transformer';
-import { IsEnum, IsNumber, IsUUID, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
+import { IsBoolean, IsEnum, IsNumber, IsUUID, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
 
 const emptyNumber = ({ value }: { value: unknown }) => (value === undefined || (typeof value === 'string' && value.trim() === '') ? undefined : Number(value));
 const emptyToUndefined = ({ value }: { value: unknown }) =>
@@ -38,7 +38,14 @@ export class AvailableShipmentsFilterQuery extends AvailableShipmentsQuery {
   maxKg?: number;
 }
 
-export class AssignDriverDto {
+export class AcknowledgeRiskDto {
+  /** Hamkor 2+ qizil yulduzga ega bo'lsa, DQQ ogohlantirishi tasdiqlangani */
+  @IsOptional()
+  @IsBoolean()
+  acknowledgeRisk?: boolean;
+}
+
+export class AssignDriverDto extends AcknowledgeRiskDto {
   @IsUUID()
   driverId!: string;
 }

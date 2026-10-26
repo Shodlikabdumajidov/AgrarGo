@@ -48,6 +48,10 @@ model User {
   // Parol o'zgarganda/tiklanganda oshiriladi: eski JWT tokenlar darhol yaroqsiz bo'ladi
   tokenVersion               Int       @default(0)
   isActive                   Boolean   @default(true)
+  // Qizil yulduzcha (penalty) reyting: asosli shikoyatlar uchun 0.5 / 1 ball; 5.0 ga yetsa akkaunt avtomatik BANNED (isActive=false, bannedAt)
+  penaltyPoints              Float     @default(0)
+  bannedAt                   DateTime?
+  banReason                  String?
   // Telegram bot: chat ID (bitta chat — bitta akkaunt) va bog'lash uchun vaqtinchalik bir martalik token.
   // Tokenning faqat SHA-256 xeshi saqlanadi; ochiq ko'rinishi faqat foydalanuvchiga (havolada) beriladi.
   telegramChatId             String?   @unique
@@ -68,6 +72,8 @@ model User {
   subscriptionPayments SubscriptionPayment[]
   kycDocuments         KycDocument[]
   ratingsGiven         ShipmentRating[]      @relation("RatingRater")
+  complaintsFiled      Complaint[]           @relation("ComplaintReporter")
+  complaintsAgainst    Complaint[]           @relation("ComplaintAccused")
   ratingsReceived      ShipmentRating[]      @relation("RatingTarget")
   offersSent           DriverOffer[]
   consumer             Consumer?
@@ -209,6 +215,7 @@ enum OfferStatus {
 }
 
 enum ProductStatus {
+  FROZEN // egasi BANNED bo'lgani uchun muzlatilgan (ban bekor bo'lsa ACTIVE ga qaytadi)
   ACTIVE
   BOOKED
   SOLD
@@ -1302,4 +1309,34 @@ model PriceOffer {
 
   @@index([productId, status])
   @@index([marketId, status])
+}
+
+enum ComplaintStatus {
+  PENDING // ko'rib chiqilmoqda (3 ish kuni)
+  UPHELD // to'liq asosli: aybdorga +1 penalty
+  PARTIAL // qisman asosli: aybdorga +0.5 penalty
+  REJECTED // asossiz: penalty yo'q
+  WITHDRAWN // shikoyatchi qaytarib oldi (berilgan penalty ayriladi)
+}
+
+/// Shikoyat / spam: hamkor bekor qilish yoki nizo sababi bo'yicha; dispetcher yoki super admin qaror qiladi
+model Complaint {
+  id           String          @id @default(uuid())
+  reporterId   String
+  reporter     User            @relation("ComplaintReporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  accusedId    String
+  accused      User            @relation("ComplaintAccused", fields: [accusedId], references: [id], onDelete: Cascade)
+  reason       String
+  status       ComplaintStatus @default(PENDING)
+  // Aybdorga haqiqatda berilgan penalty (UPHELD 1, PARTIAL 0.5); WITHDRAWN bo'lganda qaytarib ayriladi
+  penalty      Float           @default(0)
+  decisionNote String?
+  decidedById  String?
+  decidedAt    DateTime?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  @@index([reporterId, status])
+  @@index([accusedId, status])
+  @@index([status, createdAt])
 }

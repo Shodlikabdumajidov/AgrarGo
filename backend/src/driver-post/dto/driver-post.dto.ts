@@ -118,4 +118,8 @@ export class CreateOfferDto {
 
   @IsOptional() @Transform(clean) @IsString() @Length(0, 300)
   note?: string;
+
+  /** Haydovchi 2+ qizil yulduzga ega bo'lsa, DQQ ogohlantirishi tasdiqlangani */
+  @IsOptional() @IsBoolean()
+  acknowledgeRisk?: boolean;
 }

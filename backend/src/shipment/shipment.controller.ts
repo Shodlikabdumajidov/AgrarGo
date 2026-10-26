@@ -12,7 +12,7 @@ import { ChainAcceptDto } from './dto/chain-accept.dto';
 import { EldQuery, SendLocationDto } from './dto/location.dto';
 import { LocationService } from './tracking/location.service';
 import { ConfirmPinDto } from './dto/confirm-pin.dto';
-import { AssignDriverDto, AvailableDriversQuery, AvailableShipmentsFilterQuery, ListShipmentsQuery } from './dto/list-shipments.query';
+import { AcknowledgeRiskDto, AssignDriverDto, AvailableDriversQuery, AvailableShipmentsFilterQuery, ListShipmentsQuery } from './dto/list-shipments.query';
 import { ShipmentService } from './shipment.service';
 
 @Controller('shipments')
@@ -36,7 +36,7 @@ export class ShipmentController {
   @Roles(Role.DISPATCHER, Role.ADMIN)
   @AdminRoles(AdminRole.HUB_ADMIN)
   assignDriver(@Param('id', ParseUUIDPipe) id: string, @Body() dto: AssignDriverDto) {
-    return this.shipments.assignDriver(id, dto.driverId);
+    return this.shipments.assignDriver(id, dto.driverId, dto.acknowledgeRisk);
   }
 
   // --- Haydovchi (DRIVER) ---
@@ -89,8 +89,8 @@ export class ShipmentController {
   @Post(':id/accept')
   @UseGuards(SubscriptionGuard)
   @Roles(Role.DRIVER)
-  accept(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string) {
-    return this.shipments.accept(this.driver(user), id);
+  accept(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string, @Body() body?: AcknowledgeRiskDto) {
+    return this.shipments.accept(this.driver(user), id, body?.acknowledgeRisk);
   }
 
   /** Smart-taklif: LTL e'londagi qolgan joyga sig'adigan shu yo'nalishdagi boshqa yuklar */

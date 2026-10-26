@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { NotificationService } from '../telegram/notification.service';
 import { BookingService } from './booking.service';
 import { CounterOfferDto, CreateOfferDto } from './dto/offer.dto';
+import { assertRiskAcknowledged } from '../complaint/risk';
 
 /** Taklif narxi e'lon narxining shu ulushidan past bo'lmasin (xato/axlat takliflardan himoya) */
 export const MIN_OFFER_RATIO = 0.3;
@@ -12,8 +13,8 @@ export const MAX_OPEN_OFFERS_PER_PRODUCT = 1;
 const OPEN: OfferStatus[] = [OfferStatus.PENDING, OfferStatus.COUNTERED];
 
 const INCLUDE = {
-  product: { select: { id: true, name: true, category: true, status: true, pricePerKg: true, quantityKg: true, photos: true, deliveryPayer: true, farmer: { select: { farmName: true, region: true, district: true } } } },
-  market: { select: { companyName: true, region: true, district: true } },
+  product: { select: { id: true, name: true, category: true, status: true, pricePerKg: true, quantityKg: true, photos: true, deliveryPayer: true, farmer: { select: { farmName: true, region: true, district: true, user: { select: { penaltyPoints: true } } } } } },
+  market: { select: { companyName: true, region: true, district: true, user: { select: { penaltyPoints: true } } } },
 } satisfies Prisma.PriceOfferInclude;
 type OfferRow = Prisma.PriceOfferGetPayload<{ include: typeof INCLUDE }>;
 
@@ -31,7 +32,7 @@ export class OfferService {
       counter: o.counterPricePerKg ? { pricePerKg: o.counterPricePerKg, quantityKg: o.counterQuantityKg ?? o.quantityKg, message: o.counterMessage, totalPrice: (o.counterQuantityKg ?? o.quantityKg).mul(o.counterPricePerKg) } : null,
       agreed: effective,
       product: { id: o.product.id, name: o.product.name, category: o.product.category, status: o.product.status, pricePerKg: o.product.pricePerKg, availableKg: o.product.quantityKg, photos: o.product.photos, deliveryPayer: o.product.deliveryPayer },
-      ...(side === 'farmer' ? { market: { companyName: o.market.companyName, region: o.market.region, district: o.market.district } } : { farmer: o.product.farmer }),
+      ...(side === 'farmer' ? { market: { companyName: o.market.companyName, region: o.market.region, district: o.market.district, penaltyPoints: o.market.user.penaltyPoints } } : { farmer: { farmName: o.product.farmer.farmName, region: o.product.farmer.region, district: o.product.farmer.district, penaltyPoints: o.product.farmer.user.penaltyPoints } }),
     };
   }
 
@@ -41,8 +42,9 @@ export class OfferService {
 
   /** Market: "O'z taklifimni berish" — e'londagi narxdan past narx va miqdor taklif qiladi (zaxira bu paytda band qilinmaydi) */
   async create(marketId: string, dto: CreateOfferDto) {
-    const product = await this.prisma.product.findFirst({ where: { id: dto.productId, status: ProductStatus.ACTIVE } });
+    const product = await this.prisma.product.findFirst({ where: { id: dto.productId, status: ProductStatus.ACTIVE }, include: { farmer: { select: { user: { select: { penaltyPoints: true } } } } } });
     if (!product) throw new NotFoundException("E'lon topilmadi yoki hozir faol emas");
+    assertRiskAcknowledged(product.farmer.user.penaltyPoints, dto.acknowledgeRisk);
     if (new Prisma.Decimal(dto.quantityKg).gt(product.quantityKg)) throw new ConflictException(`Yetarli miqdor yo'q. Mavjud: ${product.quantityKg} kg`);
     if (new Prisma.Decimal(dto.pricePerKg).gt(product.pricePerKg)) throw new BadRequestException("Taklif narxi e'lon narxidan oshmasligi kerak: shu narxda to'g'ridan-to'g'ri bron qiling");
     if (new Prisma.Decimal(dto.pricePerKg).lt(product.pricePerKg.mul(MIN_OFFER_RATIO))) throw new BadRequestException(`Taklif narxi e'lon narxining kamida ${Math.round(MIN_OFFER_RATIO * 100)}% bo'lishi kerak`);

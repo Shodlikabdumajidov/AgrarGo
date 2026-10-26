@@ -22,7 +22,7 @@ const PUBLIC_PRODUCT_SELECT = {
       region: true,
       district: true,
       isVerified: true,
-      user: { select: { fullName: true } },
+      user: { select: { fullName: true, penaltyPoints: true } },
     },
   },
 } satisfies Prisma.ProductSelect;
@@ -78,6 +78,7 @@ export class MarketplaceService {
       ...product,
       farmer: {
         fullName: farmer.user.fullName,
+        penaltyPoints: farmer.user.penaltyPoints,
         farmName: farmer.farmName,
         region: farmer.region,
         district: farmer.district,

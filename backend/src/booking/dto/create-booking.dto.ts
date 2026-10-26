@@ -18,4 +18,9 @@ export class CreateBookingDto {
   @IsOptional()
   @IsBoolean()
   urgent?: boolean;
+
+  /** Hamkor 2+ qizil yulduzga ega bo'lsa, DQQ ogohlantirishi tasdiqlangani */
+  @IsOptional()
+  @IsBoolean()
+  acknowledgeRisk?: boolean;
 }

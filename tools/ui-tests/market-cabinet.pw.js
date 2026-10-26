@@ -37,9 +37,9 @@ const call=async(path,body,tok,method='POST')=>{const r=await fetch(API+path,{me
   ok(await pg.evaluate(()=>document.getElementById('booking-modal').classList.contains('open')),'booking modal opens from cabinet catalog');
   await pg.evaluate(()=>closeBookingModal&&closeBookingModal());
   const tabs=pg.locator('#dash-tabs .dash-tab');
-  await tabs.nth(1).click(); await pg.waitForTimeout(900); console.log(await pills(pg)); ok((await pills(pg)).length===3,'orders section has 3 inner screens (bookings, Hub orders, shipments)');
+  await tabs.nth(1).click(); await pg.waitForTimeout(900); console.log(await pills(pg)); ok((await pills(pg)).length===4,'orders section has 4 inner screens (bookings, offers, Hub orders, shipments)');
   await tabs.nth(2).click(); await pg.waitForTimeout(900); ok((await pills(pg)).length===2,'finance section: payments + cashback'); ok(await pg.locator('#dash-content').innerText().then(t=>/Excel|hisobot/i.test(t)),'monthly Excel report available in finance');
-  await tabs.nth(3).click(); await pg.waitForTimeout(900); ok((await pills(pg)).length===4,'profile section has sub-screens');
+  await tabs.nth(3).click(); await pg.waitForTimeout(900); ok((await pills(pg)).length===5,'profile section has sub-screens (incl. Shikoyatlar)');
   console.log('errs',pg.errs);
   await pg.context().close();
 

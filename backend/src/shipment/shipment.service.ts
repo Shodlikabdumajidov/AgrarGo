@@ -12,6 +12,7 @@ import { RatesService } from '../rates/rates.service';
 import { compareRate } from '../rates/rates';
 import { randomInt, randomUUID } from 'crypto';
 import { EBolService } from '../ebol/ebol.service';
+import { assertRiskAcknowledged } from '../complaint/risk';
 import { PaymentService } from '../payment/payment.service';
 import { APP_ENV } from '../config/app-env.module';
 import type { AppEnv } from '../config/env.validation';
@@ -27,12 +28,12 @@ const ACTIVE: ShipmentStatus[] = [ShipmentStatus.LOADING, ShipmentStatus.IN_TRAN
 const SHIPMENT_INCLUDE = {
   events: { orderBy: { createdAt: Prisma.SortOrder.asc } },
   driver: {
-    select: { userId: true, vehicleType: true, plateNumber: true, capacityKg: true, user: { select: { fullName: true, phone: true } } },
+    select: { userId: true, vehicleType: true, plateNumber: true, capacityKg: true, user: { select: { fullName: true, phone: true, penaltyPoints: true } } },
   },
   booking: { select: { id: true, payment: { select: { status: true, amount: true, feeAmount: true, deliveryFee: true, serviceFee: true, distanceKm: true, currency: true, deliveryPayer: true } } } },
   warehouseOrder: { select: { id: true, status: true, payment: { select: { status: true, amount: true, feeAmount: true, deliveryFee: true, serviceFee: true, distanceKm: true, currency: true, deliveryPayer: true } } } },
-  farmer: { select: { farmName: true, user: { select: { fullName: true, phone: true } } } },
-  market: { select: { companyName: true, user: { select: { fullName: true, phone: true } } } },
+  farmer: { select: { farmName: true, user: { select: { fullName: true, phone: true, penaltyPoints: true } } } },
+  market: { select: { companyName: true, user: { select: { fullName: true, phone: true, penaltyPoints: true } } } },
 } satisfies Prisma.ShipmentInclude;
 
 type ShipmentRow = Prisma.ShipmentGetPayload<{ include: typeof SHIPMENT_INCLUDE }>;
@@ -109,7 +110,7 @@ export class ShipmentService {
         ...(query.region && { region: { equals: query.region, mode: 'insensitive' } }),
       },
       include: {
-        user: { select: { fullName: true, phone: true } },
+        user: { select: { fullName: true, phone: true, penaltyPoints: true } },
         posts: { where: { isActive: true, loadMode: 'LTL' }, select: { availableCapacityKg: true } },
         shipments: { where: { status: { in: ACTIVE } }, select: { id: true, ltlKg: true } },
       },
@@ -124,16 +125,17 @@ export class ShipmentService {
       const room = ltlRoom ?? Number(d.capacityKg);
       if (query.weightKg !== undefined && query.weightKg > room) return [];
       return [{
-        id: d.id, userId: d.userId, fullName: d.user.fullName, phone: d.user.phone, vehicleType: d.vehicleType, plateNumber: d.plateNumber,
+        id: d.id, userId: d.userId, fullName: d.user.fullName, phone: d.user.phone, penaltyPoints: d.user.penaltyPoints, vehicleType: d.vehicleType, plateNumber: d.plateNumber,
         capacityKg: Number(d.capacityKg), freeKg: room, region: d.region, trust: trust.get(d.userId) ?? null,
       }];
     });
   }
 
   /** Dispetcher/admin yukni to'g'ridan-to'g'ri haydovchiga biriktiradi (OPEN -> LOADING; qoidalar haydovchi o'zi olgandagidek) */
-  async assignDriver(id: string, driverId: string) {
-    const driver = await this.prisma.driver.findUnique({ where: { id: driverId }, select: { id: true, userId: true, capacityKg: true, user: { select: { isActive: true } } } });
+  async assignDriver(id: string, driverId: string, acknowledgeRisk?: boolean) {
+    const driver = await this.prisma.driver.findUnique({ where: { id: driverId }, select: { id: true, userId: true, capacityKg: true, user: { select: { isActive: true, penaltyPoints: true } } } });
     if (!driver || !driver.user.isActive) throw new NotFoundException('Haydovchi topilmadi');
+    assertRiskAcknowledged(driver.user.penaltyPoints, acknowledgeRisk);
     await this.prisma.$transaction((tx) => this.acceptTx(tx, driver, id));
     this.notify.shipmentAssigned(id);
     const row = await this.prisma.shipment.findUniqueOrThrow({ where: { id }, include: SHIPMENT_INCLUDE });
@@ -141,9 +143,16 @@ export class ShipmentService {
   }
 
   /** Yukni o'ziga biriktirish: OPEN -> LOADING */
-  async accept(driver: { id: string; capacityKg: Prisma.Decimal }, id: string) {
+  async accept(driver: { id: string; capacityKg: Prisma.Decimal }, id: string, acknowledgeRisk?: boolean) {
+    await this.assertPartnersSafe(id, acknowledgeRisk);
     await this.prisma.$transaction((tx) => this.acceptTx(tx, driver, id));
     return { ...(await this.reload(id, 'driver-own')), ltl: await this.ltlInfo(id) };
+  }
+
+  /** Yuk egasi (fermer yoki market) 2+ qizil yulduzga ega bo'lsa, haydovchi DQQ ogohlantirishini tasdiqlamaguncha yuk biriktirilmaydi */
+  private async assertPartnersSafe(shipmentId: string, acknowledged?: boolean) {
+    const s = await this.prisma.shipment.findUnique({ where: { id: shipmentId }, select: { farmer: { select: { user: { select: { penaltyPoints: true } } } }, market: { select: { user: { select: { penaltyPoints: true } } } } } });
+    if (s) assertRiskAcknowledged(Math.max(s.farmer.user.penaltyPoints, s.market.user.penaltyPoints), acknowledged);
   }
 
   /** accept ning tranzaksiya ichidagi qismi; skipLimit — zanjirli bronning ikkinchi yuki uchun (faol yuk chegarasi tekshirilmaydi) */
@@ -569,6 +578,8 @@ export class ShipmentService {
       createdAt: s.createdAt,
       assignedAt: s.assignedAt,
       deliveredAt: s.deliveredAt,
+      // Qizil yulduzcha (penalty) ballari: hamkor tanlashda ogohlantirish uchun (2+ — red-flag)
+      penalty: { farmer: s.farmer?.user?.penaltyPoints ?? 0, market: s.market?.user?.penaltyPoints ?? 0, driver: s.driver?.user?.penaltyPoints ?? 0 },
       isSigned: s.isSigned,
       // PIN-kod: haydovchi (yuklash) va market (topshirish) o'z kodini ko'radi; fermer kiritadigan joyini, haydovchi kiritadigan joyini biladi
       pin: s.pickupPin ? {
@@ -591,6 +602,7 @@ export class ShipmentService {
       driver: (viewer === 'farmer' || viewer === 'market' || viewer === 'staff') && s.driver
         ? {
             userId: s.driver.userId,
+            penaltyPoints: s.driver.user.penaltyPoints,
             fullName: s.driver.user.fullName,
             phone: s.driver.user.phone,
             vehicleType: s.driver.vehicleType,

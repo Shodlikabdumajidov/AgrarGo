@@ -9,6 +9,7 @@ import { createShipmentForBooking } from '../shipment/shipment.factory';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { ListBookingsQuery } from './dto/list-bookings.query';
 import { restoreStock } from './stock';
+import { assertRiskAcknowledged } from '../complaint/risk';
 
 const BOOKING_INCLUDE = {
   product: {
@@ -18,12 +19,12 @@ const BOOKING_INCLUDE = {
       category: true,
       status: true,
       farmer: {
-        select: { farmName: true, region: true, district: true, user: { select: { fullName: true, phone: true } } },
+        select: { farmName: true, region: true, district: true, user: { select: { fullName: true, phone: true, penaltyPoints: true } } },
       },
     },
   },
   market: {
-    select: { companyName: true, region: true, district: true, user: { select: { fullName: true, phone: true } } },
+    select: { companyName: true, region: true, district: true, user: { select: { fullName: true, phone: true, penaltyPoints: true } } },
   },
   payment: { select: { id: true, status: true, amount: true, currency: true, provider: true, deliveryFee: true, serviceFee: true, distanceKm: true, deliveryPayer: true } },
 } satisfies Prisma.BookingInclude;
@@ -37,6 +38,8 @@ export class BookingService {
   /** Supermarket e'londan kerakli miqdorni bron qiladi; e'lon qoldig'i darhol kamayadi. */
   async create(marketId: string, dto: CreateBookingDto) {
     const qty = new Prisma.Decimal(dto.quantityKg);
+    const farmerUser = await this.prisma.product.findFirst({ where: { id: dto.productId, status: ProductStatus.ACTIVE }, select: { farmer: { select: { user: { select: { penaltyPoints: true } } } } } });
+    assertRiskAcknowledged(farmerUser?.farmer.user.penaltyPoints, dto.acknowledgeRisk);
 
     const booking = await this.prisma.$transaction(async (tx) => {
       const product = await tx.product.findFirst({
@@ -215,6 +218,7 @@ export class BookingService {
         region: f.region,
         district: f.district,
         phone: b.status === BookingStatus.APPROVED ? f.user.phone : null,
+        penaltyPoints: f.user.penaltyPoints,
       },
     };
   }
@@ -226,6 +230,7 @@ export class BookingService {
       market: {
         companyName: b.market.companyName,
         fullName: b.market.user.fullName,
+        penaltyPoints: b.market.user.penaltyPoints,
         region: b.market.region,
         district: b.market.district,
         phone: b.status === BookingStatus.APPROVED ? b.market.user.phone : null,
