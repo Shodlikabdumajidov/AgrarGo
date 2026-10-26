@@ -3518,9 +3518,22 @@
                     { name: 'fullName', label: 'Ism va familiya', required: true, maxLength: 100 },
                     { name: 'phone', label: 'Telefon (+998XXXXXXXXX)', required: true, placeholder: '+998901234567', maxLength: 13 },
                     { name: 'role', label: 'Rol', type: 'select', options: [['DISPATCHER', 'Dispetcher'], ['ADMIN', 'Admin']], value: 'DISPATCHER' },
-                    { name: 'adminRole', label: "Admin paneli (faqat Admin uchun)", type: 'select', options: ADM_PANEL_OPTIONS, value: 'SAFETY_ADMIN' },
+                    { name: 'adminRole', label: "Admin paneli (faqat Admin uchun)", type: 'select', options: [['', '—']].concat(ADM_PANEL_OPTIONS), value: '' },
                     { name: 'password', label: 'Vaqtinchalik parol', required: true, hint: 'Kamida 8 belgi, harf va raqam.', maxLength: 72 }
                 ],
+                // Dispetcher tanlansa «Admin paneli» o'chiriladi va tozalanadi; Admin tanlansa qayta faollashadi
+                onBuilt: function (inputs) {
+                    const sync = function () {
+                        const isAdmin = inputs.role.value === 'ADMIN', sel = inputs.adminRole;
+                        sel.disabled = !isAdmin;
+                        sel.setAttribute('aria-disabled', String(!isAdmin));
+                        sel.classList.toggle('opacity-50', !isAdmin);
+                        sel.classList.toggle('cursor-not-allowed', !isAdmin);
+                        if (!isAdmin) sel.value = ''; else if (!sel.value) sel.value = 'SAFETY_ADMIN';
+                    };
+                    inputs.role.addEventListener('change', sync);
+                    sync();
+                },
                 onSubmit: function (v) { return authed('POST', '/admin/staff', Object.assign({ fullName: v.fullName, phone: v.phone.replace(/\s/g, ''), role: v.role, password: v.password }, v.role === 'ADMIN' ? { adminRole: v.adminRole } : {})); },
                 done: 'Xodim yaratildi.'
             });
@@ -3815,12 +3828,12 @@
         const LEAFLET_CSS = { src: 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css', sri: 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=' };
         const TRUCK_SVG = '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M3 6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2h2.6a2 2 0 0 1 1.6.8l2.1 2.8c.4.5.7 1.2.7 1.8V16a2 2 0 0 1-2 2h-.3a3 3 0 0 1-5.4 0H10.7a3 3 0 0 1-5.4 0H5a2 2 0 0 1-2-2V6zm12 4v3h4.9l-1.5-2a.5.5 0 0 0-.4-.2L15 10zM8 17.2a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4zm10.7 0a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4z"/></svg>';
 
-        // Xarita plitkalari: OSM'ning o'z tile serveri ommaviy ilovalarni bloklaydi, shuning uchun CARTO Voyager (OSM ma'lumotlari asosida, bepul)
+        // Xarita plitkalari: standart OpenStreetMap (API kalit talab qilmaydi; O'zbekiston bo'yicha tuman va qishloqlargacha to'liq)
         const MAP_TILES = {
-            url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+            url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
             options: {
-                subdomains: 'abcd', maxZoom: 19,
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener noreferrer">CARTO</a>'
+                subdomains: 'abc', maxZoom: 19,
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors'
             }
         };
         let leafletPromise = null;
