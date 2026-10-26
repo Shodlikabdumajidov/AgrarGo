@@ -1,4 +1,5 @@
-import { IsDateString, IsNumber, IsOptional, IsPositive, IsString, Max, MaxLength, MinLength } from 'class-validator';
+import { DeliveryPayer } from '@prisma/client';
+import { IsDateString, IsEnum, IsNumber, IsOptional, IsPositive, IsString, Max, MaxLength, MinLength } from 'class-validator';
 
 export class CreateProductDto {
   @IsString()
@@ -29,4 +30,9 @@ export class CreateProductDto {
   @IsString()
   @MaxLength(1000)
   description?: string;
+
+  // Yetkazib berish kimning hisobidan: BUYER (narxga qo'shiladi, standart) yoki FARMER (fermer oladigan summadan ushlanadi)
+  @IsOptional()
+  @IsEnum(DeliveryPayer, { message: "Yetkazib berish to'lovchisi BUYER yoki FARMER bo'lishi kerak" })
+  deliveryPayer?: DeliveryPayer;
 }

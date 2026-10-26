@@ -906,8 +906,47 @@
             }
         }
 
+        // E'lon rasmlari: mavjudlari (serverda) va yangi tanlanganlari (saqlashda yuklanadi); jami 1-5 ta
+        const PROD_MAX_PHOTOS = 5, PROD_PHOTO_BYTES = 4 * 1024 * 1024;
+        const prodPhotos = { existing: [], pending: [] };
+        function renderProdPhotoPreviews() {
+            const box = document.getElementById('prod-photo-previews');
+            const mk = function (src, onRemove, label) {
+                const w = el('div', 'relative aspect-square rounded-xl overflow-hidden border border-white/15');
+                const im = el('img', 'w-full h-full object-cover'); im.src = src; im.alt = label; w.appendChild(im);
+                const x = el('button', 'absolute top-1 right-1 w-6 h-6 rounded-full bg-black/70 text-white text-xs flex items-center justify-center'); x.type = 'button'; x.setAttribute('aria-label', T("Rasmni olib tashlash")); x.appendChild(el('i', 'fa-solid fa-xmark'));
+                x.addEventListener('click', onRemove); w.appendChild(x);
+                return w;
+            };
+            const nodes = [];
+            prodPhotos.existing.forEach(function (u, i) { nodes.push(mk(productPhotoUrl(u), function () { prodPhotos.existing.splice(i, 1); prodPhotos.removed.push(i); renderProdPhotoPreviews(); }, 'photo')); });
+            prodPhotos.pending.forEach(function (f, i) { const w = mk(URL.createObjectURL(f), function () { prodPhotos.pending.splice(i, 1); renderProdPhotoPreviews(); }, f.name); nodes.push(w); });
+            box.replaceChildren.apply(box, nodes);
+        }
+        prodPhotos.removed = [];
+        document.getElementById('prod-photos').addEventListener('change', function (e) {
+            const errors = [];
+            Array.prototype.forEach.call(e.target.files, function (f) {
+                if (prodPhotos.existing.length + prodPhotos.pending.length >= PROD_MAX_PHOTOS) { if (!errors.length) errors.push("Ko'pi bilan " + PROD_MAX_PHOTOS + " ta rasm yuklash mumkin."); return; }
+                if (!/^image\/(jpeg|png|webp)$/.test(f.type)) { errors.push(f.name + ': faqat JPG, PNG yoki WEBP.'); return; }
+                if (f.size > PROD_PHOTO_BYTES) { errors.push(f.name + ': 4 MB dan oshmasligi kerak.'); return; }
+                prodPhotos.pending.push(f);
+            });
+            e.target.value = '';
+            if (errors.length) showAuthAlert(errors, 'error', productAlert); else hideAuthAlert(productAlert);
+            renderProdPhotoPreviews();
+        });
+        async function uploadProductPhoto(id, file, token) {
+            const fd = new FormData(); fd.append('file', file);
+            const res = await fetch(API_URL + '/products/' + id + '/photos', { method: 'POST', headers: { Authorization: 'Bearer ' + token }, body: fd });
+            if (!res.ok) { const j = await res.json().catch(function () { return {}; }); throw { status: res.status, messages: [].concat(j.message || 'Rasm yuklanmadi') }; }
+            return res.json();
+        }
+
         function openProductModal(product) {
             editingProduct = product || null;
+            prodPhotos.existing = product && product.photos ? product.photos.slice() : [];
+            prodPhotos.pending = []; prodPhotos.removed = [];
             hideAuthAlert(productAlert);
             productForm.reset();
             const f = productForm;
@@ -919,7 +958,9 @@
                 f.quantityKg.value = Number(product.quantityKg);
                 f.pricePerKg.value = Number(product.pricePerKg);
                 f.harvestDate.value = product.harvestDate ? product.harvestDate.slice(0, 10) : '';
+                f.deliveryPayer.value = product.deliveryPayer || 'BUYER';
             }
+            renderProdPhotoPreviews();
             document.getElementById('product-title').innerText = product ? "E'lonni tahrirlash" : "Yangi e'lon qo'shish";
             document.getElementById('product-subtitle').innerText = product
                 ? "Ma'lumotlarni o'zgartirib, saqlang."
@@ -964,7 +1005,8 @@
                 name: f.elements['name'].value.trim(),
                 category: f.category.value,
                 quantityKg: Number(f.quantityKg.value),
-                pricePerKg: Number(f.pricePerKg.value)
+                pricePerKg: Number(f.pricePerKg.value),
+                deliveryPayer: f.deliveryPayer.value
             };
             // Tahrirlashda sana tozalansa null yuboriladi (server sanani o'chiradi)
             if (f.harvestDate.value) payload.harvestDate = f.harvestDate.value;
@@ -975,6 +1017,7 @@
             if (!payload.category) errors.push('Kategoriyani tanlang.');
             if (!(payload.quantityKg > 0)) errors.push("Vaznni kiriting (0 dan katta bo'lsin).");
             if (!(payload.pricePerKg > 0)) errors.push("Narxni kiriting (0 dan katta bo'lsin).");
+            if (prodPhotos.existing.length + prodPhotos.pending.length < 1) errors.push("Kamida 1 ta rasm yuklang (mahsulotning haqiqiy holati).");
             if (errors.length) return showAuthAlert(errors, 'error', productAlert);
 
             const token = storageGet(TOKEN_KEY);
@@ -986,6 +1029,13 @@
             try {
                 const saved = editing ? await apiRequest('PUT', '/products/' + editing.id, payload, token) : await apiRequest('POST', '/products', payload, token);
                 if (saved && saved.__queued) { closeProductModal(); return; } // oflayn saqlandi: xabar allaqachon ko'rsatilgan
+                // Rasmlar: olib tashlanganlari o'chiriladi (katta indeksdan), yangilari ketma-ket yuklanadi
+                if (editing && prodPhotos.removed.length) {
+                    const orig = (editing.photos || []).slice(); const gone = orig.filter(function (u) { return prodPhotos.existing.indexOf(u) === -1; });
+                    for (let gi = gone.length - 1; gi >= 0; gi--) await apiRequest('DELETE', '/products/' + editing.id + '/photos/' + orig.indexOf(gone[gi]), undefined, token);
+                }
+                if (!editing) editingProduct = saved; // rasm yuklash xato bo'lsa qayta urinish dublikat e'lon yaratmasin
+                for (const file of prodPhotos.pending.slice()) { await uploadProductPhoto(saved.id, file, token); prodPhotos.pending.shift(); }
                 showAuthAlert(editing ? "E'lon yangilandi!" : "E'lon muvaffaqiyatli joylandi!", 'success', productAlert);
                 setTimeout(function () {
                     closeProductModal();
@@ -1301,9 +1351,63 @@
             renderMarketPagination(meta);
         }
 
+        // ===== E'lon rasmlari: galereya (surish / strelkalar) va katta ko'rinish =====
+        function productPhotoUrl(u) { return /^\/uploads\//.test(u || '') ? API_URL + u : u; }
+        function photoSlider(urls, alt, cls) {
+            const box = el('div', ['dp-slider rounded-2xl overflow-hidden', cls || ''].join(' '));
+            box.dataset.gallery = String(urls.length);
+            const slides = el('div', 'dp-slides');
+            urls.forEach(function (u, i) {
+                const im = el('img', 'cursor-zoom-in'); im.src = productPhotoUrl(u); im.alt = alt; im.loading = 'lazy';
+                im.addEventListener('click', function () { openLightbox(urls, i, alt); });
+                slides.appendChild(im);
+            });
+            box.appendChild(slides);
+            if (urls.length > 1) {
+                const dots = el('div', 'dp-dots');
+                urls.forEach(function (_, i) { dots.appendChild(el('i', i === 0 ? 'on' : '')); });
+                box.appendChild(dots);
+                [['fa-chevron-left', -1, 'left-2'], ['fa-chevron-right', 1, 'right-2']].forEach(function (n) {
+                    const b = el('button', ['dp-nav', n[2]].join(' ')); b.type = 'button';
+                    b.setAttribute('aria-label', n[1] < 0 ? T('Oldingi rasm') : T('Keyingi rasm'));
+                    b.appendChild(el('i', ['fa-solid', n[0]].join(' ')));
+                    b.addEventListener('click', function (e) { e.stopPropagation(); slides.scrollBy({ left: n[1] * slides.clientWidth, behavior: 'smooth' }); });
+                    box.appendChild(b);
+                });
+                slides.addEventListener('scroll', function () {
+                    const idx = Math.round(slides.scrollLeft / Math.max(1, slides.clientWidth));
+                    Array.prototype.forEach.call(dots.children, function (d, i) { d.classList.toggle('on', i === idx); });
+                }, { passive: true });
+            }
+            return box;
+        }
+        let lightboxEl = null;
+        function openLightbox(urls, start, alt) {
+            if (lightboxEl) lightboxEl.remove();
+            let idx = start || 0;
+            const ov = el('div', 'fixed inset-0 z-[90] bg-black/90 flex items-center justify-center p-4');
+            ov.id = 'photo-lightbox'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true');
+            const im = el('img', 'max-h-[85vh] max-w-full rounded-2xl object-contain'); im.alt = alt || '';
+            const cnt = el('div', 'absolute bottom-5 left-1/2 -translate-x-1/2 text-sm font-bold text-white/80');
+            const show = function () { im.src = productPhotoUrl(urls[idx]); cnt.textContent = (idx + 1) + ' / ' + urls.length; };
+            const close = function () { ov.remove(); lightboxEl = null; document.removeEventListener('keydown', onKey, true); };
+            const step = function (d) { idx = (idx + d + urls.length) % urls.length; show(); };
+            // Capture + stopPropagation: Esc faqat galereyani yopsin (ostidagi kabinet/oyna yopilib ketmasin)
+            const onKey = function (e) { if (e.key === 'Escape') { e.stopImmediatePropagation(); e.preventDefault(); close(); } else if (e.key === 'ArrowLeft') step(-1); else if (e.key === 'ArrowRight') step(1); };
+            const mk = function (icon, cls, fn, label) { const b = el('button', 'absolute text-white text-2xl p-3 rounded-full bg-white/10 hover:bg-white/20 ' + cls); b.type = 'button'; b.setAttribute('aria-label', label); b.appendChild(el('i', 'fa-solid ' + icon)); b.addEventListener('click', function (e) { e.stopPropagation(); fn(); }); return b; };
+            ov.appendChild(im); ov.appendChild(cnt);
+            ov.appendChild(mk('fa-xmark', 'top-4 right-4', close, T('Yopish')));
+            if (urls.length > 1) { ov.appendChild(mk('fa-chevron-left', 'left-3 top-1/2 -translate-y-1/2', function () { step(-1); }, T('Oldingi rasm'))); ov.appendChild(mk('fa-chevron-right', 'right-3 top-1/2 -translate-y-1/2', function () { step(1); }, T('Keyingi rasm'))); }
+            ov.addEventListener('click', function (e) { if (e.target === ov || e.target === im) close(); });
+            document.addEventListener('keydown', onKey, true);
+            document.body.appendChild(ov); lightboxEl = ov; show();
+        }
+        function payerLabel(p) { return p && p.deliveryPayer === 'FARMER' ? T("Yetkazish: fermer hisobidan") : T("Yetkazish: xaridor hisobidan"); }
+
         function buildMarketCard(p) {
             const card = el('article', 'glass hover-glow rounded-3xl border border-white/10 hover:border-emerald-500/50 p-6 flex flex-col gap-4');
 
+            if (p.photos && p.photos.length) card.appendChild(photoSlider(p.photos, p.name));
             const top = el('div', 'flex items-center justify-between gap-2');
             const cat = el('span', 'inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider');
             cat.appendChild(el('i', 'fa-solid ' + (CATEGORY_ICONS[p.category] || 'fa-box')));
@@ -1342,6 +1446,7 @@
             };
             line('fa-tractor', p.farmer.farmName + ' · ' + p.farmer.fullName);
             line('fa-location-dot', p.farmer.region + ', ' + p.farmer.district);
+            line('fa-truck-fast', payerLabel(p));
             const harvest = formatDate(p.harvestDate);
             if (harvest) line('fa-calendar-day', "O'rim-yig'im: " + harvest);
             card.appendChild(info);
@@ -1360,6 +1465,12 @@
             btn.appendChild(el('span', '', 'Bron qilish'));
             btn.addEventListener('click', function () { onBookClick(p); });
             card.appendChild(btn);
+            const offerBtn = el('button', 'offer-btn w-full border border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10 active:scale-95 font-bold py-2.5 rounded-2xl transition duration-200 flex items-center justify-center gap-2');
+            offerBtn.type = 'button';
+            offerBtn.appendChild(el('i', 'fa-solid fa-comments-dollar'));
+            offerBtn.appendChild(el('span', '', "O'z taklifimni berish"));
+            offerBtn.addEventListener('click', function () { onOfferClick(p); });
+            card.appendChild(offerBtn);
             return card;
         }
 
@@ -1462,13 +1573,13 @@
         const DASH_GROUPS = {
             FARMER: {
                 products: [['products', "E'lonlarim"], ['hub', 'Hub orqali sotish'], ['warehouse', 'Omborxona']],
-                bookings: [['bookings', 'Bronlar'], ['shipments', 'Yuk tashish'], ['whorders', 'Ombor buyurtmalari']],
+                bookings: [['bookings', 'Bronlar'], ['offers', 'Kutishdagi takliflar'], ['shipments', 'Yuk tashish'], ['whorders', 'Ombor buyurtmalari']],
                 payments: [['payments', "To'lovlar (Escrow)"], ['cashback', 'Keshbek']],
                 profile: [['profile', 'Profil'], ['subscription', 'Obuna'], ['badges', 'Ishonch badjlari'], ['guide', "Qo'llanma (PDF)"]]
             },
             MARKET: {
                 overview: [['overview', 'Bosh sahifa'], ['catalog', "Fermer e'lonlari"], ['lmarket', 'Hub zaxirasi'], ['lcart', 'Savatcha'], ['prices', 'Bozor narxlari']],
-                bookings: [['bookings', 'Bronlarim'], ['lorders', 'Hub buyurtmalari'], ['shipments', "Yo'ldagi va yetib kelgan yuklar"]],
+                bookings: [['bookings', 'Bronlarim'], ['offers', 'Takliflarim'], ['lorders', 'Hub buyurtmalari'], ['shipments', "Yo'ldagi va yetib kelgan yuklar"]],
                 payments: [['payments', "To'lovlar (Escrow)"], ['cashback', 'Keshbek']],
                 profile: [['profile', 'Profil'], ['subscription', 'Obuna'], ['badges', 'Ishonch badjlari'], ['guide', "Qo'llanma (PDF)"]]
             },
@@ -1592,6 +1703,7 @@
             if (tab === 'products') renderFarmerListings(user);
             else if (tab === 'dfinance') renderDriverFinance(user);
             else if (tab === 'bookings') renderDashBookings(user);
+            else if (tab === 'offers') renderDashOffers(user);
             else if (tab === 'shipments' || tab === 'myloads') renderDashShipments(user);
             else if (tab === 'loads') renderDashLoads(user);
             else if (tab === 'eld') renderDashEld(user);
@@ -4449,6 +4561,37 @@
             selectDashTab(dashTab);
         }
 
+        // PIN-kod tasdiqlash: ko'rsatish (kod egasi) va kiritish (tasdiqlovchi) bloklari
+        function pinShowBox(title, pin, hint) {
+            const b = el('div', 'w-full rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 flex items-center justify-between gap-3');
+            b.dataset.pinShow = pin;
+            const l = el('div', 'min-w-0');
+            l.appendChild(el('div', 'text-[11px] font-bold uppercase tracking-wider text-emerald-300', title));
+            l.appendChild(el('div', 'text-xs text-slate-300', hint));
+            b.appendChild(l);
+            b.appendChild(el('div', 'text-3xl font-black tracking-[.3em] text-white', pin));
+            return b;
+        }
+        function pinEntryBox(title, btnLabel, onSubmit) {
+            const b = el('form', 'w-full rounded-xl border border-sky-500/40 bg-sky-500/10 px-4 py-3 space-y-2');
+            b.dataset.pinEntry = '1'; b.noValidate = true;
+            b.appendChild(el('div', 'text-[11px] font-bold uppercase tracking-wider text-sky-300', title));
+            const row = el('div', 'flex gap-2');
+            const inp = el('input', 'auth-input !w-32 text-center text-xl font-black tracking-[.3em]'); inp.type = 'text'; inp.inputMode = 'numeric'; inp.maxLength = 4; inp.placeholder = '••••'; inp.autocomplete = 'one-time-code';
+            inp.setAttribute('aria-label', title);
+            inp.addEventListener('input', function () { inp.value = inp.value.replace(/\D/g, '').slice(0, 4); });
+            const go = el('button', 'flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-extrabold border bg-sky-500 border-sky-500 text-slate-950 hover:bg-sky-400 disabled:opacity-50'); go.type = 'submit';
+            go.appendChild(el('i', 'fa-solid fa-key')); go.appendChild(el('span', '', btnLabel));
+            row.appendChild(inp); row.appendChild(go); b.appendChild(row);
+            b.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                if (!/^\d{4}$/.test(inp.value)) return showToast(T('PIN-kod 4 ta raqamdan iborat bo\'lishi kerak.'), 3500, 'error');
+                go.disabled = true;
+                try { await onSubmit(inp.value); } catch (err) { if (err.status !== 401) showToast((err.messages && err.messages[0]) || 'Xatolik', 5000, 'error'); go.disabled = false; inp.select(); }
+            });
+            return b;
+        }
+
         // viewer: 'driver-open' | 'driver-own' | 'farmer' | 'market'
         function buildShipmentCard(s, viewer) {
             const meta = SHIPMENT_STATUS[s.status];
@@ -4562,13 +4705,37 @@
                     note.appendChild(document.createTextNode("Omborxonaga boring: dispetcher yukni yuklab, jo'natishni tasdiqlaydi. Shundan so'ng GPS kuzatuv va harakat jurnali ishga tushadi."));
                     actions.appendChild(note);
                 } else {
+                    // PIN-kod: haydovchi kodini fermerga aytadi, fermer o'z kabinetida kiritadi (yoqilgan bo'lsa «Yo'lga chiqdim» o'rniga)
+                    if (s.pin && s.pin.pickup) actions.appendChild(pinShowBox(T('Yuklash PIN-kodingiz'), s.pin.pickup, T('Yuk ortilganda shu kodni fermerga ayting: u o\'z kabinetida kiritadi.')));
+                    if (!(s.pin && s.pin.enforced)) {
                     // e-BOL: fermer SMS-kodi bilan imzo. Majburiy bo'lmasa (ebolRequired=false) oddiy «Yo'lga chiqdim» ham ishlaydi
                     actions.appendChild(ebolPanel({ kind: 'SHIPMENT', id: s.id, signed: s.isSigned, onSigned: function () { startTracker(s.id, 'gps'); selectDashTab(dashTab); } }));
                     if (!s.isSigned && !s.ebolRequired) actions.appendChild(btn('fa-truck-fast', "Yo'lga chiqdim", 'bg-emerald-500 border-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-lg shadow-emerald-500/25', 'advance'));
+                    }
                 }
                 actions.appendChild(btn('fa-rotate-left', 'Qaytarish', 'border-white/15 text-slate-300 hover:bg-white/10', 'release'));
+            } else if (viewer === 'driver-own' && s.status === 'IN_TRANSIT' && s.pin && s.pin.enforced) {
+                // Topshirish: marketning 4 xonali PIN-kodi kiritilgandagina DELIVERED va escrow chiqariladi
+                actions.appendChild(pinEntryBox(T('Marketning PIN-kodi'), T('Topshirish'), async function (pin) {
+                    const r = await authed('POST', '/shipments/' + s.id + '/deliver', { pin: pin });
+                    showToast(r && r.paymentReleased ? T("Yuk topshirildi: to'lov fermer va haydovchiga o'tkazildi") : T('Yuk topshirildi'), 4500, 'success');
+                    stopTracker('');
+                    selectDashTab(dashTab);
+                }));
             } else if (viewer === 'driver-own' && s.status === 'IN_TRANSIT') {
                 actions.appendChild(btn('fa-circle-check', 'Yetkazib berdim', 'bg-emerald-500 border-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-lg shadow-emerald-500/25', 'advance'));
+            }
+            // Fermer: haydovchi yuk ortishda aytgan PIN-kodni kiritadi
+            if (viewer === 'farmer' && s.status === 'LOADING' && s.driver && s.pin && s.pin.awaiting === 'PICKUP') {
+                actions.appendChild(pinEntryBox(T('Haydovchining PIN-kodi'), T('Yuklashni tasdiqlash'), async function (pin) {
+                    await authed('POST', '/shipments/' + s.id + '/confirm-pickup', { pin: pin });
+                    showToast(T("Yuk yo'lga chiqdi"), 3500, 'success');
+                    selectDashTab(dashTab);
+                }));
+            }
+            // Market: o'z qabul PIN-kodini ko'radi va yetkazganda haydovchiga aytadi
+            if (viewer === 'market' && s.pin && s.pin.delivery && (s.status === 'LOADING' || s.status === 'IN_TRANSIT')) {
+                actions.appendChild(pinShowBox(T('Qabul PIN-kodingiz'), s.pin.delivery, T("Yuk yetib kelganda shu kodni haydovchiga ayting. Boshqa hech kimga bermang.")));
             }
             if ((viewer === 'farmer' || viewer === 'dispatcher') && s.status === 'OPEN' && !s.driver) {
                 actions.appendChild(btn('fa-user-plus', 'Haydovchiga biriktirish', 'border-sky-500/40 bg-sky-500/10 text-sky-200 hover:bg-sky-500/20', 'assign'));
@@ -4747,6 +4914,7 @@
             list.forEach(function (p) {
                 const st = LISTING_STATUS[p.status] || LISTING_STATUS.ACTIVE;
                 const c = el('article', 'glass rounded-2xl border border-white/10 p-4 space-y-3');
+                if (p.photos && p.photos.length) c.appendChild(photoSlider(p.photos, p.name));
                 const top = el('div', 'flex items-start justify-between gap-3');
                 const tt = el('div', 'min-w-0');
                 tt.appendChild(el('h3', 'font-extrabold text-white text-lg break-words', p.name));
@@ -4762,6 +4930,7 @@
                     nums.appendChild(cell);
                 });
                 c.appendChild(nums);
+                c.appendChild(el('p', 'text-xs text-sky-300 font-semibold', '🚚 ' + payerLabel(p)));
                 const act = el('div', 'flex flex-wrap gap-2');
                 act.appendChild(actionBtn('fa-pen', 'Tahrirlash', false, function () { openProductModal(p); }));
                 act.appendChild(actionBtn(p.status === 'ARCHIVED' ? 'fa-box-open' : 'fa-box-archive', p.status === 'ARCHIVED' ? 'Faollashtirish' : 'Arxivlash', false, async function () {
@@ -5553,7 +5722,7 @@
                         return d;
                     };
                     box.replaceChildren.apply(box, [
-                        row('🚚 ' + T("Taxminiy yo'l haqi ({0} km)", formatNumber(r.distanceKm)), bdMoney(r.deliveryFee), formulaButton(r.formula)),
+                        row('🚚 ' + (r.deliveryPayer === 'FARMER' ? T("Yo'l haqi ({0} km) — fermer hisobidan, jamiga kirmaydi", formatNumber(r.distanceKm)) : T("Taxminiy yo'l haqi ({0} km)", formatNumber(r.distanceKm))), bdMoney(r.deliveryFee), formulaButton(r.formula)),
                         r.marketRate ? el('div', 'text-xs font-semibold ' + (r.marketRate.verdict === 'HOT' ? 'text-orange-300' : 'text-slate-400'), T("Stavka: {0} so'm/km — {1}", formatNumber(r.marketRate.ratePerKm), r.marketRate.verdict === 'FAIR' ? T('bozor o\'rtachasiga mos') : r.marketRate.diffPercent > 0 ? T('bozor o\'rtachasidan {0} baland', pctText(r.marketRate.diffPercent)) : T('bozor o\'rtachasidan {0} past', pctText(r.marketRate.diffPercent)))) : null,
                         row('🧾 ' + T('Platforma xizmat haqi'), bdMoney(r.serviceFee)),
                         row('💳 ' + T('Taxminiy jami'), bdMoney(r.totalPrice))
@@ -5569,17 +5738,131 @@
             document.getElementById('booking-est').classList.add('hidden');
             hideAuthAlert(bookingAlert);
             const summary = document.getElementById('booking-summary');
-            summary.replaceChildren(
+            summary.replaceChildren.apply(summary, [
+                p.photos && p.photos.length ? photoSlider(p.photos, p.name, 'mb-3') : null,
                 el('div', 'font-extrabold text-white text-lg', p.name),
                 el('div', 'text-xs text-slate-400', p.farmer.farmName + ' · ' + p.farmer.region + ', ' + p.farmer.district),
-                el('div', 'text-sm text-emerald-300 font-bold', formatNumber(p.pricePerKg) + " so'm / kg")
-            );
+                el('div', 'text-sm text-emerald-300 font-bold', formatNumber(p.pricePerKg) + " so'm / kg"),
+                el('div', 'text-xs text-sky-300 font-semibold', '🚚 ' + payerLabel(p))
+            ].filter(Boolean));
             const qty = document.getElementById('booking-qty');
             qty.max = Number(p.quantityKg);
             document.getElementById('booking-hint').innerText = 'Mavjud: ' + formatNumber(p.quantityKg) + ' kg. Qisman miqdor bron qilishingiz mumkin.';
             updateBookingTotal();
             bookingModal.classList.add('open');
             syncScrollLock();
+        }
+
+        // ===== SAVDOLASHISH (Make an Offer): market narx taklif qiladi; fermer tasdiqlaydi / rad etadi / qarshi taklif yuboradi =====
+        const OFFER_STATUS = {
+            PENDING:   { label: 'Javob kutilmoqda',   cls: 'bg-amber-500/15 text-amber-400 border-amber-500/30' },
+            COUNTERED: { label: 'Qarshi taklif',      cls: 'bg-sky-500/15 text-sky-300 border-sky-500/30' },
+            ACCEPTED:  { label: 'Kelishildi',         cls: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' },
+            REJECTED:  { label: 'Rad etilgan',        cls: 'bg-rose-500/15 text-rose-300 border-rose-500/30' },
+            CANCELLED: { label: 'Bekor qilingan',     cls: 'bg-slate-500/20 text-slate-300 border-slate-500/30' }
+        };
+
+        function onOfferClick(p) {
+            const user = currentUser();
+            if (!user) {
+                afterLoginAction = function () { onOfferClick(p); };
+                openAuthModal(isRoleKnown('MARKET') ? 'login' : 'register', 'MARKET');
+                showAuthAlert("Narx taklif qilish uchun Market akkaunti kerak. Kiring yoki ro'yxatdan o'ting.", 'info');
+                return;
+            }
+            if (user.role !== 'MARKET') { showToast("Narx taklif qilish faqat Market akkauntlari uchun.", 5000); return; }
+            openWhForm({
+                title: "O'z taklifimni berish", sub: p.name + ' · ' + T("e'lon narxi: {0} so'm/kg", formatNumber(p.pricePerKg)) + ' · ' + T('Mavjud: {0} kg', formatNumber(p.quantityKg)), icon: 'fa-comments-dollar', submit: 'Taklif yuborish',
+                fields: [
+                    { name: 'quantityKg', label: 'Miqdor (kg)', type: 'number', required: true, min: 0.01, max: Number(p.quantityKg), value: Math.min(100, Number(p.quantityKg)) },
+                    { name: 'pricePerKg', label: "Taklif narxi (1 kg, so'm)", type: 'number', required: true, min: 0.01, max: Number(p.pricePerKg), value: Math.round(Number(p.pricePerKg) * 0.9), hint: "E'lon narxidan oshmasligi va uning kamida 30% bo'lishi kerak." },
+                    { name: 'message', label: 'Xabar (ixtiyoriy)', type: 'textarea', maxLength: 500 }
+                ],
+                onSubmit: function (v) { return authed('POST', '/offers', { productId: p.id, quantityKg: v.quantityKg, pricePerKg: v.pricePerKg, message: v.message }); },
+                done: "Taklif yuborildi. Fermer javobini kutib turing.",
+                after: function () { if (dashboardView.classList.contains('open')) selectDashTab('offers'); else openDashboard('offers'); }
+            });
+        }
+
+        function offerAction(o, kind, body, okMsg, reload) {
+            return authed('POST', '/offers/' + o.id + '/' + kind, body).then(function () { showToast(okMsg, 3500, 'success'); reload(); }).catch(function (err) { if (err.status !== 401) showToast((err.messages && err.messages[0]) || 'Xatolik', 5000, 'error'); });
+        }
+
+        function buildOfferCard(o, viewer, reload) {
+            const st = OFFER_STATUS[o.status] || OFFER_STATUS.PENDING;
+            const card = el('article', 'glass rounded-2xl border border-white/10 p-4 space-y-3');
+            card.dataset.offer = o.id; card.dataset.status = o.status;
+            const top = el('div', 'flex items-start gap-3');
+            if (o.product.photos && o.product.photos.length) { const im = el('img', 'w-16 h-16 rounded-xl object-cover shrink-0'); im.src = productPhotoUrl(o.product.photos[0]); im.alt = ''; top.appendChild(im); }
+            const mid = el('div', 'min-w-0 flex-1');
+            mid.appendChild(el('div', 'font-extrabold text-white break-words', o.product.name));
+            mid.appendChild(el('div', 'text-xs text-slate-400', viewer === 'farmer' ? o.market.companyName + ' · ' + o.market.region : o.farmer.farmName + ' · ' + o.farmer.region));
+            mid.appendChild(el('div', 'text-xs text-slate-500', T("E'lon narxi: {0} so'm/kg", formatNumber(o.product.pricePerKg))));
+            top.appendChild(mid);
+            top.appendChild(el('span', 'shrink-0 text-xs font-bold px-3 py-1 rounded-full border ' + st.cls, T(st.label)));
+            card.appendChild(top);
+            const line = function (label, kg, price, tone) {
+                const r = el('div', 'flex items-center justify-between gap-2 text-sm');
+                r.appendChild(el('span', 'text-slate-300', label));
+                r.appendChild(el('span', 'font-extrabold whitespace-nowrap ' + tone, formatNumber(kg) + ' kg × ' + formatNumber(price) + ' = ' + bdMoney(Number(kg) * Number(price))));
+                card.appendChild(r);
+            };
+            line(viewer === 'farmer' ? T('Market taklifi') : T('Sizning taklifingiz'), o.quantityKg, o.pricePerKg, 'text-emerald-300');
+            if (o.message) card.appendChild(el('p', 'text-xs text-slate-300 break-words', '💬 ' + o.message));
+            if (o.counter) {
+                line(viewer === 'farmer' ? T('Sizning qarshi taklifingiz') : T('Fermerning qarshi taklifi'), o.counter.quantityKg, o.counter.pricePerKg, 'text-sky-300');
+                if (o.counter.message) card.appendChild(el('p', 'text-xs text-slate-300 break-words', '💬 ' + o.counter.message));
+            }
+            const act = el('div', 'flex flex-wrap gap-2 pt-1');
+            if (viewer === 'farmer' && o.status === 'PENDING') {
+                act.appendChild(actionBtn('fa-check', 'Tasdiqlash', true, function () { offerAction(o, 'accept', undefined, 'Taklif tasdiqlandi: bron yaratildi.', reload); }));
+                act.appendChild(actionBtn('fa-rotate', 'Qayta taklif', false, function () {
+                    openWhForm({
+                        title: 'Qayta taklif (Counter offer)', sub: o.product.name + ' · ' + T('Market taklifi: {0} so\'m/kg', formatNumber(o.pricePerKg)), icon: 'fa-rotate', submit: 'Yuborish',
+                        fields: [
+                            { name: 'pricePerKg', label: "Narx (1 kg, so'm)", type: 'number', required: true, min: Number(o.pricePerKg) + 0.01, max: Number(o.product.pricePerKg), value: Math.round((Number(o.pricePerKg) + Number(o.product.pricePerKg)) / 2), hint: "Market taklifidan baland, e'lon narxidan oshmasin." },
+                            { name: 'quantityKg', label: 'Miqdor (kg)', type: 'number', min: 0.01, max: Number(o.product.availableKg), value: Number(o.quantityKg) },
+                            { name: 'message', label: 'Xabar (ixtiyoriy)', type: 'textarea', maxLength: 500 }
+                        ],
+                        onSubmit: function (v) { return authed('POST', '/offers/' + o.id + '/counter', { pricePerKg: v.pricePerKg, quantityKg: v.quantityKg, message: v.message }); },
+                        done: 'Qarshi taklif yuborildi.', after: reload
+                    });
+                }));
+                act.appendChild(actionBtn('fa-xmark', 'Rad etish', false, function () { if (window.confirm(T('Taklifni rad etasizmi?'))) offerAction(o, 'reject', undefined, 'Taklif rad etildi.', reload); }));
+            } else if (viewer === 'market' && o.status === 'COUNTERED') {
+                act.appendChild(actionBtn('fa-check', 'Qabul qilish', true, function () { offerAction(o, 'accept-counter', undefined, 'Qarshi taklif qabul qilindi: bron yaratildi.', reload); }));
+                act.appendChild(actionBtn('fa-xmark', 'Rad etish', false, function () { offerAction(o, 'cancel', undefined, 'Taklif bekor qilindi.', reload); }));
+            } else if (viewer === 'market' && o.status === 'PENDING') {
+                act.appendChild(actionBtn('fa-ban', 'Bekor qilish', false, function () { offerAction(o, 'cancel', undefined, 'Taklif bekor qilindi.', reload); }));
+            } else if (o.status === 'ACCEPTED') {
+                act.appendChild(actionBtn('fa-clipboard-list', viewer === 'farmer' ? 'Bronlarga o\'tish' : 'Buyurtmalarimga o\'tish', false, function () { selectDashTab('bookings'); }));
+            }
+            if (act.childNodes.length) card.appendChild(act);
+            return card;
+        }
+
+        async function renderDashOffers(user) {
+            const rid = ++dashRenderId;
+            const viewer = user.role === 'FARMER' ? 'farmer' : 'market';
+            dashContent.replaceChildren(dashMessage('fa-spinner fa-spin', 'Takliflar yuklanmoqda...'));
+            let list;
+            try { list = await authed('GET', viewer === 'farmer' ? '/offers/incoming' : '/offers/mine'); }
+            catch (err) {
+                if (err.status === 401 || rid !== dashRenderId) return;
+                return dashContent.replaceChildren(dashMessage('fa-triangle-exclamation text-rose-400', err.messages[0], function () { renderDashOffers(user); }));
+            }
+            if (rid !== dashRenderId) return;
+            const reload = function () { renderDashOffers(user); };
+            const waiting = list.filter(function (o) { return viewer === 'farmer' ? o.status === 'PENDING' : o.status === 'COUNTERED'; });
+            setTabBadge('bookings', waiting.length);
+            const head = el('div', 'flex items-center justify-between gap-3 flex-wrap');
+            head.appendChild(sectionTitle(viewer === 'farmer' ? 'Kutishdagi takliflar' : 'Takliflarim', viewer === 'farmer' ? T("Marketlarning narx takliflari: tasdiqlang, rad eting yoki qarshi taklif yuboring") : T("Fermerlarga yuborgan narx takliflaringiz")));
+            head.appendChild(refreshButton(reload));
+            const nodes = [head];
+            if (waiting.length) nodes.push(el('p', 'text-sm font-bold text-amber-300', '⏳ ' + T('Javobingizni kutayotgan takliflar: {0}', waiting.length)));
+            if (!list.length) nodes.push(emptyState({ art: 'bookings', compact: true, title: viewer === 'farmer' ? "Hozircha takliflar yo'q" : "Hali taklif yubormagansiz", text: viewer === 'farmer' ? "Market sizning e'loningizga narx taklif qilsa, shu yerda ko'rinadi." : "Katalogdan e'lon tanlab «O'z taklifimni berish» tugmasini bosing.", cta: viewer === 'market' ? { label: 'Katalog', icon: 'fa-store', fn: function () { selectDashTab('overview'); } } : undefined }));
+            list.forEach(function (o) { nodes.push(buildOfferCard(o, viewer, reload)); });
+            dashContent.replaceChildren.apply(dashContent, nodes);
         }
 
         function closeBookingModal() {
@@ -8929,7 +9212,7 @@
             if (!src) return null;
             const n = function (v) { return v === undefined || v === null ? null : Number(v); };
             const bd = {
-                product: n(src.productPrice), delivery: n(src.deliveryFee) || 0, service: n(src.serviceFee) || 0, distance: n(src.distanceKm) || 0,
+                product: src.deliveryPayer === 'FARMER' && src.farmerNet !== undefined ? n(src.farmerNet) : n(src.productPrice), farmerPays: src.deliveryPayer === 'FARMER', delivery: n(src.deliveryFee) || 0, service: n(src.serviceFee) || 0, distance: n(src.distanceKm) || 0,
                 warehouse: n(src.warehouseFee) || 0, estimated: !!src.estimated, driverOnly: src.productPrice === undefined
             };
             bd.total = n(src.totalPrice) !== null ? n(src.totalPrice) : (bd.product || 0) + bd.delivery + bd.service;
@@ -9012,7 +9295,7 @@
             const calc = ctx && ctx.quantityKg ? T('{0} kg × {1}', formatNumber(ctx.quantityKg), bdMoney(Number(ctx.pricePerKg))) : '';
             card.appendChild(row(role === 'FARMER' ? 'hi' : '', '🌾', T('Fermer ulushi'), (T('Mahsulot') + (calc ? ' · ' + calc : '')), bdMoney(bd.product), 'text-emerald-300'));
             if (!bd.legacy) {
-                card.appendChild(withQ(row('', '🚚', T('Haydovchi ulushi'), (bd.distance ? T("Yo'l haqi · {0} km", formatNumber(bd.distance)) : T("Yo'l haqi")), bdMoney(bd.delivery), 'text-sky-300')));
+                card.appendChild(withQ(row('', '🚚', T('Haydovchi ulushi'), (bd.distance ? T("Yo'l haqi · {0} km", formatNumber(bd.distance)) : T("Yo'l haqi")) + (bd.farmerPays ? ' · ' + T("fermer hisobidan") : ''), bdMoney(bd.delivery), 'text-sky-300')));
                 card.appendChild(row('', '🧾', T('Platforma xizmat haqi'), bd.warehouse > 0 ? T("Shu jumladan omborxona haqi: {0}", bdMoney(bd.warehouse)) : '', bdMoney(bd.service), 'text-amber-300'));
             }
             const tot = el('div', 'bd-total');

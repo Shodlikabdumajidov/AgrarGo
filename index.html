@@ -2302,6 +2302,19 @@
                     <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="prod-harvest">O'rim-yig'im sanasi <span class="text-slate-500 normal-case font-medium">(ixtiyoriy)</span></label>
                     <input id="prod-harvest" name="harvestDate" type="date" class="auth-input">
                 </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="prod-payer">Yetkazib berish kimning hisobidan?</label>
+                    <select id="prod-payer" name="deliveryPayer" class="auth-input">
+                        <option value="BUYER">Xaridor (logistika narxi mahsulot narxiga qo'shiladi)</option>
+                        <option value="FARMER">Fermer (logistika narxi sizga to'lanadigan summadan ushlanadi)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="prod-photos">Mahsulot rasmlari <span class="text-slate-500 normal-case font-medium">(1–5 ta, haqiqiy holati)</span></label>
+                    <input id="prod-photos" type="file" accept="image/jpeg,image/png,image/webp" multiple class="auth-input">
+                    <div id="prod-photo-previews" class="grid grid-cols-5 gap-2 mt-2"></div>
+                    <p class="text-[11px] text-slate-500 mt-1.5">JPG, PNG yoki WEBP, har biri 4 MB gacha.</p>
+                </div>
                 <button type="submit" class="auth-submit w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed text-slate-950 font-extrabold py-3.5 rounded-2xl transition duration-200 shadow-xl shadow-emerald-500/30 flex items-center justify-center gap-2.5">
                     <i class="fa-solid fa-check"></i> <span>E'lonni joylash</span>
                 </button>

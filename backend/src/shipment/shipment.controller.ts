@@ -11,6 +11,7 @@ import { SignEBolDto } from '../ebol/dto/ebol.dto';
 import { ChainAcceptDto } from './dto/chain-accept.dto';
 import { EldQuery, SendLocationDto } from './dto/location.dto';
 import { LocationService } from './tracking/location.service';
+import { ConfirmPinDto } from './dto/confirm-pin.dto';
 import { AssignDriverDto, AvailableDriversQuery, AvailableShipmentsFilterQuery, ListShipmentsQuery } from './dto/list-shipments.query';
 import { ShipmentService } from './shipment.service';
 
@@ -58,6 +59,25 @@ export class ShipmentController {
   @Roles(Role.DRIVER)
   chainAccept(@CurrentUser() user: any, @Body() dto: ChainAcceptDto) {
     return this.shipments.acceptChain(this.driver(user), dto.firstId, dto.secondId);
+  }
+
+  /** Topshirish: haydovchi marketning PIN-kodini kiritadi (to'g'ri bo'lsa DELIVERED + escrow chiqariladi) */
+  @Post(':id/deliver')
+  @HttpCode(200)
+  @Roles(Role.DRIVER)
+  @ThrottleProfile('verify')
+  deliver(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string, @Body() dto: ConfirmPinDto) {
+    return this.shipments.confirmDelivery(this.driver(user).id, id, dto.pin);
+  }
+
+  /** Yuklash: fermer haydovchining PIN-kodini kiritadi (to'g'ri bo'lsa yuk yo'lga chiqadi) */
+  @Post(':id/confirm-pickup')
+  @HttpCode(200)
+  @Roles(Role.FARMER)
+  @ThrottleProfile('verify')
+  confirmPickup(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string, @Body() dto: ConfirmPinDto) {
+    if (!user.farmer) throw new ForbiddenException('Fermer profili topilmadi');
+    return this.shipments.confirmPickup(user.farmer.id, id, dto.pin);
   }
 
   @Get(':id/trihaul')

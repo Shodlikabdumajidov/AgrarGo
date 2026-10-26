@@ -66,6 +66,31 @@ export class NotificationService {
     });
   }
 
+  /** Savdolashish: yangi taklif (fermerga), qarshi taklif / qabul / rad (marketga) */
+  priceOffer(offerId: string, event: 'CREATED' | 'COUNTERED' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED') {
+    this.run(async () => {
+      const o = await this.prisma.priceOffer.findUnique({
+        where: { id: offerId },
+        select: {
+          quantityKg: true, pricePerKg: true, counterPricePerKg: true, counterQuantityKg: true,
+          product: { select: { name: true, farmer: { select: { userId: true, farmName: true } } } }, market: { select: { userId: true, companyName: true } },
+        },
+      });
+      if (!o) return;
+      const what = `«${h(o.product.name)}» — ${num(o.quantityKg)} kg, ${som(o.pricePerKg)}/kg`;
+      if (event === 'CREATED') await this.sendTo([o.product.farmer.userId], `💬 <b>Yangi narx taklifi</b>\n${h(o.market.companyName)}: ${what}.\nKabinetda tasdiqlang, rad eting yoki qarshi taklif yuboring.`);
+      else if (event === 'CANCELLED') await this.sendTo([o.product.farmer.userId], `↩️ <b>Taklif bekor qilindi</b>
+${h(o.market.companyName)}: ${what}.`);
+      else if (event === 'COUNTERED') await this.sendTo([o.market.userId], `💬 <b>Fermerdan qarshi taklif</b>
+${h(o.product.farmer.farmName)} «${h(o.product.name)}» uchun ${num(o.counterQuantityKg ?? o.quantityKg)} kg, ${som(o.counterPricePerKg ?? o.pricePerKg)}/kg taklif qildi.
+Kabinetda qabul qiling yoki rad eting.`);
+      else if (event === 'ACCEPTED') await this.sendTo([o.market.userId, o.product.farmer.userId], `✅ <b>Narx kelishildi</b>
+«${h(o.product.name)}»: bron tasdiqlandi. Xaridor to'lovni (Escrow) amalga oshirgach yuk tashish boshlanadi.`);
+      else await this.sendTo([o.market.userId], `❌ <b>Taklif rad etildi</b>
+${h(o.product.farmer.farmName)} «${h(o.product.name)}» bo'yicha taklifingizni rad etdi.`);
+    });
+  }
+
   bookingApproved(bookingId: string) {
     this.run(async () => {
       const b = await this.prisma.booking.findUnique({

@@ -1,10 +1,10 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { BookingStatus, Prisma, ProductStatus } from '@prisma/client';
+import { BookingStatus, OfferStatus, Prisma, ProductStatus } from '@prisma/client';
 import { NotificationService } from '../telegram/notification.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { createPaymentForBooking } from '../payment/payment.factory';
 import { PricingService } from '../pricing/pricing.service';
-import { breakdownOf } from '../pricing/pricing';
+import { paymentBreakdown } from '../pricing/pricing';
 import { createShipmentForBooking } from '../shipment/shipment.factory';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { ListBookingsQuery } from './dto/list-bookings.query';
@@ -25,7 +25,7 @@ const BOOKING_INCLUDE = {
   market: {
     select: { companyName: true, region: true, district: true, user: { select: { fullName: true, phone: true } } },
   },
-  payment: { select: { id: true, status: true, amount: true, currency: true, provider: true, deliveryFee: true, serviceFee: true, distanceKm: true } },
+  payment: { select: { id: true, status: true, amount: true, currency: true, provider: true, deliveryFee: true, serviceFee: true, distanceKm: true, deliveryPayer: true } },
 } satisfies Prisma.BookingInclude;
 
 type BookingRow = Prisma.BookingGetPayload<{ include: typeof BOOKING_INCLUDE }>;
@@ -69,6 +69,7 @@ export class BookingService {
           pricePerKg: product.pricePerKg, // narx bron paytida qotiriladi
           message: dto.message?.trim() || null,
           urgent: !!dto.urgent,
+          deliveryPayer: product.deliveryPayer, // yetkazish kimning hisobidan — e'lon paytidagi shart qotiriladi
         },
         include: BOOKING_INCLUDE,
       });
@@ -76,6 +77,34 @@ export class BookingService {
 
     this.notify.bookingCreated(booking.id);
     return this.forMarket(booking);
+  }
+
+  /**
+   * Kelishilgan taklif bo'yicha bron: zaxira band qilinadi, bron DARHOL tasdiqlanadi (kelishilgan narxda),
+   * yuk tashish buyurtmasi va escrow to'lovi yaratiladi. Taklif holati shu tranzaksiyada ACCEPTED ga o'tadi.
+   */
+  async createFromOffer(offerId: string, o: { productId: string; marketId: string; quantityKg: Prisma.Decimal; pricePerKg: Prisma.Decimal; message?: string | null }, from: OfferStatus[]) {
+    const bookingId = await this.prisma.$transaction(async (tx) => {
+      const claimed = await tx.priceOffer.updateMany({ where: { id: offerId, status: { in: from } }, data: { status: OfferStatus.ACCEPTED, decidedAt: new Date() } });
+      if (claimed.count === 0) throw new ConflictException("Bu taklif allaqachon ko'rib chiqilgan");
+      const product = await tx.product.findFirst({ where: { id: o.productId, status: ProductStatus.ACTIVE } });
+      if (!product) throw new NotFoundException("E'lon topilmadi yoki hozir faol emas");
+      const reserved = await tx.product.updateMany({ where: { id: product.id, status: ProductStatus.ACTIVE, quantityKg: { gte: o.quantityKg } }, data: { quantityKg: { decrement: o.quantityKg } } });
+      if (reserved.count === 0) throw new ConflictException("Yetarli miqdor qolmadi: taklifni qabul qilib bo'lmaydi");
+      await tx.product.updateMany({ where: { id: product.id, quantityKg: { lte: 0 } }, data: { status: ProductStatus.BOOKED } });
+      const booking = await tx.booking.create({
+        data: {
+          productId: product.id, marketId: o.marketId, quantityKg: o.quantityKg, pricePerKg: o.pricePerKg, message: o.message ?? null,
+          status: BookingStatus.APPROVED, decidedAt: new Date(), deliveryPayer: product.deliveryPayer,
+        },
+      });
+      await tx.priceOffer.update({ where: { id: offerId }, data: { bookingId: booking.id } });
+      await createShipmentForBooking(tx, booking.id);
+      await createPaymentForBooking(tx, booking.id, this.pricing);
+      return booking.id;
+    });
+    this.notify.bookingApproved(bookingId);
+    return bookingId;
   }
 
   async listForMarket(marketId: string, query: ListBookingsQuery) {
@@ -169,9 +198,10 @@ export class BookingService {
 
   private breakdown(b: BookingRow) {
     const productPrice = b.quantityKg.mul(b.pricePerKg);
-    if (b.payment) return { ...breakdownOf({ productPrice: b.payment.amount, deliveryFee: b.payment.deliveryFee, serviceFee: b.payment.serviceFee, distanceKm: b.payment.distanceKm, currency: b.payment.currency }), formula: this.pricing.formula(b.payment.distanceKm, b.quantityKg, b.payment.deliveryFee), estimated: false };
+    if (b.payment) return { ...paymentBreakdown({ productPrice: b.payment.amount, deliveryFee: b.payment.deliveryFee, serviceFee: b.payment.serviceFee, distanceKm: b.payment.distanceKm, currency: b.payment.currency, deliveryPayer: b.payment.deliveryPayer }), formula: this.pricing.formula(b.payment.distanceKm, b.quantityKg, b.payment.deliveryFee), estimated: false };
     const q = this.pricing.quote(b.product.farmer.region, b.market.region, productPrice, b.quantityKg);
-    return { ...breakdownOf({ ...q, productPrice: q.productPrice }), formula: this.pricing.formula(q.distanceKm, b.quantityKg, q.deliveryFee), estimated: true };
+    const net = b.deliveryPayer === 'FARMER' ? productPrice.sub(q.deliveryFee) : productPrice;
+    return { ...paymentBreakdown({ ...q, productPrice: net, deliveryPayer: b.deliveryPayer }), formula: this.pricing.formula(q.distanceKm, b.quantityKg, q.deliveryFee), estimated: true };
   }
 
   /** Supermarket ko'radi: fermer ma'lumoti (tasdiqlangach telefon bilan). */

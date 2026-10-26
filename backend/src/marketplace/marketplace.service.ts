@@ -13,6 +13,8 @@ const PUBLIC_PRODUCT_SELECT = {
   pricePerKg: true,
   harvestDate: true,
   description: true,
+  photos: true,
+  deliveryPayer: true,
   createdAt: true,
   farmer: {
     select: {
