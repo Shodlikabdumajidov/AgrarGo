@@ -63,7 +63,7 @@
 
         // Sahifa skrolli: biror modal/panel/kabinet ochiq bo'lsa qulflanadi
         function syncScrollLock() {
-            const open = ['auth-modal', 'product-modal', 'booking-modal', 'payment-modal', 'wh-modal', 'price-modal', 'dp-modal', 'ltl-modal', 'ct-modal', 'of-modal', 'lo-modal', 'book-root', 'rate-modal', 'face-modal', 'bd-modal', 'dashboard-view', 'role-page', 'not-found'].some(function (id) {
+            const open = ['catalog-view', 'auth-modal', 'product-modal', 'booking-modal', 'payment-modal', 'wh-modal', 'price-modal', 'dp-modal', 'ltl-modal', 'ct-modal', 'of-modal', 'lo-modal', 'book-root', 'rate-modal', 'face-modal', 'bd-modal', 'dashboard-view', 'role-page', 'not-found'].some(function (id) {
                 const node = document.getElementById(id);
                 return node && node.classList.contains('open');
             });
@@ -379,6 +379,7 @@
                 else if (name === 'booking') seq([587.33, 880], 0.1, 0.26, { type: 'triangle', vol: 0.16 });
                 else if (name === 'price') { s.tone(987.77, t, 0.14, { type: 'square', vol: 0.05 }); s.tone(1318.5, t + 0.09, 0.3, { type: 'square', vol: 0.05 }); }
                 else if (name === 'subscription') { seq([523.25, 659.25, 783.99, 1046.5], 0.08, 0.34, { vol: 0.12 }); s.tone(1568, t + 0.3, 0.5, { vol: 0.05 }); }
+                else if (name === 'victory') { seq([523.25, 659.25, 783.99, 1046.5], 0.1, 0.3, { type: 'triangle', vol: 0.15 }); s.tone(1318.5, t + 0.45, 0.6, { vol: 0.1 }); s.tone(1568, t + 0.55, 0.7, { vol: 0.07 }); }
                 else if (name === 'warn') seq([440, 440], 0.16, 0.12, { type: 'triangle', vol: 0.12 });
                 else if (name === 'error') s.tone(220, t, 0.28, { type: 'sawtooth', to: 150, vol: 0.07 });
                 else if (name === 'sync') seq([659.25, 880, 1174.66], 0.07, 0.18, { type: 'triangle', vol: 0.12 });
@@ -1172,6 +1173,7 @@
             else if (authModal.classList.contains('open')) closeAuthModal();
             else if (bookInst) closeBook();
             else if (dashboardView.classList.contains('open')) closeDashboard();
+            else if (catalogView.classList.contains('open')) closeCatalog();
             else closeAccountMenu();
         });
 
@@ -1185,14 +1187,28 @@
             'Sabzavot': 'fa-carrot', 'Meva': 'fa-apple-whole', 'Poliz': 'fa-leaf', 'Don': 'fa-wheat-awn', 'Boshqa': 'fa-box'
         };
 
-        function scrollToMarket(focusFilters) {
+        // Katalog (e'lonlar) bosh sahifadan alohida oyna: nav qidiruvi, filtrlar, pastki «Bozor» va kabinetlardagi «Katalog» shuni ochadi
+        const catalogView = document.getElementById('catalog-view');
+        function openCatalog(focusFilters) {
             if (focusFilters) { // "Filtrlar" tugmasi: panelni ochib qo'yadi (telefonda yig'ilgan bo'ladi)
                 const f = document.getElementById('market-filters');
                 f.classList.remove('filters-collapsed');
                 document.getElementById('filters-toggle').setAttribute('aria-expanded', 'true');
             }
-            document.getElementById('market').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            if (typeof dashboardView !== 'undefined' && dashboardView.classList.contains('open')) closeDashboard();
+            catalogView.classList.add('open');
+            catalogView.setAttribute('aria-hidden', 'false');
+            catalogView.scrollTo({ top: 0, behavior: 'auto' });
+            syncScrollLock();
+            try { bnSync(); } catch (e) {}
         }
+        function closeCatalog() {
+            catalogView.classList.remove('open');
+            catalogView.setAttribute('aria-hidden', 'true');
+            syncScrollLock();
+            try { bnSync(); } catch (e) {}
+        }
+        function scrollToMarket(focusFilters) { openCatalog(focusFilters); }
 
         // stay=true: filtr panelidan bosilganda sahifa sakramaydi
         function setMarketCategory(category, stay) {
@@ -1673,6 +1689,7 @@
             const av = el('span', 'w-8 h-8 rounded-full overflow-hidden bg-emerald-500/20 text-emerald-300 text-xs font-black flex items-center justify-center shrink-0');
             av.appendChild(avatarNode(user));
             document.getElementById('dash-user-chip').replaceChildren(av, el('span', 'truncate hidden sm:inline', user.fullName));
+            updateMyRating();
         }
 
         function openDashboard(tab) {
@@ -4605,7 +4622,7 @@
                     return;
                 }
                 if (kind === 'advance' && s.status === 'LOADING') startTracker(s.id, 'gps'); // yo'lga chiqdi: joylashuv yuborish boshlanadi
-                if (kind === 'advance' && s.status === 'IN_TRANSIT') stopTracker('');
+                if (kind === 'advance' && s.status === 'IN_TRANSIT') { stopTracker(''); if (done && done.rewards) celebrateDelivery(done.rewards, T('Yuk topshirildi!'), ''); }
             } catch (err) {
                 if (err.status === 401) return;
                 showToast(err.messages[0], 5000);
@@ -4770,8 +4787,8 @@
                 // Topshirish: marketning 4 xonali PIN-kodi kiritilgandagina DELIVERED va escrow chiqariladi
                 actions.appendChild(pinEntryBox(T('Marketning PIN-kodi'), T('Topshirish'), async function (pin) {
                     const r = await authed('POST', '/shipments/' + s.id + '/deliver', { pin: pin });
-                    showToast(r && r.paymentReleased ? T("Yuk topshirildi: to'lov fermer va haydovchiga o'tkazildi") : T('Yuk topshirildi'), 4500, 'success');
                     stopTracker('');
+                    celebrateDelivery(r && r.rewards, T('Yuk topshirildi!'), r && r.paymentReleased ? T("To'lov fermer va haydovchiga o'tkazildi") : '');
                     selectDashTab(dashTab);
                 }));
             } else if (viewer === 'driver-own' && s.status === 'IN_TRANSIT') {
@@ -5437,6 +5454,13 @@
             role.appendChild(el('span', '', (ROLE_META[u.role] || {}).label));
             info.appendChild(role);
             info.appendChild(el('p', 'text-sm text-slate-400', u.phone));
+            if (u.proUntil && new Date(u.proUntil) > new Date()) {
+                const pro = el('div', 'inline-flex items-center gap-1.5 text-xs font-extrabold text-amber-300');
+                pro.dataset.pro = '1';
+                pro.appendChild(el('i', 'fa-solid fa-crown'));
+                pro.appendChild(el('span', '', 'PRO · ' + formatDateTime(u.proUntil).slice(0, 10)));
+                info.appendChild(pro);
+            }
             if (u.penaltyPoints > 0) {
                 const pen = el('div', 'inline-flex items-center gap-1.5 text-xs font-bold text-rose-300');
                 pen.appendChild(el('i', 'fa-solid fa-star text-rose-500'));
@@ -7267,7 +7291,8 @@
             syncScrollLock();
             // Noto'g'ri yo'l/hash olib tashlanadi (qayta 404 chiqmasligi uchun)
             try { history.replaceState(null, '', (location.pathname.replace(/[^\/]*$/, '') || '/') + location.search); } catch (e) {}
-            if (toHash) scrollToSection(toHash); // ikki silliq skrollni aralashtirmaslik uchun faqat bittasi
+            if (toHash === '#market') openCatalog();
+            else if (toHash) scrollToSection(toHash); // ikki silliq skrollni aralashtirmaslik uchun faqat bittasi
             else window.scrollTo({ top: 0 });
         }
         // Noma'lum #havola yoki noto'g'ri yo'l (SPA qayta yo'naltirish bo'lgan hostingda) 404 ko'rsatadi
@@ -7670,6 +7695,113 @@
             root.appendChild(card);
             document.body.appendChild(root);
             setTimeout(function () { root.remove(); }, 2200);
+        }
+
+        // ===== OYLIK REYTING (TOP-3) — bosh sahifa bloki =====
+        const LB_MEDALS = ['🥇', '🥈', '🥉'];
+        const LB_KIND = {
+            drivers: { unit: 'km', fmt: function (r) { return [formatNumber(Math.round(r.value)), 'km']; } },
+            farmers: { unit: 't', fmt: function (r) { return [formatNumber(r.value), T('tonna')]; } },
+            markets: { unit: 't', fmt: function (r) { return [formatNumber(r.value), T('tonna') + ' · ' + T('{0} ta zakaz', r.orders)]; } }
+        };
+        function renderLeaderboard(d) {
+            ['drivers', 'farmers', 'markets'].forEach(function (k) {
+                const ol = document.getElementById('lb-' + k);
+                if (!ol) return;
+                const rows = d[k] || [];
+                if (!rows.length) { ol.replaceChildren(el('li', 'lb-empty', T("Bu oyda hali natija yo'q — birinchi bo'ling!"))); return; }
+                ol.replaceChildren.apply(ol, rows.map(function (r, i) {
+                    const li = el('li', 'lb-row'); li.classList.add('r' + (i + 1));
+                    li.dataset.rank = String(i + 1);
+                    li.appendChild(el('span', 'lb-medal', LB_MEDALS[i] || String(i + 1)));
+                    const nm = el('div', 'lb-name');
+                    nm.appendChild(el('b', '', r.name));
+                    if (r.owner) nm.appendChild(el('span', '', r.owner));
+                    li.appendChild(nm);
+                    const f = LB_KIND[k].fmt(r);
+                    const v = el('div', 'lb-val', f[0] + (k === 'drivers' ? ' ' + f[1] : ''));
+                    if (k !== 'drivers') v.appendChild(el('small', '', f[1]));
+                    li.appendChild(v);
+                    return li;
+                }));
+            });
+            const cd = document.getElementById('lb-countdown');
+            if (cd) cd.textContent = '⏳ ' + T("Oy yakuniga {0} kun qoldi", d.daysLeft);
+            const last = document.getElementById('lb-last');
+            if (last) {
+                if (d.lastMonth && d.lastMonth.winners.length) {
+                    const first = d.lastMonth.winners.filter(function (w) { return w.rank === 1; }).map(function (w) { return '🏆 ' + w.name; }).join(' · ');
+                    last.textContent = T("O'tgan oy ({0}) g'oliblari: {1}", d.lastMonth.month, first);
+                } else last.textContent = '';
+            }
+        }
+        async function loadLeaderboard() {
+            ['drivers', 'farmers', 'markets'].forEach(function (k) {
+                const ol = document.getElementById('lb-' + k);
+                if (ol && !ol.children.length) ol.replaceChildren(el('li', 'lb-skel'), el('li', 'lb-skel'), el('li', 'lb-skel'));
+            });
+            try { renderLeaderboard(await apiRequest('GET', '/leaderboard')); }
+            catch (e) { ['drivers', 'farmers', 'markets'].forEach(function (k) { const ol = document.getElementById('lb-' + k); if (ol) ol.replaceChildren(el('li', 'lb-empty', T("Reytingni yuklab bo'lmadi."))); }); }
+        }
+
+        // «Reytingim»: kabinet sarlavhasidagi belgi (oylik ko'rsatkich) va tafsilot oynasi
+        let myRating = null;
+        async function updateMyRating() {
+            const chip = document.getElementById('my-rating-chip');
+            const u = currentUser();
+            if (!chip) return null;
+            if (!u || ['FARMER', 'DRIVER', 'MARKET'].indexOf(u.role) === -1) { chip.classList.add('hidden'); return null; }
+            try { myRating = await authed('GET', '/leaderboard/me'); } catch (e) { return null; }
+            chip.classList.remove('hidden');
+            document.getElementById('my-rating-val').textContent = formatNumber(myRating.value) + ' ' + (myRating.unit === 'km' ? 'km' : 't');
+            return myRating;
+        }
+        async function openMyRating() {
+            const r = await updateMyRating();
+            if (!r) return;
+            const body = el('div', 'space-y-3');
+            const big = el('div', 'text-center');
+            big.appendChild(el('div', 'text-4xl font-black text-amber-300', formatNumber(r.value) + ' ' + (r.unit === 'km' ? 'km' : T('tonna'))));
+            big.appendChild(el('div', 'text-sm text-slate-300', r.rank ? T("Sizning o'rningiz: {0}-o'rin ({1} ishtirokchidan)", r.rank, r.total) : T("Bu oyda hali natija yo'q")));
+            if (r.category === 'MARKET') big.appendChild(el('div', 'text-xs text-slate-400', T('{0} ta zakaz', r.orders)));
+            body.appendChild(big);
+            body.appendChild(el('p', 'text-xs text-slate-400 text-center', T("Oy yakuniga {0} kun qoldi. TOP-3 ga 1 oylik bepul PRO obuna beriladi.", r.daysLeft)));
+            openWhModal(T('Reytingim'), (r.category === 'DRIVER' ? T('TOP Haydovchilar') : r.category === 'FARMER' ? T('TOP Fermerlar') : T('TOP Marketlar')), body);
+        }
+
+        /**
+         * Yetkazib berish gamification: yashil galochka + g'alaba ovozi, so'ng «+367 km Reytingga qo'shildi!» matni «Reytingim» belgisiga uchib kiradi.
+         * rewards: { km, tons } (server javobi). Ovoz sozlamasi o'chiq bo'lsa chalinmaydi.
+         */
+        function celebrateDelivery(rewards, title, sub) {
+            showSuccessCheck(title || T('Yuk topshirildi!'), sub || '', 'victory');
+            if (!rewards) return;
+            const isDriver = currentUser() && currentUser().role === 'DRIVER';
+            const text = isDriver ? '+' + formatNumber(Math.round(rewards.km)) + ' km' : '+' + formatNumber(rewards.tons) + ' t';
+            setTimeout(function () {
+                const fly = el('div', 'lb-fly', text + ' ' + T('Reytingga qo\'shildi!'));
+                fly.id = 'lb-fly';
+                document.body.appendChild(fly);
+                const chip = document.getElementById('my-rating-chip');
+                const target = chip && !chip.classList.contains('hidden') ? chip.getBoundingClientRect() : null;
+                const from = fly.getBoundingClientRect();
+                const dx = target ? target.left + target.width / 2 - (from.left + from.width / 2) : 0;
+                const dy = target ? target.top + target.height / 2 - (from.top + from.height / 2) : -window.innerHeight * 0.45;
+                const done = function () {
+                    fly.remove();
+                    if (chip) { chip.classList.remove('bump'); void chip.offsetWidth; chip.classList.add('bump'); }
+                    updateMyRating();
+                };
+                if (fly.animate) {
+                    const a = fly.animate([
+                        { transform: 'translate(-50%, -50%) scale(.6)', opacity: 0 },
+                        { transform: 'translate(-50%, -50%) scale(1.15)', opacity: 1, offset: .25 },
+                        { transform: 'translate(-50%, -50%) scale(1)', opacity: 1, offset: .55 },
+                        { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(.15)`, opacity: .2 }
+                    ], { duration: 1900, easing: 'cubic-bezier(.5,0,.2,1)', fill: 'forwards' });
+                    a.onfinish = done;
+                } else setTimeout(done, 1900);
+            }, 1500);
         }
 
         // ----- Profil muqovasi (cover banner) -----
@@ -10876,6 +11008,7 @@
         // ===== Pastki navigatsiya (Bottom Nav) =====
         const bottomNav = document.getElementById('bottom-nav');
         function bnCloseOverlays() {
+            if (catalogView.classList.contains('open')) closeCatalog();
             if (dashboardView.classList.contains('open')) closeDashboard();
             if (rolePage.classList.contains('open')) closeRolePage();
             if (sidebar.classList.contains('open')) toggleSidebar();
@@ -10896,8 +11029,7 @@
         function bnActive() {
             if (dashboardView.classList.contains('open')) return dashTab === 'prices' ? 'prices' : (dashTab === 'eld' || dashTab === 'adm-shipments' ? 'eld' : 'cabinet');
             if (rolePage.classList.contains('open')) return rpRole === 'DRIVER' ? 'eld' : null;
-            const m = document.getElementById('market').getBoundingClientRect();
-            if (m.top < window.innerHeight * 0.55 && m.bottom > window.innerHeight * 0.3) return 'market';
+            if (catalogView.classList.contains('open')) return 'market';
             return window.scrollY < window.innerHeight * 0.6 ? 'home' : null;
         }
         function bnSync() {
@@ -10913,10 +11045,13 @@
         bottomNav.addEventListener('click', function (e) { const b = e.target.closest('[data-bn]'); if (b) bnGo(b.dataset.bn); });
         let bnTick = false;
         window.addEventListener('scroll', function () { if (bnTick) return; bnTick = true; requestAnimationFrame(function () { bnTick = false; bnSync(); }); }, { passive: true });
-        [dashboardView, rolePage, notFoundView].forEach(function (n) { new MutationObserver(bnSync).observe(n, { attributes: true, attributeFilter: ['class'] }); });
+        [dashboardView, rolePage, notFoundView, catalogView].forEach(function (n) { new MutationObserver(bnSync).observe(n, { attributes: true, attributeFilter: ['class'] }); });
         window.addEventListener('resize', bnSync);
         bnSync();
 
         startLiveReviews();
+        loadLeaderboard();
+        setInterval(function () { if (!document.hidden) loadLeaderboard(); }, 300000);
+        if (location.hash === '#market') openCatalog();
         routeRoleHash();
         routeNotFound();

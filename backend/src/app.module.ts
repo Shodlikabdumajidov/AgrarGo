@@ -7,6 +7,7 @@ import { SettingsModule } from './settings/settings.module';
 import { AuthModule } from './auth/auth.module';
 import { BookingModule } from './booking/booking.module';
 import { ComplaintModule } from './complaint/complaint.module';
+import { LeaderboardModule } from './leaderboard/leaderboard.module';
 import { APP_ENV, AppEnvModule } from './config/app-env.module';
 import { AppEnv } from './config/env.validation';
 import { HealthController } from './health/health.controller';
@@ -61,6 +62,7 @@ import { WarehouseModule } from './warehouse/warehouse.module';
     ProfileModule,
     BookingModule,
     ComplaintModule,
+    LeaderboardModule,
     ShipmentModule,
     PaymentModule,
     SubscriptionModule,

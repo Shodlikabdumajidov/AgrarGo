@@ -13,6 +13,7 @@ import { compareRate } from '../rates/rates';
 import { randomInt, randomUUID } from 'crypto';
 import { EBolService } from '../ebol/ebol.service';
 import { assertRiskAcknowledged } from '../complaint/risk';
+import { LeaderboardService } from '../leaderboard/leaderboard.service';
 import { PaymentService } from '../payment/payment.service';
 import { APP_ENV } from '../config/app-env.module';
 import type { AppEnv } from '../config/env.validation';
@@ -45,7 +46,7 @@ type Viewer = 'driver-open' | 'driver-own' | 'farmer' | 'market' | 'staff';
 
 @Injectable()
 export class ShipmentService {
-  constructor(private readonly prisma: PrismaService, private readonly settings: SettingsService, private readonly notify: NotificationService, private readonly trust: TrustService, private readonly pricing: PricingService, private readonly rates: RatesService, private readonly ebol: EBolService, private readonly payments: PaymentService, @Inject(APP_ENV) private readonly env: AppEnv) {}
+  constructor(private readonly prisma: PrismaService, private readonly settings: SettingsService, private readonly notify: NotificationService, private readonly trust: TrustService, private readonly pricing: PricingService, private readonly rates: RatesService, private readonly ebol: EBolService, private readonly payments: PaymentService, private readonly leaderboard: LeaderboardService, @Inject(APP_ENV) private readonly env: AppEnv) {}
 
   // ---------- Haydovchi ----------
 
@@ -264,7 +265,9 @@ export class ShipmentService {
     });
     if (reached === ShipmentStatus.DELIVERED) await this.invalidateTrust(id); // yangi bitim: status va badjlar qayta hisoblansin
     if (reached) this.notify.shipmentStatus(id, reached);
-    return this.reload(id, 'driver-own');
+    // Oylik reyting: yetkazilgan yuk masofasi (km) va hajmi (tonna) hisobga qo'shiladi
+    const rewards = reached === ShipmentStatus.DELIVERED ? await this.leaderboard.recordDelivery(id).catch(() => null) : null;
+    return { ...(await this.reload(id, 'driver-own')), ...(rewards && { rewards }) };
   }
 
   // ---------- PIN-kod tasdiqlash ----------
@@ -318,7 +321,8 @@ export class ShipmentService {
     this.notify.shipmentStatus(id, ShipmentStatus.DELIVERED);
     const bookingId = (await this.prisma.shipment.findUniqueOrThrow({ where: { id }, select: { bookingId: true } })).bookingId!;
     const released = await this.payments.releaseOnDelivery(bookingId); // market kodi = qabul qildi: escrow fermer va haydovchiga bo'linadi
-    return { ...(await this.reload(id, 'driver-own')), paymentReleased: released };
+    const rewards = await this.leaderboard.recordDelivery(id).catch(() => null); // oylik reyting: km va tonna
+    return { ...(await this.reload(id, 'driver-own')), paymentReleased: released, ...(rewards && { rewards }) };
   }
 
   // ---------- e-BOL: fermer SMS-kodi bilan raqamli imzo ----------

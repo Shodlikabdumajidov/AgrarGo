@@ -86,3 +86,12 @@ Kabinet menyusida «Qo'llanma» va «Chiqish» orasida o'chirgich (`role="switch
 - **DQQ ogohlantirishi (2+ ball):** bron, narx taklifi, haydovchiga yuk taklifi, dispetcher biriktirishi va haydovchi yukni olishdan oldin rasmiy oyna chiqadi; server ham `acknowledgeRisk: true` bo'lmasa 409 (`code: RISK_WARNING`) qaytaradi.
 - **Avtomatik BAN (5.0):** akkaunt `isActive=false` + `bannedAt`, tokenlar bekor qilinadi (API va kirish taqiqlanadi, login «BANNED» xabari bilan rad etiladi), fermer e'lonlari `FROZEN`, haydovchi e'lonlari yashiriladi, ochiq takliflar bekor qilinadi. Penalty 5.0 dan pasaysa (shikoyat qaytarilsa) ban avtomatik bekor bo'ladi va e'lonlar qaytadi.
 - Testlar: `backend/test/complaints-penalty.e2e-spec.ts`, `tools/ui-tests/complaints-penalty.pw.js`.
+
+### Oylik reyting (Leaderboard) va gamification
+
+- **Bosh sahifa:** e'lonlar ro'yxati olib tashlandi; o'rnida «OYLIK REYTING (TOP-3)» bloki: TOP Haydovchilar (km), TOP Fermerlar (sotilgan tonna), TOP Marketlar (xarid tonna va zakazlar). E'lonlar alohida **Katalog** oynasida (nav qidiruvi, «Filtrlar», pastki «Bozor» va kabinetlardagi «Katalog» ochadi, Esc yoki «Bosh sahifa» yopadi) hamda kabinetlarda.
+- **Hisoblash:** yuk DELIVERED bo'lganda (PIN bilan yoki eski «Yetkazdim» tugmasi bilan; bir yuk bir marta, `Shipment.statsCounted`) yo'nalish masofasi (`Payment.distanceKm`, bo'lmasa viloyatlar orasidagi `routeKm`) `Driver.monthlyKm` ga, yuk hajmi (tonna) `Farmer.monthlySotuvTons` va `Market.monthlyXaridTons` (+`monthlyOrders`) ga qo'shiladi. Javobda `rewards: {km, tons}`.
+- **API:** `GET /leaderboard` (ochiq, TOP-3 + oy yakuniga qolgan kunlar + o'tgan oy g'oliblari), `GET /leaderboard/me` («Reytingim»: qiymat va o'rin).
+- **Oy yakuni (Toshkent vaqti, 1-sana 00:00):** taymer + ishga tushganda tekshiruv (`LeaderboardState.activeMonth`): avvalgi oy yopiladi, har toifadagi TOP-3 ga 1 oylik bepul PRO (obuna muddati 30 kunga uzayadi, `User.proUntil`, tarixga 0 so'mlik yozuv) beriladi, `LeaderboardWinner` ga yoziladi, ko'rsatkichlar 0 dan boshlanadi. Takroriy ishga tushirish xavfsiz (bir martalik claim).
+- **Frontend:** yuk topshirilgach yashil galochka + g'alaba ovozi (`victory`), so'ng «+367 km Reytingga qo'shildi!» matni kabinet sarlavhasidagi «Reytingim» belgisiga uchib kiradi (Web Animations API).
+- Testlar: `backend/test/leaderboard.e2e-spec.ts`, `src/leaderboard/leaderboard.spec.ts`, `tools/ui-tests/leaderboard.pw.js`.

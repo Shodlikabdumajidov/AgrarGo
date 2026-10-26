@@ -91,6 +91,14 @@ ${h(o.product.farmer.farmName)} «${h(o.product.name)}» bo'yicha taklifingizni 
     });
   }
 
+  /** Oylik reyting g'olibi: 1 oylik bepul PRO obuna berildi */
+  leaderboardWinner(userId: string, category: string, rank: number, month: string, proUntil: Date) {
+    this.run(async () => {
+      const what = category === 'DRIVER' ? 'TOP Haydovchilar' : category === 'FARMER' ? 'TOP Fermerlar' : 'TOP Marketlar';
+      await this.sendTo([userId], `🏆 <b>Oylik reyting g'olibi!</b>\n${h(month)} oyida «${what}» bo'yicha ${rank}-o'rin.\nSizga 1 oylik bepul PRO obuna berildi (${proUntil.toISOString().slice(0, 10)} gacha).`);
+    });
+  }
+
   bookingApproved(bookingId: string) {
     this.run(async () => {
       const b = await this.prisma.booking.findUnique({
