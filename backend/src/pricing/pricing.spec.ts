@@ -1,4 +1,4 @@
-import { computeDeliveryFee, computeServiceFee, quote, breakdownOf, PricingConfig } from './pricing';
+import { computeDeliveryFee, computeServiceFee, quote, breakdownOf, paymentBreakdown, PricingConfig } from './pricing';
 
 const cfg: PricingConfig = { deliveryBase: 20000, deliveryPerKm: 400, deliveryPerTonKm: 150, servicePercent: 1 };
 
@@ -20,5 +20,22 @@ describe('pricing', () => {
     const b = breakdownOf({ productPrice: q.productPrice, deliveryFee: q.deliveryFee, serviceFee: q.serviceFee, distanceKm: q.distanceKm });
     expect(b.totalPrice).toBe(890400 + b.deliveryFee + b.serviceFee);
     expect(b.productPrice).toBe(890400);
+  });
+});
+
+describe('paymentBreakdown (Incoterms)', () => {
+  const row = { productPrice: 600_000, deliveryFee: 70_000, serviceFee: 9_700, distanceKm: 300 };
+  it("XARIDOR to'lasa: logistika narxga qo'shiladi (jami = mahsulot + yo'l haqi + xizmat haqi)", () => {
+    const b = paymentBreakdown({ ...row, deliveryPayer: 'BUYER' });
+    expect(b).toMatchObject({ deliveryPayer: 'BUYER', productPrice: 600_000, totalPrice: 679_700 });
+    expect((b as any).farmerNet).toBeUndefined();
+  });
+  it("FERMER to'lasa: saqlangan amount — sof summa; ko'rsatishda mahsulot narxi (gross), jami o'zgarmaydi", () => {
+    // gross 670 000: fermer sof 600 000 oladi, yo'l haqi 70 000 ushlanadi, market 670 000 + 9 700 to'laydi
+    const b = paymentBreakdown({ ...row, deliveryPayer: 'FARMER' });
+    expect(b).toMatchObject({ deliveryPayer: 'FARMER', productPrice: 670_000, farmerNet: 600_000, deliveryFee: 70_000, totalPrice: 679_700 });
+  });
+  it("deliveryPayer yo'q bo'lsa (eski yozuvlar) — XARIDOR", () => {
+    expect(paymentBreakdown(row).deliveryPayer).toBe('BUYER');
   });
 });

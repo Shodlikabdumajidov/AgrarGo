@@ -50,6 +50,7 @@ export async function bootApp(env: Record<string, string | undefined> = {}): Pro
     CORS_ORIGINS: '',
     PAYMENT_ALLOW_SIMULATION: 'true', // testlarda pul harakati simulyatsiya qilinadi
     SMS_ALLOW_SIMULATION: 'true', // testlarda SMS yuborilmaydi
+    PIN_ENFORCE: 'false', // eski oqimlar (advance) o'zgarishsiz; PIN testlari buni 'true' qiladi
     ...RELAXED_LIMITS,
     ...env,
   };
@@ -91,7 +92,7 @@ export async function resetDb(prisma: PrismaClient) {
   const [{ db }] = await prisma.$queryRaw<{ db: string }[]>`SELECT current_database() AS db`;
   if (!db.endsWith('_test')) throw new Error(`resetDb "${db}" bazasida bajarilmaydi: faqat *_test`);
   // CASCADE: User'ga bog'liq barcha jadvallar (profillar, e'lon, bron, yuk) tozalanadi
-  await prisma.$executeRawUnsafe('TRUNCATE TABLE "User", "StorageUnit", "AuditLog", "MarketPrice", "Hub" CASCADE');
+  await prisma.$executeRawUnsafe('TRUNCATE TABLE "User", "StorageUnit", "AuditLog", "MarketPrice", "Hub", "LeaderboardState", "LeaderboardWinner" CASCADE');
 }
 
 let phoneCounter = 0;

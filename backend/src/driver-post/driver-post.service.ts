@@ -47,7 +47,7 @@ export class DriverPostService {
         lat: r.lat, lng: r.lng, ...(distances?.has(r.id) && { distanceKm: distances.get(r.id) }),
         wantsBackhaul: r.wantsBackhaul, isActive: r.isActive, createdAt: r.createdAt, vehicleType: r.driver.vehicleType, region: r.driver.region,
         driver: {
-          id: r.driverId, userId: u.id, fullName: u.fullName, avatarUrl: u.avatarUrl, phoneMasked: maskPhone(u.phone),
+          id: r.driverId, userId: u.id, fullName: u.fullName, avatarUrl: u.avatarUrl, phoneMasked: maskPhone(u.phone), penaltyPoints: u.penaltyPoints,
           verified: t?.verified ?? u.isVerified, status: t?.status ?? 'NEW', rank: t?.rank ?? null, topBadges: t?.topBadges ?? [],
           rating: t?.rating ?? { avg: 0, count: 0 }, deals: t?.deals ?? 0, unlocked: t?.unlocked ?? 0, total: t?.total ?? 0,
         },

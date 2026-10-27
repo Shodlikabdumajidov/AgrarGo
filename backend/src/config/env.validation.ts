@@ -44,6 +44,7 @@ export interface AppEnv {
   SMS_ALLOW_SIMULATION: boolean;
   EBOL_OTP_TTL_MIN: number;
   EBOL_ENFORCE: boolean;
+  PIN_ENFORCE: boolean;
   OTP_TTL_SECONDS: number;
   OTP_MAX_ATTEMPTS: number;
   OTP_RESEND_COOLDOWN_SECONDS: number;
@@ -60,6 +61,9 @@ export interface AppEnv {
   TELEGRAM_BOT_TOKEN: string; // bo'sh = bot o'chiq
   TELEGRAM_BOT_USERNAME: string;
   TELEGRAM_POLLING: boolean;
+  TELEGRAM_WEBHOOK_URL: string; // bo'sh = webhook o'chiq (long polling); to'liq https:// manzil
+  TELEGRAM_WEBHOOK_SECRET: string;
+  TELEGRAM_WEB_URL: string; // xabardagi «Kabinetni ochish» tugmasi uchun sayt manzili (https)
   TELEGRAM_LINK_TTL_SECONDS: number;
   THROTTLE_TELEGRAM_LIMIT: number;
   THROTTLE_REVIEW_LIMIT: number;
@@ -170,6 +174,9 @@ export function validateEnv(raw: Record<string, unknown>): AppEnv & Record<strin
   const smsAllowSimulation = smsAllowRaw === 'true';
   const ebolEnforceRaw = String(raw.EBOL_ENFORCE ?? 'false').toLowerCase();
   if (!['true', 'false'].includes(ebolEnforceRaw)) errors.push("EBOL_ENFORCE true yoki false bo'lishi kerak");
+  // PIN-kod tasdiqlash (yuklash: haydovchi PIN'ini fermer kiritadi; topshirish: market PIN'ini haydovchi kiritadi). Standart: yoqilgan
+  const pinEnforceRaw = String(raw.PIN_ENFORCE ?? 'true').toLowerCase();
+  if (!['true', 'false'].includes(pinEnforceRaw)) errors.push("PIN_ENFORCE true yoki false bo'lishi kerak");
   // Simulyatsiyada SMS yuborilmaydi: parolni tiklash kodlari kimgadir yetib bormaydi (yoki jurnalda qoladi)
   if (prod && smsProvider === 'simulated' && !smsAllowSimulation) {
     errors.push("Production'da simulyatsiya qilingan SMS taqiqlangan: haqiqiy SMS provayderini ulang (faqat demo uchun SMS_ALLOW_SIMULATION=true)");
@@ -192,6 +199,14 @@ export function validateEnv(raw: Record<string, unknown>): AppEnv & Record<strin
   const tgPollingRaw = String(raw.TELEGRAM_POLLING ?? (nodeEnv === 'test' ? 'false' : 'true')).toLowerCase();
   if (!['true', 'false'].includes(tgPollingRaw)) errors.push("TELEGRAM_POLLING true yoki false bo'lishi kerak");
 
+  // Webhook rejimi (Render kabi hostinglarda polling o'rniga): URL berilsa polling o'chadi va maxfiy sarlavha (secret) majburiy
+  const tgWebhookUrl = String(raw.TELEGRAM_WEBHOOK_URL ?? '').trim();
+  const tgWebhookSecret = String(raw.TELEGRAM_WEBHOOK_SECRET ?? '').trim();
+  if (tgWebhookUrl && !/^https:\/\/[^\s]+$/.test(tgWebhookUrl)) errors.push("TELEGRAM_WEBHOOK_URL https:// bilan boshlanuvchi to'liq manzil bo'lishi kerak");
+  if (tgWebhookUrl && !/^[A-Za-z0-9_-]{16,256}$/.test(tgWebhookSecret)) errors.push("TELEGRAM_WEBHOOK_SECRET kamida 16 belgi (A-Z a-z 0-9 _ -) bo'lishi kerak");
+  const tgWebUrl = String(raw.TELEGRAM_WEB_URL ?? corsOrigins[0] ?? '').trim().replace(/\/$/, '');
+  if (tgWebUrl && !/^https?:\/\/[^\s]+$/.test(tgWebUrl)) errors.push("TELEGRAM_WEB_URL noto'g'ri manzil");
+
   const reviewsAutoRaw = String(raw.REVIEWS_AUTO_APPROVE ?? 'true').toLowerCase();
   if (!['true', 'false'].includes(reviewsAutoRaw)) errors.push("REVIEWS_AUTO_APPROVE true yoki false bo'lishi kerak");
 
@@ -204,7 +219,10 @@ export function validateEnv(raw: Record<string, unknown>): AppEnv & Record<strin
     TELEGRAM_BOT_TOKEN: tgToken,
     TELEGRAM_BOT_USERNAME: tgUsername,
     // Long polling: bir nechta nusxa (instance) ishlasa faqat bittasida yoqing (Telegram 409 qaytaradi)
-    TELEGRAM_POLLING: tgPollingRaw === 'true',
+    TELEGRAM_POLLING: tgPollingRaw === 'true' && !tgWebhookUrl,
+    TELEGRAM_WEBHOOK_URL: tgWebhookUrl,
+    TELEGRAM_WEBHOOK_SECRET: tgWebhookSecret,
+    TELEGRAM_WEB_URL: tgWebUrl,
     TELEGRAM_LINK_TTL_SECONDS: intInRange(raw.TELEGRAM_LINK_TTL_SECONDS, 'TELEGRAM_LINK_TTL_SECONDS', 600, 60, 3600, errors),
     THROTTLE_TELEGRAM_LIMIT: intInRange(raw.THROTTLE_TELEGRAM_LIMIT, 'THROTTLE_TELEGRAM_LIMIT', 10, 1, 100000, errors),
     PORT: intInRange(raw.PORT, 'PORT', 3000, 1, 65535, errors),
@@ -225,6 +243,7 @@ export function validateEnv(raw: Record<string, unknown>): AppEnv & Record<strin
     SMS_ALLOW_SIMULATION: smsAllowSimulation,
     EBOL_OTP_TTL_MIN: intInRange(raw.EBOL_OTP_TTL_MIN, 'EBOL_OTP_TTL_MIN', 15, 1, 120, errors),
     EBOL_ENFORCE: ebolEnforceRaw === 'true',
+    PIN_ENFORCE: pinEnforceRaw === 'true',
     OTP_TTL_SECONDS: intInRange(raw.OTP_TTL_SECONDS, 'OTP_TTL_SECONDS', 300, 60, 900, errors),
     OTP_MAX_ATTEMPTS: intInRange(raw.OTP_MAX_ATTEMPTS, 'OTP_MAX_ATTEMPTS', 5, 1, 10, errors),
     OTP_RESEND_COOLDOWN_SECONDS: intInRange(raw.OTP_RESEND_COOLDOWN_SECONDS, 'OTP_RESEND_COOLDOWN_SECONDS', 60, 5, 600, errors),

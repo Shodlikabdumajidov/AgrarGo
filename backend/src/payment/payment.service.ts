@@ -10,7 +10,7 @@ import { NotificationService } from '../telegram/notification.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ListPaymentsQuery } from './dto/payment.dto';
 import { PricingService } from '../pricing/pricing.service';
-import { breakdownOf } from '../pricing/pricing';
+import { breakdownOf, paymentBreakdown } from '../pricing/pricing';
 import {
   Decision, PaymentActor, PolicyContext, payDecision, refundDecision, releaseDecision,
 } from './payment.policy';
@@ -340,7 +340,32 @@ export class PaymentService {
     const id = await moneyTx(this.prisma, async (tx) => {
       const row = await this.load(tx, bookingId, user);
       this.ensure(releaseDecision(actor, this.ctx(row)));
+      return this.releaseRow(tx, row, actor);
+    });
+    return this.reload(id, user);
+  }
 
+  /**
+   * Yetkazish PIN-kodi bilan tasdiqlangach (market kodi haydovchiga aytilgan = market yukni qabul qilgan) escrow avtomatik chiqariladi:
+   * fermerga mahsulot puli (FERMER yetkazishni to'lasa — yo'l haqi ushlab qolingan), haydovchiga yetkazish haqi. Pul HELD bo'lmasa — hech narsa qilinmaydi.
+   */
+  async releaseOnDelivery(bookingId: string): Promise<boolean> {
+    try {
+      await moneyTx(this.prisma, async (tx) => {
+        const row = await tx.payment.findUnique({ where: { bookingId }, include: PAYMENT_INCLUDE });
+        if (!row || row.status !== PaymentStatus.HELD) return null;
+        this.ensure(releaseDecision('MARKET', this.ctx(row)));
+        return this.releaseRow(tx, row, 'MARKET');
+      });
+      return true;
+    } catch (e) {
+      logger.error(`PIN bilan yetkazilgach escrow chiqarilmadi (booking ${bookingId}): ${(e as Error).message}`);
+      return false; // pul HELD qoladi: market «Yukni qabul qildim» orqali chiqarishi yoki administrator hal qilishi mumkin
+    }
+  }
+
+  private async releaseRow(tx: Prisma.TransactionClient, row: PaymentRow, actor: PaymentActor) {
+    {
       const claimed = await tx.payment.updateMany({
         where: { id: row.id, status: PaymentStatus.HELD },
         data: { status: PaymentStatus.RELEASED, releasedAt: new Date() },
@@ -351,8 +376,7 @@ export class PaymentService {
       const drv = await this.payDriver(row, this.bookingOf(row).shipment?.driverId);
       await this.event(tx, row.id, PaymentStatus.RELEASED, actor, `Mablag' fermerga o'tkazildi (${res.ref})` + (drv ? `; haydovchiga ${row.deliveryFee.toFixed(2)} o'tkazildi (${drv.ref})` : ''));
       return row.id;
-    });
-    return this.reload(id, user);
+    }
   }
 
   /**
@@ -507,7 +531,7 @@ export class PaymentService {
 
   /** To'lov tarkibi maydonlari: productPrice (fermer), deliveryFee (haydovchi), serviceFee (platforma), totalPrice (market jami) */
   private parts(row: PaymentRow) {
-    const b = breakdownOf({ productPrice: row.amount, deliveryFee: row.deliveryFee, serviceFee: row.serviceFee, distanceKm: row.distanceKm, currency: row.currency });
+    const b = paymentBreakdown({ productPrice: row.amount, deliveryFee: row.deliveryFee, serviceFee: row.serviceFee, distanceKm: row.distanceKm, currency: row.currency, deliveryPayer: row.deliveryPayer });
     const hub = Number(row.hubFee); // chakana buyurtmada Hub haqi mahsulot summasidan tashqari (qo'shimcha) qator
     const totalPrice = b.totalPrice + hub;
     const cashbackUsed = Number(row.cashbackUsed);

@@ -54,6 +54,7 @@ export class AuthService {
     });
     // Telefon yoki parol xato bo'lsa bir xil xabar va bir xil sarflangan vaqt (foydalanuvchi mavjudligini oshkor qilmaslik uchun)
     const passwordMatches = await bcrypt.compare(dto.password, user?.passwordHash ?? TIMING_DUMMY_HASH);
+    if (user && passwordMatches && user.bannedAt) throw new UnauthorizedException(`Akkauntingiz qizil yulduzchalar (${user.penaltyPoints}/5) sababli BANNED qilindi. Murojaat uchun platforma qo'llab-quvvatlashiga yozing`);
     if (!user || !user.isActive || !passwordMatches) throw new UnauthorizedException("Telefon raqam yoki parol noto'g'ri");
 
     // Parol to'g'ri, lekin raqam boshqa rolda: bitta raqam — bitta rol

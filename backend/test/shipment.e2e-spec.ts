@@ -26,6 +26,23 @@ describe('Shipment (e2e)', () => {
   const act = (m: 'post' | 'patch', driver: any, id: string, what: string) =>
     t.http()[m](`/shipments/${id}/${what}`).set('Authorization', bearer(driver));
 
+  it("haydovchi uchun filtrlar: yo'nalish (qayerga), yuk turi va tonnaj (kg) bo'yicha", async () => {
+    await setup([300, 800, 2500]);
+    const driver = await registerDriver(t.http);
+    const ids = async (qs: string) => (await available(driver, qs)).body.map((x: any) => Number(x.weightKg)).sort((a: number, b: number) => a - b);
+    expect(await ids('')).toEqual([300, 800, 2500]);
+    expect(await ids('?minKg=500&maxKg=1000')).toEqual([800]);
+    expect(await ids('?minKg=1000')).toEqual([2500]);
+    expect(await ids('?maxKg=1000')).toEqual([300, 800]);
+    const first = (await available(driver)).body[0];
+    expect(await ids(`?destRegion=${encodeURIComponent(first.destination.region)}`)).toEqual([300, 800, 2500]);
+    expect(await ids('?destRegion=Xorazm')).toEqual([]);
+    expect(await ids(`?category=${encodeURIComponent(first.category.toLowerCase())}`)).toEqual([300, 800, 2500]); // registrga befarq
+    expect(await ids('?category=Meva-yo-q')).toEqual([]);
+    expect((await available(driver, '?minKg=abc')).status).toBe(400);
+    expect(await ids('?originRegion=&destRegion=&category=&minKg=&maxKg=')).toEqual([300, 800, 2500]); // bo'sh qiymatlar filtr emas
+  });
+
   it("bron tasdiqlanganda yuk avtomatik yaratiladi (bir marta) va ma'lumotlar nusxalanadi", async () => {
     const { farmer, market, product } = await setup([]);
     const b = (await book(t.http, market, product.id, 300)).body;

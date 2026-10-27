@@ -50,6 +50,7 @@
     <!-- AOS Animation Library CSS -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <script src="js/tailwind-config.js"></script>
+    <script src="js/perf.js"></script>
     <style>
         .glass {
             background: rgba(15, 23, 42, 0.95);
@@ -86,14 +87,14 @@
         }
         @media (prefers-reduced-motion: reduce) { .hero-title.shine .hero-lead, .hero-title.shine .hero-grad { animation: none; } }
         /* Sticky header: sahifa 50px dan ko'p aylantirilganda kichrayadi, xira shaffof fon oladi (js/app.js: initStickyHeader) */
-        #main-nav { transition: padding .28s cubic-bezier(.16,1,.3,1), background-color .28s ease, box-shadow .28s ease, backdrop-filter .28s ease, margin-bottom .28s cubic-bezier(.16,1,.3,1); will-change: padding; }
+        #main-nav { transition: padding .28s cubic-bezier(.16,1,.3,1), background-color .28s ease, box-shadow .28s ease, margin-bottom .28s cubic-bezier(.16,1,.3,1); }
         #main-nav #nav-left img { transition: height .28s cubic-bezier(.16,1,.3,1), padding .28s ease; }
         /* Logotip (images/newlogo.png, 502x123): faqat balandlik beriladi, eni nisbat bo'yicha; object-contain siqilishni oldini oladi */
         /* «Yangi Alifbo» o'chirgichi (menyuda) */
         .na-track { position: relative; width: 2.6rem; height: 1.45rem; border-radius: 999px; background: rgba(148,163,184,.35); transition: background .2s ease; flex-shrink: 0; }
         .na-thumb { position: absolute; top: .18rem; left: .2rem; width: 1.09rem; height: 1.09rem; border-radius: 50%; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45); transition: transform .2s cubic-bezier(.16,1,.3,1); }
-        [data-new-alphabet-toggle].on .na-track { background: #10b981; }
-        [data-new-alphabet-toggle].on .na-thumb { transform: translateX(1.15rem); }
+        [data-new-alphabet-toggle].on .na-track, [data-perf-toggle].on .na-track { background: #10b981; }
+        [data-new-alphabet-toggle].on .na-thumb, [data-perf-toggle].on .na-thumb { transform: translateX(1.15rem); }
         @media (prefers-reduced-motion: reduce) { .na-track, .na-thumb { transition: none; } }
         .brand-logo { display: block; width: auto; max-width: 100%; object-fit: contain; background: #fff; border: 1px solid rgba(255,255,255,.2); box-shadow: 0 10px 24px -12px rgba(0,0,0,.7); }
         #main-nav #nav-left { flex-shrink: 0; } /* qator tor bo'lsa qidiruv maydoni qisqaradi, logotip emas */
@@ -489,7 +490,6 @@
         @keyframes logo-orbit { to { transform: rotate(360deg); } }
 
         /* Sahifa va modal almashinuvi: sakramasdan fade */
-        #dashboard-view, #role-page { will-change: opacity, transform; }
         #sidebar { transition: transform .5s cubic-bezier(.16,1,.3,1); }
         #sidebar-overlay { transition: opacity .35s ease, visibility .35s ease; }
         #custom-dropdown-menu, #lang-menu, #account-menu { transform-origin: top; }
@@ -810,7 +810,6 @@
         #price-modal.open { opacity: 1; visibility: visible; }
         #price-modal .auth-card { transform: translateY(20px) scale(.96); transition: transform .4s cubic-bezier(.16,1,.3,1); }
         #price-modal.open .auth-card { transform: none; }
-        #dashboard-view > .max-w-6xl { position: relative; z-index: 2; }
         #pr-bg.pr-off { display: none; }
         #dp-modal { opacity: 0; visibility: hidden; transition: opacity .3s ease, visibility .3s ease; }
         #dp-modal.open { opacity: 1; visibility: visible; }
@@ -819,6 +818,36 @@
         .dp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr)); gap: 1.25rem; }
         .dp-card { display: flex; flex-direction: column; overflow: hidden; border-radius: 1.5rem; border: 1px solid rgba(255,255,255,.14); background: linear-gradient(160deg, rgba(255,255,255,.09), rgba(15,23,42,.66)); backdrop-filter: blur(18px) saturate(1.2); -webkit-backdrop-filter: blur(18px) saturate(1.2); box-shadow: 0 20px 50px -28px rgba(0,0,0,.9); animation: prIn .6s cubic-bezier(.16,1,.3,1) both; animation-delay: calc(var(--i, 0) * 55ms); }
         .dp-card.off { opacity: .6; }
+
+        /* Oylik reyting (TOP-3) */
+        .lb-card { border-radius: 1.5rem; border: 1px solid rgba(255,255,255,.1); background: linear-gradient(180deg, rgba(15,23,42,.85), rgba(2,6,23,.85)); padding: 1.25rem; }
+        .lb-head { display: flex; align-items: center; gap: .85rem; margin-bottom: 1rem; }
+        .lb-head > i { width: 2.75rem; height: 2.75rem; display: flex; align-items: center; justify-content: center; border-radius: .9rem; background: rgba(16,185,129,.15); color: #6ee7b7; font-size: 1.15rem; border: 1px solid rgba(16,185,129,.35); }
+        .lb-head h3 { font-weight: 800; font-size: 1.1rem; color: #fff; }
+        .lb-head p { font-size: .75rem; color: #94a3b8; }
+        .lb-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .6rem; }
+        .lb-row { display: flex; align-items: center; gap: .75rem; padding: .75rem .9rem; border-radius: 1rem; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.06); }
+        .lb-row.r1 { background: linear-gradient(90deg, rgba(245,158,11,.22), rgba(245,158,11,.05)); border-color: rgba(245,158,11,.5); }
+        .lb-row.r2 { background: linear-gradient(90deg, rgba(203,213,225,.16), rgba(203,213,225,.04)); border-color: rgba(203,213,225,.35); }
+        .lb-row.r3 { background: linear-gradient(90deg, rgba(180,83,9,.25), rgba(180,83,9,.05)); border-color: rgba(217,119,6,.4); }
+        .lb-medal { width: 2rem; text-align: center; font-size: 1.5rem; line-height: 1; flex: none; }
+        .lb-name { min-width: 0; flex: 1; }
+        .lb-name b { display: block; color: #fff; font-weight: 800; font-size: .95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .lb-name span { display: block; font-size: .72rem; color: #94a3b8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .lb-val { flex: none; text-align: right; font-weight: 900; color: #6ee7b7; font-size: 1.15rem; line-height: 1.1; }
+        .lb-val small { display: block; font-size: .65rem; font-weight: 700; color: #94a3b8; }
+        .lb-empty { padding: 1.25rem .5rem; text-align: center; color: #94a3b8; font-size: .85rem; }
+        .lb-skel { height: 3.4rem; border-radius: 1rem; background: rgba(255,255,255,.05); animation: lbpulse 1.4s ease-in-out infinite; }
+        @keyframes lbpulse { 50% { opacity: .45; } }
+        #catalog-view { z-index: 44; opacity: 0; visibility: hidden; transform: translateY(14px); transition: opacity .3s ease, transform .4s cubic-bezier(.16,1,.3,1), visibility .3s ease; }
+        #catalog-view.open { opacity: 1; visibility: visible; transform: none; }
+        .catalog-bar { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .6rem 1rem; background: rgba(2,6,23,.92); border-bottom: 1px solid rgba(255,255,255,.08); }
+        #catalog-view #market { padding-top: 6rem; }
+        /* Yetkazib berish gamification: "+km Reytingga qo'shildi!" uchib boradi */
+        .lb-fly { position: fixed; z-index: 120; left: 50%; top: 58%; transform: translate(-50%, -50%); pointer-events: none; padding: .7rem 1.2rem; border-radius: 9999px; font-weight: 900; font-size: 1.25rem; color: #022c22; background: linear-gradient(90deg, #fcd34d, #6ee7b7); box-shadow: 0 10px 40px rgba(16,185,129,.45); white-space: nowrap; }
+        .my-rating-chip { display: inline-flex; align-items: center; gap: .4rem; padding: .35rem .7rem; border-radius: 9999px; border: 1px solid rgba(245,158,11,.45); background: rgba(245,158,11,.12); color: #fcd34d; font-weight: 800; font-size: .75rem; }
+        .my-rating-chip.bump { animation: chipbump .6s ease; }
+        @keyframes chipbump { 30% { transform: scale(1.25); box-shadow: 0 0 0 6px rgba(245,158,11,.25); } }
         .dp-slider { position: relative; height: 11rem; background: linear-gradient(135deg, #064e3b, #0f172a); }
         .dp-slides { display: flex; height: 100%; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
         .dp-slides::-webkit-scrollbar { display: none; }
@@ -1138,6 +1167,7 @@
         @media (max-width: 640px) { .filters-collapsed #filter-body { display: none; } }
     </style>
     <link rel="stylesheet" href="css/light.css">
+    <link rel="stylesheet" href="css/perf-layout.css">
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans antialiased selection:bg-emerald-500 selection:text-slate-950">
     <div class="grid-fx" aria-hidden="true"></div>
@@ -1262,6 +1292,10 @@
                         </button>
                         <button type="button" role="switch" aria-checked="false" data-new-alphabet-toggle title="o' g' sh ch → ö ğ ş ç" class="w-full flex items-center gap-3 px-4 py-3.5 text-left text-slate-200 hover:bg-white/10 hover:text-emerald-400 font-semibold border-t border-white/5 transition">
                             <i class="fa-solid fa-language w-5 text-emerald-400"></i> <span class="flex-1">Yangi Alifbo</span>
+                            <span class="na-track" aria-hidden="true"><span class="na-thumb"></span></span>
+                        </button>
+                        <button type="button" role="switch" aria-checked="false" data-perf-toggle title="Yengil rejim: effektlar va animatsiyalar kamayadi" class="w-full flex items-center gap-3 px-4 py-3.5 text-left text-slate-200 hover:bg-white/10 hover:text-emerald-400 font-semibold border-t border-white/5 transition">
+                            <i class="fa-solid fa-bolt w-5 text-emerald-400"></i> <span class="flex-1">Yengil rejim</span>
                             <span class="na-track" aria-hidden="true"><span class="na-thumb"></span></span>
                         </button>
                         <button type="button" role="menuitem" onclick="logout()" class="w-full flex items-center gap-3 px-4 py-3.5 text-left text-slate-200 hover:bg-rose-500/10 hover:text-rose-400 font-semibold border-t border-white/5 transition">
@@ -1411,66 +1445,25 @@
         </div>
     </header>
 
-    <!-- MARKET (OCHIQ E'LONLAR BOZORI) -->
-    <section id="market" class="py-20 px-6 max-w-7xl mx-auto scroll-mt-40">
+    <!-- OYLIK REYTING (TOP-3): bosh sahifada e'lonlar o'rniga; e'lonlar Katalog oynasida va kabinetlarda -->
+    <section id="leaderboard" class="sec-anchor py-20 px-6 max-w-7xl mx-auto scroll-mt-40" aria-labelledby="lb-title">
         <div class="text-center mb-10 space-y-4">
-            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold uppercase tracking-widest">
-                <i class="fa-solid fa-store"></i> AgrarGo Market
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-semibold uppercase tracking-widest">
+                <i class="fa-solid fa-trophy"></i> Oylik reyting
             </div>
-            <h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight">Fermerlardan To'g'ridan-to'g'ri E'lonlar</h2>
-            <p class="text-slate-300 text-base sm:text-lg max-w-2xl mx-auto">Faol e'lonlarni ko'ring, filtrlang va B2B bron qiling. Vositachilarsiz, fermer narxida.</p>
+            <h2 id="lb-title" class="text-3xl sm:text-5xl font-extrabold tracking-tight">OYLIK REYTING <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-emerald-400">(TOP-3)</span></h2>
+            <p class="text-slate-300 text-base sm:text-lg max-w-2xl mx-auto">Eng faol hamkorlar. Har oy g'oliblariga <b class="text-amber-300">1 oylik bepul PRO obuna</b> beriladi, reyting esa 1-sanada qayta 0 dan boshlanadi.</p>
+            <p id="lb-countdown" class="text-sm font-bold text-emerald-300 min-h-[1.25rem]"></p>
         </div>
-
-        <div id="market-mode" class="flex justify-center mb-6" role="tablist" aria-label="Bozor turi">
-            <div class="inline-flex flex-wrap justify-center gap-1.5 p-1.5 rounded-2xl bg-slate-950/60 border border-white/10">
-                <button type="button" id="mm-b2b" role="tab" aria-selected="true" class="mm-btn active px-4 py-2.5 rounded-xl text-sm font-bold text-slate-300 transition"><i class="fa-solid fa-truck-ramp-box mr-2"></i><span>B2B: yirik hajm</span></button>
-                <button type="button" id="mm-local" role="tab" aria-selected="false" class="mm-btn px-4 py-2.5 rounded-xl text-sm font-bold text-slate-300 transition"><i class="fa-solid fa-basket-shopping mr-2"></i><span>Mahalliy bozor / Kichik hajmli (10kg+)</span></button>
-            </div>
+        <div id="lb-grid" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <article class="lb-card" data-lb="drivers"><header class="lb-head"><i class="fa-solid fa-truck-fast"></i><div><h3>TOP Haydovchilar</h3><p>Bosib o'tilgan masofa (km)</p></div></header><ol class="lb-list" id="lb-drivers"></ol></article>
+            <article class="lb-card" data-lb="farmers"><header class="lb-head"><i class="fa-solid fa-seedling"></i><div><h3>TOP Fermerlar</h3><p>Sotilgan yuk hajmi (tonna)</p></div></header><ol class="lb-list" id="lb-farmers"></ol></article>
+            <article class="lb-card" data-lb="markets"><header class="lb-head"><i class="fa-solid fa-store"></i><div><h3>TOP Marketlar</h3><p>Xarid hajmi (tonna) va zakazlar</p></div></header><ol class="lb-list" id="lb-markets"></ol></article>
         </div>
-        <div id="market-filters" class="glass rounded-3xl border border-white/10 p-4 sm:p-6 mb-6 space-y-5">
-            <div class="flex items-center justify-between gap-3 flex-wrap">
-                <button type="button" id="filters-toggle" aria-expanded="true" aria-controls="filter-body" class="flex items-center gap-3 text-white font-extrabold text-lg">
-                    <i class="fa-solid fa-sliders text-emerald-400"></i><span>Filtrlar</span><span id="filters-count" class="filter-count" style="display:none">0</span>
-                </button>
-                <button type="button" id="filters-reset" class="text-sm font-bold text-slate-400 hover:text-white underline underline-offset-4 min-h-[44px] px-2" style="display:none">Hammasini tozalash</button>
-            </div>
-            <div id="filter-body" class="space-y-6">
-                <div class="space-y-2.5">
-                    <div class="text-xs font-bold uppercase tracking-wider text-slate-400">Kategoriya</div>
-                    <div id="market-cat-chips" role="group" aria-label="Kategoriya" class="flex flex-wrap gap-2.5"></div>
-                </div>
-                <div id="market-sliders" class="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-5"></div>
-                <div class="flex flex-col sm:flex-row gap-3">
-                    <select id="market-region" aria-label="Viloyat" class="auth-input sm:!w-auto sm:min-w-[13rem]">
-                        <option value="">Barcha viloyatlar</option>
-                        <option value="Toshkent shahri">Toshkent shahri</option>
-                        <option value="Toshkent viloyati">Toshkent viloyati</option>
-                        <option value="Andijon">Andijon</option>
-                        <option value="Buxoro">Buxoro</option>
-                        <option value="Farg'ona">Farg'ona</option>
-                        <option value="Jizzax">Jizzax</option>
-                        <option value="Namangan">Namangan</option>
-                        <option value="Navoiy">Navoiy</option>
-                        <option value="Qashqadaryo">Qashqadaryo</option>
-                        <option value="Qoraqalpog'iston">Qoraqalpog'iston</option>
-                        <option value="Samarqand">Samarqand</option>
-                        <option value="Sirdaryo">Sirdaryo</option>
-                        <option value="Surxondaryo">Surxondaryo</option>
-                        <option value="Xorazm">Xorazm</option>
-                    </select>
-                    <select id="market-sort" aria-label="Saralash" class="auth-input sm:!w-auto sm:min-w-[13rem]">
-                        <option value="newest">Eng yangilari</option>
-                        <option value="price_asc">Narx: arzonidan</option>
-                        <option value="price_desc">Narx: qimmatidan</option>
-                    </select>
-                </div>
-            </div>
-            <div class="flex flex-wrap items-center gap-2" id="market-chips"></div>
+        <div id="lb-last" class="mt-8 text-center text-xs text-slate-400"></div>
+        <div class="mt-8 flex justify-center">
+            <button type="button" onclick="openCatalog()" class="cta-ghost" id="lb-catalog-btn"><i class="fa-solid fa-store"></i><span>Katalogni ochish</span></button>
         </div>
-        <p id="market-count" class="text-sm text-slate-400 font-medium mb-5 min-h-[1.25rem]"></p>
-
-        <div id="market-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
-        <nav id="market-pagination" class="flex flex-wrap items-center justify-center gap-2 mt-10" aria-label="Sahifalash"></nav>
     </section>
 
     <!-- ECOSYSTEM CARDS SECTION -->
@@ -2298,6 +2291,19 @@
                     <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="prod-harvest">O'rim-yig'im sanasi <span class="text-slate-500 normal-case font-medium">(ixtiyoriy)</span></label>
                     <input id="prod-harvest" name="harvestDate" type="date" class="auth-input">
                 </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="prod-payer">Yetkazib berish kimning hisobidan?</label>
+                    <select id="prod-payer" name="deliveryPayer" class="auth-input">
+                        <option value="BUYER">Xaridor (logistika narxi mahsulot narxiga qo'shiladi)</option>
+                        <option value="FARMER">Fermer (logistika narxi sizga to'lanadigan summadan ushlanadi)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="prod-photos">Mahsulot rasmlari <span class="text-slate-500 normal-case font-medium">(1–5 ta, haqiqiy holati)</span></label>
+                    <input id="prod-photos" type="file" accept="image/jpeg,image/png,image/webp" multiple class="auth-input">
+                    <div id="prod-photo-previews" class="grid grid-cols-5 gap-2 mt-2"></div>
+                    <p class="text-[11px] text-slate-500 mt-1.5">JPG, PNG yoki WEBP, har biri 4 MB gacha.</p>
+                </div>
                 <button type="submit" class="auth-submit w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed text-slate-950 font-extrabold py-3.5 rounded-2xl transition duration-200 shadow-xl shadow-emerald-500/30 flex items-center justify-center gap-2.5">
                     <i class="fa-solid fa-check"></i> <span>E'lonni joylash</span>
                 </button>
@@ -2635,10 +2641,79 @@
     </div>
 
     <!-- DASHBOARD (rolga mos boshqaruv sahifasi) -->
-    <div id="dashboard-view" class="fixed inset-0 z-[45] bg-slate-950 overflow-y-auto" aria-hidden="true">
+    <!-- KATALOG (e'lonlar): bosh sahifadan alohida oyna; nav qidiruvi, filtrlar va pastki "Bozor" tugmasi shuni ochadi -->
+    <div id="catalog-view" class="fixed inset-0 z-[44] overflow-y-auto bg-slate-950" role="dialog" aria-modal="false" aria-hidden="true" aria-label="Katalog">
+        <div class="catalog-bar">
+            <button type="button" onclick="closeCatalog()" class="flex items-center gap-2 text-slate-300 hover:text-white font-bold text-sm px-4 py-2 rounded-xl hover:bg-white/5 transition"><i class="fa-solid fa-arrow-left"></i><span>Bosh sahifa</span></button>
+            <span class="font-extrabold text-emerald-400 uppercase tracking-widest text-xs sm:text-sm"><i class="fa-solid fa-store mr-2"></i>Katalog</span>
+        </div>
+    <!-- MARKET (OCHIQ E'LONLAR BOZORI) -->
+    <section id="market" class="py-20 px-6 max-w-7xl mx-auto scroll-mt-40">
+        <div class="text-center mb-10 space-y-4">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold uppercase tracking-widest">
+                <i class="fa-solid fa-store"></i> AgrarGo Market
+            </div>
+            <h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight">Fermerlardan To'g'ridan-to'g'ri E'lonlar</h2>
+            <p class="text-slate-300 text-base sm:text-lg max-w-2xl mx-auto">Faol e'lonlarni ko'ring, filtrlang va B2B bron qiling. Vositachilarsiz, fermer narxida.</p>
+        </div>
+
+        <div id="market-mode" class="flex justify-center mb-6" role="tablist" aria-label="Bozor turi">
+            <div class="inline-flex flex-wrap justify-center gap-1.5 p-1.5 rounded-2xl bg-slate-950/60 border border-white/10">
+                <button type="button" id="mm-b2b" role="tab" aria-selected="true" class="mm-btn active px-4 py-2.5 rounded-xl text-sm font-bold text-slate-300 transition"><i class="fa-solid fa-truck-ramp-box mr-2"></i><span>B2B: yirik hajm</span></button>
+                <button type="button" id="mm-local" role="tab" aria-selected="false" class="mm-btn px-4 py-2.5 rounded-xl text-sm font-bold text-slate-300 transition"><i class="fa-solid fa-basket-shopping mr-2"></i><span>Mahalliy bozor / Kichik hajmli (10kg+)</span></button>
+            </div>
+        </div>
+        <div id="market-filters" class="glass rounded-3xl border border-white/10 p-4 sm:p-6 mb-6 space-y-5">
+            <div class="flex items-center justify-between gap-3 flex-wrap">
+                <button type="button" id="filters-toggle" aria-expanded="true" aria-controls="filter-body" class="flex items-center gap-3 text-white font-extrabold text-lg">
+                    <i class="fa-solid fa-sliders text-emerald-400"></i><span>Filtrlar</span><span id="filters-count" class="filter-count" style="display:none">0</span>
+                </button>
+                <button type="button" id="filters-reset" class="text-sm font-bold text-slate-400 hover:text-white underline underline-offset-4 min-h-[44px] px-2" style="display:none">Hammasini tozalash</button>
+            </div>
+            <div id="filter-body" class="space-y-6">
+                <div class="space-y-2.5">
+                    <div class="text-xs font-bold uppercase tracking-wider text-slate-400">Kategoriya</div>
+                    <div id="market-cat-chips" role="group" aria-label="Kategoriya" class="flex flex-wrap gap-2.5"></div>
+                </div>
+                <div id="market-sliders" class="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-5"></div>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <select id="market-region" aria-label="Viloyat" class="auth-input sm:!w-auto sm:min-w-[13rem]">
+                        <option value="">Barcha viloyatlar</option>
+                        <option value="Toshkent shahri">Toshkent shahri</option>
+                        <option value="Toshkent viloyati">Toshkent viloyati</option>
+                        <option value="Andijon">Andijon</option>
+                        <option value="Buxoro">Buxoro</option>
+                        <option value="Farg'ona">Farg'ona</option>
+                        <option value="Jizzax">Jizzax</option>
+                        <option value="Namangan">Namangan</option>
+                        <option value="Navoiy">Navoiy</option>
+                        <option value="Qashqadaryo">Qashqadaryo</option>
+                        <option value="Qoraqalpog'iston">Qoraqalpog'iston</option>
+                        <option value="Samarqand">Samarqand</option>
+                        <option value="Sirdaryo">Sirdaryo</option>
+                        <option value="Surxondaryo">Surxondaryo</option>
+                        <option value="Xorazm">Xorazm</option>
+                    </select>
+                    <select id="market-sort" aria-label="Saralash" class="auth-input sm:!w-auto sm:min-w-[13rem]">
+                        <option value="newest">Eng yangilari</option>
+                        <option value="price_asc">Narx: arzonidan</option>
+                        <option value="price_desc">Narx: qimmatidan</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex flex-wrap items-center gap-2" id="market-chips"></div>
+        </div>
+        <p id="market-count" class="text-sm text-slate-400 font-medium mb-5 min-h-[1.25rem]"></p>
+
+        <div id="market-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+        <nav id="market-pagination" class="flex flex-wrap items-center justify-center gap-2 mt-10" aria-label="Sahifalash"></nav>
+    </section>
+    </div>
+
+    <div id="dashboard-view" class="fixed inset-0 z-[45] bg-slate-950 flex flex-col overflow-hidden" aria-hidden="true">
         <div class="grid-fx" aria-hidden="true"></div>
-        <div class="sticky top-0 z-10 glass border-b border-white/15">
-            <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-3">
+        <header class="dash-head glass border-b border-white/15">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-3">
                 <button type="button" onclick="closeDashboard()" class="flex items-center gap-2 text-slate-300 hover:text-emerald-400 font-bold text-sm transition">
                     <i class="fa-solid fa-arrow-left"></i> <span class="hidden sm:inline">Saytga qaytish</span>
                 </button>
@@ -2647,17 +2722,21 @@
                     <i id="dash-role-icon" class="fa-solid fa-gauge"></i> <span id="dash-role-title">Kabinet</span>
                 </div>
                 <div class="flex items-center gap-3">
+                    <button type="button" id="my-rating-chip" class="my-rating-chip hidden" onclick="openMyRating()" aria-label="Reytingim"><i class="fa-solid fa-trophy"></i><span class="hidden sm:inline">Reytingim</span><b id="my-rating-val"></b></button>
                     <span id="dash-user-chip" class="flex items-center gap-2 text-sm font-bold text-slate-200 max-w-[9rem] sm:max-w-[14rem]"></span>
                     <button type="button" data-sfx-toggle="1" class="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-emerald-400 hover:bg-white/5 transition text-lg" onclick="sfx.set(!sfx.on)"><i class="fa-solid fa-volume-high"></i></button>
                     <button type="button" onclick="logout()" title="Chiqish" aria-label="Chiqish" class="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-rose-400 hover:bg-white/5 transition text-lg"><i class="fa-solid fa-right-from-bracket"></i></button>
                 </div>
             </div>
-        </div>
-        <div id="pr-bg" class="rp-bg-wrap pr-off" aria-hidden="true"><div class="rp-bg"><div class="rp-bg-layer"></div><div class="rp-bg-layer"></div></div></div>
-        <div id="sub-banner-slot" class="max-w-6xl mx-auto px-4 sm:px-6 pt-6 empty:hidden"></div>
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8 grid lg:grid-cols-[15rem_minmax(0,1fr)] gap-6">
-            <nav id="dash-tabs" class="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-1 lg:pb-0 lg:sticky lg:top-24 self-start" aria-label="Kabinet bo'limlari"></nav>
-            <main id="dash-content" class="min-w-0 space-y-6"></main>
+        </header>
+        <div id="dash-shell" class="dash-shell">
+            <nav id="dash-tabs" class="dash-side" aria-label="Kabinet bo'limlari"></nav>
+            <div id="dash-scroll" class="dash-main">
+                <div id="pr-bg" class="rp-bg-wrap pr-off" aria-hidden="true"><div class="rp-bg"><div class="rp-bg-layer"></div><div class="rp-bg-layer"></div></div></div>
+                <div id="dash-subnav" class="dash-subnav hidden" role="navigation" aria-label="Bo'lim ichki ekranlari"></div>
+                <div id="sub-banner-slot" class="pt-4 empty:hidden"></div>
+                <main id="dash-content" class="min-w-0 space-y-6"></main>
+            </div>
         </div>
     </div>
 

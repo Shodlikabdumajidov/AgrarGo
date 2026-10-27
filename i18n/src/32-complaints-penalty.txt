@@ -1,0 +1,26 @@
+# --- Shikoyat/Spam va qizil yulduzcha (penalty) tizimi ---
+Qizil yulduzcha: {0}/5 ‖ Красная звезда: {0}/5 ‖ Red star: {0}/5
+Red-flag: {0}/5 qizil daraja ‖ Red-flag: {0}/5 красный уровень ‖ Red flag: {0}/5 red level
+DQQ OGOHLANTIRISHI: Ushbu hamkor shartnoma majburiyatlarini buzganligi va asossiz bekor qilishlar sababli platforma xavfsizlik tizimi tomonidan red-flag ({0}/5 qizil daraja) olgan. Ushbu hamkor bilan ishlash yuqori moliyaviy va logistik xavf tug'dirishi mumkin. Ishlashni tasdiqlaysizmi? ‖ ПРЕДУПРЕЖДЕНИЕ DQQ: Этот партнёр получил red-flag ({0}/5 красный уровень) от системы безопасности платформы за нарушение договорных обязательств и необоснованные отмены. Работа с этим партнёром может нести высокий финансовый и логистический риск. Вы подтверждаете работу? ‖ DQQ WARNING: This partner has received a red flag ({0}/5 red level) from the platform security system for breaching contractual obligations and unjustified cancellations. Working with this partner may carry a high financial and logistical risk. Do you confirm you want to proceed?
+Qaytarib olindi ‖ Отозвана ‖ Withdrawn
+Shikoyatingiz qabul qilindi va 3 ish kuni ichida ko'rib chiqiladi ‖ Ваша жалоба принята и будет рассмотрена в течение 3 рабочих дней ‖ Your complaint has been received and will be reviewed within 3 business days
+Hali hamkoringiz yo'q: shikoyat zakazlar tarixidagi hamkorlarga yuboriladi. ‖ У вас пока нет партнёров: жалоба отправляется партнёрам из истории заказов. ‖ You have no partners yet: complaints are sent to partners from your order history.
+Shikoyat yuborish ‖ Отправить жалобу ‖ File a complaint
+Zakazlar tarixingizdagi hamkorni tanlang va bekor qilish yoki nizo sababini yozing. ‖ Выберите партнёра из истории заказов и опишите причину отмены или спора. ‖ Pick a partner from your order history and describe the reason for the cancellation or dispute.
+Shikoyatni yuborish ‖ Отправить жалобу ‖ Submit complaint
+Hamkorni tanlang. ‖ Выберите партнёра. ‖ Choose a partner.
+Shikoyatlar yuklanmoqda... ‖ Жалобы загружаются... ‖ Loading complaints...
+Mening shikoyatlarim ‖ Мои жалобы ‖ My complaints
+Shikoyatlar yo'q ‖ Жалоб нет ‖ No complaints
+Yuborgan shikoyatlaringiz va ularning holati shu yerda ko'rinadi. ‖ Отправленные вами жалобы и их статус отображаются здесь. ‖ Complaints you filed and their status appear here.
+Hamkorga {0} qizil yulduzcha berildi ‖ Партнёру начислено красных звёзд: {0} ‖ Partner received {0} red star(s)
+Shikoyatni bekor qilish ‖ Отозвать жалобу ‖ Withdraw the complaint
+Shikoyatni bekor qilasizmi? Hamkorga berilgan qizil yulduzcha qaytariladi. ‖ Отозвать жалобу? Начисленная партнёру красная звезда будет возвращена. ‖ Withdraw the complaint? The red star given to the partner will be removed.
+Shikoyatni bekor qilasizmi? ‖ Отозвать жалобу? ‖ Withdraw the complaint?
+Shikoyat bekor qilindi. ‖ Жалоба отозвана. ‖ Complaint withdrawn.
+To'liq asosli ‖ Полностью обоснована ‖ Fully justified
+Qisman asosli ‖ Частично обоснована ‖ Partially justified
+Qaytarib olingan ‖ Отозванные ‖ Withdrawn
+Tanlangan holat bo'yicha shikoyat topilmadi. ‖ Жалоб с выбранным статусом не найдено. ‖ No complaints found for the selected status.
+Qarorni tasdiqlash ‖ Подтвердить решение ‖ Confirm decision
+Qaror qabul qilindi. ‖ Решение принято. ‖ Decision recorded.

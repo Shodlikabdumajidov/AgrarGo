@@ -48,6 +48,12 @@ model User {
   // Parol o'zgarganda/tiklanganda oshiriladi: eski JWT tokenlar darhol yaroqsiz bo'ladi
   tokenVersion               Int       @default(0)
   isActive                   Boolean   @default(true)
+  // Qizil yulduzcha (penalty) reyting: asosli shikoyatlar uchun 0.5 / 1 ball; 5.0 ga yetsa akkaunt avtomatik BANNED (isActive=false, bannedAt)
+  penaltyPoints              Float     @default(0)
+  // Oylik reyting g'olibiga berilgan bepul PRO obuna tugaydigan sana
+  proUntil                   DateTime?
+  bannedAt                   DateTime?
+  banReason                  String?
   // Telegram bot: chat ID (bitta chat — bitta akkaunt) va bog'lash uchun vaqtinchalik bir martalik token.
   // Tokenning faqat SHA-256 xeshi saqlanadi; ochiq ko'rinishi faqat foydalanuvchiga (havolada) beriladi.
   telegramChatId             String?   @unique
@@ -68,6 +74,8 @@ model User {
   subscriptionPayments SubscriptionPayment[]
   kycDocuments         KycDocument[]
   ratingsGiven         ShipmentRating[]      @relation("RatingRater")
+  complaintsFiled      Complaint[]           @relation("ComplaintReporter")
+  complaintsAgainst    Complaint[]           @relation("ComplaintAccused")
   ratingsReceived      ShipmentRating[]      @relation("RatingTarget")
   offersSent           DriverOffer[]
   consumer             Consumer?
@@ -86,14 +94,16 @@ model Farmer {
   userId String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  farmName   String
-  region     String
-  district   String
-  address    String?
-  latitude   Float?
-  longitude  Float?
-  stir       String? @unique
-  isVerified Boolean @default(false)
+  farmName         String
+  region           String
+  district         String
+  address          String?
+  latitude         Float?
+  longitude        Float?
+  stir             String? @unique
+  isVerified       Boolean @default(false)
+  // Oylik reyting: shu oyda yetkazilgan yuk hajmi (tonna); oy yakunida 0 ga qaytariladi
+  monthlySotuvTons Float   @default(0)
 
   products       Product[]
   createdAt      DateTime        @default(now())
@@ -118,6 +128,8 @@ model Driver {
   warehouseOrders WarehouseOrder[]
   posts           DriverPost[]
   // Shahar ichi kuryeri rejimi: yoqilgan bo'lsa shu Hub'ning chakana buyurtmalarini yetkazadi
+  // Oylik reyting: shu oyda yetkazilgan yuklar bo'yicha bosib o'tilgan masofa (km); oy yakunida 0 ga qaytariladi
+  monthlyKm       Float            @default(0)
   courierMode     Boolean          @default(false)
   courierHubId    String?
   courierHub      Hub?             @relation("HubCouriers", fields: [courierHubId], references: [id], onDelete: SetNull)
@@ -148,13 +160,17 @@ model Market {
   userId String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  companyName String
-  stir        String? @unique
-  region      String
-  district    String
-  address     String?
+  companyName      String
+  stir             String? @unique
+  region           String
+  district         String
+  address          String?
+  // Oylik reyting: shu oyda qabul qilingan yuk hajmi (tonna) va yetkazilgan zakazlar soni; oy yakunida 0 ga qaytariladi
+  monthlyXaridTons Float   @default(0)
+  monthlyOrders    Int     @default(0)
 
   bookings        Booking[]
+  priceOffers     PriceOffer[]
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   warehouseOrders WarehouseOrder[]
@@ -175,14 +191,16 @@ model Booking {
   marketId  String
   market    Market  @relation(fields: [marketId], references: [id], onDelete: Cascade)
 
-  quantityKg Decimal       @db.Decimal(12, 2)
-  pricePerKg Decimal       @db.Decimal(12, 2) // bron paytidagi narx
-  status     BookingStatus @default(PENDING)
-  message    String?
-  decidedAt  DateTime?
-  shipment   Shipment?
-  payment    Payment?
-  urgent     Boolean       @default(false) // shoshilinch bron
+  quantityKg    Decimal       @db.Decimal(12, 2)
+  pricePerKg    Decimal       @db.Decimal(12, 2) // bron paytidagi narx
+  status        BookingStatus @default(PENDING)
+  message       String?
+  decidedAt     DateTime?
+  shipment      Shipment?
+  payment       Payment?
+  urgent        Boolean       @default(false) // shoshilinch bron
+  deliveryPayer DeliveryPayer @default(BUYER)
+  priceOffer    PriceOffer?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -191,7 +209,22 @@ model Booking {
   @@index([marketId, status])
 }
 
+/// Yetkazib berish haqini kim to'laydi: xaridor (narxga qo'shiladi) yoki fermer (olinadigan summadan ushlanadi)
+enum DeliveryPayer {
+  BUYER
+  FARMER
+}
+
+enum OfferStatus {
+  PENDING // fermer javobini kutmoqda
+  COUNTERED // fermer qarshi narx yubordi, market javobini kutmoqda
+  ACCEPTED // kelishildi: bron yaratilgan
+  REJECTED // fermer yoki market rad etdi
+  CANCELLED // market bekor qildi
+}
+
 enum ProductStatus {
+  FROZEN // egasi BANNED bo'lgani uchun muzlatilgan (ban bekor bo'lsa ACTIVE ga qaytadi)
   ACTIVE
   BOOKED
   SOLD
@@ -203,15 +236,19 @@ model Product {
   farmerId String
   farmer   Farmer @relation(fields: [farmerId], references: [id], onDelete: Cascade)
 
-  name        String
-  category    String
-  quantityKg  Decimal       @db.Decimal(12, 2)
-  pricePerKg  Decimal       @db.Decimal(12, 2)
-  harvestDate DateTime?
-  description String?
-  status      ProductStatus @default(ACTIVE)
+  name          String
+  category      String
+  quantityKg    Decimal       @db.Decimal(12, 2)
+  pricePerKg    Decimal       @db.Decimal(12, 2)
+  harvestDate   DateTime?
+  description   String?
+  status        ProductStatus @default(ACTIVE)
+  // E'lon rasmlari (1-5 ta, /uploads/products/...) va yetkazib berish kimning hisobidan ekanligi (Incoterms)
+  photos        String[]
+  deliveryPayer DeliveryPayer @default(BUYER)
 
-  bookings Booking[]
+  bookings    Booking[]
+  priceOffers PriceOffer[]
 
   // Chakana (mahalliy bozor) savdo: Hub omboridan kichik hajmda sotiladi
   isRetail         Boolean      @default(false)
@@ -275,11 +312,24 @@ model Shipment {
   events      ShipmentEvent[]
 
   // e-BOL: haydovchi yetib kelganda fermer telefoniga 4 xonali kod yuboriladi (faqat HMAC xeshi saqlanadi); to'g'ri kiritilsa isSigned=true
-  pickupOtp          String?
-  pickupOtpExpiresAt DateTime?
-  pickupOtpAttempts  Int           @default(0)
-  isSigned           Boolean       @default(false)
-  ebol               EBolContract?
+  pickupOtp             String?
+  pickupOtpExpiresAt    DateTime?
+  pickupOtpAttempts     Int           @default(0)
+  isSigned              Boolean       @default(false)
+  // PIN-kod tasdiqlash: haydovchi biriktirilganda yaratiladi. pickupPin — haydovchi ko'radi, fermer yuklashda kiritadi;
+  // deliveryPin — market ko'radi, haydovchi topshirishda kiritadi (to'g'ri kiritilgach DELIVERED va escrow chiqariladi)
+  // Oylik reyting statistikasi shu yuk uchun allaqachon hisoblanganmi (takroriy hisoblashdan himoya)
+  statsCounted          Boolean       @default(false)
+  // BOL (Bill of Lading) tartib raqami (B2B): hujjatda AGB2B-YYYY-NNNNNN ko'rinishida chiqadi
+  bolNo                 Int           @unique @default(autoincrement())
+  // PIN-kod elektron imzolari (BOL imzo bloki): yuklashda fermer haydovchi PIN'ini kiritgan va topshirishda haydovchi market PIN'ini kiritgan vaqt
+  pickupPinVerifiedAt   DateTime?
+  deliveryPinVerifiedAt DateTime?
+  pickupPin             String?
+  deliveryPin           String?
+  pickupPinAttempts     Int           @default(0)
+  deliveryPinAttempts   Int           @default(0)
+  ebol                  EBolContract?
 
   // Yuk olinadigan joyning taxminiy nuqtasi (aniq manzil emas): radiusli qidiruv uchun
   originLat Float?
@@ -380,6 +430,8 @@ model Payment {
   amount           Decimal             @db.Decimal(20, 2) // server hisoblaydi: miqdor x bron narxi (= mahsulot summasi, fermerga tegishli)
   // To'lov tarkibi: market jami = amount + deliveryFee + serviceFee. Eski yozuvlarda 0 (jami = amount).
   deliveryFee      Decimal             @default(0) @db.Decimal(20, 2) // haydovchiga: yetkazib berish haqi
+  // FERMER to'lasa: amount = mahsulot narxi - yo'l haqi (fermer oladigan sof summa); market jami = amount + deliveryFee + serviceFee o'zgarmaydi
+  deliveryPayer    DeliveryPayer       @default(BUYER)
   serviceFee       Decimal             @default(0) @db.Decimal(20, 2) // platforma xizmat haqi (komissiya)
   distanceKm       Int                 @default(0) // hisoblangan marshrut masofasi
   currency         String              @default("UZS")
@@ -1246,4 +1298,91 @@ model EBolContract {
   @@index([signedAt])
   @@index([driverId])
   @@index([farmerId])
+}
+
+/// Savdolashish: market e'londagi narxdan boshqa narx/miqdor taklif qiladi; fermer tasdiqlaydi, rad etadi yoki qarshi taklif yuboradi
+model PriceOffer {
+  id        String  @id @default(uuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  marketId  String
+  market    Market  @relation(fields: [marketId], references: [id], onDelete: Cascade)
+
+  quantityKg        Decimal     @db.Decimal(12, 2)
+  pricePerKg        Decimal     @db.Decimal(12, 2)
+  message           String?
+  // Fermerning qarshi taklifi (COUNTERED): market shu narx/miqdorni qabul qilsa bron yaratiladi
+  counterPricePerKg Decimal?    @db.Decimal(12, 2)
+  counterQuantityKg Decimal?    @db.Decimal(12, 2)
+  counterMessage    String?
+  status            OfferStatus @default(PENDING)
+  bookingId         String?     @unique
+  booking           Booking?    @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  decidedAt         DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId, status])
+  @@index([marketId, status])
+}
+
+enum ComplaintStatus {
+  PENDING // ko'rib chiqilmoqda (3 ish kuni)
+  UPHELD // to'liq asosli: aybdorga +1 penalty
+  PARTIAL // qisman asosli: aybdorga +0.5 penalty
+  REJECTED // asossiz: penalty yo'q
+  WITHDRAWN // shikoyatchi qaytarib oldi (berilgan penalty ayriladi)
+}
+
+/// Shikoyat / spam: hamkor bekor qilish yoki nizo sababi bo'yicha; dispetcher yoki super admin qaror qiladi
+model Complaint {
+  id           String          @id @default(uuid())
+  reporterId   String
+  reporter     User            @relation("ComplaintReporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  accusedId    String
+  accused      User            @relation("ComplaintAccused", fields: [accusedId], references: [id], onDelete: Cascade)
+  reason       String
+  status       ComplaintStatus @default(PENDING)
+  // Aybdorga haqiqatda berilgan penalty (UPHELD 1, PARTIAL 0.5); WITHDRAWN bo'lganda qaytarib ayriladi
+  penalty      Float           @default(0)
+  decisionNote String?
+  decidedById  String?
+  decidedAt    DateTime?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  @@index([reporterId, status])
+  @@index([accusedId, status])
+  @@index([status, createdAt])
+}
+
+enum LeaderboardCategory {
+  DRIVER
+  FARMER
+  MARKET
+}
+
+/// Joriy reyting davri (oy, Toshkent vaqti bo'yicha YYYY-MM): oy almashganda avvalgisi yopiladi, g'oliblarga PRO beriladi, ko'rsatkichlar 0 dan boshlanadi
+model LeaderboardState {
+  id          Int      @id @default(1)
+  activeMonth String
+  updatedAt   DateTime @updatedAt
+}
+
+/// Oy yakunidagi TOP-3 g'oliblar (tarix). value: haydovchi — km, fermer/market — tonna; orders — market zakazlari
+model LeaderboardWinner {
+  id        String              @id @default(uuid())
+  month     String
+  category  LeaderboardCategory
+  rank      Int
+  userId    String
+  name      String
+  value     Float
+  orders    Int                 @default(0)
+  proUntil  DateTime?
+  createdAt DateTime            @default(now())
+
+  @@unique([month, category, rank])
+  @@index([month])
 }

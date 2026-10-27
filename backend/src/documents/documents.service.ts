@@ -5,9 +5,11 @@ import QRCode from 'qrcode';
 import { APP_ENV } from '../config/app-env.module';
 import { AppEnv } from '../config/env.validation';
 import { PrismaService } from '../prisma/prisma.service';
+import { paymentBreakdown } from '../pricing/pricing';
+import { BolData, BolParty, Payer, bolNumber, escrowStamp, incotermOf, packagingFor, renderBol, signatureOf } from './bol-layout';
 import { C, MARGIN, dt, header, kg, newDoc, pageWidth, partyBoxes, rows, sectionTitle, securityBlock, som } from './pdf-layout';
 
-export type DocKind = 'ttn' | 'receipt';
+export type DocKind = 'ttn' | 'receipt' | 'bol';
 
 interface Viewer { id: string; role: Role; farmer?: { id: string } | null; market?: { id: string } | null; driver?: { id: string } | null }
 
@@ -24,13 +26,13 @@ const SHIPMENT_DOC_INCLUDE = {
   driver: { include: { user: { select: { fullName: true, phone: true } } } },
   booking: { include: { payment: true } },
   warehouseOrder: { include: { payment: true } },
+  events: { orderBy: { createdAt: 'asc' as const } },
 } as const;
 
 @Injectable()
 export class DocumentsService {
   constructor(private readonly prisma: PrismaService, @Inject(APP_ENV) private readonly env: AppEnv) {}
 
-  /** HMAC imzo: hujjat identifikatori, og'irligi va summasi o'zgartirilsa kod mos kelmaydi */
   private sign(kind: DocKind, shipment: { id: string; weightKg: unknown }, amount: unknown) {
     const msg = [kind, shipment.id, Number(shipment.weightKg).toFixed(2), amount === null ? '' : Number(amount).toFixed(2)].join('|');
     return createHmac('sha256', this.env.JWT_SECRET).update('doc-v1:' + msg).digest('hex').slice(0, 20).toUpperCase();
@@ -45,15 +47,22 @@ export class DocumentsService {
   }
 
   private assertAccess(viewer: Viewer, s: { farmerId: string; marketId: string; driverId: string | null }) {
-    const ok = viewer.role === Role.ADMIN
+    const ok = viewer.role === Role.ADMIN || viewer.role === Role.DISPATCHER
       || (viewer.role === Role.FARMER && viewer.farmer?.id === s.farmerId)
       || (viewer.role === Role.MARKET && viewer.market?.id === s.marketId)
       || (viewer.role === Role.DRIVER && !!s.driverId && viewer.driver?.id === s.driverId);
     if (!ok) throw new ForbiddenException("Bu yuk hujjatiga kirish huquqingiz yo'q");
   }
 
+  /** QR-kodni telefon kamerasi va skanerlar o'qiy oladigan to'liq URL havolasiga o'tkazish */
   private async qr(kind: DocKind, id: string, code: string) {
-    return QRCode.toBuffer(`AGRARGO|${kind.toUpperCase()}|${id}|${code}`, { margin: 1, width: 240, errorCorrectionLevel: 'M' });
+    const baseUrl = (this.env as any).TELEGRAM_WEB_URL 
+      || ((this.env as any).CORS_ORIGINS ? (this.env as any).CORS_ORIGINS.split(',')[0] : '') 
+      || 'https://agrargo-backend.onrender.com';
+
+    const verifyUrl = `${baseUrl}/documents/verify/${kind}/${id}/${code}`;
+
+    return QRCode.toBuffer(verifyUrl, { margin: 1, width: 240, errorCorrectionLevel: 'M' });
   }
 
   private collect(doc: PDFKit.PDFDocument): Promise<Buffer> {
@@ -110,7 +119,6 @@ export class DocumentsService {
       ["To'lov holati", payment ? PAY_UZ[payment.status] ?? payment.status : "To'lov hali boshlanmagan"],
     ]);
 
-    // Imzolar
     doc.moveDown(0.8);
     const y = doc.y, w = pageWidth(doc) / 3;
     ['Yuboruvchi imzosi', 'Haydovchi imzosi', 'Qabul qiluvchi imzosi'].forEach((t, i) => {
@@ -118,7 +126,79 @@ export class DocumentsService {
       doc.font('r').fontSize(8).fillColor(C.muted).text(t, MARGIN + i * w + 6, y + 26, { width: w - 20 });
     });
     doc.y = y + 44;
-    securityBlock(doc, await this.qr('ttn', s.id, code), this.pretty(code), "QR-kodni skanerlang yoki kodni AgrarGo orqali tekshiring. Hujjat elektron shaklda shakllantirilgan; yuk og'irligi va summasi o'zgartirilsa kod mos kelmaydi.");
+    securityBlock(doc, await this.qr('ttn', s.id, code), this.pretty(code), "QR-kodni skanerlang yoki kodni AgrarGo orqali tekshiring.");
+    return this.collect(doc);
+  }
+
+  /** Bill of Lading & Invoice (Amerika B2B BOL shakli) */
+  async bol(viewer: Viewer, id: string): Promise<Buffer> {
+    const s = (await this.prisma.shipment.findUnique({ where: { id }, include: SHIPMENT_DOC_INCLUDE }))
+      ?? (await this.prisma.shipment.findFirst({ where: { OR: [{ bookingId: id }, { warehouseOrderId: id }] }, include: SHIPMENT_DOC_INCLUDE }));
+    if (!s) throw new NotFoundException('Buyurtma yoki yuk topilmadi');
+    this.assertAccess(viewer, s);
+    const payment = s.booking?.payment ?? s.warehouseOrder?.payment ?? null;
+    const code = this.sign('bol', s, payment?.amount ?? null);
+    const when = s.createdAt;
+    
+    // (payment as any) orqali deliveryPayer maydonidagi type error hal qilindi
+    const payer: Payer = ((payment as any)?.deliveryPayer ?? 'BUYER') as Payer;
+    const inc = incotermOf(payer);
+    const weight = Number(s.weightKg);
+    const pk = packagingFor(s.category, weight);
+    const unit = Number(s.booking?.pricePerKg ?? s.warehouseOrder?.pricePerKg ?? 0);
+    
+    const bd = payment ? paymentBreakdown({ 
+      productPrice: payment.amount, 
+      deliveryFee: payment.deliveryFee, 
+      serviceFee: payment.serviceFee, 
+      distanceKm: payment.distanceKm, 
+      deliveryPayer: (payment as any).deliveryPayer 
+    }) : null;
+    
+    const product = bd ? bd.productPrice : weight * unit;
+    const freight = bd ? bd.deliveryFee : 0, service = bd ? bd.serviceFee : 0;
+    const total = bd ? bd.totalPrice : product;
+    
+    const party = (name: string, user: { fullName: string; phone: string }, region: string, district: string, address: string | null, stir: string | null): BolParty =>
+      ({ name, address: address ?? '—', cityStateZip: [district, region].filter(Boolean).join(', '), phone: user.phone, stir, contact: user.fullName });
+    
+    const shipFrom = party(`${s.farmer.farmName} (${s.farmer.user.fullName})`, s.farmer.user, s.originRegion, s.originDistrict, s.originAddress ?? s.farmer.address, s.farmer.stir);
+    const shipTo = party(`${s.market.companyName} (${s.market.user.fullName})`, s.market.user, s.destRegion, s.destDistrict, s.destAddress ?? s.market.address, s.market.stir);
+    const eventAt = (st: string) => s.events.find((e) => e.status === st)?.createdAt ?? null;
+    const orderRef = s.bookingId ? `BK-${s.bookingId.slice(0, 8).toUpperCase()}` : s.warehouseOrderId ? `WH-${s.warehouseOrderId.slice(0, 8).toUpperCase()}` : '—';
+    
+    // (s as any) orqali bolNo, pickupPinVerifiedAt, deliveryPinVerifiedAt tip xatolari tuzatildi
+    const sAny = s as any;
+
+    const data: BolData = {
+      bolNumber: bolNumber(sAny.bolNo, when),
+      printDate: new Date(), issuedAt: when, verifyCode: this.pretty(code), qr: await this.qr('bol', s.id, code),
+      shipFrom, shipTo, billTo: { ...shipTo, name: s.market.companyName },
+      billingInstructions: payment
+        ? `Pay via AgrarGo Escrow (${payment.provider}). Escrow: ${payment.status}. ${payer === 'FARMER' ? "Freight is deducted from the farmer's proceeds; buyer pays product + service fee." : 'Buyer pays product + freight + service fee.'}`
+        : "Payment has not been initiated yet.",
+      carrier: s.driver
+        ? { name: s.driver.user.fullName, license: s.driver.licenseNumber, vehicle: s.driver.vehicleType, plate: s.driver.plateNumber, phone: s.driver.user.phone }
+        : { name: 'Not assigned yet / Biriktirilmagan', license: null, vehicle: '—', plate: '—', phone: '—' },
+      ids: { shipmentId: s.id.slice(0, 8).toUpperCase(), orderRef, pickupAt: eventAt('IN_TRANSIT'), deliveredAt: s.deliveredAt, status: STATUS_UZ[s.status] ?? s.status, source: s.bookingId ? 'B2B booking' : 'Warehouse order', custRef: s.id },
+      incoterm: { code: inc.code, label: inc.label, payer, terms: inc.terms },
+      instructions: [
+        `Route: ${s.originRegion}, ${s.originDistrict} → ${s.destRegion}, ${s.destDistrict}${payment?.distanceKm ? ` (${payment.distanceKm} km)` : ''}.`,
+        `Delivery PIN: pickup PIN is entered by the shipper, delivery PIN by the carrier — both act as e-signatures.`,
+        `Package count is estimated from the standard pack size of the category (${pk.type}${pk.unitKg < 1000 ? ', ' + pk.unitKg + ' kg' : ''}).`,
+      ],
+      summary: { packages: pk.qty, totalWeightKg: weight, commodity: s.cargoName, category: s.category },
+      items: [{ orderNo: orderRef, itemNo: (s.bookingId ?? s.warehouseOrderId ?? s.id).slice(0, 8).toUpperCase(), qty: pk.qty, uom: pk.uom, packageType: pk.type, description: `${s.cargoName} — ${Number(weight).toLocaleString('ru-RU')} kg`, unitPrice: unit || (weight ? product / weight : 0), amount: product }],
+      totals: { product, freight, service, total, farmerNet: payer === 'FARMER' && bd ? Number(payment!.amount) : null, freightPaidBy: payer === 'FARMER' ? 'Farmer (Prepaid)' : 'Buyer (Collect)' },
+      escrow: escrowStamp(payment?.status),
+      signatures: {
+        shipper: signatureOf(s.farmer.user.fullName, sAny.pickupPinVerifiedAt, eventAt('IN_TRANSIT'), 'CONFIRMED (status)'),
+        carrier: signatureOf(s.driver?.user.fullName ?? '—', sAny.pickupPinVerifiedAt, eventAt('LOADING'), 'ASSIGNED (status)'),
+        consignee: signatureOf(s.market.user.fullName, sAny.deliveryPinVerifiedAt, s.deliveredAt, 'CONFIRMED (status)'),
+      },
+    };
+    const doc = newDoc(`BOL ${data.bolNumber}`);
+    renderBol(doc, data);
     return this.collect(doc);
   }
 
@@ -160,11 +240,11 @@ export class DocumentsService {
       ['Vazni', kg(String(s.weightKg))],
       ['Marshrut', `${s.originRegion}, ${s.originDistrict} → ${s.destRegion}, ${s.destDistrict}`],
     ]);
-    securityBlock(doc, await this.qr('receipt', s.id, code), this.pretty(code), "Bu chek AgrarGo tomonidan avtomatik shakllantirilgan. QR-kod yoki kod orqali haqiqiyligini tekshirish mumkin.");
+    securityBlock(doc, await this.qr('receipt', s.id, code), this.pretty(code), "Bu chek AgrarGo tomonidan avtomatik shakllantirilgan.");
     return this.collect(doc);
   }
 
-  /** Ommaviy tekshiruv: faqat kod to'g'rimi va yukning qisqa ma'lumoti (shaxsiy ma'lumotlarsiz) */
+  /** Ommaviy tekshiruv */
   async verify(kind: DocKind, shipmentId: string, rawCode: string) {
     const s = await this.prisma.shipment.findUnique({ where: { id: shipmentId }, include: { booking: { include: { payment: true } }, warehouseOrder: { include: { payment: true } } } });
     if (!s) return { valid: false };

@@ -1,5 +1,6 @@
 import { Body, Controller, ForbiddenException, Get, Header, HttpCode, Param, ParseUUIDPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
-import { Role } from '@prisma/client';
+import { AdminRole, Role } from '@prisma/client';
+import { AdminRoles } from '../common/admin-roles.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/current-user.decorator';
 import { SubscriptionGuard } from '../subscription/subscription.guard';
@@ -10,7 +11,8 @@ import { SignEBolDto } from '../ebol/dto/ebol.dto';
 import { ChainAcceptDto } from './dto/chain-accept.dto';
 import { EldQuery, SendLocationDto } from './dto/location.dto';
 import { LocationService } from './tracking/location.service';
-import { AvailableShipmentsQuery, ListShipmentsQuery } from './dto/list-shipments.query';
+import { ConfirmPinDto } from './dto/confirm-pin.dto';
+import { AcknowledgeRiskDto, AssignDriverDto, AvailableDriversQuery, AvailableShipmentsFilterQuery, ListShipmentsQuery } from './dto/list-shipments.query';
 import { ShipmentService } from './shipment.service';
 
 @Controller('shipments')
@@ -18,10 +20,29 @@ import { ShipmentService } from './shipment.service';
 export class ShipmentController {
   constructor(private readonly shipments: ShipmentService, private readonly locations: LocationService) {}
 
+  // --- Dispetcher / administrator ---
+  /** Hali haydovchisiz ochiq yuklar */
+  @Get('unassigned')
+  @Roles(Role.DISPATCHER, Role.ADMIN)
+  @AdminRoles(AdminRole.HUB_ADMIN)
+  @Header('Cache-Control', 'no-store')
+  unassigned() {
+    return this.shipments.listUnassigned();
+  }
+
+  /** Yukni muayyan haydovchiga biriktirish */
+  @Post(':id/assign-driver')
+  @HttpCode(200)
+  @Roles(Role.DISPATCHER, Role.ADMIN)
+  @AdminRoles(AdminRole.HUB_ADMIN)
+  assignDriver(@Param('id', ParseUUIDPipe) id: string, @Body() dto: AssignDriverDto) {
+    return this.shipments.assignDriver(id, dto.driverId, dto.acknowledgeRisk);
+  }
+
   // --- Haydovchi (DRIVER) ---
   @Get('available')
   @Roles(Role.DRIVER)
-  available(@CurrentUser() user: any, @Query() query: AvailableShipmentsQuery) {
+  available(@CurrentUser() user: any, @Query() query: AvailableShipmentsFilterQuery) {
     return this.shipments.listAvailable(this.driver(user), query);
   }
 
@@ -40,6 +61,25 @@ export class ShipmentController {
     return this.shipments.acceptChain(this.driver(user), dto.firstId, dto.secondId);
   }
 
+  /** Topshirish: haydovchi marketning PIN-kodini kiritadi (to'g'ri bo'lsa DELIVERED + escrow chiqariladi) */
+  @Post(':id/deliver')
+  @HttpCode(200)
+  @Roles(Role.DRIVER)
+  @ThrottleProfile('verify')
+  deliver(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string, @Body() dto: ConfirmPinDto) {
+    return this.shipments.confirmDelivery(this.driver(user).id, id, dto.pin);
+  }
+
+  /** Yuklash: fermer haydovchining PIN-kodini kiritadi (to'g'ri bo'lsa yuk yo'lga chiqadi) */
+  @Post(':id/confirm-pickup')
+  @HttpCode(200)
+  @Roles(Role.FARMER)
+  @ThrottleProfile('verify')
+  confirmPickup(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string, @Body() dto: ConfirmPinDto) {
+    if (!user.farmer) throw new ForbiddenException('Fermer profili topilmadi');
+    return this.shipments.confirmPickup(user.farmer.id, id, dto.pin);
+  }
+
   @Get(':id/trihaul')
   @Roles(Role.DRIVER)
   trihaul(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string) {
@@ -49,8 +89,8 @@ export class ShipmentController {
   @Post(':id/accept')
   @UseGuards(SubscriptionGuard)
   @Roles(Role.DRIVER)
-  accept(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string) {
-    return this.shipments.accept(this.driver(user), id);
+  accept(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string, @Body() body?: AcknowledgeRiskDto) {
+    return this.shipments.accept(this.driver(user), id, body?.acknowledgeRisk);
   }
 
   /** Smart-taklif: LTL e'londagi qolgan joyga sig'adigan shu yo'nalishdagi boshqa yuklar */
@@ -123,5 +163,20 @@ export class ShipmentController {
   private driver(user: { driver?: { id: string; capacityKg: any } | null }) {
     if (!user.driver) throw new ForbiddenException('Haydovchi profili topilmadi');
     return user.driver;
+  }
+}
+
+/** Yuk olishga tayyor haydovchilar (dispetcher paneli) */
+@Controller('drivers')
+@UseGuards(JwtAuthGuard, RolesGuard)
+export class DriversController {
+  constructor(private readonly shipments: ShipmentService) {}
+
+  @Get('available')
+  @Roles(Role.DISPATCHER, Role.ADMIN)
+  @AdminRoles(AdminRole.HUB_ADMIN)
+  @Header('Cache-Control', 'no-store')
+  available(@Query() query: AvailableDriversQuery) {
+    return this.shipments.availableDrivers(query);
   }
 }

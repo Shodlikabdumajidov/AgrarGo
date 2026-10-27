@@ -1,7 +1,9 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Role, ShipmentStatus } from '@prisma/client';
+import { APP_ENV } from '../config/app-env.module';
+import type { AppEnv } from '../config/env.validation';
 import { PrismaService } from '../prisma/prisma.service';
-import { escapeHtml as h, TELEGRAM_API, TelegramApi, TelegramApiError } from './telegram-api';
+import { escapeHtml as h, TELEGRAM_API, TelegramApi, TelegramApiError, TelegramKeyboard } from './telegram-api';
 
 const num = (n: unknown) => Number(n).toLocaleString('ru-RU', { maximumFractionDigits: 2 });
 const som = (n: unknown) => `${num(n)} so'm`;
@@ -16,7 +18,12 @@ export class NotificationService {
   private readonly logger = new Logger('Notify');
   private readonly pending = new Set<Promise<void>>();
 
-  constructor(private readonly prisma: PrismaService, @Inject(TELEGRAM_API) private readonly api: TelegramApi | null) {}
+  constructor(private readonly prisma: PrismaService, @Inject(TELEGRAM_API) private readonly api: TelegramApi | null, @Inject(APP_ENV) private readonly env: AppEnv) {}
+
+  /** «Kabinetni ochish» tugmasi: faqat https saytda (Telegram boshqa manzillarni rad etadi va xabar ketmay qolardi) */
+  private web(label = '📲 Kabinetni ochish'): TelegramKeyboard {
+    return /^https:\/\//.test(this.env.TELEGRAM_WEB_URL) ? [[{ text: label, url: this.env.TELEGRAM_WEB_URL }]] : [];
+  }
 
   /** Navbatdagi yuborishlar tugashini kutadi (testlar va to'xtatish uchun). */
   async flush() {
@@ -32,19 +39,28 @@ export class NotificationService {
   }
 
   /** Ulangan va faol foydalanuvchilarga (takrorlarsiz) yuboradi; bot bloklangan chat avtomatik uziladi. */
-  private async sendTo(userIds: (string | null | undefined)[], text: string) {
+  private async sendTo(userIds: (string | null | undefined)[], text: string, keyboard?: TelegramKeyboard) {
     const ids = [...new Set(userIds.filter((x): x is string => !!x))];
     if (!ids.length) return;
     const users = await this.prisma.user.findMany({ where: { id: { in: ids }, isActive: true, telegramChatId: { not: null } }, select: { id: true, telegramChatId: true } });
     await Promise.allSettled(users.map(async (u) => {
       try {
-        await this.api!.sendMessage(u.telegramChatId!, text);
+        await this.api!.sendMessage(u.telegramChatId!, text, keyboard?.length ? keyboard : undefined);
       } catch (e) {
         if (e instanceof TelegramApiError && (e.code === 403 || (e.code === 400 && /chat not found/i.test(e.description)))) {
           await this.prisma.user.updateMany({ where: { id: u.id, telegramChatId: u.telegramChatId }, data: { telegramChatId: null, telegramLinkedAt: null } });
         } else throw e;
       }
     }));
+  }
+
+  /** Dispetcherlar va shikoyat/xavfsizlik bilan shug'ullanuvchi adminlar (Super admin, Safety admin) */
+  private async staff() {
+    const rows = await this.prisma.user.findMany({
+      where: { isActive: true, telegramChatId: { not: null }, OR: [{ role: Role.DISPATCHER }, { role: Role.ADMIN, adminRole: { in: ['SUPER_ADMIN', 'SAFETY_ADMIN'] } }] },
+      select: { id: true },
+    });
+    return rows.map((r) => r.id);
   }
 
   private async dispatchers() {
@@ -62,7 +78,51 @@ export class NotificationService {
       });
       if (!b) return;
       await this.sendTo([b.product.farmer.userId],
-        `🛒 <b>Yangi bron</b>\n${h(b.market.companyName)} «${h(b.product.name)}» e'loningizdan <b>${num(b.quantityKg)} kg</b> bron qildi (${som(b.quantityKg.mul(b.pricePerKg))}).\nKabinetda tasdiqlang yoki rad eting.`);
+        `🛒 <b>Yangi bron</b>\n${h(b.market.companyName)} «${h(b.product.name)}» e'loningizdan <b>${num(b.quantityKg)} kg</b> bron qildi (${som(b.quantityKg.mul(b.pricePerKg))}).\nShu yerning o'zida tasdiqlang yoki rad eting:`,
+        [[{ text: '✅ Tasdiqlash', callback: `bk:a:${bookingId}` }, { text: '❌ Rad etish', callback: `bk:r:${bookingId}` }], ...this.web()]);
+    });
+  }
+
+  /** Fermer bronni rad etdi (marketga) */
+  bookingRejected(bookingId: string) {
+    this.run(async () => {
+      const b = await this.prisma.booking.findUnique({ where: { id: bookingId }, select: { quantityKg: true, product: { select: { name: true, farmer: { select: { farmName: true } } } }, market: { select: { userId: true } } } });
+      if (!b) return;
+      await this.sendTo([b.market.userId], `❌ <b>Bron rad etildi</b>\n${h(b.product.farmer.farmName)} «${h(b.product.name)}» (${num(b.quantityKg)} kg) bronini rad etdi. Katalogdan boshqa e'lon tanlashingiz mumkin.`, this.web('🛒 Katalogni ochish'));
+    });
+  }
+
+  /** Savdolashish: yangi taklif (fermerga), qarshi taklif / qabul / rad (marketga) */
+  priceOffer(offerId: string, event: 'CREATED' | 'COUNTERED' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED') {
+    this.run(async () => {
+      const o = await this.prisma.priceOffer.findUnique({
+        where: { id: offerId },
+        select: {
+          quantityKg: true, pricePerKg: true, counterPricePerKg: true, counterQuantityKg: true,
+          product: { select: { name: true, farmer: { select: { userId: true, farmName: true } } } }, market: { select: { userId: true, companyName: true } },
+        },
+      });
+      if (!o) return;
+      const what = `«${h(o.product.name)}» — ${num(o.quantityKg)} kg, ${som(o.pricePerKg)}/kg`;
+      if (event === 'CREATED') await this.sendTo([o.product.farmer.userId], `💬 <b>Yangi narx taklifi</b>\n${h(o.market.companyName)}: ${what}.\nTasdiqlang, rad eting yoki kabinetda qarshi taklif yuboring:`,
+        [[{ text: '✅ Tasdiqlash', callback: `of:a:${offerId}` }, { text: '❌ Rad etish', callback: `of:r:${offerId}` }], ...this.web('↔️ Qarshi taklif yuborish')]);
+      else if (event === 'CANCELLED') await this.sendTo([o.product.farmer.userId], `↩️ <b>Taklif bekor qilindi</b>
+${h(o.market.companyName)}: ${what}.`);
+      else if (event === 'COUNTERED') await this.sendTo([o.market.userId], `💬 <b>Fermerdan qarshi taklif</b>
+${h(o.product.farmer.farmName)} «${h(o.product.name)}» uchun ${num(o.counterQuantityKg ?? o.quantityKg)} kg, ${som(o.counterPricePerKg ?? o.pricePerKg)}/kg taklif qildi.
+Qabul qiling yoki rad eting:`, [[{ text: '✅ Qabul qilish', callback: `oc:a:${offerId}` }, { text: '❌ Rad etish', callback: `oc:r:${offerId}` }], ...this.web()]);
+      else if (event === 'ACCEPTED') await this.sendTo([o.market.userId, o.product.farmer.userId], `✅ <b>Narx kelishildi</b>
+«${h(o.product.name)}»: bron tasdiqlandi. Xaridor to'lovni (Escrow) amalga oshirgach yuk tashish boshlanadi.`);
+      else await this.sendTo([o.market.userId], `❌ <b>Taklif rad etildi</b>
+${h(o.product.farmer.farmName)} «${h(o.product.name)}» bo'yicha taklifingizni rad etdi.`);
+    });
+  }
+
+  /** Oylik reyting g'olibi: 1 oylik bepul PRO obuna berildi */
+  leaderboardWinner(userId: string, category: string, rank: number, month: string, proUntil: Date) {
+    this.run(async () => {
+      const what = category === 'DRIVER' ? 'TOP Haydovchilar' : category === 'FARMER' ? 'TOP Fermerlar' : 'TOP Marketlar';
+      await this.sendTo([userId], `🏆 <b>Oylik reyting g'olibi!</b>\n${h(month)} oyida «${what}» bo'yicha ${rank}-o'rin.\nSizga 1 oylik bepul PRO obuna berildi (${proUntil.toISOString().slice(0, 10)} gacha).`);
     });
   }
 
@@ -107,14 +167,14 @@ export class NotificationService {
 
   // ---------- Yuk holati ----------
 
-  /** Yuk "Yo'lda" yoki "Yetkazildi" bo'lganda: fermer, market va (ombor yuki bo'lsa) dispetcherlarga. */
+  /** Yuk "Yo'lda" yoki "Yetkazildi" bo'lganda: fermer, market (qabul PIN-kodi bilan) va (ombor yuki bo'lsa) dispetcherlarga. */
   shipmentStatus(shipmentId: string, status: ShipmentStatus) {
     if (status !== ShipmentStatus.IN_TRANSIT && status !== ShipmentStatus.DELIVERED) return;
     this.run(async () => {
       const s = await this.prisma.shipment.findUnique({
         where: { id: shipmentId },
         select: {
-          cargoName: true, weightKg: true, destRegion: true, warehouseOrderId: true,
+          cargoName: true, weightKg: true, destRegion: true, destDistrict: true, warehouseOrderId: true, bookingId: true, deliveryPin: true,
           farmer: { select: { userId: true, farmName: true } }, market: { select: { userId: true, companyName: true } },
           driver: { select: { plateNumber: true, user: { select: { fullName: true } } } },
         },
@@ -123,11 +183,97 @@ export class NotificationService {
       const cargo = `«${h(s.cargoName)}» — ${num(s.weightKg)} kg`;
       const drv = s.driver ? `\nHaydovchi: ${h(s.driver.user.fullName)} (${h(s.driver.plateNumber)})` : '';
       const wh = s.warehouseOrderId ? ' (omborxona buyurtmasi)' : '';
-      const text = status === ShipmentStatus.IN_TRANSIT
-        ? `🚚 <b>Yuk yo'lga chiqdi</b>${wh}\n${cargo}. Manzil: ${h(s.destRegion)}.${drv}\nJonli xaritani kabinetda kuzating.`
-        : `📦 <b>Yuk yetkazildi</b>${wh}\n${cargo}.${drv}`;
       const dispatchers = s.warehouseOrderId ? await this.dispatchers() : [];
-      await this.sendTo([s.farmer.userId, s.market.userId, ...dispatchers], text);
+      if (status === ShipmentStatus.IN_TRANSIT) {
+        const base = `🚚 <b>Yuk yo'lga chiqdi</b>${wh}\n${cargo}. Manzil: ${h(s.destRegion)}.${drv}`;
+        // Market: qabul PIN-kodi (yetib kelganda haydovchiga aytiladi) + xarita
+        const pin = s.bookingId && s.deliveryPin ? `\n\n🔑 <b>Qabul PIN-kodingiz: ${s.deliveryPin}</b>\nYuk yetib kelganda shu kodni haydovchiga ayting. Boshqa hech kimga bermang.` : '';
+        await this.sendTo([s.market.userId], `${base}${pin}\nJonli xaritani kabinetda kuzating.`, this.web('🗺 Xaritada kuzatish'));
+        await this.sendTo([s.farmer.userId, ...dispatchers], `${base}\nJonli xaritani kabinetda kuzating.`);
+      } else {
+        await this.sendTo([s.market.userId], `📍 <b>Yuk manzilga yetib keldi</b>${wh}\n${cargo}. ${h(s.destRegion)}${s.destDistrict ? ', ' + h(s.destDistrict) : ''}.${drv}\nYuk yetkazildi: iltimos, qabul qiling; to'lov (Escrow) fermer va haydovchiga o'tkaziladi.`, this.web());
+        await this.sendTo([s.farmer.userId, ...dispatchers], `📦 <b>Yuk yetkazildi</b>${wh}\n${cargo}.${drv}`);
+      }
+    });
+  }
+
+  /** Haydovchi yukka biriktirildi (o'zi oldi yoki dispetcher biriktirdi): market (qabul PIN-kodi) va fermerga */
+  driverAssigned(shipmentId: string) {
+    this.run(async () => {
+      const s = await this.prisma.shipment.findUnique({
+        where: { id: shipmentId },
+        select: {
+          cargoName: true, weightKg: true, bookingId: true, deliveryPin: true,
+          farmer: { select: { userId: true } }, market: { select: { userId: true } },
+          driver: { select: { plateNumber: true, vehicleType: true, user: { select: { fullName: true } } } },
+        },
+      });
+      if (!s?.driver) return;
+      const cargo = `«${h(s.cargoName)}» — ${num(s.weightKg)} kg`;
+      const drv = `${h(s.driver.user.fullName)} (${h(s.driver.vehicleType)}, ${h(s.driver.plateNumber)})`;
+      const pin = s.bookingId && s.deliveryPin ? `\n\n🔑 <b>Qabul PIN-kodingiz: ${s.deliveryPin}</b>\nYuk yetib kelganda shu kodni haydovchiga ayting. Boshqa hech kimga bermang.` : '';
+      await this.sendTo([s.market.userId], `🚛 <b>Yukingizga haydovchi biriktirildi</b>\n${cargo}\nHaydovchi: ${drv}.${pin}`, this.web());
+      await this.sendTo([s.farmer.userId], `🚛 <b>Yukka haydovchi biriktirildi</b>\n${cargo}\nHaydovchi: ${drv}. U yetib kelgach sizga xabar beramiz.`, this.web());
+    });
+  }
+
+  /** Haydovchi yuklash joyiga yetib keldi: fermerga (yuklashda haydovchining 4 xonali PIN-kodini so'rang) */
+  driverArrived(shipmentId: string) {
+    this.run(async () => {
+      const s = await this.prisma.shipment.findUnique({
+        where: { id: shipmentId },
+        select: { cargoName: true, weightKg: true, farmer: { select: { userId: true } }, driver: { select: { plateNumber: true, user: { select: { fullName: true } } } } },
+      });
+      if (!s?.driver) return;
+      await this.sendTo([s.farmer.userId],
+        `📍 <b>Haydovchi yuklash uchun yetib keldi</b>\n«${h(s.cargoName)}» — ${num(s.weightKg)} kg.\nHaydovchi: ${h(s.driver.user.fullName)} (${h(s.driver.plateNumber)}).\n\n🔑 Yuklashdan oldin haydovchidan <b>4 xonali yuklash PIN-kodini</b> so'rang va kabinetdagi «Haydovchining PIN-kodi» maydoniga kiriting.`,
+        this.web('🔑 PIN-kodni kiritish'));
+    });
+  }
+
+  // ---------- Shikoyat / BAN (dispetcher va adminlarga) ----------
+
+  complaintFiled(complaintId: string) {
+    this.run(async () => {
+      const c = await this.prisma.complaint.findUnique({
+        where: { id: complaintId },
+        select: { reason: true, reporter: { select: { fullName: true, role: true } }, accused: { select: { fullName: true, role: true, penaltyPoints: true } } },
+      });
+      if (!c) return;
+      const reason = c.reason.length > 300 ? c.reason.slice(0, 300) + '…' : c.reason;
+      await this.sendTo(await this.staff(),
+        `🚩 <b>Yangi shikoyat / spam</b>\nShikoyatchi: ${h(c.reporter.fullName)} (${c.reporter.role})\nAybdor: <b>${h(c.accused.fullName)}</b> (${c.accused.role}), hozirgi qizil yulduz: ${c.accused.penaltyPoints}/5\n\n«${h(reason)}»\n\nQaror qabul qiling:`,
+        [[{ text: "✅ To'liq asosli (+1★)", callback: `cp:u:${complaintId}` }], [{ text: '◐ Qisman asosli (+0.5★)', callback: `cp:p:${complaintId}` }, { text: '🚫 Asossiz', callback: `cp:r:${complaintId}` }], ...this.web('📋 Shikoyatlar paneli')]);
+    });
+  }
+
+  /** Foydalanuvchi 5.0 qizil yulduzga yetib avtomatik BAN bo'ldi */
+  userBanned(userId: string) {
+    this.run(async () => {
+      const u = await this.prisma.user.findUnique({ where: { id: userId }, select: { fullName: true, role: true, penaltyPoints: true, phone: true } });
+      if (!u) return;
+      await this.sendTo(await this.staff(), `🚫 <b>Avtomatik BAN</b>\n${h(u.fullName)} (${u.role}, ${h(u.phone)}) ${u.penaltyPoints}/5 qizil yulduzga yetdi.\nAkkaunt bloklandi, e'lonlari muzlatildi.`, this.web('📋 Shikoyatlar paneli'));
+    });
+  }
+
+  /** Dispetcher/administrator yukni haydovchiga biriktirdi */
+  shipmentAssigned(shipmentId: string) {
+    this.run(async () => {
+      const s = await this.prisma.shipment.findUnique({
+        where: { id: shipmentId },
+        select: { cargoName: true, weightKg: true, originRegion: true, originDistrict: true, destRegion: true, destDistrict: true, pickupPin: true, driver: { select: { userId: true } } },
+      });
+      if (!s?.driver) return;
+      const lines = [
+        `📦 <b>Sizga yuk biriktirildi</b>`,
+        `• Mahsulot: <b>${h(s.cargoName)}</b>`,
+        `• Hajmi: <b>${num(s.weightKg)} kg</b>`,
+        `• Qayerdan: ${h(s.originRegion)}, ${h(s.originDistrict)}`,
+        `• Qayerga: ${h(s.destRegion)}, ${h(s.destDistrict)}`,
+        s.pickupPin ? `🔑 <b>Yuklash PIN-kodingiz: ${s.pickupPin}</b> — yuk ortilganda fermerga ayting.` : null,
+        `Manzil va aloqa ma'lumotlari kabinetdagi «Mening zakazlarim» bo'limida.`,
+      ].filter(Boolean);
+      await this.sendTo([s.driver.userId], lines.join('\n'), this.web('📲 Kabinetni ochish'));
     });
   }
 
@@ -165,7 +311,7 @@ export class NotificationService {
         o.note ? `• Izoh: ${h(o.note)}` : null,
         `Aniq manzil yukni biriktirgandan keyin ochiladi. Kabinetda «Mavjud yuklar» bo'limidan oling.`,
       ].filter(Boolean);
-      await this.sendTo([o.post.driver.userId], lines.join('\n'));
+      await this.sendTo([o.post.driver.userId], lines.join('\n'), this.web('📦 Mavjud yuklarni ochish'));
     });
   }
 

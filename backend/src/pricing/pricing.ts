@@ -55,6 +55,16 @@ export function breakdownOf(row: { productPrice: Prisma.Decimal.Value; deliveryF
   return { productPrice, deliveryFee, serviceFee, totalPrice: productPrice + deliveryFee + serviceFee, currency: row.currency ?? 'UZS', distanceKm: row.distanceKm };
 }
 
+/**
+ * To'lov tarkibi (Incoterms): FERMER yetkazishni to'lasa Payment.amount = mahsulot narxi - yo'l haqi (fermer oladigan sof summa),
+ * market jami = amount + deliveryFee + serviceFee o'zgarmaydi. Ko'rsatishda mahsulot narxi (gross) qaytariladi va yo'l haqi "fermer hisobidan" deb belgilanadi.
+ */
+export function paymentBreakdown(row: { productPrice: Prisma.Decimal.Value; deliveryFee: Prisma.Decimal.Value; serviceFee: Prisma.Decimal.Value; distanceKm: number; currency?: string; deliveryPayer?: 'BUYER' | 'FARMER' | null }) {
+  const b = breakdownOf(row);
+  if (row.deliveryPayer !== 'FARMER') return { ...b, deliveryPayer: 'BUYER' as const };
+  return { ...b, productPrice: b.productPrice + b.deliveryFee, farmerNet: b.productPrice, deliveryPayer: 'FARMER' as const };
+}
+
 /** Yetkazib berish haqi qanday hisoblangani (foydalanuvchiga tushuntirish uchun): baza + masofa + og'irlik (+ yaxlitlash) */
 export interface DeliveryFormula {
   base: number;

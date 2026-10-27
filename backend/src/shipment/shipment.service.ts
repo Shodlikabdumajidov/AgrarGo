@@ -1,20 +1,25 @@
-import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { PaymentStatus, Prisma, Role, ShipmentStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { SettingsService } from '../settings/settings.service';
 import { TrustService } from '../trust/trust.service';
-import { breakdownOf } from '../pricing/pricing';
+import { paymentBreakdown } from '../pricing/pricing';
 import { PricingService } from '../pricing/pricing.service';
 import { NotificationService } from '../telegram/notification.service';
 import { idsWithinRadius, parseRadius } from '../common/geo-search';
 import { haversineKm } from '../trust/geo';
 import { RatesService } from '../rates/rates.service';
 import { compareRate } from '../rates/rates';
-import { randomUUID } from 'crypto';
+import { randomInt, randomUUID } from 'crypto';
 import { EBolService } from '../ebol/ebol.service';
+import { assertRiskAcknowledged } from '../complaint/risk';
+import { LeaderboardService } from '../leaderboard/leaderboard.service';
+import { PaymentService } from '../payment/payment.service';
+import { APP_ENV } from '../config/app-env.module';
+import type { AppEnv } from '../config/env.validation';
 import { reserveLtl, restoreLtl } from './ltl';
 import { TriLoad, TriOption, evaluate, hasDirectReturn, triOptions } from './trihaul';
-import { AvailableShipmentsQuery, ListShipmentsQuery } from './dto/list-shipments.query';
+import { AvailableShipmentsFilterQuery, ListShipmentsQuery } from './dto/list-shipments.query';
 
 // Haydovchi bir vaqtda nechta yakunlanmagan yukni olib yura oladi
 export const MAX_ACTIVE_SHIPMENTS = 1;
@@ -24,25 +29,29 @@ const ACTIVE: ShipmentStatus[] = [ShipmentStatus.LOADING, ShipmentStatus.IN_TRAN
 const SHIPMENT_INCLUDE = {
   events: { orderBy: { createdAt: Prisma.SortOrder.asc } },
   driver: {
-    select: { userId: true, vehicleType: true, plateNumber: true, capacityKg: true, user: { select: { fullName: true, phone: true } } },
+    select: { userId: true, vehicleType: true, plateNumber: true, capacityKg: true, user: { select: { fullName: true, phone: true, penaltyPoints: true } } },
   },
-  booking: { select: { id: true, payment: { select: { status: true, amount: true, feeAmount: true, deliveryFee: true, serviceFee: true, distanceKm: true, currency: true } } } },
-  warehouseOrder: { select: { id: true, status: true, payment: { select: { status: true, amount: true, feeAmount: true, deliveryFee: true, serviceFee: true, distanceKm: true, currency: true } } } },
-  farmer: { select: { farmName: true, user: { select: { fullName: true, phone: true } } } },
-  market: { select: { companyName: true, user: { select: { fullName: true, phone: true } } } },
+  booking: { select: { id: true, payment: { select: { status: true, amount: true, feeAmount: true, deliveryFee: true, serviceFee: true, distanceKm: true, currency: true, deliveryPayer: true } } } },
+  warehouseOrder: { select: { id: true, status: true, payment: { select: { status: true, amount: true, feeAmount: true, deliveryFee: true, serviceFee: true, distanceKm: true, currency: true, deliveryPayer: true } } } },
+  farmer: { select: { farmName: true, user: { select: { fullName: true, phone: true, penaltyPoints: true } } } },
+  market: { select: { companyName: true, user: { select: { fullName: true, phone: true, penaltyPoints: true } } } },
 } satisfies Prisma.ShipmentInclude;
 
 type ShipmentRow = Prisma.ShipmentGetPayload<{ include: typeof SHIPMENT_INCLUDE }>;
-type Viewer = 'driver-open' | 'driver-own' | 'farmer' | 'market';
+/** 4 xonali PIN-kod (1000-9999) */
+export const newPin = () => String(randomInt(1000, 10000));
+const MAX_PIN_ATTEMPTS = 5;
+
+type Viewer = 'driver-open' | 'driver-own' | 'farmer' | 'market' | 'staff';
 
 @Injectable()
 export class ShipmentService {
-  constructor(private readonly prisma: PrismaService, private readonly settings: SettingsService, private readonly notify: NotificationService, private readonly trust: TrustService, private readonly pricing: PricingService, private readonly rates: RatesService, private readonly ebol: EBolService) {}
+  constructor(private readonly prisma: PrismaService, private readonly settings: SettingsService, private readonly notify: NotificationService, private readonly trust: TrustService, private readonly pricing: PricingService, private readonly rates: RatesService, private readonly ebol: EBolService, private readonly payments: PaymentService, private readonly leaderboard: LeaderboardService, @Inject(APP_ENV) private readonly env: AppEnv) {}
 
   // ---------- Haydovchi ----------
 
   /** Bo'sh yuklar: marshrut (viloyat/tuman) va og'irlik ko'rinadi, aniq manzil va telefonlar yashirin. */
-  async listAvailable(driver: { id?: string; capacityKg: Prisma.Decimal }, query: AvailableShipmentsQuery) {
+  async listAvailable(driver: { id?: string; capacityKg: Prisma.Decimal }, query: AvailableShipmentsFilterQuery) {
     // Radiusli qidiruv ("Yuk radari"): olib ketish nuqtasi Haversine bo'yicha radius ichida bo'lgan ochiq yuklar
     const radius = parseRadius(query);
     let distances: Map<string, number> | undefined;
@@ -58,6 +67,9 @@ export class ShipmentService {
         driverId: null,
         ...idFilter,
         ...(query.originRegion && { originRegion: { equals: query.originRegion, mode: 'insensitive' } }),
+        ...(query.destRegion && { destRegion: { equals: query.destRegion, mode: 'insensitive' } }),
+        ...(query.category && { category: { equals: query.category, mode: 'insensitive' } }),
+        ...((query.minKg !== undefined || query.maxKg !== undefined) && { weightKg: { ...(query.minKg !== undefined && { gte: query.minKg }), ...(query.maxKg !== undefined && { lte: query.maxKg }) } }),
       },
       orderBy: { createdAt: 'desc' },
       include: SHIPMENT_INCLUDE,
@@ -74,10 +86,76 @@ export class ShipmentService {
     return this.withRate(out);
   }
 
-  /** Yukni o'ziga biriktirish: OPEN -> LOADING */
-  async accept(driver: { id: string; capacityKg: Prisma.Decimal }, id: string) {
+  // ---------- Dispetcher / administrator ----------
+
+  /** Platformadagi hali haydovchisiz ochiq yuklar (to'lov holati ko'rinadi: faqat HELD yuk biriktiriladi) */
+  async listUnassigned() {
+    const rows = await this.prisma.shipment.findMany({
+      where: { status: ShipmentStatus.OPEN, driverId: null },
+      orderBy: { createdAt: 'desc' },
+      take: 200,
+      include: SHIPMENT_INCLUDE,
+    });
+    const wh = await this.warehouseContact(rows);
+    return rows.map((r) => this.shape(r, 'staff', undefined, wh));
+  }
+
+  /**
+   * Yuk olishga tayyor haydovchilar: faol (LOADING/IN_TRANSIT) yuki yo'q (LTL e'loni bor haydovchi — bo'sh joyi bor),
+   * ixtiyoriy: shu og'irlikka sig'adigan va/yoki viloyat bo'yicha
+   */
+  async availableDrivers(query: { weightKg?: number; region?: string }) {
+    const drivers = await this.prisma.driver.findMany({
+      where: {
+        user: { isActive: true },
+        ...(query.region && { region: { equals: query.region, mode: 'insensitive' } }),
+      },
+      include: {
+        user: { select: { fullName: true, phone: true, penaltyPoints: true } },
+        posts: { where: { isActive: true, loadMode: 'LTL' }, select: { availableCapacityKg: true } },
+        shipments: { where: { status: { in: ACTIVE } }, select: { id: true, ltlKg: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 300,
+    });
+    const trust = await this.trust.summaries(drivers.map((d) => d.userId));
+    return drivers.flatMap((d) => {
+      const ltlRoom = d.posts.length ? Math.max(...d.posts.map((p) => p.availableCapacityKg)) : null;
+      const busy = d.shipments.some((x) => (ltlRoom === null ? true : x.ltlKg === null));
+      if (busy) return [];
+      const room = ltlRoom ?? Number(d.capacityKg);
+      if (query.weightKg !== undefined && query.weightKg > room) return [];
+      return [{
+        id: d.id, userId: d.userId, fullName: d.user.fullName, phone: d.user.phone, penaltyPoints: d.user.penaltyPoints, vehicleType: d.vehicleType, plateNumber: d.plateNumber,
+        capacityKg: Number(d.capacityKg), freeKg: room, region: d.region, trust: trust.get(d.userId) ?? null,
+      }];
+    });
+  }
+
+  /** Dispetcher/admin yukni to'g'ridan-to'g'ri haydovchiga biriktiradi (OPEN -> LOADING; qoidalar haydovchi o'zi olgandagidek) */
+  async assignDriver(id: string, driverId: string, acknowledgeRisk?: boolean) {
+    const driver = await this.prisma.driver.findUnique({ where: { id: driverId }, select: { id: true, userId: true, capacityKg: true, user: { select: { isActive: true, penaltyPoints: true } } } });
+    if (!driver || !driver.user.isActive) throw new NotFoundException('Haydovchi topilmadi');
+    assertRiskAcknowledged(driver.user.penaltyPoints, acknowledgeRisk);
     await this.prisma.$transaction((tx) => this.acceptTx(tx, driver, id));
+    this.notify.shipmentAssigned(id);
+    this.notify.driverAssigned(id);
+    const row = await this.prisma.shipment.findUniqueOrThrow({ where: { id }, include: SHIPMENT_INCLUDE });
+    return this.shape(row, 'staff', undefined, await this.warehouseContact([row]));
+  }
+
+  /** Yukni o'ziga biriktirish: OPEN -> LOADING */
+  async accept(driver: { id: string; capacityKg: Prisma.Decimal }, id: string, acknowledgeRisk?: boolean) {
+    await this.assertPartnersSafe(id, acknowledgeRisk);
+    await this.prisma.$transaction((tx) => this.acceptTx(tx, driver, id));
+    this.notify.driverAssigned(id); // market (qabul PIN-kodi) va fermerga
     return { ...(await this.reload(id, 'driver-own')), ltl: await this.ltlInfo(id) };
+  }
+
+  /** Yuk egasi (fermer yoki market) 2+ qizil yulduzga ega bo'lsa, haydovchi DQQ ogohlantirishini tasdiqlamaguncha yuk biriktirilmaydi */
+  private async assertPartnersSafe(shipmentId: string, acknowledged?: boolean) {
+    const s = await this.prisma.shipment.findUnique({ where: { id: shipmentId }, select: { farmer: { select: { user: { select: { penaltyPoints: true } } } }, market: { select: { user: { select: { penaltyPoints: true } } } } } });
+    if (s) assertRiskAcknowledged(Math.max(s.farmer.user.penaltyPoints, s.market.user.penaltyPoints), acknowledged);
   }
 
   /** accept ning tranzaksiya ichidagi qismi; skipLimit — zanjirli bronning ikkinchi yuki uchun (faol yuk chegarasi tekshirilmaydi) */
@@ -114,7 +192,8 @@ export class ShipmentService {
 
       const claimed = await tx.shipment.updateMany({
         where: { id, status: ShipmentStatus.OPEN, driverId: null },
-        data: { driverId: driver.id, status: ShipmentStatus.LOADING, assignedAt: new Date() },
+        // Bron yuki uchun PIN-kodlar: yuklashda haydovchi (fermerga aytadi), topshirishda market (haydovchiga aytadi)
+        data: { driverId: driver.id, status: ShipmentStatus.LOADING, assignedAt: new Date(), ...(shipment.bookingId && { pickupPin: newPin(), deliveryPin: newPin(), pickupPinAttempts: 0, deliveryPinAttempts: 0 }) },
       });
       if (claimed.count === 0) throw new ConflictException('Bu yuk allaqachon boshqa haydovchiga biriktirilgan');
       if (hasLtl) await reserveLtl(tx, driver.id, shipment);
@@ -128,7 +207,7 @@ export class ShipmentService {
     await this.prisma.$transaction(async (tx) => {
       const released = await tx.shipment.updateMany({
         where: { id, driverId, status: ShipmentStatus.LOADING },
-        data: { driverId: null, status: ShipmentStatus.OPEN, assignedAt: null },
+        data: { driverId: null, status: ShipmentStatus.OPEN, assignedAt: null, pickupPin: null, deliveryPin: null },
       });
       if (released.count === 0) await this.explainFailure(tx, id, driverId, "Yukni faqat yo'lga chiqishdan oldin qaytarish mumkin");
       await restoreLtl(tx, id); // LTL: band qilingan joy qaytadi
@@ -144,8 +223,12 @@ export class ShipmentService {
   async advance(driverId: string, id: string) {
     let reached = null as ShipmentStatus | null;
     await this.prisma.$transaction(async (tx) => {
-      const current = await tx.shipment.findFirst({ where: { id, driverId }, select: { status: true, warehouseOrderId: true, chainId: true, chainSeq: true, isSigned: true } });
+      const current = await tx.shipment.findFirst({ where: { id, driverId }, select: { status: true, warehouseOrderId: true, chainId: true, chainSeq: true, isSigned: true, pickupPin: true } });
       if (!current) throw new NotFoundException('Yuk topilmadi');
+      // PIN-kod tasdiqlash yoqilgan: holatni faqat PIN-kod o'zgartiradi (yuklash — fermer, topshirish — haydovchi market PIN'i bilan)
+      if (this.env.PIN_ENFORCE && current.pickupPin) {
+        throw new ConflictException(current.status === ShipmentStatus.LOADING ? "Yo'lga chiqish uchun fermer haydovchining PIN-kodini kiritishi kerak" : "Topshirish uchun marketning PIN-kodini kiriting");
+      }
       if (this.ebol.enforced && current.status === ShipmentStatus.LOADING && !current.isSigned) throw new ConflictException("Yo'lga chiqish uchun e-BOL imzolanishi kerak: fermer kodini kiriting");
       // Zanjirli bron: ikkinchi yuk birinchisi yetkazilmaguncha yo'lga chiqmaydi
       if (current.chainId && current.chainSeq === 2 && current.status === ShipmentStatus.LOADING) {
@@ -184,7 +267,64 @@ export class ShipmentService {
     });
     if (reached === ShipmentStatus.DELIVERED) await this.invalidateTrust(id); // yangi bitim: status va badjlar qayta hisoblansin
     if (reached) this.notify.shipmentStatus(id, reached);
-    return this.reload(id, 'driver-own');
+    // Oylik reyting: yetkazilgan yuk masofasi (km) va hajmi (tonna) hisobga qo'shiladi
+    const rewards = reached === ShipmentStatus.DELIVERED ? await this.leaderboard.recordDelivery(id).catch(() => null) : null;
+    return { ...(await this.reload(id, 'driver-own')), ...(rewards && { rewards }) };
+  }
+
+  // ---------- PIN-kod tasdiqlash ----------
+
+  /** PIN-kodni solishtiradi; noto'g'ri urinishlar sanaladi (5 tadan keyin kod bloklanadi) */
+  private async checkPin(tx: Prisma.TransactionClient, id: string, kind: 'pickup' | 'delivery', given: string, expected: string, attempts: number) {
+    const field = kind === 'pickup' ? 'pickupPinAttempts' : 'deliveryPinAttempts';
+    if (attempts >= MAX_PIN_ATTEMPTS) throw new ConflictException("PIN-kod ko'p marta noto'g'ri kiritildi va bloklandi. Dispetcherga murojaat qiling");
+    if (given !== expected) {
+      await tx.shipment.update({ where: { id }, data: { [field]: { increment: 1 } } });
+      // Tranzaksiya qaytarilmasligi uchun xatoni tashqarida chiqaramiz
+      return false;
+    }
+    return true;
+  }
+
+  /** Yuklash: FERMER haydovchining 4 xonali PIN-kodini kiritadi -> LOADING -> IN_TRANSIT */
+  async confirmPickup(farmerId: string, id: string, pin: string) {
+    const ok = await this.prisma.$transaction(async (tx) => {
+      const s = await tx.shipment.findFirst({ where: { id, farmerId }, select: { status: true, pickupPin: true, pickupPinAttempts: true, bookingId: true, driverId: true } });
+      if (!s) throw new NotFoundException('Yuk topilmadi');
+      if (!s.bookingId || !s.pickupPin || !s.driverId) throw new ConflictException("Bu yuk uchun PIN-kod tasdiqlash mavjud emas");
+      if (s.status !== ShipmentStatus.LOADING) throw new ConflictException("PIN-kod faqat yuklanayotgan yuk uchun kiritiladi");
+      if (!(await this.checkPin(tx, id, 'pickup', pin, s.pickupPin, s.pickupPinAttempts))) return false;
+      const moved = await tx.shipment.updateMany({ where: { id, status: ShipmentStatus.LOADING }, data: { status: ShipmentStatus.IN_TRANSIT, pickupPinVerifiedAt: new Date() } });
+      if (moved.count === 0) throw new ConflictException("Yuk holati allaqachon o'zgargan. Sahifani yangilang");
+      await tx.shipmentEvent.create({ data: { shipmentId: id, status: ShipmentStatus.IN_TRANSIT } });
+      return true;
+    });
+    if (!ok) throw new BadRequestException("PIN-kod noto'g'ri. Haydovchidan 4 xonali kodni qayta so'rang");
+    this.notify.shipmentStatus(id, ShipmentStatus.IN_TRANSIT);
+    return this.reload(id, 'farmer');
+  }
+
+  /** Topshirish: HAYDOVCHI marketning 4 xonali PIN-kodini kiritadi -> DELIVERED va escrow avtomatik chiqariladi */
+  async confirmDelivery(driverId: string, id: string, pin: string) {
+    const ok = await this.prisma.$transaction(async (tx) => {
+      const s = await tx.shipment.findFirst({ where: { id, driverId }, select: { status: true, deliveryPin: true, deliveryPinAttempts: true, bookingId: true } });
+      if (!s) throw new NotFoundException('Yuk topilmadi');
+      if (!s.bookingId || !s.deliveryPin) throw new ConflictException("Bu yuk uchun PIN-kod tasdiqlash mavjud emas");
+      if (s.status !== ShipmentStatus.IN_TRANSIT) throw new ConflictException("PIN-kod faqat yo'ldagi yuk uchun kiritiladi");
+      if (!(await this.checkPin(tx, id, 'delivery', pin, s.deliveryPin, s.deliveryPinAttempts))) return false;
+      const moved = await tx.shipment.updateMany({ where: { id, driverId, status: ShipmentStatus.IN_TRANSIT }, data: { status: ShipmentStatus.DELIVERED, deliveredAt: new Date(), deliveryPinVerifiedAt: new Date() } });
+      if (moved.count === 0) throw new ConflictException("Yuk holati allaqachon o'zgargan. Sahifani yangilang");
+      await tx.shipmentEvent.create({ data: { shipmentId: id, status: ShipmentStatus.DELIVERED } });
+      await restoreLtl(tx, id);
+      return true;
+    });
+    if (!ok) throw new BadRequestException("PIN-kod noto'g'ri. Xaridordan 4 xonali kodni qayta so'rang");
+    await this.invalidateTrust(id);
+    this.notify.shipmentStatus(id, ShipmentStatus.DELIVERED);
+    const bookingId = (await this.prisma.shipment.findUniqueOrThrow({ where: { id }, select: { bookingId: true } })).bookingId!;
+    const released = await this.payments.releaseOnDelivery(bookingId); // market kodi = qabul qildi: escrow fermer va haydovchiga bo'linadi
+    const rewards = await this.leaderboard.recordDelivery(id).catch(() => null); // oylik reyting: km va tonna
+    return { ...(await this.reload(id, 'driver-own')), paymentReleased: released, ...(rewards && { rewards }) };
   }
 
   // ---------- e-BOL: fermer SMS-kodi bilan raqamli imzo ----------
@@ -192,9 +332,14 @@ export class ShipmentService {
   /** Yuklash joyiga yetib keldi: fermer telefoniga 4 xonali kod yuboriladi. Ombor yuki dispetcher tomonidan jo'natiladi, shuning uchun kerak emas. */
   async arrived(driverId: string, id: string) {
     const s = await this.prisma.shipment.findFirst({
-      where: { id, driverId }, select: { status: true, isSigned: true, warehouseOrderId: true, farmer: { select: { user: { select: { phone: true } } } } },
+      where: { id, driverId }, select: { status: true, isSigned: true, warehouseOrderId: true, pickupPin: true, farmer: { select: { user: { select: { phone: true } } } } },
     });
     if (!s) throw new NotFoundException('Yuk topilmadi');
+    // PIN rejimi: SMS-kod o'rniga fermerga Telegram orqali «haydovchi yetib keldi» xabari (fermer haydovchining PIN-kodini so'raydi)
+    if (this.env.PIN_ENFORCE && s.pickupPin && s.status === ShipmentStatus.LOADING && !s.warehouseOrderId) {
+      this.notify.driverArrived(id);
+      return { notified: true };
+    }
     this.assertSignable(s);
     return this.ebol.issue('SHIPMENT', id, s.farmer.user.phone);
   }
@@ -278,8 +423,8 @@ export class ShipmentService {
     const formula = this.pricing.formula(p.distanceKm, s.weightKg, p.deliveryFee);
     const base = { deliveryFee: Number(p.deliveryFee), distanceKm: p.distanceKm, currency: p.currency, formula };
     if (viewer === 'driver-open' || viewer === 'driver-own') return base;
-    const b = breakdownOf({ productPrice: p.amount, deliveryFee: p.deliveryFee, serviceFee: p.serviceFee, distanceKm: p.distanceKm, currency: p.currency });
-    return { ...b, formula, warehouseFee: Number(p.feeAmount), farmerShare: b.productPrice - Number(p.feeAmount), driverShare: b.deliveryFee, platformShare: b.serviceFee + Number(p.feeAmount) };
+    const b = paymentBreakdown({ productPrice: p.amount, deliveryFee: p.deliveryFee, serviceFee: p.serviceFee, distanceKm: p.distanceKm, currency: p.currency, deliveryPayer: p.deliveryPayer });
+    return { ...b, formula, warehouseFee: Number(p.feeAmount), farmerShare: Number(p.amount) - Number(p.feeAmount), driverShare: b.deliveryFee, platformShare: b.serviceFee + Number(p.feeAmount) };
   }
 
   /** Haydovchi kartochkasiga ommaviy ishonch ma'lumoti (tasdiqlangan belgi, status, top badjlar) qo'shadi */
@@ -444,21 +589,31 @@ export class ShipmentService {
       createdAt: s.createdAt,
       assignedAt: s.assignedAt,
       deliveredAt: s.deliveredAt,
+      // Qizil yulduzcha (penalty) ballari: hamkor tanlashda ogohlantirish uchun (2+ — red-flag)
+      penalty: { farmer: s.farmer?.user?.penaltyPoints ?? 0, market: s.market?.user?.penaltyPoints ?? 0, driver: s.driver?.user?.penaltyPoints ?? 0 },
       isSigned: s.isSigned,
+      // PIN-kod: haydovchi (yuklash) va market (topshirish) o'z kodini ko'radi; fermer kiritadigan joyini, haydovchi kiritadigan joyini biladi
+      pin: s.pickupPin ? {
+        enforced: this.env.PIN_ENFORCE,
+        pickup: viewer === 'driver-own' || viewer === 'staff' ? s.pickupPin : null,
+        delivery: viewer === 'market' || viewer === 'staff' ? s.deliveryPin : null,
+        awaiting: s.status === ShipmentStatus.LOADING ? 'PICKUP' : s.status === ShipmentStatus.IN_TRANSIT ? 'DELIVERY' : null,
+      } : null,
       ebolRequired: this.ebol.enforced && !s.warehouseOrderId,
       events: s.events.map((e) => ({ status: e.status, createdAt: e.createdAt })),
       paymentStatus: s.booking?.payment?.status ?? s.warehouseOrder?.payment?.status ?? null, // haydovchi uchun: to'lov kafolatlanganmi
       price: this.priceOf(s, viewer),
       ...(viewer === 'driver-open' && capacityKg ? { fitsCapacity: s.weightKg.lte(capacityKg) } : {}),
-      farmer: viewer === 'driver-own' || viewer === 'market'
+      farmer: viewer === 'driver-own' || viewer === 'market' || viewer === 'staff'
         ? { farmName: farmer.farmName, fullName: farmer.user.fullName, phone: farmer.user.phone }
         : null,
-      market: viewer === 'driver-own' || viewer === 'farmer'
+      market: viewer === 'driver-own' || viewer === 'farmer' || viewer === 'staff'
         ? { companyName: market.companyName, fullName: market.user.fullName, phone: market.user.phone }
         : null,
-      driver: (viewer === 'farmer' || viewer === 'market') && s.driver
+      driver: (viewer === 'farmer' || viewer === 'market' || viewer === 'staff') && s.driver
         ? {
             userId: s.driver.userId,
+            penaltyPoints: s.driver.user.penaltyPoints,
             fullName: s.driver.user.fullName,
             phone: s.driver.user.phone,
             vehicleType: s.driver.vehicleType,
