@@ -114,8 +114,9 @@
             syncScrollLock();
         }
 
-        function switchAuthTab(tab) {
+        function switchAuthTab(tab, back) {
             const isLogin = tab === 'login';
+            const fromReset = !!resetStep;
             const meta = ROLE_META[authRole];
             if (resetStep) {
                 // Parolni tiklash oqimidan chiqish: tablar qaytadi, holat tozalanadi
@@ -140,6 +141,7 @@
             document.getElementById('auth-subtitle').innerText = isLogin
                 ? 'Telefon raqamingiz va parolingiz bilan kiring.'
                 : meta.regSub;
+            paneIn(isLogin ? loginForm : document.getElementById(REGISTER_FORM_IDS[authRole]), back || (isLogin && fromReset));
             hideAuthAlert();
         }
 
@@ -580,38 +582,105 @@
             verify: ['Kodni tasdiqlang', ''],
             newpass: ["Yangi parol o'rnating", 'Kod tasdiqlandi. Endi yangi parol tanlang.']
         };
-        const resetFlow = { phone: '', token: '', resendAt: 0, timer: null };
+        // purpose: 'RESET' (parolni tiklash) yoki 'REGISTER' (ro'yxatdan o'tishda telefonni tasdiqlash; pending — kutilayotgan ro'yxatdan o'tish)
+        const resetFlow = { phone: '', token: '', resendAt: 0, timer: null, purpose: 'RESET', pending: null, length: 4, busy: false };
         let resetStep = null;
 
         const maskPhone = function (p) { return p.replace(/^(\+998)(\d{2})\d{3}(\d{2})(\d{2})$/, '$1 $2 *** $3 $4'); };
 
+        // Formalar orasida silliq slayd o'tish (Framer Motion o'rnida CSS keyframes): back=true — chapdan kiradi
+        function paneIn(node, back) {
+            if (!node) return;
+            node.classList.remove('auth-pane-in', 'back');
+            void node.offsetWidth; // animatsiyani qayta boshlash
+            node.classList.add('auth-pane-in');
+            if (back) node.classList.add('back');
+        }
+
+        // ----- Glassy OTP V2 -----
+        const otpRow = document.getElementById('otp-box-row');
+        const otpOverlay = document.getElementById('otp-overlay');
+        const otpBoxes = function () { return Array.prototype.slice.call(otpRow.querySelectorAll('.otp-box')); };
+        function otpBuild(n) {
+            otpRow.replaceChildren();
+            for (let k = 0; k < n; k++) {
+                const b = document.createElement('input');
+                b.type = 'text'; b.className = 'otp-box'; b.inputMode = 'numeric'; b.maxLength = 1;
+                b.autocomplete = k === 0 ? 'one-time-code' : 'off';
+                b.setAttribute('aria-label', T('{0}-raqam', k + 1));
+                b.dataset.i = String(k);
+                otpRow.appendChild(b);
+            }
+        }
+        function otpSync() {
+            const boxes = otpBoxes();
+            verifyForm.code.value = boxes.map(function (b) { return b.value; }).join('');
+            boxes.forEach(function (b) { b.classList.toggle('filled', !!b.value); });
+            return verifyForm.code.value;
+        }
+        function otpState(state) { otpOverlay.dataset.state = state; }
+        function otpClear(focus) {
+            otpBoxes().forEach(function (b) { b.value = ''; b.classList.remove('filled'); });
+            verifyForm.code.value = '';
+            verifyForm.classList.remove('err');
+            otpState('idle');
+            if (focus !== false) { const f = otpBoxes()[0]; if (f) f.focus(); }
+        }
+        function otpFill(from, digits) {
+            const boxes = otpBoxes();
+            for (let k = 0; k < digits.length && from + k < boxes.length; k++) boxes[from + k].value = digits[k];
+            const next = boxes[Math.min(from + digits.length, boxes.length - 1)];
+            if (next) next.focus();
+            if (otpSync().length === boxes.length) setTimeout(function () { verifyForm.requestSubmit(); }, 120);
+        }
+        otpRow.addEventListener('input', function (e) {
+            const box = e.target, k = Number(box.dataset.i);
+            const digits = box.value.replace(/\D/g, '');
+            box.value = '';
+            verifyForm.classList.remove('err');
+            if (digits) otpFill(k, digits.slice(0, otpBoxes().length - k)); else otpSync();
+        });
+        otpRow.addEventListener('keydown', function (e) {
+            const boxes = otpBoxes(), k = Number(e.target.dataset.i);
+            if (e.key === 'Backspace' && !e.target.value && k > 0) { boxes[k - 1].value = ''; boxes[k - 1].focus(); otpSync(); e.preventDefault(); }
+            else if (e.key === 'ArrowLeft' && k > 0) { boxes[k - 1].focus(); e.preventDefault(); }
+            else if (e.key === 'ArrowRight' && k < boxes.length - 1) { boxes[k + 1].focus(); e.preventDefault(); }
+        });
+        otpRow.addEventListener('paste', function (e) {
+            e.preventDefault();
+            const text = ((e.clipboardData || window.clipboardData).getData('text') || '').replace(/\D/g, '');
+            if (text) otpFill(0, text.slice(0, otpBoxes().length));
+        });
+
         function clearResetFlow() {
             clearInterval(resetFlow.timer);
             resetFlow.timer = null;
-            resetFlow.phone = ''; resetFlow.token = ''; resetFlow.resendAt = 0;
+            resetFlow.phone = ''; resetFlow.token = ''; resetFlow.resendAt = 0; resetFlow.pending = null; resetFlow.purpose = 'RESET'; resetFlow.busy = false;
             resetStep = null;
             // Tiklash bo'limlari faqat "Parolni unutdingizmi?" bosilganda ko'rinadi: chiqishda hammasi yashiriladi
-            [forgotForm, verifyForm, newpassForm].forEach(function (f) { f.reset(); f.classList.add('hidden'); });
+            [forgotForm, verifyForm, newpassForm].forEach(function (f) { f.reset(); f.classList.add('hidden'); f.classList.remove('auth-pane-in', 'back'); });
+            otpClear(false);
             document.getElementById('dev-code-note').classList.add('hidden');
         }
 
-        function showResetStep(step) {
+        function showResetStep(step, back) {
             resetStep = step;
+            const reg = resetFlow.purpose === 'REGISTER';
             loginForm.classList.add('hidden');
             Object.keys(REGISTER_FORM_IDS).forEach(function (r) { document.getElementById(REGISTER_FORM_IDS[r]).classList.add('hidden'); });
             document.getElementById('auth-tabs').classList.add('hidden');
             document.getElementById('role-pills').classList.add('hidden');
             Object.keys(RESET_FORMS).forEach(function (k) { RESET_FORMS[k].classList.toggle('hidden', k !== step); });
-            document.getElementById('auth-role-badge').innerText = 'Parolni tiklash';
-            document.getElementById('auth-role-icon').className = 'fa-solid fa-key';
-            document.getElementById('auth-title').innerText = RESET_TEXT[step][0];
-            document.getElementById('auth-subtitle').innerText = step === 'verify'
-                ? maskPhone(resetFlow.phone) + " raqamiga yuborilgan 6 xonali kodni kiriting."
-                : RESET_TEXT[step][1];
+            document.getElementById('auth-role-badge').innerText = reg ? 'Telefonni tasdiqlash' : 'Parolni tiklash';
+            document.getElementById('auth-role-icon').className = 'fa-solid ' + (reg ? 'fa-shield-halved' : 'fa-key');
+            document.getElementById('auth-title').innerText = step === 'verify' && reg ? 'Telefonni tasdiqlang' : RESET_TEXT[step][0];
+            document.getElementById('auth-subtitle').innerText = step === 'verify' ? '' : RESET_TEXT[step][1];
+            document.getElementById('otp-hint').innerText = step === 'verify' ? T('{0} raqamiga yuborilgan {1} xonali kodni kiriting.', maskPhone(resetFlow.phone), resetFlow.length) : '';
             if (step !== 'verify') clearInterval(resetFlow.timer);
             hideAuthAlert();
-            const focusId = { forgot: 'forgot-phone', verify: 'verify-code', newpass: 'np-password' }[step];
-            setTimeout(function () { const n = document.getElementById(focusId); if (n) n.focus(); }, 50);
+            paneIn(RESET_FORMS[step], back);
+            const focusId = { forgot: 'forgot-phone', verify: null, newpass: 'np-password' }[step];
+            setTimeout(function () { const n = focusId ? document.getElementById(focusId) : otpBoxes()[0]; if (n) n.focus(); }, 80);
         }
 
         function openForgot() {
@@ -625,18 +694,30 @@
             const btn = document.getElementById('resend-btn');
             const left = Math.max(0, Math.ceil((resetFlow.resendAt - Date.now()) / 1000));
             btn.disabled = left > 0;
-            btn.innerText = left > 0 ? 'Qayta yuborish: ' + left + ' s' : 'Kodni qayta yuborish';
+            btn.innerText = left > 0 ? T('Qayta yuborish: {0} s', left) : T('Kodni qayta yuborish');
             if (left === 0) { clearInterval(resetFlow.timer); resetFlow.timer = null; }
         }
+        function startResendTimer() {
+            clearInterval(resetFlow.timer);
+            tickResend();
+            resetFlow.timer = setInterval(tickResend, 1000);
+        }
 
-        // Kod so'raydi (birinchi marta yoki qayta); raqam ro'yxatdan o'tgan-o'tmaganidan qat'i nazar server bir xil javob beradi
-        async function requestResetCode(phone) {
-            const data = await authRequest('/auth/forgot-password', { phone: phone });
-            resetFlow.phone = phone;
+        // Kod so'raydi (birinchi marta yoki qayta). RESET: raqam ro'yxatdan o'tgan-o'tmaganidan qat'i nazar server bir xil javob beradi.
+        // Simulyatsiya rejimida server kodni (devCode) qaytaradi: u toast va qatlamda ko'rsatiladi.
+        async function requestOtp(phone, purpose) {
+            const data = await authRequest('/auth/send-otp', { phone: phone, purpose: purpose });
+            resetFlow.phone = phone; resetFlow.purpose = purpose;
+            resetFlow.length = data.otpLength || 4;
             resetFlow.resendAt = Date.now() + (data.resendAfterSeconds || 60) * 1000;
             const note = document.getElementById('dev-code-note');
-            note.classList.toggle('hidden', !data.devCode); // faqat server test rejimida kodni qaytaradi
-            if (data.devCode) document.getElementById('dev-code').innerText = data.devCode;
+            note.classList.toggle('hidden', !data.devCode);
+            if (data.devCode) {
+                document.getElementById('dev-code').innerText = data.devCode;
+                showToast(T('Simulyatsiya: SMS kodi {0}', data.devCode), 9000, 'info');
+            }
+            if (otpBoxes().length !== resetFlow.length) otpBuild(resetFlow.length);
+            otpClear(false);
             return data;
         }
 
@@ -647,12 +728,9 @@
             if (!/^\+998\d{9}$/.test(phone)) return showAuthAlert(PHONE_ERR);
             setLoading(forgotForm, true);
             try {
-                const data = await requestResetCode(phone);
+                const data = await requestOtp(phone, 'RESET');
                 showResetStep('verify');
-                verifyForm.code.value = '';
-                clearInterval(resetFlow.timer);
-                tickResend();
-                resetFlow.timer = setInterval(tickResend, 1000);
+                startResendTimer();
                 showAuthAlert(data.message, 'info');
             } catch (err) {
                 showAuthAlert(err.messages);
@@ -661,25 +739,46 @@
             }
         });
 
-        verifyForm.code.addEventListener('input', function () {
-            this.value = this.value.replace(/\D/g, '').slice(0, 6); // faqat raqam (SMS'dan joylashtirilganda ham)
-        });
+        const sleep = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
 
         verifyForm.addEventListener('submit', async function (e) {
             e.preventDefault();
+            if (resetFlow.busy) return;
             hideAuthAlert();
-            const code = verifyForm.code.value.trim();
-            if (!/^\d{6}$/.test(code)) return showAuthAlert('Kodni to\'liq kiriting (6 ta raqam).');
-            setLoading(verifyForm, true);
+            const code = otpSync();
+            if (code.length !== resetFlow.length) { verifyForm.classList.add('err'); return showAuthAlert(T("Kodni to'liq kiriting ({0} ta raqam).", resetFlow.length)); }
+            resetFlow.busy = true;
+            const t0 = Date.now();
+            otpState('loading'); // aylanuvchi neon halqa
             try {
-                const data = await authRequest('/auth/verify-reset-code', { phone: resetFlow.phone, code: code });
-                resetFlow.token = data.resetToken;
-                showResetStep('newpass');
+                const data = await authRequest('/auth/verify-otp', { phone: resetFlow.phone, code: code, purpose: resetFlow.purpose });
+                await sleep(Math.max(0, 900 - (Date.now() - t0))); // animatsiya ko'rinishi uchun
+                otpState('success'); // yashil nurlanuvchi ✓
+                sfx.play('success');
+                await sleep(1250);
+                if (resetFlow.purpose === 'REGISTER') {
+                    const pend = resetFlow.pending;
+                    if (!pend) throw { messages: ["Ro'yxatdan o'tish ma'lumotlari topilmadi. Qaytadan urinib ko'ring."] };
+                    const reg = await authRequest(pend.cfg.path, Object.assign({}, pend.payload, { otpToken: data.otpToken }));
+                    clearResetFlow();
+                    otpState('idle');
+                    onAuthSuccess(reg, "Muvaffaqiyatli ro'yxatdan o'tdingiz!");
+                } else {
+                    resetFlow.token = data.resetToken;
+                    otpState('idle');
+                    showResetStep('newpass');
+                }
             } catch (err) {
-                verifyForm.code.value = '';
+                otpState('idle');
+                verifyForm.classList.add('err');
+                setTimeout(function () { otpClear(true); verifyForm.classList.add('err'); }, 0);
                 showAuthAlert(err.messages);
+                // Ro'yxatdan o'tish bosqichida xato (band raqam, STIR...): formaga qaytariladi
+                if (resetFlow.purpose === 'REGISTER' && err.status && err.status !== 400) {
+                    const m = err.messages; setTimeout(function () { switchAuthTab('register'); showAuthAlert(m); }, 900);
+                }
             } finally {
-                setLoading(verifyForm, false);
+                resetFlow.busy = false;
             }
         });
 
@@ -688,19 +787,21 @@
             const btn = this;
             btn.disabled = true;
             try {
-                const data = await requestResetCode(resetFlow.phone);
-                verifyForm.code.value = '';
-                clearInterval(resetFlow.timer);
-                tickResend();
-                resetFlow.timer = setInterval(tickResend, 1000);
+                const data = await requestOtp(resetFlow.phone, resetFlow.purpose);
+                startResendTimer();
                 showAuthAlert(data.message, 'info');
+                const f = otpBoxes()[0]; if (f) f.focus();
             } catch (err) {
                 showAuthAlert(err.messages);
                 // Kutish muddati tugamagan bo'lsa (429): tugma qisqa vaqtdan keyin qayta yoqiladi
                 resetFlow.resendAt = Date.now() + 5000;
-                tickResend();
-                resetFlow.timer = resetFlow.timer || setInterval(tickResend, 1000);
+                startResendTimer();
             }
+        });
+
+        document.getElementById('otp-change').addEventListener('click', function () {
+            if (resetFlow.purpose === 'REGISTER') switchAuthTab('register', true);
+            else showResetStep('forgot', true);
         });
 
         newpassForm.addEventListener('submit', async function (e) {
@@ -882,8 +983,11 @@
                 if (result.errors.length) return showAuthAlert(result.errors);
                 setLoading(form, true);
                 try {
-                    const data = await authRequest(cfg.path, result.payload);
-                    onAuthSuccess(data, "Muvaffaqiyatli ro'yxatdan o'tdingiz!");
+                    // 1-qadam: telefon raqamga SMS kod yuboriladi, 2-qadam: kod tasdiqlangach ro'yxatdan o'tish yakunlanadi
+                    await requestOtp(result.payload.phone, 'REGISTER');
+                    resetFlow.pending = { cfg: cfg, payload: result.payload };
+                    showResetStep('verify');
+                    startResendTimer();
                 } catch (err) {
                     showAuthAlert(err.messages);
                 } finally {

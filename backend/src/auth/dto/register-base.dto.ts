@@ -1,4 +1,4 @@
-import { IsString, Matches, MinLength } from 'class-validator';
+import { IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator';
 import { IsStrongPassword } from '../password/password-policy';
 
 export const UZ_PHONE_REGEX = /^\+998\d{9}$/;
@@ -13,4 +13,8 @@ export class RegisterBaseDto {
   @IsString()
   @MinLength(2)
   fullName: string;
+
+  /** POST /auth/verify-otp (REGISTER) dan olingan bir martalik token; REGISTER_OTP_ENFORCE yoqilganda majburiy */
+  @IsOptional() @IsString() @MaxLength(100)
+  otpToken?: string;
 }

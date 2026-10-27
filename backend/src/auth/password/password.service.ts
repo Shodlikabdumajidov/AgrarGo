@@ -63,8 +63,9 @@ export class PasswordService {
       message: "Agar raqam ro'yxatdan o'tgan bo'lsa, tasdiqlash kodi SMS orqali yuborildi",
       expiresInSeconds: this.env.OTP_TTL_SECONDS,
       resendAfterSeconds: this.env.OTP_RESEND_COOLDOWN_SECONDS,
+      otpLength: this.env.OTP_LENGTH,
     };
-    const code = generateOtp();
+    const code = generateOtp(this.env.OTP_LENGTH);
     const codeHash = hashOtp(this.env.JWT_SECRET, phone, code); // mavjud bo'lmagan raqam uchun ham xuddi shu ish bajariladi
 
     const user = await this.prisma.user.findUnique({ where: { phone }, select: { id: true, isActive: true } });

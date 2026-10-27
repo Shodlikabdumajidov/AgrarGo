@@ -1,7 +1,7 @@
 import { createHash, createHmac, randomBytes, randomInt, timingSafeEqual } from 'crypto';
 
-/** 6 xonali kod: kriptografik tasodifiy (Math.random emas), boshidagi nollar saqlanadi. */
-export const generateOtp = (): string => String(randomInt(0, 1_000_000)).padStart(6, '0');
+/** `length` xonali kod (standart 6; muhitda OTP_LENGTH=4): kriptografik tasodifiy (Math.random emas), boshidagi nollar saqlanadi. */
+export const generateOtp = (length = 6): string => String(randomInt(0, 10 ** length)).padStart(length, '0');
 
 /**
  * Kod bazada HMAC-SHA256 (server kaliti + raqam bilan bog'langan) ko'rinishida saqlanadi: 6 xonali kod

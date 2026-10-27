@@ -1,10 +1,13 @@
-import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Prisma, Role } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { roleTakenMessage, ROLE_LABEL } from '../common/role-labels';
 import { publicUser } from '../common/public-user';
+import { APP_ENV } from '../config/app-env.module';
+import { AppEnv } from '../config/env.validation';
 import { PrismaService } from '../prisma/prisma.service';
+import { OTP_REQUIRED_MESSAGE, PhoneOtpService } from './password/phone-otp.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterBaseDto } from './dto/register-base.dto';
 import { trialEndsFromNow } from '../subscription/subscription.logic';
@@ -22,28 +25,33 @@ type RoleProfile = Pick<Prisma.UserCreateInput, 'farmer' | 'driver' | 'market' |
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly prisma: PrismaService, private readonly jwt: JwtService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly jwt: JwtService,
+    private readonly phoneOtp: PhoneOtpService,
+    @Inject(APP_ENV) private readonly env: AppEnv,
+  ) {}
 
   registerFarmer(dto: RegisterFarmerDto) {
-    const { phone, password, fullName, ...farm } = dto;
+    const { phone, password, fullName, otpToken, ...farm } = dto;
     return this.register(Role.FARMER, dto, { farmer: { create: farm } });
   }
 
   registerDriver(dto: RegisterDriverDto) {
-    const { phone, password, fullName, plateNumber, ...driver } = dto;
+    const { phone, password, fullName, otpToken, plateNumber, ...driver } = dto;
     return this.register(Role.DRIVER, dto, {
       driver: { create: { ...driver, plateNumber: plateNumber.replace(/[\s-]/g, '').toUpperCase() } },
     });
   }
 
   registerMarket(dto: RegisterMarketDto) {
-    const { phone, password, fullName, ...market } = dto;
+    const { phone, password, fullName, otpToken, ...market } = dto;
     return this.register(Role.MARKET, dto, { market: { create: market } });
   }
 
   /** Mahalliy aholi (chakana xaridor). Obuna talab qilinmaydi. */
   registerConsumer(dto: RegisterConsumerDto) {
-    const { phone, password, fullName, ...consumer } = dto;
+    const { phone, password, fullName, otpToken, ...consumer } = dto;
     return this.register(Role.CONSUMER, dto, { consumer: { create: consumer } });
   }
 
@@ -72,6 +80,8 @@ export class AuthService {
       select: { role: true },
     });
     if (existing) throw new ConflictException(roleTakenMessage(existing.role));
+    // Telefon SMS kod bilan tasdiqlangan bo'lishi kerak (REGISTER_OTP_ENFORCE); token berilgan bo'lsa har doim tekshiriladi
+    if ((this.env.REGISTER_OTP_ENFORCE || base.otpToken) && !(await this.phoneOtp.isValid(base.phone, base.otpToken))) throw new BadRequestException(OTP_REQUIRED_MESSAGE);
 
     const passwordHash = await bcrypt.hash(base.password, 10);
     try {
@@ -79,6 +89,7 @@ export class AuthService {
         data: { phone: base.phone, passwordHash, fullName: base.fullName, role, trialEndsAt: trialEndsFromNow(), ...profile },
         include: USER_WITH_PROFILES,
       });
+      await this.phoneOtp.consume(base.otpToken);
       return this.buildResponse(user);
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {

@@ -2,7 +2,7 @@ import { Body, Controller, Get, HttpCode, Post, UseGuards } from '@nestjs/common
 import { CurrentUser } from '../common/current-user.decorator';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
-import { ChangePasswordDto, ForgotPasswordDto, ResetPasswordDto, VerifyResetCodeDto } from './dto/password.dto';
+import { ChangePasswordDto, ForgotPasswordDto, ResetPasswordDto, SendOtpDto, VerifyOtpDto, VerifyResetCodeDto } from './dto/password.dto';
 import { RegisterDriverDto } from './dto/register-driver.dto';
 import { RegisterFarmerDto } from './dto/register-farmer.dto';
 import { RegisterConsumerDto } from './dto/register-consumer.dto';
@@ -10,10 +10,11 @@ import { RegisterMarketDto } from './dto/register-market.dto';
 import { ThrottleProfile } from '../security/throttle-profile';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { PasswordService } from './password/password.service';
+import { PhoneOtpService } from './password/phone-otp.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly auth: AuthService, private readonly passwords: PasswordService) {}
+  constructor(private readonly auth: AuthService, private readonly passwords: PasswordService, private readonly phoneOtp: PhoneOtpService) {}
 
   @Post('farmer/register')
   @ThrottleProfile('register')
@@ -53,6 +54,26 @@ export class AuthController {
   @HttpCode(200)
   changePassword(@CurrentUser() user: { id: string }, @Body() dto: ChangePasswordDto) {
     return this.passwords.changePassword(user.id, dto);
+  }
+
+  /**
+   * Yagona SMS kod yuborish: purpose=REGISTER (ro'yxatdan o'tishda telefonni tasdiqlash) yoki RESET (parolni tiklash).
+   * Simulyatsiya rejimida kod javobda `devCode` sifatida qaytadi (interfeys uni toast/modalda ko'rsatadi); RESET uchun production'da hech qachon.
+   */
+  @Post('send-otp')
+  @ThrottleProfile('forgot')
+  @HttpCode(200)
+  sendOtp(@Body() dto: SendOtpDto) {
+    return dto.purpose === 'REGISTER' ? this.phoneOtp.send(dto.phone) : this.passwords.forgotPassword(dto.phone);
+  }
+
+  /** Kodni tasdiqlaydi: REGISTER -> `otpToken` (ro'yxatdan o'tish so'roviga qo'shiladi), RESET -> `resetToken` (/auth/reset-password uchun). */
+  @Post('verify-otp')
+  @ThrottleProfile('verify')
+  @HttpCode(200)
+  async verifyOtp(@Body() dto: VerifyOtpDto) {
+    if (dto.purpose === 'REGISTER') return this.phoneOtp.verify(dto.phone, dto.code);
+    return { verified: true, ...(await this.passwords.verifyResetCode(dto.phone, dto.code)) };
   }
 
   /** 1) Telefon raqamga SMS kod yuboriladi (raqam mavjudligidan qat'i nazar bir xil javob). */

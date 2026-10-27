@@ -50,6 +50,7 @@ export async function bootApp(env: Record<string, string | undefined> = {}): Pro
     CORS_ORIGINS: '',
     PAYMENT_ALLOW_SIMULATION: 'true', // testlarda pul harakati simulyatsiya qilinadi
     SMS_ALLOW_SIMULATION: 'true', // testlarda SMS yuborilmaydi
+    REGISTER_OTP_ENFORCE: 'false', // eski testlar OTP'siz ro'yxatdan o'tadi; OTP testlari buni 'true' qiladi
     PIN_ENFORCE: 'false', // eski oqimlar (advance) o'zgarishsiz; PIN testlari buni 'true' qiladi
     ...RELAXED_LIMITS,
     ...env,

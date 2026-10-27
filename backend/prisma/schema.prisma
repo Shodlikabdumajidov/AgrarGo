@@ -1449,3 +1449,23 @@ model AgroProduct {
   @@index([supplierId])
   @@index([mode, isActive])
 }
+
+/// Ro'yxatdan o'tishda telefonni SMS kod bilan tasdiqlash (foydalanuvchi hali yaratilmagan, shuning uchun raqam bo'yicha)
+model PhoneVerification {
+  id    String @id @default(uuid())
+  phone String
+
+  codeHash   String // HMAC-SHA256 (server kaliti bilan)
+  attempts   Int       @default(0)
+  expiresAt  DateTime
+  verifiedAt DateTime?
+
+  tokenHash      String?   @unique // kod tasdiqlangach beriladigan bir martalik otpToken (SHA-256)
+  tokenExpiresAt DateTime?
+  usedAt         DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([phone, createdAt])
+  @@index([createdAt])
+}

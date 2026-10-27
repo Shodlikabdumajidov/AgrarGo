@@ -6,13 +6,13 @@
  *   (shaxsiy ma'lumotlar, to'lov va GPS har doim yangi bo'lishi shart).
  * Versiyani o'zgartirsangiz eski keshlar o'chiriladi.
  */
-const VERSION = 'v47';
+const VERSION = 'v48';
 const SHELL = `agrargo-shell-${VERSION}`;
 const RUNTIME = `agrargo-runtime-${VERSION}`;
 const RUNTIME_MAX = 80;
 
 const SHELL_FILES = [
-  './', './index.html', './offline.html', './manifest.json', './images/newlogo.png', './js/tailwind-config.js', './js/app.js', './js/local.js', './js/agro-supplier.js', './js/local-dock.js', './js/cashback.js', './js/hub-ops.js', './js/finance.js', './js/ebol.js', './js/safety.js', './js/new-alphabet.js', './css/light.css', './css/agro-store.css', './css/glass-carousel.css', './js/glass-carousel.js', './css/perf-layout.css', './js/perf.js',
+  './', './index.html', './offline.html', './manifest.json', './images/newlogo.png', './js/tailwind-config.js', './js/app.js', './js/local.js', './js/agro-supplier.js', './js/local-dock.js', './js/cashback.js', './js/hub-ops.js', './js/finance.js', './js/ebol.js', './js/safety.js', './js/new-alphabet.js', './css/light.css', './css/agro-store.css', './css/glass-carousel.css', './css/glassy-auth.css', './js/glass-carousel.js', './css/perf-layout.css', './js/perf.js',
   './images/icons/icon-192.png', './images/icons/icon-512.png', './images/icons/favicon-32.png',
   './i18n/uz.js', './i18n/ru.js', './i18n/en.js', './i18n/engine.js',
   './vendor/JsBarcode.code128.min.js', './vendor/qrcode.js', './vendor/chart.umd.js', './404.html', './vendor/label-print.css',

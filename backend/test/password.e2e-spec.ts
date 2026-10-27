@@ -148,7 +148,7 @@ describe('Parol: o‘zgartirish va tiklash (e2e)', () => {
       const res = await forgot(a.phone);
       expect(res.status).toBe(200);
       expect(res.body).toMatchObject({ expiresInSeconds: 300, resendAfterSeconds: expect.any(Number) });
-      expect(res.body.devCode).toMatch(/^\d{6}$/); // faqat development/test
+      expect(res.body.devCode).toMatch(/^\d{4}$/); // faqat development/test
 
       await flush();
       expect(sms).toHaveBeenCalledTimes(1);
@@ -539,7 +539,7 @@ describe('Parol: production sozlamalari (e2e)', () => {
       expect(res.body.devCode).toBeUndefined();
       await flush();
       expect(sms).toHaveBeenCalledTimes(1);
-      const code = /(\d{6})/.exec(sms.mock.calls[0][1] as string)![1];
+      const code = /(\d{4})/.exec(sms.mock.calls[0][1] as string)![1];
       expect(JSON.stringify(res.body)).not.toContain(code);
 
       // mavjud va mavjud bo'lmagan raqam javoblari production'da aynan bir xil shaklda
