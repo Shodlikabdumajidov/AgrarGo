@@ -294,7 +294,7 @@ export class ShipmentService {
       if (!s.bookingId || !s.pickupPin || !s.driverId) throw new ConflictException("Bu yuk uchun PIN-kod tasdiqlash mavjud emas");
       if (s.status !== ShipmentStatus.LOADING) throw new ConflictException("PIN-kod faqat yuklanayotgan yuk uchun kiritiladi");
       if (!(await this.checkPin(tx, id, 'pickup', pin, s.pickupPin, s.pickupPinAttempts))) return false;
-      const moved = await tx.shipment.updateMany({ where: { id, status: ShipmentStatus.LOADING }, data: { status: ShipmentStatus.IN_TRANSIT } });
+      const moved = await tx.shipment.updateMany({ where: { id, status: ShipmentStatus.LOADING }, data: { status: ShipmentStatus.IN_TRANSIT, pickupPinVerifiedAt: new Date() } });
       if (moved.count === 0) throw new ConflictException("Yuk holati allaqachon o'zgargan. Sahifani yangilang");
       await tx.shipmentEvent.create({ data: { shipmentId: id, status: ShipmentStatus.IN_TRANSIT } });
       return true;
@@ -312,7 +312,7 @@ export class ShipmentService {
       if (!s.bookingId || !s.deliveryPin) throw new ConflictException("Bu yuk uchun PIN-kod tasdiqlash mavjud emas");
       if (s.status !== ShipmentStatus.IN_TRANSIT) throw new ConflictException("PIN-kod faqat yo'ldagi yuk uchun kiritiladi");
       if (!(await this.checkPin(tx, id, 'delivery', pin, s.deliveryPin, s.deliveryPinAttempts))) return false;
-      const moved = await tx.shipment.updateMany({ where: { id, driverId, status: ShipmentStatus.IN_TRANSIT }, data: { status: ShipmentStatus.DELIVERED, deliveredAt: new Date() } });
+      const moved = await tx.shipment.updateMany({ where: { id, driverId, status: ShipmentStatus.IN_TRANSIT }, data: { status: ShipmentStatus.DELIVERED, deliveredAt: new Date(), deliveryPinVerifiedAt: new Date() } });
       if (moved.count === 0) throw new ConflictException("Yuk holati allaqachon o'zgargan. Sahifani yangilang");
       await tx.shipmentEvent.create({ data: { shipmentId: id, status: ShipmentStatus.DELIVERED } });
       await restoreLtl(tx, id);

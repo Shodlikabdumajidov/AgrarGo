@@ -1085,6 +1085,7 @@ function dispatchCard(s, user) {
     btn.appendChild(el('i', 'fa-solid fa-user-plus')); btn.appendChild(el('span', '', 'Haydovchiga biriktirish'));
     btn.addEventListener('click', function () { openAssignDriverModal(s, user); });
     card.appendChild(btn);
+    const bolRow = el('div', 'flex flex-wrap gap-2'); bolRow.appendChild(bolButtons(s.id)); card.appendChild(bolRow);
     if (!ready) card.appendChild(el('p', 'text-xs text-amber-300', "Xaridor to'lovi escrow'ga o'tgach biriktirish mumkin."));
     return card;
 }

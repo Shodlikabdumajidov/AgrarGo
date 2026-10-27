@@ -2046,6 +2046,8 @@
             row('fa-clock', formatDateTime(b.createdAt));
             if (b.message) row('fa-comment', b.message);
             card.appendChild(info);
+            // Buyurtmalar tarixi: tasdiqlangan bron uchun BOL / Hisob-faktura PDF (haydovchi biriktirilmagan bo'lsa ham mavjud)
+            if (b.status === 'APPROVED') { const bolRow = el('div', 'flex flex-wrap gap-2 pt-1 border-t border-white/10'); bolRow.appendChild(bolButtons(b.id)); card.appendChild(bolRow); }
 
             if (b.status === 'APPROVED' && party.phone) {
                 const contact = el('div', 'rounded-xl bg-emerald-500/10 border border-emerald-500/30 px-4 py-3 flex items-center justify-between gap-3');
@@ -8724,6 +8726,50 @@
                 if (btn) btn.disabled = false;
             }
         }
+        // PDF ni brauzerning yangi oynasida ochadi (token bilan olinadi); oyna bloklangan bo'lsa yuklab olinadi
+        async function openPdf(path, fallbackName, btn) {
+            const token = storageGet(TOKEN_KEY);
+            if (!token) return handleSessionExpired(reopenDash);
+            const win = window.open('', '_blank'); // bosish paytidayoq ochiladi (popup bloklanmasligi uchun)
+            if (btn) btn.disabled = true;
+            try {
+                let res;
+                try { res = await fetch(API_URL + path, { headers: { Authorization: 'Bearer ' + token } }); }
+                catch (e) { throw { message: "Serverga ulanib bo'lmadi. Internet aloqasini tekshiring." }; }
+                if (res.status === 401) { if (win) win.close(); return handleSessionExpired(reopenDash); }
+                if (!res.ok) {
+                    let msg = res.status === 403 ? "Bu hujjatga kirish huquqingiz yo'q." : res.status === 404 ? 'Hujjat topilmadi.' : "Hujjatni ochib bo'lmadi.";
+                    try { const j = await res.json(); if (j && j.message) msg = [].concat(j.message)[0]; } catch (e) {}
+                    throw { message: msg };
+                }
+                const blob = new Blob([await res.blob()], { type: 'application/pdf' });
+                const url = URL.createObjectURL(blob);
+                if (win) { win.location.href = url; } else {
+                    const a = document.createElement('a'); a.href = url; a.download = fallbackName; document.body.appendChild(a); a.click(); a.remove();
+                }
+                setTimeout(function () { URL.revokeObjectURL(url); }, 120000);
+            } catch (err) {
+                if (win) win.close();
+                showToast(err.message || "Hujjatni ochib bo'lmadi.", 4800, 'error');
+            } finally { if (btn) btn.disabled = false; }
+        }
+        /** «BOL / Hisob-faktura PDF»: brauzerda ochish va yuklab olish (id — yuk yoki buyurtma identifikatori) */
+        function bolButtons(id) {
+            const code = id.slice(0, 8).toUpperCase();
+            const wrap = el('div', 'flex flex-1 min-w-[12rem] gap-1.5');
+            wrap.dataset.bol = id;
+            const open = el('button', 'flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-extrabold border transition disabled:opacity-50 border-amber-500/40 text-amber-300 hover:bg-amber-500/10');
+            open.type = 'button'; open.dataset.bolOpen = '1';
+            open.appendChild(el('i', 'fa-solid fa-file-invoice'));
+            open.appendChild(el('span', '', 'BOL / Hisob-faktura PDF'));
+            open.addEventListener('click', function () { openPdf('/orders/' + id + '/bol.pdf', 'BOL-' + code + '.pdf', open); });
+            const dl = el('button', 'px-3 rounded-xl border border-amber-500/40 text-amber-300 hover:bg-amber-500/10 transition disabled:opacity-50');
+            dl.type = 'button'; dl.dataset.bolDownload = '1'; dl.title = T('Yuklab olish'); dl.setAttribute('aria-label', T('Yuklab olish'));
+            dl.appendChild(el('i', 'fa-solid fa-download'));
+            dl.addEventListener('click', function () { downloadFile('/orders/' + id + '/bol.pdf?download=1', 'BOL-' + code + '.pdf', dl); });
+            wrap.appendChild(open); wrap.appendChild(dl);
+            return wrap;
+        }
         function docButton(icon, label, cls, path, name) {
             const b = el('button', ['flex-1 min-w-[8.5rem] flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-extrabold border transition disabled:opacity-50', cls].join(' '));
             b.type = 'button';
@@ -8736,6 +8782,7 @@
         function buildDocActions(s) {
             const row = el('div', 'flex flex-wrap gap-2 pt-1 border-t border-white/10');
             const code = s.id.slice(0, 8).toUpperCase();
+            row.appendChild(bolButtons(s.id));
             row.appendChild(docButton('fa-file-pdf', 'TTN yuklab olish (PDF)', 'border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10', '/documents/ttn/' + s.id, 'TTN-' + code + '.pdf'));
             if (s.paymentStatus) row.appendChild(docButton('fa-receipt', 'Chek (PDF)', 'border-sky-500/40 text-sky-300 hover:bg-sky-500/10', '/documents/receipt/' + s.id, 'Chek-' + code + '.pdf'));
             return row;
@@ -9707,11 +9754,14 @@
                 });
                 nodes.push(ev);
             }
-            if (o.shipmentId && role !== 'DISPATCHER') {
+            if (o.shipmentId) {
                 const code = o.shipmentId.slice(0, 8).toUpperCase();
                 const docs = el('div', 'flex flex-wrap gap-2 pt-1');
+                docs.appendChild(bolButtons(o.shipmentId));
+                if (role !== 'DISPATCHER') {
                 docs.appendChild(docButton('fa-file-pdf', 'TTN yuklab olish (PDF)', 'border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10', '/documents/ttn/' + o.shipmentId, 'TTN-' + code + '.pdf'));
                 docs.appendChild(docButton('fa-receipt', 'Chek (PDF)', 'border-sky-500/40 text-sky-300 hover:bg-sky-500/10', '/documents/receipt/' + o.shipmentId, 'Chek-' + code + '.pdf'));
+                }
                 nodes.push(docs);
             }
             body.replaceChildren.apply(body, nodes);

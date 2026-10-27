@@ -312,19 +312,24 @@ model Shipment {
   events      ShipmentEvent[]
 
   // e-BOL: haydovchi yetib kelganda fermer telefoniga 4 xonali kod yuboriladi (faqat HMAC xeshi saqlanadi); to'g'ri kiritilsa isSigned=true
-  pickupOtp           String?
-  pickupOtpExpiresAt  DateTime?
-  pickupOtpAttempts   Int           @default(0)
-  isSigned            Boolean       @default(false)
+  pickupOtp             String?
+  pickupOtpExpiresAt    DateTime?
+  pickupOtpAttempts     Int           @default(0)
+  isSigned              Boolean       @default(false)
   // PIN-kod tasdiqlash: haydovchi biriktirilganda yaratiladi. pickupPin — haydovchi ko'radi, fermer yuklashda kiritadi;
   // deliveryPin — market ko'radi, haydovchi topshirishda kiritadi (to'g'ri kiritilgach DELIVERED va escrow chiqariladi)
   // Oylik reyting statistikasi shu yuk uchun allaqachon hisoblanganmi (takroriy hisoblashdan himoya)
-  statsCounted        Boolean       @default(false)
-  pickupPin           String?
-  deliveryPin         String?
-  pickupPinAttempts   Int           @default(0)
-  deliveryPinAttempts Int           @default(0)
-  ebol                EBolContract?
+  statsCounted          Boolean       @default(false)
+  // BOL (Bill of Lading) tartib raqami (B2B): hujjatda AGB2B-YYYY-NNNNNN ko'rinishida chiqadi
+  bolNo                 Int           @unique @default(autoincrement())
+  // PIN-kod elektron imzolari (BOL imzo bloki): yuklashda fermer haydovchi PIN'ini kiritgan va topshirishda haydovchi market PIN'ini kiritgan vaqt
+  pickupPinVerifiedAt   DateTime?
+  deliveryPinVerifiedAt DateTime?
+  pickupPin             String?
+  deliveryPin           String?
+  pickupPinAttempts     Int           @default(0)
+  deliveryPinAttempts   Int           @default(0)
+  ebol                  EBolContract?
 
   // Yuk olinadigan joyning taxminiy nuqtasi (aniq manzil emas): radiusli qidiruv uchun
   originLat Float?
