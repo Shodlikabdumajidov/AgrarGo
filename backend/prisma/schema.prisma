@@ -14,6 +14,7 @@ enum Role {
   ADMIN
   DISPATCHER // ombor dispetcheri: omborxona operatsiyalarini boshqaradi (API orqali ro'yxatdan o'tmaydi)
   CONSUMER // mahalliy aholi: Hub omboridan kichik hajmli (chakana) xarid qiladi
+  AGRO_SUPPLIER // Agro-Store sotuvchisi (dorixona yoki o'g'it sotuvchi): admin/dispetcher yaratadi, API orqali ro'yxatdan o'tmaydi
 }
 
 /// Administrator ichki rollari (RBAC). Faqat User.role = ADMIN bo'lganlarda ma'noga ega; oddiy foydalanuvchilarda USER.
@@ -79,6 +80,7 @@ model User {
   ratingsReceived      ShipmentRating[]      @relation("RatingTarget")
   offersSent           DriverOffer[]
   consumer             Consumer?
+  agroSupplier         AgroSupplier?
   // Hub xodimi (DISPATCHER): faqat shu Hub'ning chakana buyurtmalari va qabullarini boshqaradi; bo'sh bo'lsa — barcha Hub'lar
   hubId                String?
   hub                  Hub?                  @relation("HubStaff", fields: [hubId], references: [id], onDelete: SetNull)
@@ -1385,4 +1387,65 @@ model LeaderboardWinner {
 
   @@unique([month, category, rank])
   @@index([month])
+}
+
+// ===== Agro-Store: dori va o'g'it sotuvchilari =====
+enum AgroSupplierType {
+  PHARMACY   // Dorixona (agro-kimyoviy): litsenziya + STIR guvohnomasi talab qilinadi
+  FERTILIZER // O'g'it sotuvchi: pasport/STIR ma'lumoti yetarli
+}
+
+enum AgroVerification {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum AgroMode {
+  CROP      // ekin dorilari va o'g'itlar
+  LIVESTOCK // chorvachilik mahsulotlari
+}
+
+model AgroSupplier {
+  id           String           @id @default(uuid())
+  userId       String           @unique
+  type         AgroSupplierType
+  orgName      String
+  contactName  String
+  stir         String?
+  passportInfo String?
+  /// Yopiq papkadagi fayllar (private/agro): faqat egasi va xodimlar ko'radi
+  licenseDoc   String?
+  stirDoc      String?
+  verification AgroVerification @default(PENDING)
+  rejectReason String?
+  verifiedAt   DateTime?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  products     AgroProduct[]
+
+  @@index([verification])
+}
+
+model AgroProduct {
+  id          String       @id @default(uuid())
+  supplierId  String
+  mode        AgroMode     @default(CROP)
+  category    String
+  name        String
+  description String       @default("")
+  /// Dozasi / ishlatish yo'riqnomasi
+  usage       String       @default("")
+  price       Decimal      @db.Decimal(14, 2)
+  unit        String       @default("kg")
+  stockQty    Decimal      @db.Decimal(14, 2) @default(0)
+  imageUrl    String?
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  supplier    AgroSupplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  @@index([supplierId])
+  @@index([mode, isActive])
 }

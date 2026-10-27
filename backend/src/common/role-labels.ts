@@ -7,6 +7,7 @@ export const ROLE_LABEL: Record<Role, string> = {
   ADMIN: 'Admin',
   DISPATCHER: 'Dispetcher',
   CONSUMER: 'Xaridor',
+  AGRO_SUPPLIER: 'Agro-Store sotuvchisi',
 };
 
 // Bitta telefon raqam faqat bitta rolda bo'la oladi

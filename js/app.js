@@ -82,6 +82,7 @@
             ADMIN: { label: 'Admin', badge: 'AgrarGo Admin', icon: 'fa-user-shield', regTitle: '', regSub: '' },
             MARKET: { label: 'Market', badge: 'AgrarGo Market', icon: 'fa-store',
                 regTitle: "Market sifatida ro'yxatdan o'tish", regSub: "Kompaniyangiz nomidan fermerlardan bevosita xarid qiling." },
+            AGRO_SUPPLIER: { label: 'Agro-Store sotuvchisi', badge: 'AgrarGo Agro-Store', icon: 'fa-flask-vial', regTitle: '', regSub: '' },
             CONSUMER: { label: 'Xaridor', badge: 'AgrarGo Local', icon: 'fa-basket-shopping',
                 regTitle: "Xaridor sifatida ro'yxatdan o'tish", regSub: "Yangi hosilni 10 kg dan buyurtma qiling: shahringizdagi Hub ombordan kuryer olib keladi." }
         };
@@ -1599,13 +1600,15 @@
             MARKET: [['overview', 'fa-store', 'Katalog / Bosh sahifa'], ['bookings', 'fa-clipboard-list', 'Mening buyurtmalarim'],
                      ['payments', 'fa-wallet', "Moliya va To'lovlar"], ['profile', 'fa-id-card', 'Profil va Sozlamalar']],
             // Haydovchi: 4 ta asosiy ekran (ELD, boshqa haydovchilar ro'yxati va Bozor narxlari olib tashlandi)
-            DRIVER: [['loads', 'fa-boxes-packing', 'Mavjud yuklar'], ['myloads', 'fa-truck-fast', "Mening zakazlarim / Yo'lim"], ['dfinance', 'fa-wallet', 'Balans va Moliya'], ['profile', 'fa-id-card', 'Profil']],
+            DRIVER: [['loads', 'fa-boxes-packing', 'Mavjud yuklar'], ['myloads', 'fa-truck-fast', "Mening zakazlarim / Yo'lim"], ['agrodriver', 'fa-flask-vial', "Dori & O'g'itlar", 'soon'], ['dfinance', 'fa-wallet', 'Balans va Moliya'], ['profile', 'fa-id-card', 'Profil']],
+            // Agro-Store sotuvchisi (dorixona / o'g'it sotuvchi): postlar karuseli va verifikatsiya
+            AGRO_SUPPLIER: [['asposts', 'fa-flask-vial', 'Postlarim'], ['asprofile', 'fa-shield-halved', 'Verifikatsiya va profil']],
             CONSUMER: [['lmarket', 'fa-basket-shopping', 'Mahalliy bozor'], ['lcart', 'fa-cart-shopping', 'Savatcha'], ['lorders', 'fa-box', 'Buyurtmalarim'], ['cashback', 'fa-coins', 'Mening keshbeklarim'], ['guide', 'fa-book-open', "Qo'llanma"], ['profile', 'fa-id-card', 'Profil']],
-            DISPATCHER: [['dispatch', 'fa-user-plus', 'Dispetcher paneli'], ['admcomplaints', 'fa-flag', 'Shikoyatlar / Spam'], ['hubscan', 'fa-qrcode', 'QR Skaner (qabul qilish)'], ['hubpack', 'fa-box-archive', "Qadoqlanishi kerak bo'lganlar"], ['hubosd', 'fa-file-circle-exclamation', 'OS&D hisobotlari'], ['hubops', 'fa-warehouse', 'Hub: chakana savdo'], ['hubdocks', 'fa-door-open', 'Rampalar'], ['whboard', 'fa-table-columns', 'Zonalar'], ['whunits', 'fa-temperature-half', 'Kameralar'],
+            DISPATCHER: [['dispatch', 'fa-user-plus', 'Dispetcher paneli'], ['agrosuppliers', 'fa-flask-vial', 'Agro-Store sotuvchilari'], ['admcomplaints', 'fa-flag', 'Shikoyatlar / Spam'], ['hubscan', 'fa-qrcode', 'QR Skaner (qabul qilish)'], ['hubpack', 'fa-box-archive', "Qadoqlanishi kerak bo'lganlar"], ['hubosd', 'fa-file-circle-exclamation', 'OS&D hisobotlari'], ['hubops', 'fa-warehouse', 'Hub: chakana savdo'], ['hubdocks', 'fa-door-open', 'Rampalar'], ['whboard', 'fa-table-columns', 'Zonalar'], ['whunits', 'fa-temperature-half', 'Kameralar'],
                      ['whorders', 'fa-clipboard-list', 'Buyurtmalar'], ['whinventory', 'fa-chart-pie', 'Inventarizatsiya'], ['guide', 'fa-book-open', "Qo'llanma"], ['drivers', 'fa-truck-field', 'Haydovchilar'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'], ['profile', 'fa-id-card', 'Profil']]
         };
         const ADMIN_TABS_ALL = [['adm-dashboard', 'fa-chart-line', 'Boshqaruv paneli'], ['finance', 'fa-scale-balanced', 'Moliya paneli'], ['adm-hubs', 'fa-warehouse', "Hub omborlar"], ['hubscan', 'fa-qrcode', 'QR Skaner (qabul qilish)'], ['hubosd', 'fa-file-circle-exclamation', 'OS&D hisobotlari'], ['hubstock', 'fa-warehouse', 'Ombor qoldiqlari'], ['hubpack', 'fa-box-archive', "Qadoqlanishi kerak bo'lganlar"], ['hubops', 'fa-basket-shopping', 'Hub: chakana savdo'], ['hubdocks', 'fa-door-open', 'Rampalar'], ['adm-users', 'fa-users', 'Foydalanuvchilar'],
-                     ['adm-products', 'fa-boxes-stacked', "E'lonlar"], ['adm-shipments', 'fa-truck-fast', 'Yuk tashish'], ['dispatch', 'fa-user-plus', 'Dispetcher paneli'], ['admcomplaints', 'fa-flag', 'Shikoyatlar / Spam'], ['adm-payments', 'fa-wallet', "To'lovlar"],
+                     ['adm-products', 'fa-boxes-stacked', "E'lonlar"], ['adm-shipments', 'fa-truck-fast', 'Yuk tashish'], ['dispatch', 'fa-user-plus', 'Dispetcher paneli'], ['agrosuppliers', 'fa-flask-vial', 'Agro-Store sotuvchilari'], ['admcomplaints', 'fa-flag', 'Shikoyatlar / Spam'], ['adm-payments', 'fa-wallet', "To'lovlar"],
                      ['whboard', 'fa-warehouse', 'Ombor: zonalar'], ['whunits', 'fa-temperature-half', 'Kameralar'], ['whorders', 'fa-clipboard-list', 'Ombor buyurtmalari'],
                      ['whinventory', 'fa-chart-pie', 'Inventarizatsiya'], ['adm-reviews', 'fa-star', 'Sharhlar'], ['adm-kyc', 'fa-user-check', 'KYC arizalari'], ['safety', 'fa-shield-halved', 'Safety: e-BOL va tasdiqlash'], ['adm-settings', 'fa-gear', 'Sayt sozlamalari'], ['adm-audit', 'fa-list-check', 'Audit jurnali'], ['guide', 'fa-book-open', "Qo'llanma"], ['drivers', 'fa-truck-field', 'Haydovchilar'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'],
                      ['profile', 'fa-id-card', 'Profil']];
@@ -1613,7 +1616,7 @@
         const ADMIN_PROFILE_TAB = ['profile', 'fa-id-card', 'Profil'];
         const ADMIN_TABS_BY_ROLE = {
             SUPER_ADMIN: ADMIN_TABS_ALL,
-            SAFETY_ADMIN: [['safety', 'fa-shield-halved', 'Safety: e-BOL va tasdiqlash'], ['admcomplaints', 'fa-flag', 'Shikoyatlar / Spam'], ADMIN_PROFILE_TAB],
+            SAFETY_ADMIN: [['safety', 'fa-shield-halved', 'Safety: e-BOL va tasdiqlash'], ['agrosuppliers', 'fa-flask-vial', 'Agro-Store sotuvchilari'], ['admcomplaints', 'fa-flag', 'Shikoyatlar / Spam'], ADMIN_PROFILE_TAB],
             FINANCE_ADMIN: [['finance', 'fa-scale-balanced', 'Moliya paneli'], ['adm-payments', 'fa-wallet', "To'lovlar"], ADMIN_PROFILE_TAB],
             HUB_ADMIN: [['dispatch', 'fa-user-plus', 'Dispetcher paneli'], ['hubscan', 'fa-qrcode', 'QR Skaner (qabul qilish)'], ['hubosd', 'fa-file-circle-exclamation', 'OS&D hisobotlari'], ['hubstock', 'fa-warehouse', 'Ombor qoldiqlari'], ['hubpack', 'fa-box-archive', "Qadoqlanishi kerak bo'lganlar"], ['adm-hubs', 'fa-warehouse', "Hub omborlar"], ['hubops', 'fa-basket-shopping', 'Hub: chakana savdo'], ['hubdocks', 'fa-door-open', 'Rampalar'], ADMIN_PROFILE_TAB]
         };
@@ -1717,6 +1720,7 @@
                 b.dataset.tab = t[0];
                 b.appendChild(el('i', 'fa-solid w-4 text-center ' + t[1]));
                 b.appendChild(el('span', '', t[2]));
+                if (t[3] === 'soon') b.appendChild(el('span', 'ag-soon-mini ml-auto', 'TEZ KUNDA'));
                 if (t[0] === 'bookings' || t[0] === 'loads' || t[0] === 'payments' || t[0] === 'hubpack') {
                     const badge = el('span', 'hidden ml-auto min-w-[1.25rem] h-5 px-1.5 rounded-full bg-amber-400 text-slate-950 text-[11px] font-black items-center justify-center');
                     badge.id = 'dash-badge-' + t[0];
@@ -1730,7 +1734,7 @@
             syncScrollLock();
             renderSubBanner();
             loadSubscription();
-            selectDashTab(tab || (user.role === 'ADMIN' ? adminHomeTab(user) : user.role === 'CONSUMER' ? 'lmarket' : user.role === 'DRIVER' ? 'loads' : isStaffRole(user) ? (user.role === 'DISPATCHER' ? 'dispatch' : 'whboard') : 'overview'));
+            selectDashTab(tab || (user.role === 'ADMIN' ? adminHomeTab(user) : user.role === 'CONSUMER' ? 'lmarket' : user.role === 'AGRO_SUPPLIER' ? 'asposts' : user.role === 'DRIVER' ? 'loads' : isStaffRole(user) ? (user.role === 'DISPATCHER' ? 'dispatch' : 'whboard') : 'overview'));
             setTimeout(function () { maybeStartTour(user); }, 1500); // birinchi kirishda interaktiv qo'llanma
         }
 
@@ -3500,7 +3504,7 @@
         // ===== SUPER ADMIN PANELI =====
         const ADM_PANEL_OPTIONS = [['SAFETY_ADMIN', 'Safety admin'], ['FINANCE_ADMIN', 'Finance admin'], ['HUB_ADMIN', 'Hub admin'], ['SUPER_ADMIN', 'Super admin']];
         const ADM_PANEL_LABEL = { SUPER_ADMIN: 'Super admin', SAFETY_ADMIN: 'Safety admin', FINANCE_ADMIN: 'Finance admin', HUB_ADMIN: 'Hub admin' };
-        const ADM_ROLE_LABEL = { FARMER: 'Fermer', MARKET: 'Market', DRIVER: 'Haydovchi', DISPATCHER: 'Dispetcher', ADMIN: 'Admin', CONSUMER: 'Xaridor' };
+        const ADM_ROLE_LABEL = { FARMER: 'Fermer', MARKET: 'Market', DRIVER: 'Haydovchi', DISPATCHER: 'Dispetcher', ADMIN: 'Admin', CONSUMER: 'Xaridor', AGRO_SUPPLIER: 'Agro-Store sotuvchisi' };
         const ADM_PRODUCT_STATUS = {
             ACTIVE: { label: 'Faol', cls: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' },
             BOOKED: { label: 'Bron qilingan', cls: 'bg-amber-500/15 text-amber-300 border-amber-500/30' },
@@ -7351,7 +7355,7 @@
             const n = function (o, k) { return (o && o[k]) || 0; };
             wrap.appendChild(doughnutCard('Bronlar taqsimoti', "Holat bo'yicha", bookingSlices(function (st) { return n(s.bookings, st); }), { tall: true }));
             wrap.appendChild(barChartCard("Ombor qoldig'i", 'Zonalar bo\'yicha, kg', s.warehouse.byZone.map(function (z) { return T(WH_ZONES[z.zone].label); }), [{ label: 'Qoldiq (kg)', data: s.warehouse.byZone.map(function (z) { return Number(z.weightKg); }), color: CHART_COLORS.teal }], { fmt: kg, cls: 'lg:col-span-2', emptyText: "Omborga yuk qabul qilinganda qoldiqlar shu yerda ko'rinadi." }));
-            wrap.appendChild(doughnutCard('Foydalanuvchilar', "Rollar bo'yicha", Object.keys(ADM_ROLE_LABEL).map(function (r, i) { return [ADM_ROLE_LABEL[r], n(s.users.byRole, r), [CHART_COLORS.emerald, CHART_COLORS.amber, CHART_COLORS.blue, CHART_COLORS.purple, CHART_COLORS.rose, '#94a3b8'][i]]; })));
+            wrap.appendChild(doughnutCard('Foydalanuvchilar', "Rollar bo'yicha", Object.keys(ADM_ROLE_LABEL).map(function (r, i) { return [ADM_ROLE_LABEL[r], n(s.users.byRole, r), [CHART_COLORS.emerald, CHART_COLORS.amber, CHART_COLORS.blue, CHART_COLORS.purple, CHART_COLORS.rose, '#94a3b8', '#22d3ee'][i]]; })));
             return wrap;
         }
 
@@ -8422,20 +8426,25 @@
         function agroLang() { let l = 'uz'; try { l = localStorage.getItem('agrargo_lang') || 'uz'; } catch (e) {} return (l === 'ru' || l === 'en') ? l : 'uz'; }
         const AGRO_ICONS = { FERTILIZER: 'fa-seedling', PESTICIDE: 'fa-spray-can-sparkles', SEED_CARE: 'fa-leaf', FEED: 'fa-wheat-awn', SILAGE: 'fa-warehouse', VITAMIN: 'fa-capsules', BRIQUETTE: 'fa-cube' };
         function agroMoney(n) { return Math.round(Number(n)).toLocaleString('ru-RU').replace(/[\u00a0\u202f]/g, ' '); }
-        function agroCard(p, lang) {
+        let agroView = 'carousel'; // 'carousel' (Glassy Carousel) yoki 'catalog' (oddiy katalog)
+        function agroCard(p, lang, noImage) {
             const card = el('article', 'ag-card'); card.dataset.agro = p.id;
-            const img = el('div', 'ag-img'); img.dataset.soon = T('TEZ KUNDA'); img.setAttribute('role', 'img'); img.setAttribute('aria-label', p.name[lang]);
-            img.appendChild(el('i', 'fa-solid ' + (AGRO_ICONS[p.category] || 'fa-box')));
-            card.appendChild(img);
+            if (!noImage) {
+                const img = el('div', 'ag-img'); img.dataset.soon = T('TEZ KUNDA'); img.setAttribute('role', 'img'); img.setAttribute('aria-label', p.name[lang]);
+                if (p.imageUrl) { const im = el('img', 'ag-photo'); im.src = productPhotoUrl(p.imageUrl); im.alt = p.name[lang]; im.loading = 'lazy'; img.appendChild(im); }
+                else img.appendChild(el('i', 'fa-solid ' + (AGRO_ICONS[p.category] || 'fa-box')));
+                card.appendChild(img);
+            }
             const body = el('div', 'ag-body');
             body.appendChild(el('h4', '', p.name[lang]));
+            if (p.supplier) body.appendChild(el('p', 'ag-supplier', p.supplier.orgName));
             body.appendChild(el('p', 'ag-desc', p.description[lang]));
             const use = el('div', 'ag-usage'); use.appendChild(el('b', '', "Ishlatish bo'yicha qo'llanma"));
             use.appendChild(el('span', '', p.usage[lang])); body.appendChild(use);
             const price = el('div', 'ag-price'); price.appendChild(el('small', '', 'Narxi'));
             const pv = el('strong', '', agroMoney(p.price) + ' '); pv.appendChild(el('small', '', p.unit === 'litr' ? "so'm/litr" : "so'm/kg")); price.appendChild(pv); body.appendChild(price);
             const ship = el('div', 'ag-ship'); ship.appendChild(el('span', '', 'Shahar ichida yetkazish'));
-            const sv = el('b', '', agroMoney(p.cityDeliveryFee) + ' '); sv.appendChild(el('span', '', "so'm")); ship.appendChild(sv); body.appendChild(ship);
+            const sv = el('b', '', p.cityDeliveryFee == null ? '—' : agroMoney(p.cityDeliveryFee) + ' '); if (p.cityDeliveryFee != null) sv.appendChild(el('span', '', "so'm")); ship.appendChild(sv); body.appendChild(ship);
             if (p.partialFreight) {
                 const pf = el('div', 'ag-partial'); pf.dataset.partial = '1';
                 const b = el('b', ''); b.appendChild(el('i', 'fa-solid fa-boxes-stacked')); b.appendChild(el('span', '', 'PARTIAL FREIGHT (Qisman yuklash)')); pf.appendChild(b);
@@ -8460,7 +8469,14 @@
                 b.addEventListener('click', function () { if (agroMode !== m[0]) { agroMode = m[0]; renderAgroStore(user); } });
                 sw.appendChild(b);
             });
-            head.appendChild(sw);
+            const vt = el('div', 'ag-viewtoggle'); vt.id = 'ag-view';
+            [['carousel', 'fa-layer-group', 'Karusel'], ['catalog', 'fa-table-cells-large', 'Katalog']].forEach(function (v) {
+                const b = el('button'); b.type = 'button'; b.dataset.view = v[0]; b.setAttribute('aria-pressed', String(agroView === v[0]));
+                b.appendChild(el('i', 'fa-solid ' + v[1] + ' mr-1.5')); b.appendChild(el('span', '', v[2]));
+                b.addEventListener('click', function () { if (agroView !== v[0]) { agroView = v[0]; renderAgroStore(user); } });
+                vt.appendChild(b);
+            });
+            const ctl = el('div', 'flex flex-wrap items-center gap-3'); ctl.appendChild(sw); ctl.appendChild(vt); head.appendChild(ctl);
             dashContent.replaceChildren(head, skeleton('list'));
             let data;
             try { data = await authed('GET', '/agro-store?mode=' + agroMode); }
@@ -8470,9 +8486,18 @@
             }
             if (rid !== dashRenderId) return;
             const nodes = [head];
-            const grid = el('div', 'ag-grid'); grid.id = 'ag-grid'; grid.dataset.mode = data.mode;
-            data.products.forEach(function (p) { grid.appendChild(agroCard(p, lang)); });
-            nodes.push(grid);
+            if (agroView === 'carousel' && data.products.length) {
+                const car = gcMount(data.products.map(function (p) {
+                    return gcSlide({ photo: p.imageUrl, icon: AGRO_ICONS[p.category] || 'fa-box', title: p.name[lang], chip: T('TEZ KUNDA'),
+                        price: agroMoney(p.price) + ' ' + T("so'm") + '/' + T(p.unit), qty: p.stockQty != null ? agroMoney(p.stockQty) + ' ' + T(p.unit) : '—',
+                        loc: p.supplier ? p.supplier.orgName : 'AgrarGo Agro-Store', pin: { text: p.source === 'SUPPLIER' ? T('Tasdiqlangan sotuvchi') : T("Namuna ma'lumot"), tone: p.source === 'SUPPLIER' ? 'ok' : '' }, quick: 'Batafsil', detail: agroCard(p, lang, true) });
+                }), 'Agro-Store karuseli');
+                const holder = el('div'); holder.id = 'ag-carousel'; if (car) holder.appendChild(car); nodes.push(holder);
+            } else {
+                const grid = el('div', 'ag-grid'); grid.id = 'ag-grid'; grid.dataset.mode = data.mode;
+                data.products.forEach(function (p) { grid.appendChild(agroCard(p, lang)); });
+                nodes.push(grid);
+            }
             if (data.mode === 'livestock' && data.posts.length) {
                 nodes.push(sectionTitle('Chorvador fermerlar postlari', "Hamkasblar e'lon va savollari (namuna)"));
                 const posts = el('div', 'ag-posts'); posts.id = 'ag-posts';

@@ -16,7 +16,7 @@ const call=async(path,body,tok,method='POST')=>{const r=await fetch(API+path,{me
     await pg.click('#auth-nav-btn');await pg.fill('#login-phone',fph.slice(4));await pg.fill('#login-password',PW);await pg.click('#login-form .auth-submit');await pg.waitForTimeout(1800);
     return pg;};
   let pg=await open({width:1280,height:900},'dark','uz');
-  await pg.evaluate(()=>openDashboard('agrostore')); await pg.waitForTimeout(1800);
+  await pg.evaluate(()=>openDashboard('agrostore')); await pg.waitForTimeout(1800); await pg.click('#ag-view button[data-view="catalog"]'); await pg.waitForTimeout(1500);
   ok(await pg.locator('.dash-tab[data-tab="agrostore"]').count()>=1,'Farmer menu has the Agro-Store tab');
   ok(await pg.locator('#ag-banner').innerText().then(t=>/TEZ KUNDA/.test(t)),'COMING SOON banner visible at the top');
   const cards=await pg.locator('.ag-card').count(); ok(cards>=4,'crop mode (default): '+cards+' product cards');
@@ -39,7 +39,7 @@ const call=async(path,body,tok,method='POST')=>{const r=await fetch(API+path,{me
   ok(/Karbamid/.test(await pg.locator('#ag-grid').innerText()),'toggle back to crop mode');
   ok(pg.errs.length===0,'no page errors '+pg.errs.join('|')); await pg.context().close();
   pg=await open({width:390,height:844},'light','ru');
-  await pg.evaluate(()=>openDashboard('agrostore')); await pg.waitForTimeout(1800);
+  await pg.evaluate(()=>openDashboard('agrostore')); await pg.waitForTimeout(1800); await pg.click('#ag-view button[data-view="catalog"]'); await pg.waitForTimeout(1500);
   ok(await pg.locator('#ag-banner').innerText().then(t=>/СКОРО/.test(t)),'RU: banner "СКОРО"');
   ok(/Карбамид/.test(await pg.locator('#ag-grid').innerText()),'RU: product names in Russian');
   ok(/инструкция по применению/i.test(await pg.locator('.ag-card').first().innerText()),'RU: UI labels translated');
