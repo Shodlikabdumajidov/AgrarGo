@@ -55,8 +55,10 @@ export class DocumentsService {
     if (!ok) throw new ForbiddenException("Bu yuk hujjatiga kirish huquqingiz yo'q");
   }
 
+  /** QR-kod ommaviy havolani kodlaydi: telefon kamerasi skanerlasa brauzerda to'g'ridan-to'g'ri hujjat ochiladi */
   private async qr(kind: DocKind, id: string, code: string) {
-    return QRCode.toBuffer(`AGRARGO|${kind.toUpperCase()}|${id}|${code}`, { margin: 1, width: 240, errorCorrectionLevel: 'M' });
+    const base = (process.env.PUBLIC_API_URL || 'https://agrargo-backend.onrender.com').replace(/\/$/, '');
+    return QRCode.toBuffer(`${base}/documents/verify/${kind}/${id}/${code}`, { margin: 1, width: 240, errorCorrectionLevel: 'M' });
   }
 
   private collect(doc: PDFKit.PDFDocument): Promise<Buffer> {
@@ -129,11 +131,30 @@ export class DocumentsService {
    * Bill of Lading & Invoice (Amerika B2B BOL shakli). `id` — yuk (shipment) yoki buyurtma (bron / ombor buyurtmasi) identifikatori.
    * Hujjat har safar joriy ma'lumotlardan shakllanadi (bron tasdiqlangandan boshlab mavjud; «Yetkazildi» dan keyin PIN imzolari va to'lov holati bilan to'liq).
    */
-  async bol(viewer: Viewer, id: string): Promise<Buffer> {
-    const s = (await this.prisma.shipment.findUnique({ where: { id }, include: SHIPMENT_DOC_INCLUDE }))
+  private async loadBolShipment(id: string) {
+    return (await this.prisma.shipment.findUnique({ where: { id }, include: SHIPMENT_DOC_INCLUDE }))
       ?? (await this.prisma.shipment.findFirst({ where: { OR: [{ bookingId: id }, { warehouseOrderId: id }] }, include: SHIPMENT_DOC_INCLUDE }));
+  }
+
+  async bol(viewer: Viewer, id: string): Promise<Buffer> {
+    const s = await this.loadBolShipment(id);
     if (!s) throw new NotFoundException('Buyurtma yoki yuk topilmadi');
     this.assertAccess(viewer, s);
+    return this.renderBolPdf(s);
+  }
+
+  /** QR-kod orqali ochiq havola: HMAC kod to'g'ri bo'lsa rasmiy BOL PDF qaytariladi, aks holda null */
+  async publicBol(shipmentId: string, rawCode: string): Promise<Buffer | null> {
+    const s = await this.prisma.shipment.findUnique({ where: { id: shipmentId }, include: SHIPMENT_DOC_INCLUDE });
+    if (!s) return null;
+    const payment = s.booking?.payment ?? s.warehouseOrder?.payment ?? null;
+    const expected = Buffer.from(this.sign('bol', s, payment?.amount ?? null));
+    const given = Buffer.from(rawCode.replace(/-/g, '').toUpperCase());
+    if (expected.length !== given.length || !timingSafeEqual(expected, given)) return null;
+    return this.renderBolPdf(s);
+  }
+
+  private async renderBolPdf(s: NonNullable<Awaited<ReturnType<DocumentsService['loadBolShipment']>>>): Promise<Buffer> {
     const payment = s.booking?.payment ?? s.warehouseOrder?.payment ?? null;
     const code = this.sign('bol', s, payment?.amount ?? null);
     const when = s.createdAt;

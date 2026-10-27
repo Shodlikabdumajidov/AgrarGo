@@ -46,9 +46,21 @@ export class DocumentsController {
   /** Ochiq tekshiruv (QR-kod skanerlangach): shaxsiy ma'lumot qaytarilmaydi */
   @Get('verify/:kind/:shipmentId/:code')
   @Header('Cache-Control', 'no-store')
-  verify(@Param('kind') kind: string, @Param('shipmentId', ParseUUIDPipe) id: string, @Param('code') code: string) {
-    if (kind !== 'ttn' && kind !== 'receipt' && kind !== 'bol') return { valid: false };
-    return this.docs.verify(kind as DocKind, id, code.slice(0, 40));
+  async verify(@Param('kind') kind: string, @Param('shipmentId', ParseUUIDPipe) id: string, @Param('code') code: string, @Query('format') format: string | undefined, @Query('download') download: string | undefined, @Res() res: Response) {
+    // BOL: kod to'g'ri bo'lsa brauzerda rasmiy PDF ochiladi (?download=1 — yuklab olish, ?format=json — qisqa JSON)
+    if (kind === 'bol' && format !== 'json') {
+      const pdf = await this.docs.publicBol(id, code.slice(0, 40));
+      if (!pdf) return res.status(404).type('text/plain').send('Hujjat topilmadi yoki kod noto\'g\'ri / Document not found or invalid code');
+      res.set({
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `${download === '1' || download === 'true' ? 'attachment' : 'inline'}; filename="BOL-${id.slice(0, 8).toUpperCase()}.pdf"`,
+        'Content-Length': String(pdf.length),
+        'Cache-Control': 'no-store',
+      });
+      return res.end(pdf);
+    }
+    if (kind !== 'ttn' && kind !== 'receipt' && kind !== 'bol') return res.json({ valid: false });
+    return res.json(await this.docs.verify(kind as DocKind, id, code.slice(0, 40)));
   }
 }
 

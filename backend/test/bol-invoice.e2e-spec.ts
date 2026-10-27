@@ -1,4 +1,5 @@
 import PDFDocument from 'pdfkit';
+import QRCode from 'qrcode';
 import { DocumentsService } from '../src/documents/documents.service';
 import { Account, approve, bearer, book, bootApp, createAdmin, createProduct, pay, registerDriver, registerFarmer, registerMarket, resetDb, TestApp } from './helpers';
 
@@ -118,10 +119,26 @@ describe('BOL & Invoice PDF (Amerika B2B BOL shakli) (e2e)', () => {
     const svc = t.app.get(DocumentsService) as any;
     const pay0 = await t.prisma.payment.findFirstOrThrow({ where: { bookingId: w.bk.id } });
     const code = svc.sign('bol', ship, pay0.amount);
-    const ok = await t.http().get(`/documents/verify/bol/${ship.id}/${code}`);
+    const ok = await t.http().get(`/documents/verify/bol/${ship.id}/${code}?format=json`);
     expect(ok.body).toMatchObject({ valid: true, kind: 'bol', cargoName: 'Pomidor', weightKg: 2500 });
     expect(JSON.stringify(ok.body)).not.toMatch(/phone|\+998/);
-    expect((await t.http().get(`/documents/verify/bol/${ship.id}/AAAAAAAAAAAAAAAAAAAA`)).body).toEqual({ valid: false });
+    expect((await t.http().get(`/documents/verify/bol/${ship.id}/AAAAAAAAAAAAAAAAAAAA?format=json`)).body).toEqual({ valid: false });
+    // QR havolasi: tokensiz ochiq URL to'g'ridan-to'g'ri rasmiy PDF qaytaradi (inline), ?download=1 — attachment
+    const pretty = code.match(/.{1,5}/g).join('-');
+    const pdf = await t.http().get(`/documents/verify/bol/${ship.id}/${pretty}`).buffer(true).parse((r: any, cb: any) => { const c: Buffer[] = []; r.on('data', (d: Buffer) => c.push(d)); r.on('end', () => cb(null, Buffer.concat(c))); });
+    expect(pdf.status).toBe(200);
+    expect(pdf.headers['content-type']).toContain('application/pdf');
+    expect(pdf.headers['content-disposition']).toMatch(/^inline;/);
+    expect(pdf.body.subarray(0, 4).toString()).toBe('%PDF');
+    expect((await t.http().get(`/documents/verify/bol/${ship.id}/${code}?download=1`)).headers['content-disposition']).toMatch(/^attachment;/);
+    const bad = await t.http().get(`/documents/verify/bol/${ship.id}/AAAAAAAAAAAAAAAAAAAA`);
+    expect(bad.status).toBe(404);
+    expect(bad.headers['content-type']).not.toContain('pdf');
+    // QR matni — ommaviy brauzer havolasi
+    const spyQr = jest.spyOn(QRCode, 'toBuffer');
+    await get(`/orders/${w.bk.id}/bol.pdf`, w.market);
+    expect(String(spyQr.mock.calls[0][0])).toBe(`https://agrargo-backend.onrender.com/documents/verify/bol/${ship.id}/${code}`);
+    spyQr.mockRestore();
     expect((await t.http().get(`/documents/verify/ttn/${ship.id}/${code}`)).body).toEqual({ valid: false }); // boshqa turdagi kod mos kelmaydi
   });
 
