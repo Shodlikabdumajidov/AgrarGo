@@ -2139,14 +2139,27 @@
             const loc = el('div', 'gc-loc'); loc.appendChild(el('i', 'fa-solid fa-location-dot text-emerald-400')); loc.appendChild(el('span', '', o.loc || '—')); body.appendChild(loc);
             const row = el('div', 'gc-row');
             const pin = el('span', 'gc-pin' + (o.pin && o.pin.tone ? ' ' + o.pin.tone : '')); pin.dataset.gcPin = '1';
-            pin.appendChild(el('i', 'fa-solid fa-key')); pin.appendChild(el('span', '', o.pin ? o.pin.text : T('PIN-himoya yoqilgan'))); row.appendChild(pin);
-            const quick = el('button', 'gc-quick', T(o.quick || 'Batafsil')); quick.type = 'button'; quick.dataset.gcQuick = '1';
+            pin.appendChild(el('i', 'fa-solid fa-key')); pin.appendChild(el('span', '', o.pin ? o.pin.text : T('PIN-himoya yoqilgan')));
+            // Ixcham (collapsed) rejimda kartada faqat rasm, nom, narx, miqdor, joylashuv va tugma qoladi: PIN holati kengaytirilgan qismga o'tadi
+            if (!o.collapsed) row.appendChild(pin);
+            const quick = el('button', 'gc-quick'); quick.type = 'button'; quick.dataset.gcQuick = '1';
+            const qLabel = el('span'); const qIcon = el('i', 'fa-solid fa-chevron-down gc-chev'); quick.appendChild(qLabel); quick.appendChild(qIcon);
             row.appendChild(quick); body.appendChild(row);
             sum.appendChild(body);
             const wrap = el('div', 'gc-wrap'); wrap.appendChild(sum);
-            const det = el('div', 'gc-detail'); det.appendChild(o.detail); wrap.appendChild(det);
-            quick.addEventListener('click', function (e) { e.stopPropagation(); wrap.classList.toggle('gc-collapsed'); });
-            wrap.className = 'gc-slide-box';
+            const det = el('div', 'gc-detail'); const detIn = el('div', 'gc-detail-in');
+            if (o.collapsed) { const pr = el('div', 'gc-pinrow'); pr.appendChild(pin); detIn.appendChild(pr); }
+            detIn.appendChild(o.detail); det.appendChild(detIn); wrap.appendChild(det);
+            wrap.className = 'gc-slide-box' + (o.collapsed ? ' gc-collapsed' : '');
+            // Tugma holati: yopiq -> «Batafsil» (chevron pastga), ochiq -> «Yopish» (chevron tepaga); aria-expanded ham yangilanadi
+            const sync = function () {
+                const open = !wrap.classList.contains('gc-collapsed');
+                qLabel.textContent = T(open ? 'Yopish' : (o.quick || 'Batafsil'));
+                quick.setAttribute('aria-expanded', String(open));
+                quick.classList.toggle('open', open);
+            };
+            quick.addEventListener('click', function (e) { e.stopPropagation(); wrap.classList.toggle('gc-collapsed'); sync(); });
+            sync();
             return wrap;
         }
         /** Slaydlar ro'yxatidan karusel yaratadi (oldingi karusel tozalanadi) */
@@ -5153,24 +5166,15 @@
             const slides = [];
             list.forEach(function (p) {
                 const st = LISTING_STATUS[p.status] || LISTING_STATUS.ACTIVE;
-                const c = el('article', 'glass rounded-2xl border border-white/10 p-4 space-y-3');
-                if (p.photos && p.photos.length) c.appendChild(photoSlider(p.photos, p.name));
-                const top = el('div', 'flex items-start justify-between gap-3');
-                const tt = el('div', 'min-w-0');
-                tt.appendChild(el('h3', 'font-extrabold text-white text-lg break-words', p.name));
-                tt.appendChild(el('p', 'text-xs text-slate-400', p.category + (p.harvestDate ? ' · ' + T('Hosil: {0}', formatDateTime(p.harvestDate).slice(0, 10)) : '')));
-                top.appendChild(tt);
-                top.appendChild(whPill(T(st[0]), st[1]));
-                c.appendChild(top);
-                const nums = el('div', 'grid grid-cols-2 gap-3 text-sm');
-                [[T('Qoldiq'), formatNumber(Number(p.quantityKg)) + ' kg'], [T('Narx'), T("{0} so'm/kg", formatNumber(Number(p.pricePerKg)))]].forEach(function (x) {
-                    const cell = el('div', 'rounded-xl bg-slate-950/40 border border-white/10 px-3 py-2');
-                    cell.appendChild(el('div', 'text-[11px] uppercase tracking-wider text-slate-400', x[0]));
-                    cell.appendChild(el('div', 'font-black text-white', x[1]));
-                    nums.appendChild(cell);
-                });
-                c.appendChild(nums);
-                c.appendChild(el('p', 'text-xs text-sky-300 font-semibold', '🚚 ' + payerLabel(p)));
+                const c = el('article', 'rounded-2xl border border-white/10 p-4 space-y-3'); c.dataset.listing = p.id;
+                const info = el('div', 'space-y-1.5 text-sm text-slate-300');
+                const irow = function (icon, text) { const r = el('div', 'flex items-start gap-2.5'); r.appendChild(el('i', 'fa-solid ' + icon + ' text-emerald-400 mt-1 w-4 text-center text-xs')); r.appendChild(el('span', 'min-w-0 break-words', text)); info.appendChild(r); };
+                irow('fa-calendar-plus', T('Yaratilgan sana') + ': ' + formatDateTime(p.createdAt));
+                irow('fa-tag', T(st[0]) + ' · ' + p.category);
+                if (p.harvestDate) irow('fa-wheat-awn', T('Hosil: {0}', formatDateTime(p.harvestDate).slice(0, 10)));
+                irow('fa-align-left', p.description ? p.description : T("Tavsif kiritilmagan"));
+                irow('fa-truck', payerLabel(p));
+                c.appendChild(info);
                 const act = el('div', 'flex flex-wrap gap-2');
                 act.appendChild(actionBtn('fa-pen', 'Tahrirlash', false, function () { openProductModal(p); }));
                 act.appendChild(actionBtn(p.status === 'ARCHIVED' ? 'fa-box-open' : 'fa-box-archive', p.status === 'ARCHIVED' ? 'Faollashtirish' : 'Arxivlash', false, async function () {
@@ -5183,7 +5187,7 @@
                     catch (err) { if (err.status !== 401) showToast(err.messages[0], 4500, 'error'); }
                 }));
                 c.appendChild(act);
-                slides.push(gcSlide({ photo: p.photos && p.photos[0], icon: 'fa-seedling', title: p.name, chip: T(st[0]), price: T("{0} so'm/kg", formatNumber(Number(p.pricePerKg))), qty: gcKg(p.quantityKg), loc: (function (f) { return f && f.region ? f.region + (f.district ? ', ' + f.district : '') : '—'; })(p.farmer || user.farmer || user.profile), pin: { text: T('PIN-himoya yoqilgan') }, quick: 'Batafsil', detail: c }));
+                slides.push(gcSlide({ photo: p.photos && p.photos[0], icon: 'fa-seedling', title: p.name, chip: T(st[0]), price: T("{0} so'm/kg", formatNumber(Number(p.pricePerKg))), qty: gcKg(p.quantityKg), loc: (function (f) { return f && f.region ? f.region + (f.district ? ', ' + f.district : '') : '—'; })(p.farmer || user.farmer || user.profile), pin: { text: T('PIN-himoya yoqilgan') }, quick: 'Batafsil', collapsed: true, detail: c }));
             });
             dashContent.replaceChildren(head, gcMount(slides, "E'lonlar karuseli"));
         }

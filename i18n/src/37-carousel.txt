@@ -12,3 +12,5 @@ Bronlar karuseli ‖ Карусель броней ‖ Bookings carousel
 Mavjud yuklar karuseli ‖ Карусель доступных грузов ‖ Available loads carousel
 E'lonlar karuseli ‖ Карусель объявлений ‖ Listings carousel
 {0} t ‖ {0} т ‖ {0} t
+Yaratilgan sana ‖ Дата создания ‖ Created on
+Tavsif kiritilmagan ‖ Описание не указано ‖ No description provided

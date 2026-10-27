@@ -21,7 +21,7 @@ const call=async(path,body,tok,method='POST')=>{const r=await fetch(API+path,{me
     await pg.click('#auth-nav-btn');await pg.fill('#login-phone',ph.slice(4));await pg.fill('#login-password',PW);await pg.click('#login-form .auth-submit');await pg.waitForTimeout(1800);
     return pg;};
 
-  const carCheck=async(pg,label,min)=>{
+  const carCheck=async(pg,label,min,startCollapsed)=>{
     const n=await pg.locator('.gc .gc-slide').count(); ok(n>=min,label+': carousel with '+n+' slides');
     ok(await pg.locator('.gc .gc-slide.is-active').count()===1,label+': exactly one active (center) card');
     const tr=await pg.locator('.gc .gc-slide').evaluateAll(els=>els.map(e=>({t:e.style.transform,o:e.style.opacity,a:e.classList.contains('is-active')})));
@@ -31,7 +31,7 @@ const call=async(path,body,tok,method='POST')=>{const r=await fetch(API+path,{me
     ok(/so'm/.test(s0)&&/(kg| t\b)/.test(s0),label+': price + quantity on card');
     ok(await pg.locator('.gc .gc-slide.is-active .gc-loc span').innerText().then(t=>t.length>2&&t!=='—'),label+': location on card');
     ok(await pg.locator('.gc .gc-slide.is-active [data-gc-pin]').count()===1,label+': PIN status chip');
-    ok(await pg.locator('.gc .gc-slide.is-active [data-gc-quick]').innerText().then(t=>/Batafsil/.test(t)),label+': Batafsil quick button');
+    ok(await pg.locator('.gc .gc-slide.is-active [data-gc-quick]').innerText().then(t=>/Batafsil|Yopish/.test(t)),label+': Batafsil/Yopish quick button');
     ok(await pg.locator('.gc .gc-slide:not(.is-active) .gc-detail').first().evaluate(e=>getComputedStyle(e).display==='none').catch(()=>true),label+': inactive cards show summary only');
     if(n<2) return;
     await pg.click('.gc .gc-next'); await pg.waitForTimeout(700);
@@ -48,12 +48,40 @@ const call=async(path,body,tok,method='POST')=>{const r=await fetch(API+path,{me
     await pg.locator('.gc .gc-slide').nth(0).click({position:{x:20,y:20},force:true}).catch(()=>{}); await pg.waitForTimeout(700);
     ok(await pg.locator('.gc .gc-slide').nth(0).evaluate(e=>e.classList.contains('is-active')),label+': clicking a side card brings it to center');
     await pg.locator('.gc .gc-slide.is-active [data-gc-quick]').click(); await pg.waitForTimeout(300);
-    ok(await pg.locator('.gc .gc-slide.is-active').evaluate(e=>e.classList.contains('gc-collapsed')),label+': quick button collapses details');
+    ok(await pg.locator('.gc .gc-slide.is-active').evaluate(e=>e.classList.contains('gc-collapsed'))===!startCollapsed,label+': quick button toggles details');
   };
   let pg=await open(fph,{width:1280,height:900},'dark','uz');
   await pg.evaluate(()=>openDashboard('products')); await pg.waitForTimeout(2000);
-  await carCheck(pg,'Farmer listings',3);
-  ok(await pg.locator('.gc .gc-slide.is-active .gc-detail').count()===1,'Farmer: active card has full detail (edit/archive actions)');
+  await carCheck(pg,'Farmer listings',3,true);
+  // ===== Batafsil toggle: dastlab ixcham, bosilganda kengayadi, «Yopish» =====
+  await pg.evaluate(()=>openDashboard('products')); await pg.waitForTimeout(2000);
+  const act='.gc .gc-slide.is-active';
+  ok(await pg.locator(act).evaluate(e=>e.classList.contains('gc-collapsed')),'listing card starts COLLAPSED');
+  const compact=await pg.locator(act+' .gc-sum').innerText();
+  ok(/Pomidor|Bodring|Sabzi/.test(compact)&&/so'm/.test(compact)&&/(kg| t\b)/.test(compact)&&/Samarqand/.test(compact),'compact card: name, price, quantity, location');
+  ok(await pg.locator(act+' .gc-img').isVisible(),'compact card: image area visible');
+  ok(/Batafsil/.test(await pg.locator(act+' [data-gc-quick]').innerText()),'button says "Batafsil" initially');
+  ok(await pg.locator(act+' [data-gc-quick]').getAttribute('aria-expanded')==='false','aria-expanded=false initially');
+  const hide=async(sel)=>!(await pg.locator(sel).first().isVisible());
+  ok(await hide(act+' [data-gc-pin]'),'collapsed: PIN status hidden');
+  ok(await hide(act+' button:has-text("Tahrirlash")')&&await hide(act+' button:has-text("O\'chirish")'),'collapsed: edit/delete hidden');
+  ok(await hide(act+' :text("Yaratilgan sana")'),'collapsed: created date/description hidden');
+  const h0=(await pg.locator(act).boundingBox()).height;
+  await pg.click(act+' [data-gc-quick]'); await pg.waitForTimeout(700);
+  ok(!(await pg.locator(act).evaluate(e=>e.classList.contains('gc-collapsed'))),'click -> EXPANDED');
+  ok(/Yopish/.test(await pg.locator(act+' [data-gc-quick]').innerText()),'button text becomes "Yopish"');
+  ok(await pg.locator(act+' [data-gc-quick]').getAttribute('aria-expanded')==='true','aria-expanded=true');
+  ok(await pg.locator(act+' [data-gc-quick] .gc-chev').evaluate(e=>/matrix\(-1/.test(getComputedStyle(e).transform)),'chevron points up');
+  const h1=(await pg.locator(act).boundingBox()).height; ok(h1>h0+80,'card grows downward ('+Math.round(h0)+' -> '+Math.round(h1)+'px)');
+  const det=await pg.locator(act+' .gc-detail').innerText();
+  ok(/Yaratilgan sana/.test(det)&&/Tavsif|Hosil/.test(det)&&/Yetkazish/.test(det),'expanded: created date, description, delivery info');
+  ok(await pg.locator(act+' [data-gc-pin]').isVisible(),'expanded: PIN verification status visible');
+  ok(await pg.locator(act+' button:has-text("Tahrirlash")').isVisible()&&await pg.locator(act+' button:has-text("O\'chirish")').isVisible()&&await pg.locator(act+' button:has-text("Arxivlash")').isVisible(),'expanded: manage / edit / delete buttons');
+  await pg.screenshot({path:'gc-listing-expanded.png'});
+  await pg.click(act+' [data-gc-quick]'); await pg.waitForTimeout(700);
+  ok(await pg.locator(act).evaluate(e=>e.classList.contains('gc-collapsed'))&&/Batafsil/.test(await pg.locator(act+' [data-gc-quick]').innerText()),'click again -> collapsed, "Batafsil"');
+  ok(await hide(act+' button:has-text("Tahrirlash")'),'collapsed again: edit hidden');
+  await pg.screenshot({path:'gc-listing-collapsed.png'});
   await pg.screenshot({path:'gc-farmer-dark.png'});
   await pg.evaluate(()=>selectDashTab('bookings')); await pg.waitForTimeout(2000);
   await carCheck(pg,'Farmer bookings',2);
@@ -70,6 +98,8 @@ const call=async(path,body,tok,method='POST')=>{const r=await fetch(API+path,{me
   await pg.evaluate(()=>openDashboard('products')); await pg.waitForTimeout(2000);
   ok(await pg.locator('.gc .gc-slide').count()===3,'mobile/light/ru: carousel renders');
   ok(/Подробнее/.test(await pg.locator('.gc-slide.is-active [data-gc-quick]').innerText()),'RU: quick button translated');
+  await pg.click('.gc-slide.is-active [data-gc-quick]'); await pg.waitForTimeout(700);
+  ok(/Закрыть|Yopish/.test(await pg.locator('.gc-slide.is-active [data-gc-quick]').innerText())&&/Дата создания/.test(await pg.locator('.gc-slide.is-active .gc-detail').innerText()),'RU: "Yopish" + created-date label translated');
   ok(await pg.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1),'mobile: no horizontal scroll');
   await pg.screenshot({path:'gc-farmer-light-mobile.png'}); await pg.context().close();
   await b0.close();
