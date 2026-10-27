@@ -1594,7 +1594,7 @@
         const DASH_TABS = {
             // Fermer: 5 ta asosiy bo'lim. Qolgan ekranlar (Hub, Omborxona, Yuk tashish, Keshbek, Obuna, Badjlar, Qo'llanma) DASH_GROUPS orqali ichki bo'limlar sifatida ochiladi
             FARMER: [['overview', 'fa-gauge', 'Bosh sahifa'], ['products', 'fa-seedling', "Mening e'lonlarim"], ['bookings', 'fa-truck-ramp-box', 'Zakazlar / Yuk tashish'],
-                     ['payments', 'fa-wallet', "Moliya va To'lovlar"], ['profile', 'fa-id-card', 'Profil va Sozlamalar']],
+                     ['agrostore', 'fa-flask-vial', "Agro-Store (Dori & O'g'itlar)"], ['payments', 'fa-wallet', "Moliya va To'lovlar"], ['profile', 'fa-id-card', 'Profil va Sozlamalar']],
             // Market: 4 ta asosiy bo'lim (Haydovchilar, Postlar va Omborxona olib tashlandi — market haydovchi qidirmaydi, sotib oladi va yetkazilishini kuzatadi)
             MARKET: [['overview', 'fa-store', 'Katalog / Bosh sahifa'], ['bookings', 'fa-clipboard-list', 'Mening buyurtmalarim'],
                      ['payments', 'fa-wallet', "Moliya va To'lovlar"], ['profile', 'fa-id-card', 'Profil va Sozlamalar']],
@@ -1784,6 +1784,7 @@
             else if (tab === 'verify') renderDashVerify(user);
             else if (tab === 'badges') renderDashBadges(user);
             else if (tab === 'adm-kyc') renderAdmKyc(user);
+            else if (tab === 'agrostore') renderAgroStore(user);
             else if (tab === 'prices') renderDashPrices(user);
             else if (LOCAL_TABS[tab]) LOCAL_TABS[tab](user);
             else if (tab === 'drivers') renderDashDrivers(user);
@@ -8356,6 +8357,75 @@
             const grid = el('div', 'pr-grid');
             items.forEach(function (p, i) { grid.appendChild(buildPriceCard(p, i)); });
             box.replaceChildren(grid);
+        }
+
+
+        // ===== Agro-Store (Dori & O'g'itlar): «TEZ KUNDA» — mock katalog (GET /agro-store?mode=crop|livestock) =====
+        let agroMode = 'crop';
+        function agroLang() { let l = 'uz'; try { l = localStorage.getItem('agrargo_lang') || 'uz'; } catch (e) {} return (l === 'ru' || l === 'en') ? l : 'uz'; }
+        const AGRO_ICONS = { FERTILIZER: 'fa-seedling', PESTICIDE: 'fa-spray-can-sparkles', SEED_CARE: 'fa-leaf', FEED: 'fa-wheat-awn', SILAGE: 'fa-warehouse', VITAMIN: 'fa-capsules', BRIQUETTE: 'fa-cube' };
+        function agroMoney(n) { return Math.round(Number(n)).toLocaleString('ru-RU').replace(/[\u00a0\u202f]/g, ' '); }
+        function agroCard(p, lang) {
+            const card = el('article', 'ag-card'); card.dataset.agro = p.id;
+            const img = el('div', 'ag-img'); img.dataset.soon = T('TEZ KUNDA'); img.setAttribute('role', 'img'); img.setAttribute('aria-label', p.name[lang]);
+            img.appendChild(el('i', 'fa-solid ' + (AGRO_ICONS[p.category] || 'fa-box')));
+            card.appendChild(img);
+            const body = el('div', 'ag-body');
+            body.appendChild(el('h4', '', p.name[lang]));
+            body.appendChild(el('p', 'ag-desc', p.description[lang]));
+            const use = el('div', 'ag-usage'); use.appendChild(el('b', '', "Ishlatish bo'yicha qo'llanma"));
+            use.appendChild(el('span', '', p.usage[lang])); body.appendChild(use);
+            const price = el('div', 'ag-price'); price.appendChild(el('small', '', 'Narxi'));
+            const pv = el('strong', '', agroMoney(p.price) + ' '); pv.appendChild(el('small', '', p.unit === 'litr' ? "so'm/litr" : "so'm/kg")); price.appendChild(pv); body.appendChild(price);
+            const ship = el('div', 'ag-ship'); ship.appendChild(el('span', '', 'Shahar ichida yetkazish'));
+            const sv = el('b', '', agroMoney(p.cityDeliveryFee) + ' '); sv.appendChild(el('span', '', "so'm")); ship.appendChild(sv); body.appendChild(ship);
+            if (p.partialFreight) {
+                const pf = el('div', 'ag-partial'); pf.dataset.partial = '1';
+                const b = el('b', ''); b.appendChild(el('i', 'fa-solid fa-boxes-stacked')); b.appendChild(el('span', '', 'PARTIAL FREIGHT (Qisman yuklash)')); pf.appendChild(b);
+                pf.appendChild(el('span', '', "Yuk tashuvchilar boshqa yuklar bilan birga partial (qisman) olib ketishi mumkin.")); body.appendChild(pf);
+            }
+            const ord = el('button', 'ag-order', 'Buyurtma berish (tez kunda)'); ord.type = 'button'; ord.disabled = true; body.appendChild(ord);
+            card.appendChild(body);
+            return card;
+        }
+        async function renderAgroStore(user) {
+            const rid = ++dashRenderId;
+            const lang = agroLang();
+            const head = el('div', 'space-y-4');
+            head.appendChild(sectionTitle("Agro-Store (Dori & O'g'itlar)", "Dori, o'g'it va chorva ozuqalarini fermer narxida sotib oling — platforma yuk tashuvchilari yetkazadi."));
+            const banner = el('div', 'ag-banner'); banner.id = 'ag-banner'; banner.appendChild(el('i', 'fa-solid fa-hourglass-half'));
+            const bt = el('div'); const tag = el('span', 'ag-soon'); tag.appendChild(el('i', 'fa-solid fa-clock')); tag.appendChild(el('span', '', 'TEZ KUNDA')); bt.appendChild(tag);
+            bt.appendChild(el('p', '', "Bu bo'lim tez orada ishga tushadi. Hozircha ko'rgazma uchun namunaviy ma'lumotlar ko'rsatilmoqda.")); banner.appendChild(bt); head.appendChild(banner);
+            const sw = el('div', 'ag-switch'); sw.id = 'ag-switch'; sw.setAttribute('role', 'group');
+            [['crop', 'fa-seedling', 'Ekin dorilari va O\'g\'itlar'], ['livestock', 'fa-cow', 'Chorvachilik Mahsulotlari']].forEach(function (m) {
+                const b = el('button'); b.type = 'button'; b.dataset.mode = m[0]; b.setAttribute('role', 'switch'); b.setAttribute('aria-checked', String(agroMode === m[0]));
+                b.appendChild(el('i', 'fa-solid ' + m[1])); b.appendChild(el('span', '', m[2]));
+                b.addEventListener('click', function () { if (agroMode !== m[0]) { agroMode = m[0]; renderAgroStore(user); } });
+                sw.appendChild(b);
+            });
+            head.appendChild(sw);
+            dashContent.replaceChildren(head, skeleton('list'));
+            let data;
+            try { data = await authed('GET', '/agro-store?mode=' + agroMode); }
+            catch (err) {
+                if (err.status === 401 || rid !== dashRenderId) return;
+                return dashContent.replaceChildren(head, dashMessage('fa-triangle-exclamation text-rose-400', "Katalogni yuklab bo'lmadi.", function () { renderAgroStore(user); }));
+            }
+            if (rid !== dashRenderId) return;
+            const nodes = [head];
+            const grid = el('div', 'ag-grid'); grid.id = 'ag-grid'; grid.dataset.mode = data.mode;
+            data.products.forEach(function (p) { grid.appendChild(agroCard(p, lang)); });
+            nodes.push(grid);
+            if (data.mode === 'livestock' && data.posts.length) {
+                nodes.push(sectionTitle('Chorvador fermerlar postlari', "Hamkasblar e'lon va savollari (namuna)"));
+                const posts = el('div', 'ag-posts'); posts.id = 'ag-posts';
+                data.posts.forEach(function (x) {
+                    const c = el('div', 'ag-post'); c.appendChild(el('b', '', x.author)); c.appendChild(el('p', '', x.text[lang]));
+                    c.appendChild(el('small', '', x.region[lang] + ' · ♥ ' + x.likes)); posts.appendChild(c);
+                });
+                nodes.push(posts);
+            }
+            dashContent.replaceChildren.apply(dashContent, nodes);
         }
 
         function renderDashPrices(user) {

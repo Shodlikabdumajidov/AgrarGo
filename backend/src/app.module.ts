@@ -18,6 +18,7 @@ import { PricingModule } from './pricing/pricing.module';
 import { DriverPostModule } from './driver-post/driver-post.module';
 import { GuideModule } from './guide/guide.module';
 import { RatesModule } from './rates/rates.module';
+import { AgroStoreModule } from './agro-store/agro-store.module';
 import { CashbackModule } from './cashback/cashback.module';
 import { HubModule } from './hub/hub.module';
 import { LocalModule } from './local/local.module';
@@ -70,6 +71,7 @@ import { WarehouseModule } from './warehouse/warehouse.module';
     DriverPostModule,
     GuideModule,
     RatesModule,
+    AgroStoreModule,
     HubModule,
     CashbackModule,
     LocalModule,
