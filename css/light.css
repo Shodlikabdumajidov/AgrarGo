@@ -579,3 +579,18 @@ html[data-theme="light"] .bk3-modal { background: rgba(26,54,34,.5); }
 
 /* Mahalliy bozor kartochkasi rasmi: to'q gradient ustidagi bosh harf och rangda qoladi */
 html[data-theme="light"] .lc-ph { color: #F4F1E1; }
+
+/* Oylik reyting (TOP Haydovchilar / Fermerlar / Marketlar): kun rejimida oq/och fon, qora matn */
+html[data-theme="light"] .lb-card { background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 10px 28px -16px rgba(30,60,35,.28); }
+html[data-theme="light"] .lb-head h3 { color: #0f172a; }
+html[data-theme="light"] .lb-head p { color: #475569; }
+html[data-theme="light"] .lb-head > i { background: rgba(5,150,105,.12); color: #047857; border-color: rgba(5,150,105,.35); }
+html[data-theme="light"] .lb-row { background: #f8fafc; border-color: #e2e8f0; }
+html[data-theme="light"] .lb-row.r1 { background: linear-gradient(90deg, rgba(245,158,11,.2), rgba(245,158,11,.04)); border-color: rgba(217,119,6,.5); }
+html[data-theme="light"] .lb-row.r2 { background: linear-gradient(90deg, rgba(148,163,184,.22), rgba(148,163,184,.05)); border-color: rgba(100,116,139,.4); }
+html[data-theme="light"] .lb-row.r3 { background: linear-gradient(90deg, rgba(180,83,9,.16), rgba(180,83,9,.03)); border-color: rgba(180,83,9,.4); }
+html[data-theme="light"] .lb-name b { color: #0f172a; }
+html[data-theme="light"] .lb-name span, html[data-theme="light"] .lb-val small, html[data-theme="light"] .lb-empty { color: #475569; }
+html[data-theme="light"] .lb-val { color: #047857; }
+html[data-theme="light"] .lb-skel { background: #e2e8f0; }
+html[data-theme="light"] #lb-last { color: #475569; }

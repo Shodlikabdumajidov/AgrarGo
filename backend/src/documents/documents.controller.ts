@@ -6,6 +6,7 @@ import { CurrentUser } from '../common/current-user.decorator';
 import { Roles } from '../common/roles.decorator';
 import { RolesGuard } from '../common/roles.guard';
 import { DocKind, DocumentsService } from './documents.service';
+import { parseLang } from './pdf-layout';
 
 @Controller('documents')
 export class DocumentsController {
@@ -24,32 +25,32 @@ export class DocumentsController {
   @Get('ttn/:shipmentId')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.FARMER, Role.DRIVER, Role.MARKET, Role.ADMIN)
-  async ttn(@CurrentUser() user: any, @Param('shipmentId', ParseUUIDPipe) id: string, @Res() res: Response) {
-    this.send(res, await this.docs.ttn(user, id), `TTN-${id.slice(0, 8).toUpperCase()}.pdf`);
+  async ttn(@CurrentUser() user: any, @Param('shipmentId', ParseUUIDPipe) id: string, @Query('lang') lang: string | undefined, @Res() res: Response) {
+    this.send(res, await this.docs.ttn(user, id, parseLang(lang, 'uz')), `TTN-${id.slice(0, 8).toUpperCase()}.pdf`);
   }
 
   /** Bill of Lading & Invoice (Amerika B2B BOL shakli). ?inline=1 — brauzerda ochiladi, aks holda yuklab olinadi */
   @Get('bol/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.FARMER, Role.DRIVER, Role.MARKET, Role.DISPATCHER, Role.ADMIN)
-  async bol(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string, @Query('inline') inline: string | undefined, @Res() res: Response) {
-    this.send(res, await this.docs.bol(user, id), `BOL-${id.slice(0, 8).toUpperCase()}.pdf`, inline === '1' || inline === 'true');
+  async bol(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string, @Query('inline') inline: string | undefined, @Query('lang') lang: string | undefined, @Res() res: Response) {
+    this.send(res, await this.docs.bol(user, id, parseLang(lang, 'en')), `BOL-${id.slice(0, 8).toUpperCase()}.pdf`, inline === '1' || inline === 'true');
   }
 
   @Get('receipt/:shipmentId')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.FARMER, Role.DRIVER, Role.MARKET, Role.ADMIN)
-  async receipt(@CurrentUser() user: any, @Param('shipmentId', ParseUUIDPipe) id: string, @Res() res: Response) {
-    this.send(res, await this.docs.receipt(user, id), `Chek-${id.slice(0, 8).toUpperCase()}.pdf`);
+  async receipt(@CurrentUser() user: any, @Param('shipmentId', ParseUUIDPipe) id: string, @Query('lang') lang: string | undefined, @Res() res: Response) {
+    this.send(res, await this.docs.receipt(user, id, parseLang(lang, 'uz')), `Chek-${id.slice(0, 8).toUpperCase()}.pdf`);
   }
 
   /** Ochiq tekshiruv (QR-kod skanerlangach): shaxsiy ma'lumot qaytarilmaydi */
   @Get('verify/:kind/:shipmentId/:code')
   @Header('Cache-Control', 'no-store')
-  async verify(@Param('kind') kind: string, @Param('shipmentId', ParseUUIDPipe) id: string, @Param('code') code: string, @Query('format') format: string | undefined, @Query('download') download: string | undefined, @Res() res: Response) {
+  async verify(@Param('kind') kind: string, @Param('shipmentId', ParseUUIDPipe) id: string, @Param('code') code: string, @Query('format') format: string | undefined, @Query('download') download: string | undefined, @Query('lang') lang: string | undefined, @Res() res: Response) {
     // BOL: kod to'g'ri bo'lsa brauzerda rasmiy PDF ochiladi (?download=1 — yuklab olish, ?format=json — qisqa JSON)
     if (kind === 'bol' && format !== 'json') {
-      const pdf = await this.docs.publicBol(id, code.slice(0, 40));
+      const pdf = await this.docs.publicBol(id, code.slice(0, 40), parseLang(lang, 'en'));
       if (!pdf) return res.status(404).type('text/plain').send('Hujjat topilmadi yoki kod noto\'g\'ri / Document not found or invalid code');
       res.set({
         'Content-Type': 'application/pdf',
@@ -74,8 +75,8 @@ export class DocumentsController {
 export class OrderDocumentsController {
   constructor(private readonly docs: DocumentsService) {}
 
-  private async serve(user: any, id: string, kind: 'bol' | 'invoice', download: string | undefined, res: Response) {
-    const pdf = await this.docs.bol(user, id);
+  private async serve(user: any, id: string, kind: 'bol' | 'invoice', download: string | undefined, lang: string | undefined, res: Response) {
+    const pdf = await this.docs.bol(user, id, parseLang(lang, 'en'));
     const asAttachment = download === '1' || download === 'true';
     res.set({
       'Content-Type': 'application/pdf',
@@ -87,12 +88,12 @@ export class OrderDocumentsController {
   }
 
   @Get(':id/bol.pdf')
-  bol(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string, @Query('download') download: string | undefined, @Res() res: Response) {
-    return this.serve(user, id, 'bol', download, res);
+  bol(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string, @Query('download') download: string | undefined, @Query('lang') lang: string | undefined, @Res() res: Response) {
+    return this.serve(user, id, 'bol', download, lang, res);
   }
 
   @Get(':id/invoice.pdf')
-  invoice(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string, @Query('download') download: string | undefined, @Res() res: Response) {
-    return this.serve(user, id, 'invoice', download, res);
+  invoice(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string, @Query('download') download: string | undefined, @Query('lang') lang: string | undefined, @Res() res: Response) {
+    return this.serve(user, id, 'invoice', download, lang, res);
   }
 }

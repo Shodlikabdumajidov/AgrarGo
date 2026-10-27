@@ -8697,13 +8697,20 @@
         document.querySelectorAll('select').forEach(dsEnhance);
 
         // ===== Fayl yuklab olish (PDF / XLSX): tokenli so'rov -> blob =====
+        // Hujjat (BOL/TTN/chek) PDF'lari saytda tanlangan tilda shakllanadi: ?lang=uz|ru|en
+        function withDocLang(path) {
+            if (!/^\/(orders|documents)\//.test(path)) return path;
+            let l = 'uz'; try { l = localStorage.getItem('agrargo_lang') || 'uz'; } catch (e) {}
+            if (l !== 'uz' && l !== 'ru' && l !== 'en') l = 'uz';
+            return path + (path.indexOf('?') < 0 ? '?' : '&') + 'lang=' + l;
+        }
         async function downloadFile(path, fallbackName, btn) {
             const token = storageGet(TOKEN_KEY);
             if (!token) return handleSessionExpired(reopenDash);
             if (btn) btn.disabled = true;
             try {
                 let res;
-                try { res = await fetch(API_URL + path, { headers: { Authorization: 'Bearer ' + token } }); }
+                try { res = await fetch(API_URL + withDocLang(path), { headers: { Authorization: 'Bearer ' + token } }); }
                 catch (e) { throw { status: 0, message: "Serverga ulanib bo'lmadi. Internet aloqasini tekshiring." }; }
                 if (res.status === 401) return handleSessionExpired(reopenDash);
                 if (!res.ok) {
@@ -8734,7 +8741,7 @@
             if (btn) btn.disabled = true;
             try {
                 let res;
-                try { res = await fetch(API_URL + path, { headers: { Authorization: 'Bearer ' + token } }); }
+                try { res = await fetch(API_URL + withDocLang(path), { headers: { Authorization: 'Bearer ' + token } }); }
                 catch (e) { throw { message: "Serverga ulanib bo'lmadi. Internet aloqasini tekshiring." }; }
                 if (res.status === 401) { if (win) win.close(); return handleSessionExpired(reopenDash); }
                 if (!res.ok) {

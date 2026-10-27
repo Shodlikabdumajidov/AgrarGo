@@ -1166,10 +1166,51 @@
         .filter-count { display: inline-flex; align-items: center; justify-content: center; min-width: 1.4rem; height: 1.4rem; padding: 0 .4rem; border-radius: 9999px; background: #10B981; color: #022c22; font-size: .72rem; font-weight: 900; }
         @media (max-width: 640px) { .filters-collapsed #filter-body { display: none; } }
     </style>
+
+    <style>
+        /* ===== Yuklanish ekrani (splash): yuk mashinasi o'tadi → "AgrarGo" yoziladi → 'A' ustiga barg qo'nadi → fade-out ===== */
+        #preloader { position: fixed; inset: 0; z-index: 99999; display: flex; align-items: center; justify-content: center; background: #020617; transition: opacity .6s ease, visibility .6s ease; }
+        html[data-theme="light"] #preloader { background: #e8edd8; }
+        #preloader.pl-hide { opacity: 0; visibility: hidden; pointer-events: none; }
+        .pl-stage { position: relative; width: min(86vw, 420px); height: 120px; }
+        .pl-word { position: absolute; left: 0; right: 0; top: 14px; text-align: center; font: 800 clamp(2.4rem, 11vw, 3.6rem)/1 Inter, system-ui, sans-serif; letter-spacing: -.02em; color: #f1f5f9; clip-path: inset(0 100% 0 0); animation: pl-reveal 1.5s .15s cubic-bezier(.45,.05,.35,1) forwards; white-space: nowrap; }
+        html[data-theme="light"] .pl-word { color: #12301f; }
+        .pl-word b { color: #10b981; font-weight: 800; }
+        .pl-a { position: relative; display: inline-block; }
+        .pl-leaf { position: absolute; left: 50%; top: -.7em; width: .85em; height: .85em; margin-left: -.42em; color: #22c55e; opacity: 0; transform: translate(160px, -110px) rotate(120deg) scale(.4); animation: pl-leaf .9s 1.55s cubic-bezier(.2,.8,.3,1.2) forwards; filter: drop-shadow(0 0 6px rgba(34,197,94,.6)); }
+        .pl-truck { position: absolute; left: 0; top: 56px; width: 70px; height: 40px; color: #10b981; transform: translateX(-90px); animation: pl-drive 1.7s cubic-bezier(.45,.05,.35,1) forwards; }
+        html[data-theme="light"] .pl-truck { color: #0e6e37; }
+        .pl-truck .pl-wheel { transform-box: fill-box; transform-origin: center; animation: pl-spin .45s linear infinite; }
+        .pl-road { position: absolute; left: 0; right: 0; top: 98px; height: 2px; background: linear-gradient(90deg, transparent, rgba(16,185,129,.55), transparent); opacity: .7; }
+        @keyframes pl-drive { to { transform: translateX(calc(min(86vw, 420px) + 20px)); } }
+        @keyframes pl-reveal { to { clip-path: inset(0 0 0 0); } }
+        @keyframes pl-leaf { 60% { opacity: 1; } to { opacity: 1; transform: translate(0, 0) rotate(-14deg) scale(1); } }
+        @keyframes pl-spin { to { transform: rotate(360deg); } }
+        @media (prefers-reduced-motion: reduce) { .pl-truck { display: none; } .pl-word { animation-duration: .01s; clip-path: none; } .pl-leaf { animation-duration: .01s; animation-delay: 0s; } }
+    </style>
     <link rel="stylesheet" href="css/light.css">
     <link rel="stylesheet" href="css/perf-layout.css">
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans antialiased selection:bg-emerald-500 selection:text-slate-950">
+    <!-- YUKLANISH EKRANI: resurslar yuklangach silliq yo'qoladi -->
+    <div id="preloader" role="status" aria-label="AgrarGo yuklanmoqda">
+        <div class="pl-stage">
+            <div class="pl-word" aria-hidden="true"><span class="pl-a"><svg class="pl-leaf" viewBox="0 0 24 24" fill="currentColor"><path d="M21 3c-9 0-15 4-16 12-.1 1.1 0 2.2.3 3.2L3 21l1.6.6 1.7-2.6c1 .4 2.1.6 3.2.5C17.700 18.500 21 12 21 3zM9 15c2-4 5-6.500 9-8-3 2.500-5 5.500-6.500 9.500L9 15z"/></svg>A</span>grar<b>Go</b></div>
+            <div class="pl-road"></div>
+            <svg class="pl-truck" viewBox="0 0 70 40" fill="currentColor" aria-hidden="true">
+                <rect x="0" y="6" width="40" height="22" rx="3"/>
+                <path d="M42 12h13l9 9v7H42z"/>
+                <path d="M46 15h7l5 6h-12z" fill="#020617" opacity=".55"/>
+                <g class="pl-wheel"><circle cx="14" cy="31" r="6" fill="#0f172a" stroke="currentColor" stroke-width="2.500"/></g>
+                <g class="pl-wheel"><circle cx="54" cy="31" r="6" fill="#0f172a" stroke="currentColor" stroke-width="2.500"/></g>
+            </svg>
+        </div>
+    </div>
+    <script>(function () { var p = document.getElementById('preloader'), t0 = Date.now(), done = false;
+        function hide() { if (done) return; done = true; p.classList.add('pl-hide'); setTimeout(function () { if (p.parentNode) p.parentNode.removeChild(p); }, 800); }
+        function ready() { setTimeout(hide, Math.max(0, 2700 - (Date.now() - t0))); }
+        if (document.readyState === 'complete') ready(); else window.addEventListener('load', ready);
+        setTimeout(hide, 8000); })();</script>
     <div class="grid-fx" aria-hidden="true"></div>
 
     <!-- SIDEBAR BACKDROP OVERLAY -->

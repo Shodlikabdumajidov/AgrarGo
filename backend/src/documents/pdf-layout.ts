@@ -10,8 +10,17 @@ export const LOGO = join(ASSETS_DIR, 'newlogo.png');
 export const C = { brand: '#059669', dark: '#0f172a', muted: '#64748b', line: '#cbd5e1', soft: '#ecfdf5' };
 export const MARGIN = 40;
 
-export function newDoc(title: string) {
+export type Lang = 'uz' | 'ru' | 'en';
+/** Noma'lum/bo'sh til — berilgan standart til (TTN va chek uchun 'uz', BOL uchun 'en') */
+export const parseLang = (v: unknown, fallback: Lang): Lang => (v === 'uz' || v === 'ru' || v === 'en' ? v : fallback);
+const LANG_KEY = Symbol('lang');
+export const docLang = (doc: PDFKit.PDFDocument): Lang => ((doc as any)[LANG_KEY] as Lang) ?? 'uz';
+/** Hujjat tiliga mos matn tanlaydi: tl(doc, uz, ru, en) */
+export const tl = (doc: PDFKit.PDFDocument, uz: string, ru: string, en: string) => { const l = docLang(doc); return l === 'ru' ? ru : l === 'en' ? en : uz; };
+
+export function newDoc(title: string, lang: Lang = 'uz') {
   const doc = new PDFDocument({ size: 'A4', margin: MARGIN, info: { Title: title, Author: 'AgrarGo', Producer: 'AgrarGo' } });
+  (doc as any)[LANG_KEY] = lang;
   doc.registerFont('r', FONT);
   doc.registerFont('b', FONT_BOLD);
   doc.font('r');
@@ -23,7 +32,7 @@ export const pageWidth = (doc: PDFKit.PDFDocument) => doc.page.width - MARGIN * 
 export function header(doc: PDFKit.PDFDocument, title: string, subtitle: string) {
   // Logotip (502x123): faqat balandlik beriladi, eni nisbat bo'yicha (~139 pt); yozuv logotipning ichida
   doc.image(LOGO, MARGIN, MARGIN, { height: 34 });
-  doc.font('r').fontSize(8).fillColor(C.muted).text('Fermerdan to\'g\'ridan-to\'g\'ri B2B platforma', MARGIN, MARGIN + 38);
+  doc.font('r').fontSize(8).fillColor(C.muted).text(tl(doc, "Fermerdan to'g'ridan-to'g'ri B2B platforma", 'B2B-платформа: напрямую от фермера', 'Direct-from-farmer B2B platform'), MARGIN, MARGIN + 38);
   doc.font('b').fontSize(15).fillColor(C.dark).text(title, MARGIN, MARGIN + 6, { width: pageWidth(doc), align: 'right' });
   doc.font('r').fontSize(9).fillColor(C.muted).text(subtitle, MARGIN, MARGIN + 28, { width: pageWidth(doc), align: 'right' });
   const y = MARGIN + 56;
@@ -87,7 +96,7 @@ export function securityBlock(doc: PDFKit.PDFDocument, qr: Buffer, code: string,
   const y = Math.max(doc.y + 10, doc.page.height - MARGIN - 120);
   doc.roundedRect(MARGIN, y, pageWidth(doc), 100, 8).fillAndStroke(C.soft, C.brand);
   doc.image(qr, MARGIN + 10, y + 10, { width: 80, height: 80 });
-  doc.font('b').fontSize(10).fillColor(C.brand).text('Xavfsizlik kodi', MARGIN + 104, y + 14);
+  doc.font('b').fontSize(10).fillColor(C.brand).text(tl(doc, 'Xavfsizlik kodi', 'Код безопасности', 'Security code'), MARGIN + 104, y + 14);
   doc.font('b').fontSize(14).fillColor(C.dark).text(code, MARGIN + 104, y + 30, { characterSpacing: 1.2 });
   doc.font('r').fontSize(8).fillColor(C.muted).text(note, MARGIN + 104, y + 54, { width: pageWidth(doc) - 120 });
 }

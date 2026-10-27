@@ -55,13 +55,13 @@ describe('BOL & Invoice: PDF chizish (blok, jadval va QR)', () => {
       signatures: { shipper: signatureOf('Ali', new Date(), null, 'x'), carrier: signatureOf('Hasan', new Date(), null, 'x'), consignee: signatureOf('Sardor', null, null, 'x') },
     };
   }
-  const render = (d: BolData) => new Promise<{ pdf: Buffer; texts: string[]; images: number }>((resolve, reject) => {
+  const render = (d: BolData, lang: 'uz' | 'ru' | 'en' = 'en') => new Promise<{ pdf: Buffer; texts: string[]; images: number }>((resolve, reject) => {
     const texts: string[] = [];
     let images = 0;
     const origText = PDFDocument.prototype.text, origImage = PDFDocument.prototype.image;
     (PDFDocument.prototype as any).text = function (t: any, ...a: any[]) { texts.push(String(t)); return origText.call(this, t, ...a); };
     (PDFDocument.prototype as any).image = function (...a: any[]) { images++; return origImage.apply(this, a as any); };
-    const doc = newDoc('t');
+    const doc = newDoc('t', lang);
     const chunks: Buffer[] = [];
     doc.on('data', (c: Buffer) => chunks.push(c));
     doc.on('error', reject);
@@ -103,5 +103,17 @@ describe('BOL & Invoice: PDF chizish (blok, jadval va QR)', () => {
     d.shipFrom.name = 'Juda uzun xo\'jalik nomi '.repeat(12); d.items[0].description = 'Uzun tavsif '.repeat(30);
     const { pdf } = await render(d);
     expect((pdf.toString('latin1').match(/\/Type \/Page\b/g) ?? []).length).toBe(1);
+  });
+
+  it("til: uz va ru hujjat to'liq tarjima qilinadi, 1 sahifa, inglizcha sarlavhalar qolmaydi", async () => {
+    const uz = await render(await sample(), 'uz');
+    const ru = await render(await sample('FARMER'), 'ru');
+    for (const r of [uz, ru]) expect((r.pdf.toString('latin1').match(/\/Type \/Page\b/g) ?? []).length).toBe(1);
+    const u = uz.texts.join('\n'), r = ru.texts.join('\n');
+    for (const t of ['YUK TASHISH SHARTNOMASI VA HISOB-FAKTURA', 'YUBORUVCHI (FERMER)', 'QABUL QILUVCHI (MARKET)', 'TASHUVCHI (HAYDOVCHI)', 'PIN-VERIFIED ELEKTRON IMZO', 'PIN KUTILMOQDA']) expect(u).toContain(t);
+    for (const t of ['BILL OF LADING & INVOICE', 'SHIP FROM', 'CARRIER ITEM TABLE', 'AWAITING PIN']) expect(u).not.toContain(t);
+    for (const t of ['ТРАНСПОРТНАЯ НАКЛАДНАЯ И СЧЁТ-ФАКТУРА', 'ОТПРАВИТЕЛЬ (ФЕРМЕР)', 'ПОЛУЧАТЕЛЬ (МАГАЗИН)', 'ПЕРЕВОЗЧИК (ВОДИТЕЛЬ)', 'PIN-ПОДТВЕРЖДЕНО (ЭЛ. ПОДПИСЬ)']) expect(r).toContain(t);
+    expect(r).not.toContain("so'm");
+    if (process.env.BOL_SAMPLE_DIR) { require('fs').writeFileSync(process.env.BOL_SAMPLE_DIR + '/uz.pdf', uz.pdf); require('fs').writeFileSync(process.env.BOL_SAMPLE_DIR + '/ru.pdf', ru.pdf); }
   });
 });

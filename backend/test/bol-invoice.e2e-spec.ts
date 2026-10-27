@@ -162,4 +162,31 @@ describe('BOL & Invoice PDF (Amerika B2B BOL shakli) (e2e)', () => {
     const all = (await capture(() => get(`/orders/${w.bk.id}/bol.pdf`, w.staff))).all();
     expect(all).toContain('BEKOR QILINGAN / VOID');
   });
+  it("til (?lang=uz|ru|en): BOL, TTN va chek tanlangan tilda; lang yo'q yoki noma'lum bo'lsa avvalgi format", async () => {
+    const w = await scenario({});
+    const bol = async (q: string) => (await capture(() => get(`/orders/${w.bk.id}/bol.pdf${q}`, w.market))).all();
+    const uz = await bol('?lang=uz');
+    for (const x of ['YUK TASHISH SHARTNOMASI VA HISOB-FAKTURA', 'YUBORUVCHI (FERMER)', 'QABUL QILUVCHI (MARKET)', 'TASHUVCHI (HAYDOVCHI)', 'PIN KUTILMOQDA', "TO'LANGAN — ESCROW'DA"]) expect(uz).toContain(x);
+    expect(uz).not.toContain('BILL OF LADING & INVOICE');
+    const ru = await bol('?lang=ru');
+    for (const x of ['ТРАНСПОРТНАЯ НАКЛАДНАЯ И СЧЁТ-ФАКТУРА', 'ОТПРАВИТЕЛЬ (ФЕРМЕР)', 'ПОЛУЧАТЕЛЬ (МАГАЗИН)', 'ПЕРЕВОЗЧИК (ВОДИТЕЛЬ)', 'ОПЛАЧЕНО — В ЭСКРОУ']) expect(ru).toContain(x);
+    expect(ru).toContain('сум');
+    const en = await bol('?lang=en');
+    expect(en).toContain('BILL OF LADING & INVOICE');
+    expect(await bol('')).toBe(en);
+    expect(await bol('?lang=xx')).toBe(en);
+    // PIN imzo yetkazilgach: uz «PIN-VERIFIED ELEKTRON IMZO»
+    await deliver(w);
+    expect(await bol('?lang=uz')).toContain('PIN-VERIFIED ELEKTRON IMZO');
+    expect(await bol('?lang=ru')).toContain('PIN-ПОДТВЕРЖДЕНО (ЭЛ. ПОДПИСЬ)');
+    // TTN va chek
+    const ttn = async (q: string) => (await capture(() => get(`/documents/ttn/${w.ship.id}${q}`, w.market))).all();
+    expect(await ttn('')).toContain('YUK XATI (TTN)');
+    expect(await ttn('?lang=ru')).toContain('ТОВАРНО-ТРАНСПОРТНАЯ НАКЛАДНАЯ (ТТН)');
+    expect(await ttn('?lang=en')).toContain('CONSIGNMENT NOTE (TTN)');
+    const rc = async (q: string) => (await capture(() => get(`/documents/receipt/${w.ship.id}${q}`, w.market))).all();
+    expect(await rc('')).toContain("TO'LOV CHEKI");
+    expect(await rc('?lang=ru')).toContain('ЧЕК ОБ ОПЛАТЕ');
+    expect(await rc('?lang=en')).toContain('PAYMENT RECEIPT');
+  });
 });

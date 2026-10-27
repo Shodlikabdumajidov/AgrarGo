@@ -1,4 +1,4 @@
-import { C, dt } from './pdf-layout';
+import { C, Lang, docLang, dt } from './pdf-layout';
 
 /**
  * Bill of Lading (BOL) & Invoice: Amerika B2B BOL shakli ("BOL shablon.jpg") asosida.
@@ -40,7 +40,13 @@ export interface BolData {
 export const bolNumber = (no: number, date: Date) => `AGB2B-${date.getUTCFullYear()}-${String(no).padStart(6, '0')}`;
 
 /** Yetkazib berish kimning hisobidan: Incoterms kodi va Freight Charge Terms (BUYER — Collect, FARMER — Prepaid) */
-export function incotermOf(payer: Payer): { code: string; label: string; terms: FreightTerms } {
+export function incotermOf(payer: Payer, lang: Lang | 'bi' = 'bi'): { code: string; label: string; terms: FreightTerms } {
+  if (lang === 'ru') return payer === 'FARMER'
+    ? { code: 'DAP', label: 'DAP — поставка в месте назначения: доставку оплачивает ФЕРМЕР (фрахт ПРЕДОПЛАЧЕН, стоимость доставки удерживается из выплаты фермеру)', terms: 'PREPAID' }
+    : { code: 'FCA', label: 'FCA — франко-перевозчик: доставку оплачивает ПОКУПАТЕЛЬ (фрахт ПРИ ПОЛУЧЕНИИ, стоимость доставки добавляется к цене товара)', terms: 'COLLECT' };
+  if (lang === 'uz') return payer === 'FARMER'
+    ? { code: 'DAP', label: "DAP — Manzilda yetkazib berish: yetkazib berishni FERMER to'laydi (yo'l haqi oldindan to'langan, fermer oladigan summadan ushlanadi)", terms: 'PREPAID' }
+    : { code: 'FCA', label: "FCA — Tashuvchiga topshirish: yetkazib berishni XARIDOR to'laydi (yo'l haqi qabulda to'lanadi, mahsulot narxiga qo'shiladi)", terms: 'COLLECT' };
   return payer === 'FARMER'
     ? { code: 'DAP', label: "DAP — Delivered at Place: yetkazib berishni FERMER to'laydi (Freight PREPAID, yo'l haqi fermer oladigan summadan ushlanadi)", terms: 'PREPAID' }
     : { code: 'FCA', label: "FCA — Free Carrier: yetkazib berishni XARIDOR to'laydi (Freight COLLECT, yo'l haqi mahsulot narxiga qo'shiladi)", terms: 'COLLECT' };
@@ -55,7 +61,26 @@ export function packagingFor(category: string, weightKg: number): { type: string
 }
 
 /** Escrow muhri matni (to'lov holatiga qarab) */
-export function escrowStamp(status: string | null | undefined): BolData['escrow'] {
+export function escrowStamp(status: string | null | undefined, lang: Lang | 'bi' = 'bi'): BolData['escrow'] {
+  if (lang === 'uz' || lang === 'ru') {
+    const uz = lang === 'uz';
+    const m: Record<string, [string, string, BolData['escrow']['tone']]> = uz ? {
+      HELD: ["TO'LANGAN — ESCROW'DA", "Mablag' escrow'da xavfsiz saqlanmoqda", 'green'],
+      RELEASED: ["TO'LANGAN — O'TKAZILGAN", "Mablag' fermer va haydovchiga o'tkazilgan", 'green'],
+      PENDING: ["TO'LOV KUTILMOQDA", "Xaridor mablag'ni escrow'ga o'tkazmagan", 'amber'],
+      REFUNDED: ['QAYTARILGAN', "Mablag' xaridorga qaytarilgan", 'red'],
+      CANCELLED: ['BEKOR QILINGAN', 'Buyurtma bekor qilingan', 'red'],
+    } : {
+      HELD: ['ОПЛАЧЕНО — В ЭСКРОУ', 'Средства надёжно удерживаются в эскроу', 'green'],
+      RELEASED: ['ОПЛАЧЕНО — ПЕРЕВЕДЕНО', 'Средства переведены фермеру и водителю', 'green'],
+      PENDING: ['ОЖИДАЕТ ОПЛАТЫ', 'Покупатель не внёс средства в эскроу', 'amber'],
+      REFUNDED: ['ВОЗВРАЩЕНО', 'Средства возвращены покупателю', 'red'],
+      CANCELLED: ['ОТМЕНЕНО', 'Заказ отменён', 'red'],
+    };
+    const r = m[status ?? ''];
+    if (r) return { status: status as string, stamp: r[0], sub: r[1], tone: r[2] };
+    return { status: 'NONE', stamp: uz ? "TO'LOV BOSHLANMAGAN" : 'ОПЛАТА НЕ НАЧАТА', sub: uz ? "Bu yuk uchun to'lov yaratilmagan" : 'Для этого груза платёж не создан', tone: 'gray' };
+  }
   switch (status) {
     case 'HELD': return { status: 'HELD', stamp: "TO'LANGAN / ESCROW HELD", sub: "Mablag' escrow'da xavfsiz saqlanmoqda", tone: 'green' };
     case 'RELEASED': return { status: 'RELEASED', stamp: "TO'LANGAN / PAID — RELEASED", sub: "Mablag' fermer va haydovchiga o'tkazilgan", tone: 'green' };
@@ -80,6 +105,55 @@ export const fmtKg = (n: number) => `${n.toLocaleString('ru-RU', { maximumFracti
 const fmtTons = (kg: number) => `${(kg / 1000).toLocaleString('ru-RU', { maximumFractionDigits: 3 }).replace(/[  ]/g, ' ')} tn`;
 const ddmmyyyy = (d: Date | null) => (d ? dt(d)!.slice(0, 16) : '—');
 
+
+// ---------- Tarjimalar (kalit — inglizcha matn; 'en' da o'zgarishsiz qoladi) ----------
+
+const TR: [string, string, string][] = [
+  ['BILL OF LADING & INVOICE', 'YUK TASHISH SHARTNOMASI VA HISOB-FAKTURA', 'ТРАНСПОРТНАЯ НАКЛАДНАЯ И СЧЁТ-ФАКТУРА'],
+  ['Yuk xati va hisob-faktura  •  AgrarGo B2B', 'Bill of Lading (BOL) va hisob-faktura  •  AgrarGo B2B', 'Bill of Lading (BOL) и счёт-фактура  •  AgrarGo B2B'],
+  ['Print Date', 'Chop etilgan sana', 'Дата печати'],
+  ['Page 1 of 1', '1-sahifa / 1', 'Стр. 1 из 1'],
+  ["SHIP FROM  /  JO'NATUVCHI (FERMER)", 'YUBORUVCHI (FERMER)', 'ОТПРАВИТЕЛЬ (ФЕРМЕР)'],
+  ['SHIP TO  /  QABUL QILUVCHI (MARKET)', 'QABUL QILUVCHI (MARKET)', 'ПОЛУЧАТЕЛЬ (МАГАЗИН)'],
+  ["BILL TO  /  TO'LOVCHI", "TO'LOVCHI", 'ПЛАТЕЛЬЩИК'],
+  ['Name:', 'Nomi:', 'Название:'], ['Address:', 'Manzil:', 'Адрес:'], ['City/State/Zip:', 'Tuman/Viloyat:', 'Район/Область:'], ['Tel / STIR:', 'Tel / STIR:', 'Тел / ИНН:'],
+  ['Billing Instructions:', "To'lov ko'rsatmalari:", 'Условия оплаты:'],
+  ['SPECIAL INSTRUCTIONS & INCOTERMS', "MAXSUS KO'RSATMALAR VA INCOTERMS", 'ОСОБЫЕ УКАЗАНИЯ И ИНКОТЕРМС'],
+  ['Bill of Lading #:', 'BOL raqami:', 'Номер BOL:'], ['Date', 'Sana', 'Дата'], ['Scan to verify', 'Tekshirish: skanerlang', 'Сканируйте'],
+  ['Carrier Name:', 'Tashuvchi:', 'Перевозчик:'], ['License (SCAC):', 'Guvohnoma:', 'Удостоверение:'], ['Vehicle:', 'Transport:', 'Транспорт:'], ['Trailer / Plate:', 'Davlat raqami:', 'Гос. номер:'],
+  ['Carrier Tel:', 'Tashuvchi tel:', 'Тел. перевозчика:'], ['Shipment ID:', 'Yuk ID:', 'ID груза:'], ['PRO / Order Ref:', 'Buyurtma raqami:', 'Номер заказа:'], ['Source:', 'Manba:', 'Источник:'],
+  ['Pickup Date:', 'Yuklash sanasi:', 'Дата погрузки:'], ['Delivery Date:', 'Yetkazish sanasi:', 'Дата доставки:'], ['Status:', 'Holati:', 'Статус:'], ['Hazardous:', 'Xavfli yuk:', 'Опасный груз:'], ['Cust Ref:', 'Mijoz ref:', 'Реф. клиента:'],
+  ['Freight Charge Terms (Freight charges are prepaid unless marked otherwise):', "Yuk tashish to'lovi shartlari (boshqacha belgilanmasa, oldindan to'langan):", 'Условия оплаты перевозки (если не указано иное — предоплата):'],
+  ['Prepaid', 'Oldindan', 'Предоплата'], ['Collect', 'Qabulda', 'При получ.'], ['3rd Party', '3-shaxs', '3-е лицо'],
+  ['Master Bill of Lading: AgrarGo elektron BOL (PIN-kod elektron imzosi bilan)', 'Asosiy BOL: AgrarGo elektron BOL (PIN-kod elektron imzosi bilan)', 'Основной BOL: электронный BOL AgrarGo (с электронной подписью по PIN-коду)'],
+  ['SHIPMENT SUMMARY INFORMATION', "YUK BO'YICHA UMUMIY MA'LUMOT", 'СВОДКА ПО ГРУЗУ'],
+  ['SHIPMENT ID', 'YUK ID', 'ID ГРУЗА'], ['PACKAGES', 'QADOQLAR', 'МЕСТА'], ['TOTAL WEIGHT', 'JAMI VAZN', 'ОБЩИЙ ВЕС'], ['COMMODITY DESCRIPTION', 'YUK TAVSIFI', 'ОПИСАНИЕ ГРУЗА'], ['CATEGORY', 'TOIFA', 'КАТЕГОРИЯ'],
+  ['CARRIER ITEM TABLE  /  CUSTOMER ORDER INFORMATION', "YUK JADVALI  /  BUYURTMA MA'LUMOTI", 'ТАБЛИЦА ГРУЗА  /  ДАННЫЕ ЗАКАЗА'],
+  ['ORDER NO', 'BUYURTMA №', 'ЗАКАЗ №'], ['ITEM #', 'POZ. №', 'ПОЗ. №'], ['QTY', 'SONI', 'КОЛ-ВО'], ['UOM (PACKAGE)', "O'LCHOV (QADOQ)", 'ЕД. (УПАКОВКА)'], ['ITEM DESCRIPTION', 'MAHSULOT TAVSIFI', 'ОПИСАНИЕ ТОВАРА'], ['UNIT PRICE', 'BIRLIK NARXI', 'ЦЕНА'], ['AMOUNT', 'SUMMA', 'СУММА'],
+  ['Product (mahsulot)', 'Mahsulot', 'Товар'], ['Platform service fee (xizmat haqi)', 'Platforma xizmat haqi', 'Сервисный сбор платформы'],
+  ["TOTAL PAYABLE (market to'laydi)", "JAMI TO'LOV (market to'laydi)", 'ИТОГО К ОПЛАТЕ (платит магазин)'],
+  ['Farmer net (freight ushlab qolingan)', "Fermerga o'tadigan summa (yo'l haqi ushlab qolingan)", 'Фермеру к выплате (за вычетом доставки)'],
+  ['Freight (yetkazib berish)', 'Yetkazib berish', 'Доставка'],
+  ['SHIPPER (FERMER)', 'YUBORUVCHI (FERMER)', 'ОТПРАВИТЕЛЬ (ФЕРМЕР)'], ['CARRIER (HAYDOVCHI)', 'TASHUVCHI (HAYDOVCHI)', 'ПЕРЕВОЗЧИК (ВОДИТЕЛЬ)'], ['CONSIGNEE (MARKET)', 'QABUL QILUVCHI (MARKET)', 'ПОЛУЧАТЕЛЬ (МАГАЗИН)'],
+  ['This is to certify that the above named materials are properly classified, described, packaged, marked and labeled, and are in proper condition for transportation.', "Yuqorida nomi keltirilgan yuk to'g'ri tasniflangan, tavsiflangan, qadoqlangan, markirovkalangan va tashish uchun yaroqli holatda ekanligi tasdiqlanadi.", 'Настоящим подтверждается, что указанный груз правильно классифицирован, описан, упакован, маркирован и находится в надлежащем для перевозки состоянии.'],
+  ['Carrier acknowledges receipt of packages. Property described above is received in good order, except as noted. PIN-code = e-signature.', "Tashuvchi yukni qabul qilganini tasdiqlaydi. Yuqoridagi yuk, izohlardan tashqari, yaxshi holatda qabul qilingan. PIN-kod = elektron imzo.", 'Перевозчик подтверждает получение мест. Груз принят в надлежащем состоянии, кроме отмеченного. PIN-код = электронная подпись.'],
+  ['Consignee acknowledges receipt of the above property in good order. The consignee PIN entered by the carrier on delivery serves as e-signature.', "Qabul qiluvchi yuqoridagi yukni yaxshi holatda olganini tasdiqlaydi. Topshirishda haydovchi kiritgan market PIN-kodi elektron imzo hisoblanadi.", 'Получатель подтверждает получение груза в надлежащем состоянии. PIN-код получателя, введённый водителем при доставке, служит электронной подписью.'],
+  ["Fermer haydovchining PIN-kodini kiritgan: elektron imzo", "Fermer haydovchining PIN-kodini kiritgan: elektron imzo", 'Фермер ввёл PIN-код водителя: электронная подпись'],
+  ["Haydovchi o'z PIN-kodi bilan yukni qabul qilgan", "Haydovchi o'z PIN-kodi bilan yukni qabul qilgan", 'Водитель принял груз по своему PIN-коду'],
+  ['Market PIN-kodi topshirishda kiritilgan: elektron imzo', 'Market PIN-kodi topshirishda kiritilgan: elektron imzo', 'PIN-код магазина введён при доставке: электронная подпись'],
+  ['PRINTED NAME:', 'F.I.SH.:', 'Ф.И.О.:'], ['E-SIGNATURE:', 'E-IMZO:', 'ЭЛ. ПОДПИСЬ:'], ['DATE / TIME:', 'SANA / VAQT:', 'ДАТА / ВРЕМЯ:'],
+  ['PIN-VERIFIED', 'PIN-VERIFIED ELEKTRON IMZO', 'PIN-ПОДТВЕРЖДЕНО (ЭЛ. ПОДПИСЬ)'], ['AWAITING PIN', 'PIN KUTILMOQDA', 'ОЖИДАЕТСЯ PIN'],
+  ['CONFIRMED (status)', 'TASDIQLANGAN (holat)', 'ПОДТВЕРЖДЕНО (статус)'], ['ASSIGNED (status)', 'BIRIKTIRILGAN (holat)', 'НАЗНАЧЕН (статус)'],
+  ['Verification code', 'Tekshiruv kodi', 'Код проверки'],
+  ['Electronically generated by AgrarGo; verify via QR code.', "AgrarGo tomonidan elektron shaklda shakllantirilgan; QR-kod orqali tekshiring.", 'Сформировано электронно в AgrarGo; проверьте по QR-коду.'],
+  ['qop', 'qop', 'мешок'], ['yashik', 'yashik', 'ящик'], ['tonna', 'tonna', 'тонна'], ['QOP', 'QOP', 'МЕШОК'], ['YASHIK', 'YASHIK', 'ЯЩИК'], ['TN', 'TN', 'Т'],
+];
+const MAPS: Record<'uz' | 'ru', Map<string, string>> = { uz: new Map(TR.map((r) => [r[0], r[1]])), ru: new Map(TR.map((r) => [r[0], r[2]])) };
+/** Hujjat tiliga tarjima (inglizcha kalit; topilmasa o'zgarishsiz) */
+const tr = (doc: PDFKit.PDFDocument, key: string) => { const l = docLang(doc); return l === 'en' ? key : MAPS[l].get(key) ?? key; };
+/** Pul va og'irlik birliklari: ruscha hujjatda «сум» / «кг» */
+const unitsFor = (doc: PDFKit.PDFDocument, v: string) => (docLang(doc) === 'ru' ? v.replace(/so'm/g, 'сум').replace(/ kg\b/g, ' кг').replace(/ tn\b/g, ' т').replace(/\/kg/g, '/кг') : v);
+
 // ---------- Chizish ----------
 
 const M = 28;
@@ -88,12 +162,12 @@ type Doc = PDFKit.PDFDocument;
 
 function bar(doc: Doc, x: number, y: number, w: number, text: string) {
   doc.rect(x, y, w, 13).fill(BLACK);
-  doc.font('b').fontSize(7.5).fillColor('#ffffff').text(text, x, y + 3.2, { width: w, align: 'center', characterSpacing: 0.6, lineBreak: false });
+  doc.font('b').fontSize(7.5).fillColor('#ffffff').text(tr(doc, text), x, y + 3.2, { width: w, align: 'center', characterSpacing: 0.6, lineBreak: false });
   doc.fillColor(BLACK);
 }
 function box(doc: Doc, x: number, y: number, w: number, h: number) { doc.rect(x, y, w, h).lineWidth(0.7).strokeColor(BLACK).stroke(); }
 function text(doc: Doc, t: string, x: number, y: number, w: number, o: { size?: number; bold?: boolean; color?: string; align?: 'left' | 'right' | 'center'; height?: number } = {}) {
-  doc.font(o.bold ? 'b' : 'r').fontSize(o.size ?? 8).fillColor(o.color ?? BLACK).text(t || '—', x, y, { width: w, height: o.height ?? (o.size ?? 8) + 2, align: o.align ?? 'left', ellipsis: ELLIPSIS, lineBreak: true });
+  doc.font(o.bold ? 'b' : 'r').fontSize(o.size ?? 8).fillColor(o.color ?? BLACK).text(unitsFor(doc, tr(doc, t || '—')), x, y, { width: w, height: o.height ?? (o.size ?? 8) + 2, align: o.align ?? 'left', ellipsis: ELLIPSIS, lineBreak: true });
 }
 function labelValue(doc: Doc, x: number, y: number, w: number, label: string, value: string, labelW: number) {
   text(doc, label, x, y, labelW, { size: 6.8, bold: true, color: '#374151' });
@@ -106,7 +180,7 @@ function partyBlock(doc: Doc, x: number, y: number, w: number, title: string, p:
   labelValue(doc, x + 5, y + 18, w - 10, 'Name:', p.name, lw);
   labelValue(doc, x + 5, y + 30, w - 10, 'Address:', p.address, lw);
   labelValue(doc, x + 5, y + 42, w - 10, 'City/State/Zip:', p.cityStateZip, lw);
-  labelValue(doc, x + 5, y + 54, w - 10, 'Tel / STIR:', `${p.phone}${p.stir ? '  •  STIR: ' + p.stir : ''}`, lw);
+  labelValue(doc, x + 5, y + 54, w - 10, 'Tel / STIR:', `${p.phone}${p.stir ? '  •  ' + (docLang(doc) === 'ru' ? 'ИНН' : 'STIR') + ': ' + p.stir : ''}`, lw);
   if (fob) text(doc, `FOB: ${fob}`, x + w - 90, y + 13 + h - 11, 86, { size: 6.8, bold: true, align: 'right' });
   return y + 13 + h;
 }
@@ -155,7 +229,7 @@ function signBlock(doc: Doc, x: number, y: number, w: number, title: string, cer
   text(doc, 'E-SIGNATURE:', x + 5, y + 66, 62, { size: 6.8, bold: true, color: '#374151' });
   if (s.confirmed) {
     doc.font('b').fontSize(9).fillColor('#047857').text('✔', x + 68, y + 64, { lineBreak: false });
-    text(doc, s.method, x + 80, y + 66, w - 86, { size: 7.4, bold: true, color: '#047857' });
+    text(doc, s.method, x + 80, y + 64, w - 86, { size: 6.4, bold: true, color: '#047857', height: 16 });
   } else {
     text(doc, s.method, x + 68, y + 66, w - 74, { size: 7.4, bold: true, color: '#b45309' });
   }
@@ -169,9 +243,9 @@ export function renderBol(doc: Doc, d: BolData): void {
   const W = doc.page.width - M * 2;
   const L = 292, R = W - L; // chap va o'ng ustun kengligi
   // --- Sarlavha ---
-  text(doc, `Print Date: ${ddmmyyyy(d.printDate)}`, M, M, 200, { size: 7.5 });
+  text(doc, `${tr(doc, 'Print Date')}: ${ddmmyyyy(d.printDate)}`, M, M, 200, { size: 7.5 });
   text(doc, d.bolNumber, M, M + 10, 200, { size: 7.5, bold: true });
-  text(doc, 'BILL OF LADING & INVOICE', M, M + 2, W, { size: 17, bold: true, align: 'center', height: 22 });
+  text(doc, 'BILL OF LADING & INVOICE', M, M + (docLang(doc) === 'en' ? 2 : 5), W, { size: docLang(doc) === 'en' ? 17 : 12.5, bold: true, align: 'center', height: 22 });
   text(doc, "Yuk xati va hisob-faktura  •  AgrarGo B2B", M, M + 22, W, { size: 7.5, color: '#4b5563', align: 'center' });
   text(doc, 'Page 1 of 1', M, M + 2, W, { size: 8, bold: true, align: 'right' });
 
@@ -203,7 +277,7 @@ export function renderBol(doc: Doc, d: BolData): void {
   box(doc, rx, top, rw, leftEnd - top);
   text(doc, 'Bill of Lading #:', rx + 5, top + 5, 80, { size: 6.8, bold: true, color: '#374151' });
   text(doc, d.bolNumber, rx + 5, top + 14, rw - 80, { size: 9.5, bold: true, height: 12 });
-  text(doc, `Date: ${ddmmyyyy(d.issuedAt)}`, rx + 5, top + 29, rw - 80, { size: 7.2, bold: true });
+  text(doc, `${tr(doc, 'Date')}: ${ddmmyyyy(d.issuedAt)}`, rx + 5, top + 29, rw - 80, { size: 7.2, bold: true });
   doc.image(d.qr, rx + rw - 66, top + 4, { width: 62, height: 62 });
   text(doc, 'Scan to verify', rx + rw - 66, top + 66, 62, { size: 5.6, align: 'center', color: '#6b7280' });
   const fields: [string, string][] = [
@@ -246,7 +320,7 @@ export function renderBol(doc: Doc, d: BolData): void {
   // --- CARRIER ITEM / CUSTOMER ORDER INFORMATION ---
   ty += 8;
   bar(doc, M, ty, W, 'CARRIER ITEM TABLE  /  CUSTOMER ORDER INFORMATION');
-  const itemRows = d.items.map((i) => [i.orderNo, i.itemNo, String(i.qty), `${i.uom} (${i.packageType})`, i.description, fmtMoney(i.unitPrice) + '/kg', fmtMoney(i.amount)]);
+  const itemRows = d.items.map((i) => [i.orderNo, i.itemNo, String(i.qty), `${tr(doc, i.uom)} (${tr(doc, i.packageType)})`, i.description, fmtMoney(i.unitPrice) + '/kg', fmtMoney(i.amount)]);
   ty = table(doc, M, ty + 13, [
     { w: 84, head: 'ORDER NO' }, { w: 56, head: 'ITEM #' }, { w: 48, head: 'QTY', align: 'right' }, { w: 78, head: 'UOM (PACKAGE)' },
     { w: W - 84 - 56 - 48 - 78 - 150, head: 'ITEM DESCRIPTION' }, { w: 70, head: 'UNIT PRICE', align: 'right' }, { w: 80, head: 'AMOUNT', align: 'right' },
@@ -258,7 +332,7 @@ export function renderBol(doc: Doc, d: BolData): void {
   const iw = 262, ix = M + W - iw;
   const lines: [string, string, boolean?][] = [
     ['Product (mahsulot)', fmtMoney(d.totals.product)],
-    [`Freight (yetkazib berish) — ${d.totals.freightPaidBy}`, fmtMoney(d.totals.freight)],
+    [`${tr(doc, 'Freight (yetkazib berish)')} — ${d.totals.freightPaidBy}`, fmtMoney(d.totals.freight)],
     ['Platform service fee (xizmat haqi)', fmtMoney(d.totals.service)],
     ["TOTAL PAYABLE (market to'laydi)", fmtMoney(d.totals.total), true],
   ];
@@ -282,5 +356,5 @@ export function renderBol(doc: Doc, d: BolData): void {
   // --- Pastki qator ---
   const fy2 = doc.page.height - M - 14;
   doc.moveTo(M, fy2 - 3).lineTo(M + W, fy2 - 3).lineWidth(0.5).strokeColor(C.line).stroke();
-  text(doc, `Verification code: ${d.verifyCode}   •   ${d.bolNumber}   •   Electronically generated by AgrarGo; verify via QR code.`, M, fy2, W, { size: 6.4, color: '#4b5563', height: 10 });
+  text(doc, `${tr(doc, 'Verification code')}: ${d.verifyCode}   •   ${d.bolNumber}   •   ${tr(doc, 'Electronically generated by AgrarGo; verify via QR code.')}`, M, fy2, W, { size: 6.4, color: '#4b5563', height: 10 });
 }
