@@ -53,18 +53,21 @@ export class DocumentsService {
       || (viewer.role === Role.DRIVER && !!s.driverId && viewer.driver?.id === s.driverId);
     if (!ok) throw new ForbiddenException("Bu yuk hujjatiga kirish huquqingiz yo'q");
   }
+  
 
   /** QR-kodni telefon kamerasi va skanerlar o'qiy oladigan to'liq URL havolasiga o'tkazish */
   private async qr(kind: DocKind, id: string, code: string) {
-    const baseUrl = (this.env as any).TELEGRAM_WEB_URL 
-      || ((this.env as any).CORS_ORIGINS ? (this.env as any).CORS_ORIGINS.split(',')[0] : '') 
-      || 'https://agrargo-backend.onrender.com';
+    // Production dagi aniq Render domeni:
+    const baseUrl = 'https://agrargo-backend.onrender.com';
 
     const verifyUrl = `${baseUrl}/documents/verify/${kind}/${id}/${code}`;
 
-    return QRCode.toBuffer(verifyUrl, { margin: 1, width: 240, errorCorrectionLevel: 'M' });
+    return QRCode.toBuffer(verifyUrl, {
+      margin: 1,
+      width: 240,
+      errorCorrectionLevel: 'M',
+    });
   }
-
   private collect(doc: PDFKit.PDFDocument): Promise<Buffer> {
     return new Promise((resolve, reject) => {
       const chunks: Buffer[] = [];
@@ -255,4 +258,5 @@ export class DocumentsService {
     if (!valid) return { valid: false };
     return { valid: true, kind, cargoName: s.cargoName, weightKg: Number(s.weightKg), status: s.status, issuedAt: s.createdAt };
   }
+  
 }
