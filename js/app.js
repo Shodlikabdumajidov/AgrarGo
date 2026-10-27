@@ -2011,6 +2011,50 @@
             return p(d.getDate()) + '.' + p(d.getMonth() + 1) + '.' + d.getFullYear() + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
         }
 
+
+        // ===== Glassy Carousel V2: kabinet ro'yxatlari (e'lonlar, yuklar, bronlar) 3D karusel ko'rinishida =====
+        let gcActive = null;
+        function gcKg(kg) { const n = Number(kg) || 0; return n >= 1000 ? T('{0} t', formatNumber(Math.round(n / 100) / 10)) : formatNumber(n) + ' kg'; }
+        /** Karusel slaydi: yuqorida qisqa ma'lumot (rasm, narx, miqdor, joylashuv, PIN holati, tezkor tugma), pastda — to'liq (asl) karta */
+        function gcSlide(o) {
+            const sum = el('div', 'gc-sum');
+            const img = el('div', 'gc-img');
+            if (o.photo) { const im = el('img'); im.src = productPhotoUrl(o.photo); im.alt = o.title; im.loading = 'lazy'; img.appendChild(im); }
+            else img.appendChild(el('i', 'fa-solid ' + (o.icon || 'fa-box')));
+            if (o.chip) img.appendChild(el('span', 'gc-chip', o.chip));
+            sum.appendChild(img);
+            const body = el('div', 'gc-sbody');
+            body.appendChild(el('div', 'gc-title', o.title));
+            const meta = el('div', 'gc-meta');
+            [[T('Narx'), o.price], [T('Miqdor'), o.qty]].forEach(function (x) { const c = el('div'); c.appendChild(el('small', '', x[0])); c.appendChild(el('b', '', x[1])); meta.appendChild(c); });
+            body.appendChild(meta);
+            const loc = el('div', 'gc-loc'); loc.appendChild(el('i', 'fa-solid fa-location-dot text-emerald-400')); loc.appendChild(el('span', '', o.loc || '—')); body.appendChild(loc);
+            const row = el('div', 'gc-row');
+            const pin = el('span', 'gc-pin' + (o.pin && o.pin.tone ? ' ' + o.pin.tone : '')); pin.dataset.gcPin = '1';
+            pin.appendChild(el('i', 'fa-solid fa-key')); pin.appendChild(el('span', '', o.pin ? o.pin.text : T('PIN-himoya yoqilgan'))); row.appendChild(pin);
+            const quick = el('button', 'gc-quick', T(o.quick || 'Batafsil')); quick.type = 'button'; quick.dataset.gcQuick = '1';
+            row.appendChild(quick); body.appendChild(row);
+            sum.appendChild(body);
+            const wrap = el('div', 'gc-wrap'); wrap.appendChild(sum);
+            const det = el('div', 'gc-detail'); det.appendChild(o.detail); wrap.appendChild(det);
+            quick.addEventListener('click', function (e) { e.stopPropagation(); wrap.classList.toggle('gc-collapsed'); });
+            wrap.className = 'gc-slide-box';
+            return wrap;
+        }
+        /** Slaydlar ro'yxatidan karusel yaratadi (oldingi karusel tozalanadi) */
+        function gcMount(slides, label) {
+            if (gcActive) { gcActive.destroy(); gcActive = null; }
+            if (!window.GlassCarousel || !slides.length) return null;
+            gcActive = window.GlassCarousel.create({ slides: slides, label: T(label) });
+            return gcActive.node;
+        }
+        function gcPinOfShipment(s) {
+            if (s.status === 'DELIVERED') return { text: T('PIN tasdiqlangan'), tone: 'ok' };
+            if (!(s.pin && s.pin.enforced)) return { text: T('PIN talab qilinmaydi') };
+            if (s.status === 'IN_TRANSIT') return { text: T('PIN: topshirishda kutilmoqda'), tone: 'wait' };
+            if (s.status === 'LOADING') return { text: T('PIN: yuklashda kutilmoqda'), tone: 'wait' };
+            return { text: T('PIN-himoya yoqilgan') };
+        }
         function buildBookingCard(b, side) {
             const meta = BOOKING_STATUS[b.status];
             const party = side === 'farmer' ? b.market : b.farmer;
@@ -2143,7 +2187,15 @@
 
             const items = dashBookingFilter === 'ALL' ? list : list.filter(function (b) { return b.status === dashBookingFilter; });
             const nodes = [head];
-            if (items.length) items.forEach(function (b) { nodes.push(buildBookingCard(b, side)); });
+            if (items.length) {
+                const car = gcMount(items.map(function (b) {
+                    const party = side === 'farmer' ? b.market : b.farmer;
+                    const pinText = b.status === 'APPROVED' ? { text: T('PIN: yetkazishda faollashadi'), tone: 'wait' } : b.status === 'PENDING' ? { text: T('PIN-himoya yoqilgan') } : { text: T('PIN talab qilinmaydi') };
+                    const s = gcSlide({ photo: b.product.photos && b.product.photos[0], icon: 'fa-clipboard-list', title: b.product.name, chip: (BOOKING_STATUS[b.status] || {}).label, price: formatNumber(b.pricePerKg) + " " + T("so'm/kg"), qty: gcKg(b.quantityKg), loc: party.region + ', ' + party.district, pin: pinText, detail: buildBookingCard(b, side) });
+                    return s;
+                }), "Bronlar karuseli");
+                if (car) nodes.push(car);
+            }
             else nodes.push(list.length
                 ? emptyState({ art: 'search', compact: true, title: "Bu holatdagi bronlar yo'q", text: 'Boshqa holatni tanlab ko\'ring.' })
                 : side === 'farmer'
@@ -4954,7 +5006,12 @@
             if (rid !== dashRenderId) return;
             if (myOffers.length) nodes.push(buildOffersSection(myOffers, true));
             if (widget) nodes.push(widget);
-            if (list.length) list.forEach(function (s) { nodes.push(buildShipmentCard(s, 'driver-open')); });
+            if (list.length) {
+                const car = gcMount(list.map(function (s) {
+                    return gcSlide({ icon: 'fa-truck-fast', title: s.cargoName, chip: s.urgent ? T('Shoshilinch') : s.category, price: s.price ? bdMoney(s.price.deliveryFee) : '—', qty: gcKg(s.weightKg), loc: s.origin.region + ' → ' + s.destination.region, pin: gcPinOfShipment(s), quick: 'Batafsil', detail: buildShipmentCard(s, 'driver-open') });
+                }), "Mavjud yuklar karuseli");
+                if (car) nodes.push(car);
+            }
             else nodes.push(filtered
                 ? emptyState({ art: 'search', compact: true, title: "Filtrga mos yuk yo'q", text: "Yo'nalish, yuk turi yoki tonnajni o'zgartirib ko'ring.", cta: { label: 'Filtrlarni tozalash', icon: 'fa-filter-circle-xmark', fn: function () { dashLoadsRegion = ''; dashLoadsFilter = { dest: '', category: '', tonnage: '' }; renderDashLoads(user); } } })
                 : emptyState({ art: 'shipments', title: "Hozircha bo'sh yuklar yo'q", text: "Fermer bronni tasdiqlaganda yangi yuk shu yerda paydo bo'ladi.", cta: { label: 'Yangilash', icon: 'fa-rotate', fn: function () { renderDashLoads(user); } } }));
@@ -4985,7 +5042,7 @@
             catch (err) { if (err.status === 401 || rid !== dashRenderId) return; return dashContent.replaceChildren(head, dashMessage('fa-triangle-exclamation text-rose-400', err.messages[0], again)); }
             if (rid !== dashRenderId) return;
             if (!list.length) return dashContent.replaceChildren(head, emptyState({ art: 'listings', title: "Hali e'lon yo'q", text: "Birinchi e'loningizni joylang: do'konlar uni darhol ko'radi va bron qiladi.", cta: { label: "E'lon joylash", icon: 'fa-plus', fn: function () { openProductModal(); } } }));
-            const grid = el('div', 'grid grid-cols-1 lg:grid-cols-2 gap-4');
+            const slides = [];
             list.forEach(function (p) {
                 const st = LISTING_STATUS[p.status] || LISTING_STATUS.ACTIVE;
                 const c = el('article', 'glass rounded-2xl border border-white/10 p-4 space-y-3');
@@ -5018,9 +5075,9 @@
                     catch (err) { if (err.status !== 401) showToast(err.messages[0], 4500, 'error'); }
                 }));
                 c.appendChild(act);
-                grid.appendChild(c);
+                slides.push(gcSlide({ photo: p.photos && p.photos[0], icon: 'fa-seedling', title: p.name, chip: T(st[0]), price: T("{0} so'm/kg", formatNumber(Number(p.pricePerKg))), qty: gcKg(p.quantityKg), loc: (function (f) { return f && f.region ? f.region + (f.district ? ', ' + f.district : '') : '—'; })(p.farmer || user.farmer || user.profile), pin: { text: T('PIN-himoya yoqilgan') }, quick: 'Batafsil', detail: c }));
             });
-            dashContent.replaceChildren(head, grid);
+            dashContent.replaceChildren(head, gcMount(slides, "E'lonlar karuseli"));
         }
 
         // ----- Haydovchi: Balans va moliya (yuklar va shahar ichi yetkazishlar bo'yicha tushum) -----
