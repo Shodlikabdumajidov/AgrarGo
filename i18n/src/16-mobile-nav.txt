@@ -1,0 +1,5 @@
+# --- Mobil navigatsiya ---
+Asosiy ‖ Главная ‖ Home
+Narxlar ‖ Цены ‖ Prices
+ELD / Xarita ‖ ELD / Карта ‖ ELD / Map
+Asosiy navigatsiya ‖ Основная навигация ‖ Main navigation

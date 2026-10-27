@@ -1,0 +1,1471 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  FARMER
+  DRIVER
+  MARKET
+  ADMIN
+  DISPATCHER // ombor dispetcheri: omborxona operatsiyalarini boshqaradi (API orqali ro'yxatdan o'tmaydi)
+  CONSUMER // mahalliy aholi: Hub omboridan kichik hajmli (chakana) xarid qiladi
+  AGRO_SUPPLIER // Agro-Store sotuvchisi (dorixona yoki o'g'it sotuvchi): admin/dispetcher yaratadi, API orqali ro'yxatdan o'tmaydi
+}
+
+/// Administrator ichki rollari (RBAC). Faqat User.role = ADMIN bo'lganlarda ma'noga ega; oddiy foydalanuvchilarda USER.
+enum AdminRole {
+  SUPER_ADMIN // hamma narsa
+  SAFETY_ADMIN // xavfsizlik: foydalanuvchilarni tasdiqlash (KYC), imzolangan e-BOL shartnomalari
+  FINANCE_ADMIN // moliya: to'lovlar, escrow, hisobotlar
+  HUB_ADMIN // Hub ombor, rampa va chakana buyurtmalar
+  USER // administrator emas (standart)
+}
+
+model User {
+  id                         String    @id @default(uuid())
+  phone                      String    @unique
+  email                      String?   @unique
+  passwordHash               String
+  role                       Role      @default(FARMER)
+  adminRole                  AdminRole @default(USER)
+  fullName                   String
+  avatarUrl                  String?
+  // Fermer va market uchun shaxsiy orqa fon muqovasi (cover banner), /uploads/covers/... yo'li
+  coverUrl                   String?
+  // Obuna: ro'yxatdan o'tganda 1 oylik bepul sinov; to'lovdan keyin subscriptionEndsAt uzaytiriladi.
+  // Kirish huquqi = ikkalasidan kechroq sana. Admin/dispetcherlarda bo'sh (obuna talab qilinmaydi).
+  trialEndsAt                DateTime?
+  subscriptionEndsAt         DateTime?
+  // Shaxsni tasdiqlash (KYC): haydovchida hujjatlar+Face ID, fermer/marketda administrator tasdig'i
+  isVerified                 Boolean   @default(false)
+  verifiedAt                 DateTime?
+  kycStatus                  KycStatus @default(NONE)
+  kycRejectReason            String?
+  // Parol o'zgarganda/tiklanganda oshiriladi: eski JWT tokenlar darhol yaroqsiz bo'ladi
+  tokenVersion               Int       @default(0)
+  isActive                   Boolean   @default(true)
+  // Qizil yulduzcha (penalty) reyting: asosli shikoyatlar uchun 0.5 / 1 ball; 5.0 ga yetsa akkaunt avtomatik BANNED (isActive=false, bannedAt)
+  penaltyPoints              Float     @default(0)
+  // Oylik reyting g'olibiga berilgan bepul PRO obuna tugaydigan sana
+  proUntil                   DateTime?
+  bannedAt                   DateTime?
+  banReason                  String?
+  // Telegram bot: chat ID (bitta chat — bitta akkaunt) va bog'lash uchun vaqtinchalik bir martalik token.
+  // Tokenning faqat SHA-256 xeshi saqlanadi; ochiq ko'rinishi faqat foydalanuvchiga (havolada) beriladi.
+  telegramChatId             String?   @unique
+  telegramAuthToken          String?   @unique
+  telegramAuthTokenExpiresAt DateTime?
+  telegramLinkedAt           DateTime?
+  // Ommaviy Telegram username (@ siz): mijozlar to'g'ridan-to'g'ri yozishi uchun; ixtiyoriy
+  telegramUsername           String?
+  createdAt                  DateTime  @default(now())
+  updatedAt                  DateTime  @updatedAt
+
+  farmer Farmer?
+  driver Driver?
+  market Market?
+
+  passwordResets       PasswordReset[]
+  review               Review?
+  subscriptionPayments SubscriptionPayment[]
+  kycDocuments         KycDocument[]
+  ratingsGiven         ShipmentRating[]      @relation("RatingRater")
+  complaintsFiled      Complaint[]           @relation("ComplaintReporter")
+  complaintsAgainst    Complaint[]           @relation("ComplaintAccused")
+  ratingsReceived      ShipmentRating[]      @relation("RatingTarget")
+  offersSent           DriverOffer[]
+  consumer             Consumer?
+  agroSupplier         AgroSupplier?
+  // Hub xodimi (DISPATCHER): faqat shu Hub'ning chakana buyurtmalari va qabullarini boshqaradi; bo'sh bo'lsa — barcha Hub'lar
+  hubId                String?
+  hub                  Hub?                  @relation("HubStaff", fields: [hubId], references: [id], onDelete: SetNull)
+  hubIntakesReceived   HubIntake[]
+  dockAppointments     DockAppointment[]
+  // Keshbek: har bir muvaffaqiyatli yakunlangan buyurtmadan yig'iladi, platforma xizmat haqini qoplash uchun ishlatiladi
+  cashbackBalance      Decimal               @default(0) @db.Decimal(20, 2)
+  cashbackTransactions CashbackTransaction[]
+}
+
+model Farmer {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  farmName         String
+  region           String
+  district         String
+  address          String?
+  latitude         Float?
+  longitude        Float?
+  stir             String? @unique
+  isVerified       Boolean @default(false)
+  // Oylik reyting: shu oyda yetkazilgan yuk hajmi (tonna); oy yakunida 0 ga qaytariladi
+  monthlySotuvTons Float   @default(0)
+
+  products       Product[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  warehouseItems WarehouseItem[]
+  shipments      Shipment[]
+  ebols          EBolContract[]
+}
+
+model Driver {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  vehicleType     String
+  plateNumber     String           @unique
+  capacityKg      Decimal          @db.Decimal(12, 2)
+  region          String
+  licenseNumber   String?
+  shipments       Shipment[]
+  locationLogs    LocationLog[]
+  warehouseOrders WarehouseOrder[]
+  posts           DriverPost[]
+  // Shahar ichi kuryeri rejimi: yoqilgan bo'lsa shu Hub'ning chakana buyurtmalarini yetkazadi
+  // Oylik reyting: shu oyda yetkazilgan yuklar bo'yicha bosib o'tilgan masofa (km); oy yakunida 0 ga qaytariladi
+  monthlyKm       Float            @default(0)
+  courierMode     Boolean          @default(false)
+  courierHubId    String?
+  courierHub      Hub?             @relation("HubCouriers", fields: [courierHubId], references: [id], onDelete: SetNull)
+  localOrders     LocalOrder[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  ebols           EBolContract[]
+}
+
+/// Mahalliy aholi (chakana xaridor) profili
+model Consumer {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  region   String
+  district String
+  address  String?
+
+  orders    LocalOrder[]
+  checkouts LocalCheckout[]
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+}
+
+model Market {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  companyName      String
+  stir             String? @unique
+  region           String
+  district         String
+  address          String?
+  // Oylik reyting: shu oyda qabul qilingan yuk hajmi (tonna) va yetkazilgan zakazlar soni; oy yakunida 0 ga qaytariladi
+  monthlyXaridTons Float   @default(0)
+  monthlyOrders    Int     @default(0)
+
+  bookings        Booking[]
+  priceOffers     PriceOffer[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  warehouseOrders WarehouseOrder[]
+  shipments       Shipment[]
+}
+
+enum BookingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+model Booking {
+  id        String  @id @default(uuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+  marketId  String
+  market    Market  @relation(fields: [marketId], references: [id], onDelete: Cascade)
+
+  quantityKg    Decimal       @db.Decimal(12, 2)
+  pricePerKg    Decimal       @db.Decimal(12, 2) // bron paytidagi narx
+  status        BookingStatus @default(PENDING)
+  message       String?
+  decidedAt     DateTime?
+  shipment      Shipment?
+  payment       Payment?
+  urgent        Boolean       @default(false) // shoshilinch bron
+  deliveryPayer DeliveryPayer @default(BUYER)
+  priceOffer    PriceOffer?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId, status])
+  @@index([marketId, status])
+}
+
+/// Yetkazib berish haqini kim to'laydi: xaridor (narxga qo'shiladi) yoki fermer (olinadigan summadan ushlanadi)
+enum DeliveryPayer {
+  BUYER
+  FARMER
+}
+
+enum OfferStatus {
+  PENDING // fermer javobini kutmoqda
+  COUNTERED // fermer qarshi narx yubordi, market javobini kutmoqda
+  ACCEPTED // kelishildi: bron yaratilgan
+  REJECTED // fermer yoki market rad etdi
+  CANCELLED // market bekor qildi
+}
+
+enum ProductStatus {
+  FROZEN // egasi BANNED bo'lgani uchun muzlatilgan (ban bekor bo'lsa ACTIVE ga qaytadi)
+  ACTIVE
+  BOOKED
+  SOLD
+  ARCHIVED
+}
+
+model Product {
+  id       String @id @default(uuid())
+  farmerId String
+  farmer   Farmer @relation(fields: [farmerId], references: [id], onDelete: Cascade)
+
+  name          String
+  category      String
+  quantityKg    Decimal       @db.Decimal(12, 2)
+  pricePerKg    Decimal       @db.Decimal(12, 2)
+  harvestDate   DateTime?
+  description   String?
+  status        ProductStatus @default(ACTIVE)
+  // E'lon rasmlari (1-5 ta, /uploads/products/...) va yetkazib berish kimning hisobidan ekanligi (Incoterms)
+  photos        String[]
+  deliveryPayer DeliveryPayer @default(BUYER)
+
+  bookings    Booking[]
+  priceOffers PriceOffer[]
+
+  // Chakana (mahalliy bozor) savdo: Hub omboridan kichik hajmda sotiladi
+  isRetail         Boolean      @default(false)
+  minOrderKg       Decimal?     @db.Decimal(12, 2)
+  retailPricePerKg Decimal?     @db.Decimal(14, 2)
+  hubId            String?
+  hub              Hub?         @relation(fields: [hubId], references: [id], onDelete: SetNull)
+  hubStocks        HubStock[]
+  hubIntakes       HubIntake[]
+  localOrders      LocalOrder[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([farmerId])
+  @@index([status, category])
+  @@index([isRetail, hubId])
+}
+
+// Yuk tashish: fermer bronni tasdiqlaganda avtomatik yaratiladi
+enum ShipmentStatus {
+  OPEN // haydovchi kutilmoqda
+  LOADING // yuklanmoqda (haydovchi biriktirilgan)
+  IN_TRANSIT // yo'lda
+  DELIVERED // yetkazib berildi
+  CANCELLED // buyurtma bekor qilingan (to'lov qaytarilgan yoki to'lanmagan)
+}
+
+model Shipment {
+  id               String          @id @default(uuid())
+  // Yuk manbai: yoki bron (fermer -> market), yoki ombor buyurtmasi (omborxona -> market). Aynan bittasi to'ldirilgan (CHECK).
+  bookingId        String?         @unique
+  booking          Booking?        @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+  warehouseOrderId String?         @unique
+  warehouseOrder   WarehouseOrder? @relation(fields: [warehouseOrderId], references: [id], onDelete: Restrict)
+  // Egalar to'g'ridan-to'g'ri saqlanadi: kuzatuv va ko'rinish huquqi manbaga bog'liq emas
+  farmerId         String
+  farmer           Farmer          @relation(fields: [farmerId], references: [id], onDelete: Restrict)
+  marketId         String
+  market           Market          @relation(fields: [marketId], references: [id], onDelete: Restrict)
+  driverId         String?
+  driver           Driver?         @relation(fields: [driverId], references: [id], onDelete: SetNull)
+
+  status  ShipmentStatus   @default(OPEN)
+  urgent  Boolean          @default(false) // shoshilinch (bron belgisi nusxasi)
+  ratings ShipmentRating[]
+
+  // Bron paytidagi ma'lumotlar nusxasi: keyin profil o'zgarsa ham marshrut o'zgarmaydi
+  cargoName      String
+  category       String
+  weightKg       Decimal @db.Decimal(12, 2)
+  originRegion   String
+  originDistrict String
+  originAddress  String?
+  destRegion     String
+  destDistrict   String
+  destAddress    String?
+
+  assignedAt  DateTime?
+  deliveredAt DateTime?
+  events      ShipmentEvent[]
+
+  // e-BOL: haydovchi yetib kelganda fermer telefoniga 4 xonali kod yuboriladi (faqat HMAC xeshi saqlanadi); to'g'ri kiritilsa isSigned=true
+  pickupOtp             String?
+  pickupOtpExpiresAt    DateTime?
+  pickupOtpAttempts     Int           @default(0)
+  isSigned              Boolean       @default(false)
+  // PIN-kod tasdiqlash: haydovchi biriktirilganda yaratiladi. pickupPin — haydovchi ko'radi, fermer yuklashda kiritadi;
+  // deliveryPin — market ko'radi, haydovchi topshirishda kiritadi (to'g'ri kiritilgach DELIVERED va escrow chiqariladi)
+  // Oylik reyting statistikasi shu yuk uchun allaqachon hisoblanganmi (takroriy hisoblashdan himoya)
+  statsCounted          Boolean       @default(false)
+  // BOL (Bill of Lading) tartib raqami (B2B): hujjatda AGB2B-YYYY-NNNNNN ko'rinishida chiqadi
+  bolNo                 Int           @unique @default(autoincrement())
+  // PIN-kod elektron imzolari (BOL imzo bloki): yuklashda fermer haydovchi PIN'ini kiritgan va topshirishda haydovchi market PIN'ini kiritgan vaqt
+  pickupPinVerifiedAt   DateTime?
+  deliveryPinVerifiedAt DateTime?
+  pickupPin             String?
+  deliveryPin           String?
+  pickupPinAttempts     Int           @default(0)
+  deliveryPinAttempts   Int           @default(0)
+  ebol                  EBolContract?
+
+  // Yuk olinadigan joyning taxminiy nuqtasi (aniq manzil emas): radiusli qidiruv uchun
+  originLat Float?
+  originLng Float?
+  // LTL: shu yuk mashinaning qaysi e'lonidagi bo'sh joydan band qilingan (ltlKg != null — band)
+  ltlPostId String?
+  ltlPost   DriverPost? @relation(fields: [ltlPostId], references: [id], onDelete: SetNull)
+  ltlKg     Int?
+  // Zanjirli bron (TriHaul): bir juft yuk bitta chainId bilan bog'lanadi; chainSeq 1 — avval, 2 — keyin yetkaziladi
+  chainId   String?
+  chainSeq  Int?
+
+  // Oxirgi ma'lum joylashuv (LocationLog'ning nusxasi): xaritani tez ko'rsatish uchun
+  lastLat            Float?
+  lastLng            Float?
+  lastSpeedKmh       Float?
+  lastLocationAt     DateTime?
+  lastLocationSource LocationSource?
+  locationLogs       LocationLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  offers DriverOffer[]
+
+  @@index([status, createdAt])
+  @@index([originLat, originLng])
+  @@index([ltlPostId])
+  @@index([chainId])
+  @@index([driverId, status])
+  @@index([farmerId, status])
+  @@index([marketId, status])
+}
+
+// GPS nuqta manbasi: haqiqiy qurilma yoki demo simulyatsiya (ko'ruvchilarga ochiq aytiladi)
+enum LocationSource {
+  GPS
+  SIMULATED
+}
+
+// Haydovchi yo'lda yuborgan koordinatalar jurnali (live tracking va ELD uchun)
+model LocationLog {
+  id         String         @id @default(uuid())
+  shipmentId String
+  shipment   Shipment       @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  driverId   String
+  driver     Driver         @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  lat        Float
+  lng        Float
+  speedKmh   Float? // qurilma xabar bergan tezlik (ishonib bo'lmaydi: faqat ma'lumot uchun)
+  accuracyM  Float?
+  source     LocationSource @default(GPS)
+  recordedAt DateTime // nuqta olingan vaqt (mijoz, server tekshirgan)
+  createdAt  DateTime       @default(now())
+
+  @@unique([shipmentId, recordedAt])
+  @@index([driverId, recordedAt])
+}
+
+model ShipmentEvent {
+  id         String         @id @default(uuid())
+  shipmentId String
+  shipment   Shipment       @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  status     ShipmentStatus
+  createdAt  DateTime       @default(now())
+
+  @@index([shipmentId, createdAt])
+}
+
+// Kafolatlangan to'lov (escrow): bron tasdiqlanganda PENDING holatda yaratiladi.
+// Xaridor to'laydi -> HELD (mablag' platformada muzlatilgan) -> yuk yetkazilgach RELEASED (fermerga) yoki REFUNDED (xaridorga).
+enum PaymentStatus {
+  PENDING // to'lov kutilmoqda
+  HELD // mablag' escrow'da ushlab turilibdi
+  RELEASED // fermerga o'tkazib berilgan
+  REFUNDED // xaridorga qaytarilgan
+  CANCELLED // to'lanmasdan bekor qilingan (pul harakati bo'lmagan)
+}
+
+model Payment {
+  id               String              @id @default(uuid())
+  // Manba: bron yoki ombor buyurtmasi (aynan bittasi; CHECK)
+  bookingId        String?             @unique
+  booking          Booking?            @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+  warehouseOrderId String?             @unique
+  warehouseOrder   WarehouseOrder?     @relation(fields: [warehouseOrderId], references: [id], onDelete: Restrict)
+  localOrderId     String?             @unique
+  localOrder       LocalOrder?         @relation(fields: [localOrderId], references: [id], onDelete: Restrict)
+  // Hub omboriga saqlash va qadoqlash haqi (chakana buyurtmalarda mahsulot summasiga QO'SHIMCHA); jami = amount + deliveryFee + serviceFee + hubFee
+  hubFee           Decimal             @default(0) @db.Decimal(20, 2)
+  // Keshbek hisobidan qoplangan qism (faqat platforma xizmat haqidan oshmaydi): xaridordan yechiladigan summa = jami - cashbackUsed
+  cashbackUsed     Decimal             @default(0) @db.Decimal(20, 2)
+  // Ziyon/nizo tufayli xaridorga qaytarilgan jami (qisman qaytarish); to'liq qaytarish status = REFUNDED bilan belgilanadi
+  refundedAmount   Decimal             @default(0) @db.Decimal(20, 2)
+  adjustments      PaymentAdjustment[]
+  splits           PaymentSplit[]
+  feeAmount        Decimal             @default(0) @db.Decimal(20, 2) // omborxona xizmat haqi (summaning ichida): fermerga amount - feeAmount o'tadi
+  amount           Decimal             @db.Decimal(20, 2) // server hisoblaydi: miqdor x bron narxi (= mahsulot summasi, fermerga tegishli)
+  // To'lov tarkibi: market jami = amount + deliveryFee + serviceFee. Eski yozuvlarda 0 (jami = amount).
+  deliveryFee      Decimal             @default(0) @db.Decimal(20, 2) // haydovchiga: yetkazib berish haqi
+  // FERMER to'lasa: amount = mahsulot narxi - yo'l haqi (fermer oladigan sof summa); market jami = amount + deliveryFee + serviceFee o'zgarmaydi
+  deliveryPayer    DeliveryPayer       @default(BUYER)
+  serviceFee       Decimal             @default(0) @db.Decimal(20, 2) // platforma xizmat haqi (komissiya)
+  distanceKm       Int                 @default(0) // hisoblangan marshrut masofasi
+  currency         String              @default("UZS")
+  status           PaymentStatus       @default(PENDING)
+  provider         String
+  providerRef      String?
+  heldAt           DateTime?
+  releasedAt       DateTime?
+  refundedAt       DateTime?
+  events           PaymentEvent[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, createdAt])
+}
+
+// Tranzaksiyalar tarixi (audit): har bir holat o'zgarishi kim tomonidan va nima uchun qilingani bilan
+model PaymentEvent {
+  id        String        @id @default(uuid())
+  paymentId String
+  payment   Payment       @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  status    PaymentStatus
+  actor     String? // MARKET | FARMER | ADMIN | SYSTEM
+  note      String?
+  createdAt DateTime      @default(now())
+
+  @@index([paymentId, createdAt])
+}
+
+// Parolni SMS orqali tiklash: bir martalik kod (OTP) -> tasdiqlangach bir martalik tiklash tokeni.
+// Kod ham, token ham bazada faqat xesh ko'rinishida saqlanadi.
+model PasswordReset {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  codeHash   String // HMAC-SHA256 (server kaliti bilan): 6 xonali kodni bazadan tiklab bo'lmaydi
+  attempts   Int       @default(0) // kodni tekshirish urinishlari (to'g'ri yoki noto'g'ri, hammasi sanaladi)
+  expiresAt  DateTime
+  verifiedAt DateTime?
+
+  resetTokenHash      String?   @unique // kod tasdiqlangach beriladigan token (SHA-256)
+  resetTokenExpiresAt DateTime?
+  usedAt              DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([createdAt])
+}
+
+// ===== OMBORXONA (Warehouse Storage / WMS) =====
+
+// Omborxonaning 4 ta jismoniy zonasi (inventarizatsiya/WMS zonalar bo'ylab hisob yuritadi)
+enum WarehouseZone {
+  INBOUND // qabul qilish (o'lchash, sifat tekshiruvi, shtrix-kod)
+  STORAGE // saqlash (quruq ombor, sovitkichli kamera, ventilyatsiyali ombor)
+  SORTING // saralash va qadoqlash
+  OUTBOUND // jo'natish va tarqatish (buyurtma yig'ish)
+}
+
+enum WarehouseItemStatus {
+  ANNOUNCED // fermer yuborishini e'lon qildi, hali kelmagan
+  RECEIVED // qabul qilindi, sifat tekshiruvi kutilmoqda
+  ACTIVE // tekshiruvdan o'tgan, omborda
+  REJECTED // sifat tekshiruvidan o'tmadi
+  DEPLETED // hammasi jo'natilgan
+}
+
+enum StorageType {
+  DRY // oddiy quruq ombor: don, urug'lik, qadoqlangan
+  COLD // sovitkichli kamera: meva, sabzavot
+  VENTILATED // ventilyatsiyali ombor: kartoshka, piyoz, sabzi
+}
+
+enum QualityGrade {
+  A
+  B
+  C
+}
+
+enum SizeClass {
+  SMALL
+  MEDIUM
+  LARGE
+}
+
+enum StockMovementType {
+  RECEIVE
+  INSPECT_REJECT
+  MOVE
+  SORT_WASTE
+  DISPATCH
+  ADJUST // inventarizatsiya tuzatishi
+}
+
+enum WarehouseOrderStatus {
+  PENDING // buyurtma berildi, miqdor zaxiralandi
+  PICKING // yig'ilmoqda
+  PICKED // yig'ildi, haydovchi kutilmoqda
+  DISPATCHED // haydovchiga yuklab jo'natildi
+  DELIVERED // yetkazildi
+  CANCELLED
+}
+
+// Saqlash joyi (kamera/ombor) va uning harorat-namlik nazorati
+model StorageUnit {
+  id              String          @id @default(uuid())
+  name            String          @unique
+  type            StorageType
+  capacityKg      Decimal         @db.Decimal(12, 2)
+  tempMinC        Float
+  tempMaxC        Float
+  humidityMin     Float
+  humidityMax     Float
+  currentTempC    Float?
+  currentHumidity Float?
+  readingAt       DateTime?
+  items           WarehouseItem[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+}
+
+model WarehouseItem {
+  id       String  @id @default(uuid())
+  code     String? @unique // shtrix-kod (qabul qilinganda beriladi)
+  rfidTag  String? @unique
+  farmerId String
+  farmer   Farmer  @relation(fields: [farmerId], references: [id], onDelete: Restrict)
+
+  name        String
+  category    String
+  description String?
+  photoUrl    String?
+  storageType StorageType // talab qilinadigan saqlash turi
+
+  zone   WarehouseZone       @default(INBOUND)
+  status WarehouseItemStatus @default(ANNOUNCED)
+  unitId String?
+  unit   StorageUnit?        @relation(fields: [unitId], references: [id], onDelete: Restrict)
+
+  declaredWeightKg Decimal  @db.Decimal(12, 2)
+  receivedWeightKg Decimal? @db.Decimal(12, 2)
+  weightKg         Decimal  @default(0) @db.Decimal(12, 2) // omborda mavjud
+  reservedKg       Decimal  @default(0) @db.Decimal(12, 2) // buyurtmalar uchun zaxiralangan
+  rejectedKg       Decimal  @default(0) @db.Decimal(12, 2) // yaroqsiz deb chiqarilgan jami
+  pricePerKg       Decimal  @db.Decimal(14, 2)
+
+  grade           QualityGrade?
+  inspectionNotes String?
+  inspectedAt     DateTime?
+  sizeClass       SizeClass?
+  packagingType   String?
+  packageWeightKg Decimal?      @db.Decimal(8, 2)
+
+  receivedAt DateTime?
+  storedAt   DateTime?
+  expiresAt  DateTime?
+
+  movements StockMovement[]
+  orders    WarehouseOrder[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([farmerId, createdAt])
+  @@index([zone, status])
+  @@index([unitId])
+}
+
+// Qoldiq o'zgarishlari jurnali (audit): qoldiq har doim shu harakatlar yig'indisiga teng
+model StockMovement {
+  id        String            @id @default(uuid())
+  itemId    String
+  item      WarehouseItem     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  type      StockMovementType
+  deltaKg   Decimal           @db.Decimal(12, 2)
+  fromZone  WarehouseZone?
+  toZone    WarehouseZone?
+  note      String?
+  actorId   String?
+  createdAt DateTime          @default(now())
+
+  @@index([itemId, createdAt])
+}
+
+model WarehouseOrder {
+  id         String               @id @default(uuid())
+  itemId     String
+  item       WarehouseItem        @relation(fields: [itemId], references: [id], onDelete: Restrict)
+  marketId   String
+  market     Market               @relation(fields: [marketId], references: [id], onDelete: Restrict)
+  driverId   String?
+  driver     Driver?              @relation(fields: [driverId], references: [id], onDelete: SetNull)
+  quantityKg Decimal              @db.Decimal(12, 2)
+  pricePerKg Decimal              @db.Decimal(14, 2) // buyurtma paytidagi narx
+  totalPrice Decimal              @db.Decimal(20, 2)
+  note       String?
+  status     WarehouseOrderStatus @default(PENDING)
+
+  pickedAt     DateTime?
+  dispatchedAt DateTime?
+  deliveredAt  DateTime?
+  cancelledAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  payment  Payment?
+  shipment Shipment?
+
+  @@index([marketId, createdAt])
+  @@index([itemId, status])
+  @@index([status, createdAt])
+  @@index([driverId, status])
+}
+
+// ===== TIZIM SOZLAMALARI va ADMIN AUDITI =====
+
+// Sayt bo'yicha yagona sozlamalar qatori (id doim 1): call-center, email, ijtimoiy tarmoqlar, ish vaqti, manzil.
+// Matnli maydonlar (ish vaqti, manzil) har bir til uchun alohida: { "uz": "...", "ru": "...", "en": "..." }
+model SystemSettings {
+  id                Int      @id @default(1)
+  siteName          String   @default("AgrarGo")
+  callCenterPhones  String[]
+  supportEmail      String?
+  telegramHandle    String?
+  telegramUrl       String?
+  instagramUrl      String?
+  facebookUrl       String?
+  youtubeUrl        String?
+  workingHours      Json
+  address           Json
+  // Omborxona joylashuvi: ombor yuklari shu yerdan olib ketiladi (marshrut boshlanish nuqtasi)
+  warehouseRegion   String   @default("Samarqand")
+  warehouseDistrict String   @default("Samarqand shahri")
+  warehouseAddress  String?
+  updatedById       String?
+  updatedAt         DateTime @updatedAt
+}
+
+// Administrator va xodimlarning o'zgartiruvchi amallari jurnali (kim, nima, qachon)
+model AuditLog {
+  id        String   @id @default(uuid())
+  actorId   String
+  actorName String
+  actorRole String
+  action    String
+  entity    String
+  entityId  String?
+  details   Json?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([entity, entityId])
+  @@index([actorId, createdAt])
+}
+
+// Foydalanuvchi sharhlari (platforma haqida). Har bir foydalanuvchi bittadan sharh qoldiradi (qayta yozsa yangilanadi).
+// Ochiq ro'yxatda faqat isApproved=true ko'rinadi; admin yashirishi/o'chirishi mumkin.
+model Review {
+  id         String   @id @default(uuid())
+  userId     String   @unique
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role       Role
+  rating     Int
+  comment    String
+  isApproved Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([isApproved, createdAt(sort: Desc)])
+  @@index([role, isApproved])
+}
+
+// Platforma obunasi to'lovi (rolga qarab oylik tarif). Escrow to'lovlaridan alohida.
+model SubscriptionPayment {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role        Role
+  months      Int
+  amount      Decimal  @db.Decimal(20, 2) // server hisoblaydi: oylik tarif x oylar
+  provider    String
+  providerRef String
+  periodStart DateTime
+  periodEnd   DateTime
+  createdAt   DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+// Bozor narxlari tarixi: har bir kiritish — alohida qator. Ro'yxatda har (bozor, mahsulot) uchun eng oxirgisi ko'rsatiladi.
+// priceYesterday — shu juftlikning oldingi kiritilgan narxi (server avtomatik to'ldiradi).
+model MarketPrice {
+  id             String   @id @default(uuid())
+  marketName     String
+  productName    String
+  priceToday     Int
+  priceYesterday Int
+  image          String?
+  createdAt      DateTime @default(now())
+
+  @@index([marketName, productName, createdAt])
+}
+
+enum KycStatus {
+  NONE
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum KycDocType {
+  ID_CARD
+  DRIVER_LICENSE
+  TECH_PASSPORT
+  FACE
+}
+
+// KYC hujjatlari. Fayllar ommaviy /uploads'da EMAS: backend/private/kyc/ ichida, faqat egasi va administratorga beriladi.
+model KycDocument {
+  id        String     @id @default(uuid())
+  userId    String
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      KycDocType
+  path      String // private/kyc ichidagi nisbiy yo'l
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@unique([userId, type])
+}
+
+// Yetkazilgan yukdan keyin tomonlarning bir-birini baholashi (yulduz + teglar). Ishonchlilik darajalari va badjlar shundan hisoblanadi.
+model ShipmentRating {
+  id         String   @id @default(uuid())
+  shipmentId String
+  shipment   Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  raterId    String
+  rater      User     @relation("RatingRater", fields: [raterId], references: [id], onDelete: Cascade)
+  targetId   String
+  target     User     @relation("RatingTarget", fields: [targetId], references: [id], onDelete: Cascade)
+  stars      Int
+  friendly   Boolean  @default(false) // "Juda xushmuomala" (haydovchiga)
+  damaged    Boolean  @default(false) // yukka zarar yetgan (haydovchiga)
+  comment    String?
+  createdAt  DateTime @default(now())
+
+  @@unique([shipmentId, raterId, targetId])
+  @@index([targetId, stars])
+}
+
+enum DriverPostStatus {
+  AVAILABLE
+  ON_ROUTE
+}
+
+enum TrailerType {
+  DRY_VAN
+  REEFER
+  FLATBED
+  DROP_DECK
+  TENT
+  BOX_TRUCK
+  TIPPER
+  OTHER
+}
+
+enum LoadMode {
+  FTL
+  LTL
+}
+
+enum DriverExtra {
+  LOADERS
+  TEMP_CONTROL
+  STRAPS_TARPS
+  LIFTGATE
+  GPS_247
+}
+
+/// Haydovchining bo'sh sig'im / xizmat e'loni (ommaviy katalog)
+model DriverPost {
+  id       String @id @default(uuid())
+  driverId String
+  driver   Driver @relation(fields: [driverId], references: [id], onDelete: Cascade)
+
+  status              DriverPostStatus @default(AVAILABLE)
+  trailerType         TrailerType
+  capacityKg          Int
+  // Yuk tashish rejimi: FTL (to'liq yuk) yoki LTL (qisman yuklar yig'ish)
+  loadMode            LoadMode         @default(FTL)
+  maxCapacityKg       Int
+  availableCapacityKg Int
+  // Taxminiy joylashuv (grid ~5 km): radiusli qidiruv va xarita uchun
+  lat                 Float?
+  lng                 Float?
+  shipments           Shipment[]
+  routes              String[]
+  workHours           String?
+  currentLocation     String
+  pickupEtaMinutes    Int?
+  pricePerKm          Int?
+  priceNote           String?
+  extras              DriverExtra[]
+  description         String?
+  photos              String[]
+  deliveryEtaAt       DateTime?
+  returnPickupAt      DateTime?
+  wantsBackhaul       Boolean          @default(false)
+  isActive            Boolean          @default(true)
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  offers DriverOffer[]
+
+  @@index([isActive, status, createdAt])
+  @@index([driverId])
+  @@index([lat, lng])
+}
+
+/// Fermer/market haydovchiga yuk taklifi: haydovchi kabinetida va Telegramda ko'rinadi
+model DriverOffer {
+  id         String     @id @default(uuid())
+  postId     String
+  post       DriverPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  shipmentId String
+  shipment   Shipment   @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  fromUserId String
+  fromUser   User       @relation(fields: [fromUserId], references: [id], onDelete: Cascade)
+  pickupAt   DateTime?
+  note       String?
+  readAt     DateTime?
+  createdAt  DateTime   @default(now())
+
+  @@unique([postId, shipmentId])
+  @@index([postId, createdAt])
+  @@index([fromUserId])
+}
+
+// ===== HUB OMBORLARI va CHAKANA (B2C) SAVDO =====
+
+/// AgrarGo Hub: viloyat/shahar ombori. Fermerlar yirik partiyani shu yerga topshiradi, mahalliy aholiga kichik hajmda sotiladi.
+model Hub {
+  id       String  @id @default(uuid())
+  name     String  @unique
+  region   String
+  district String?
+  address  String?
+  lat      Float?
+  lng      Float?
+  isActive Boolean @default(true)
+
+  // Rampa (dock) jadvali: slot uzunligi, ish vaqti (mahalliy vaqt, kun boshidan daqiqalarda) va majburiy bron
+  slotMinutes        Int     @default(30)
+  dockOpenMin        Int     @default(360)
+  dockCloseMin       Int     @default(1200)
+  requireDockBooking Boolean @default(false)
+  // PaaS: Hub'da qadoqlash xizmati narxi (so'm/kg); fermer topshirishni e'lon qilganda shu narx qayd etiladi
+  packagingFeePerKg  Decimal @default(200) @db.Decimal(14, 2)
+
+  docks        HubDock[]
+  appointments DockAppointment[]
+  staff        User[]            @relation("HubStaff")
+  couriers     Driver[]          @relation("HubCouriers")
+  products     Product[]
+  stocks       HubStock[]
+  intakes      HubIntake[]
+  osd          HubOsd[]
+  orders       LocalOrder[]
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  @@index([region, isActive])
+}
+
+/// Hub omboridagi qoldiq (balans): mavjud, shundan zaxiralangan (buyurtma qilingan, hali chiqmagan)
+model HubStock {
+  id         String  @id @default(uuid())
+  hubId      String
+  hub        Hub     @relation(fields: [hubId], references: [id], onDelete: Restrict)
+  productId  String
+  product    Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+  weightKg   Decimal @default(0) @db.Decimal(12, 2)
+  reservedKg Decimal @default(0) @db.Decimal(12, 2)
+
+  movements HubStockMovement[]
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  @@unique([hubId, productId])
+}
+
+enum HubMovementType {
+  INTAKE // fermerdan qabul qilindi (+)
+  RESERVE // chakana buyurtma uchun zaxira
+  RELEASE // buyurtma bekor bo'ldi: zaxira bo'shadi
+  DISPATCH // kuryerga topshirildi: ombordan chiqdi (-)
+  RETURN // yetkazilmay qaytdi: omborga qaytdi (+)
+  ADJUST // qo'lda tuzatish
+}
+
+/// Qoldiq harakatlari jurnali (audit): har bir o'zgarish sababi bilan
+model HubStockMovement {
+  id         String          @id @default(uuid())
+  stockId    String
+  stock      HubStock        @relation(fields: [stockId], references: [id], onDelete: Cascade)
+  type       HubMovementType
+  quantityKg Decimal         @db.Decimal(12, 2)
+  refType    String? // LOCAL_ORDER | HUB_INTAKE
+  refId      String?
+  note       String?
+  createdAt  DateTime        @default(now())
+
+  @@index([stockId, createdAt])
+  @@index([refType, refId])
+}
+
+enum HubIntakeStatus {
+  ANNOUNCED // fermer topshirishni e'lon qildi
+  RECEIVED // Hub qabul qildi (qoldiq oshdi)
+  REJECTED // Hub rad etdi
+  CANCELLED // fermer bekor qildi
+}
+
+/// Fermerning Hub omboriga topshirishi: e'lon -> Hub qabul qiladi (haqiqiy vazn bilan)
+model HubIntake {
+  id           String           @id @default(uuid())
+  hubId        String
+  hub          Hub              @relation(fields: [hubId], references: [id], onDelete: Restrict)
+  productId    String
+  product      Product          @relation(fields: [productId], references: [id], onDelete: Restrict)
+  farmerId     String
+  declaredKg   Decimal          @db.Decimal(12, 2)
+  receivedKg   Decimal?         @db.Decimal(12, 2)
+  status       HubIntakeStatus  @default(ANNOUNCED)
+  note         String?
+  receivedById String?
+  receivedBy   User?            @relation(fields: [receivedById], references: [id], onDelete: SetNull)
+  receivedAt   DateTime?
+  appointment  DockAppointment?
+
+  // Master QR: butun partiyaga (pallet) bitta QR, ichida boxCount ta quti (tara)
+  boxCount     Int?
+  masterQr     String?   @unique
+  masterQrAt   DateTime?
+  // Qabul (OS&D): yaroqsiz qutilar soni
+  damagedBoxes Int       @default(0)
+  osd          HubOsd?
+
+  // PaaS: Hub'da qadoqlash xizmati
+  usePackaging    Boolean         @default(false)
+  packagingRate   Decimal?        @db.Decimal(14, 2) // e'lon paytidagi narx (so'm/kg)
+  packagingFee    Decimal?        @db.Decimal(20, 2) // jami haq: narx x qabul qilingan vazn
+  packagingStatus PackagingStatus @default(NONE)
+  packagedAt      DateTime?
+  packagedById    String?
+  packagingPaid   Decimal         @default(0) @db.Decimal(20, 2) // fermer ulushidan allaqachon ushlab qolingan qadoqlash haqi
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([hubId, status])
+  @@index([hubId, packagingStatus])
+  @@index([farmerId, createdAt])
+}
+
+enum PackagingStatus {
+  NONE // xizmat tanlanmagan
+  PENDING // qadoqlanishi kerak
+  DONE // Hub qadoqladi
+}
+
+enum OsdType {
+  DAMAGED // yaroqsiz qutilar (Partial Damage)
+  SHORT // e'lon qilingandan kam vazn
+}
+
+/// OS&D (Over, Short & Damaged) hisoboti: qabul paytidagi yo'qotish. Har topshirishga bitta yozuv.
+model HubOsd {
+  id           String      @id @default(uuid())
+  // Manba: Hub'ga topshirish (qabul) yoki chakana buyurtma (qadoqlash paytida aniqlangan ziyon): aynan bittasi (CHECK)
+  intakeId     String?     @unique
+  intake       HubIntake?  @relation(fields: [intakeId], references: [id], onDelete: Cascade)
+  localOrderId String?     @unique
+  localOrder   LocalOrder? @relation(fields: [localOrderId], references: [id], onDelete: Cascade)
+  refundAmount Decimal?    @db.Decimal(20, 2) // buyurtma ziyonida xaridorga qaytarilgan summa
+  hubId        String
+  hub          Hub         @relation(fields: [hubId], references: [id], onDelete: Restrict)
+  productId    String
+  farmerId     String
+  type         OsdType
+  totalBoxes   Int?
+  damagedBoxes Int?
+  expectedKg   Decimal     @db.Decimal(12, 2)
+  receivedKg   Decimal     @db.Decimal(12, 2)
+  lossKg       Decimal     @db.Decimal(12, 2)
+  note         String?
+  reportedById String?
+  createdAt    DateTime    @default(now())
+
+  @@index([hubId, createdAt])
+  @@index([farmerId])
+}
+
+enum AdjustmentKind {
+  DAMAGE // ziyon (OS&D): xaridorga qaytarish, fermer ulushi kamayadi
+  PACKAGING // qadoqlash haqi fermer ulushidan Hub ulushiga o'tkazildi
+  DISPUTE // moliya administratori nizoni qo'lda hal qildi
+}
+
+/// Escrow'ni qayta hisoblash jurnali: har bir o'zgarish (ziyon, qadoqlash haqi, nizo) summalari bilan. Yig'indilar tekshiruv (reconcile) uchun.
+model PaymentAdjustment {
+  id             String         @id @default(uuid())
+  paymentId      String
+  payment        Payment        @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  seq            Int // to'lov ichida tartib raqami: provayderga idempotent kalit (paymentId:adj:seq) va qayta bajarilishdan himoya
+  kind           AdjustmentKind
+  intakeId       String?
+  totalBoxes     Int?
+  damagedBoxes   Int?
+  goodsAmount    Decimal        @default(0) @db.Decimal(20, 2) // mahsulot summasidan ayirilgan (fermer ulushi kamaydi)
+  deliveryAmount Decimal        @default(0) @db.Decimal(20, 2) // yo'l haqidan qirqilgan
+  serviceAmount  Decimal        @default(0) @db.Decimal(20, 2) // platforma komissiyasidan qirqilgan
+  refundAmount   Decimal        @default(0) @db.Decimal(20, 2) // xaridorga haqiqatda qaytarilgan
+  transferAmount Decimal        @default(0) @db.Decimal(20, 2) // fermerdan Hub'ga o'tkazilgan (qadoqlash)
+  providerRef    String?
+  actor          String
+  actorUserId    String?
+  note           String?
+  createdAt      DateTime       @default(now())
+
+  @@unique([paymentId, seq])
+  @@index([kind, createdAt])
+  @@index([intakeId])
+}
+
+enum LocalOrderStatus {
+  PENDING // to'langan (escrow), Hub qabul qilishi kutilmoqda
+  PACKING // Hub qadoqlayapti (packedAt bo'lsa — tayyor, kuryer kutilmoqda)
+  DELIVERING // kuryer olib ketdi, yo'lda
+  COMPLETED // yetkazildi, escrow taqsimlandi
+  CANCELLED // bekor qilindi, mablag' qaytarildi
+}
+
+/// Chakana buyurtma: mahalliy aholi Hub omboridan kichik hajmda xarid qiladi
+model LocalOrder {
+  id         String   @id @default(uuid())
+  consumerId String
+  consumer   Consumer @relation(fields: [consumerId], references: [id], onDelete: Restrict)
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+  hubId      String
+  hub        Hub      @relation(fields: [hubId], references: [id], onDelete: Restrict)
+  farmerId   String
+  courierId  String?
+  courier    Driver?  @relation(fields: [courierId], references: [id], onDelete: SetNull)
+
+  quantityKg    Decimal @db.Decimal(12, 2)
+  pricePerKg    Decimal @db.Decimal(14, 2) // buyurtma paytidagi chakana narx
+  // Pul tarkibi (Payment bilan bir xil): jami = productAmount + hubFee + courierFee + serviceFee
+  productAmount Decimal @db.Decimal(20, 2)
+  hubFee        Decimal @db.Decimal(20, 2)
+  courierFee    Decimal @db.Decimal(20, 2)
+  serviceFee    Decimal @db.Decimal(20, 2)
+  totalPrice    Decimal @db.Decimal(20, 2)
+  cashbackUsed  Decimal @default(0) @db.Decimal(20, 2) // jami (totalPrice) ning keshbek bilan qoplangan qismi
+
+  deliveryRegion     String
+  deliveryDistrict   String
+  deliveryAddress    String
+  contactPhone       String
+  note               String?
+  // Topshirish kodi: faqat xaridor ko'radi; kuryer yetkazganda shu kodni kiritadi
+  deliveryCode       String
+  codeAttempts       Int           @default(0) // noto'g'ri kod urinishlari: 5 tadan keyin kuryer kodi bloklanadi (xaridor tasdiqlaydi)
+  // e-BOL (Shipment bilan bir xil): olish paytidagi raqamli imzo
+  pickupOtp          String?
+  pickupOtpExpiresAt DateTime?
+  pickupOtpAttempts  Int           @default(0)
+  isSigned           Boolean       @default(false)
+  ebol               EBolContract?
+
+  status       LocalOrderStatus @default(PENDING)
+  packedAt     DateTime?
+  pickedAt     DateTime?
+  deliveredAt  DateTime?
+  cancelledAt  DateTime?
+  cancelReason String?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  // Bir checkout'dagi shu Hub'ning buyurtmalari bitta kuryer bilan bitta yetkaziladi: umumiy guruh, umumiy kod, kuryer haqi teng bo'lingan
+  deliveryGroupId String?
+  // Savat: bir martalik umumiy to'lovdan ajratilgan buyurtmalar bitta checkout'ga bog'lanadi
+  checkoutId      String?
+  checkout        LocalCheckout?   @relation(fields: [checkoutId], references: [id], onDelete: Restrict)
+  // Kuryer Hub'dan yukni qaysi rampa/vaqt bilan oladi
+  pickupApptId    String?
+  pickupAppt      DockAppointment? @relation(fields: [pickupApptId], references: [id], onDelete: SetNull)
+
+  payment Payment?
+  osd     HubOsd?
+
+  @@index([checkoutId])
+  @@index([deliveryGroupId])
+  @@index([pickupApptId])
+  @@index([consumerId, createdAt])
+  @@index([hubId, status])
+  @@index([farmerId, createdAt])
+  @@index([courierId, status])
+}
+
+enum SplitParty {
+  FARMER
+  HUB
+  COURIER
+  PLATFORM
+}
+
+enum SplitStatus {
+  HELD // escrow'da
+  PAID // egasiga o'tkazildi (yoki platforma daromadi sifatida hisobga olindi)
+  REFUNDED // xaridorga qaytarildi
+}
+
+/// Escrow taqsimoti: har bir so'm kimga tegishli ekanligi. Yig'indi doim to'lov jamiga teng.
+model PaymentSplit {
+  id        String      @id @default(uuid())
+  paymentId String
+  payment   Payment     @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  party     SplitParty
+  partyId   String? // fermer / Hub / kuryer ID (platformada bo'sh)
+  amount    Decimal     @db.Decimal(20, 2)
+  status    SplitStatus @default(HELD)
+  ref       String?
+  settledAt DateTime?
+  createdAt DateTime    @default(now())
+
+  @@unique([paymentId, party])
+}
+
+/// Savat orqali bir martalik to'lov: jami summa bitta (escrow), buyurtmalar Hub/fermer bo'yicha ajratiladi
+model LocalCheckout {
+  id             String   @id @default(uuid())
+  consumerId     String
+  consumer       Consumer @relation(fields: [consumerId], references: [id], onDelete: Restrict)
+  idempotencyKey String? // qayta yuborilgan so'rov ikki marta to'lamasligi uchun
+  totalPrice     Decimal  @db.Decimal(20, 2)
+  itemCount      Int
+  cashbackUsed   Decimal  @default(0) @db.Decimal(20, 2)
+  providerRef    String?
+  createdAt      DateTime @default(now())
+
+  orders LocalOrder[]
+
+  @@unique([consumerId, idempotencyKey])
+  @@index([consumerId, createdAt])
+}
+
+/// Hub darvozasi (rampa): yuk ortish/tushirish joyi
+model HubDock {
+  id        String   @id @default(uuid())
+  hubId     String
+  hub       Hub      @relation(fields: [hubId], references: [id], onDelete: Cascade)
+  number    Int
+  name      String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  appointments DockAppointment[]
+
+  @@unique([hubId, number])
+}
+
+enum DockPurpose {
+  INTAKE // fermer yukni Hub'ga olib keladi (tushirish)
+  PICKUP // kuryer Hub'dan buyurtmalarni oladi (ortish)
+}
+
+enum DockApptStatus {
+  BOOKED
+  ARRIVED // mashina keldi / yuk ortilmoqda
+  DONE
+  CANCELLED
+  NO_SHOW
+}
+
+/// Rampa bandligi (time slot). Bir rampada bir vaqtda bittadan ortiq faol yozuv bo'lmaydi:
+/// ilova qatlamida Hub bo'yicha qulf + kesishuv tekshiruvi, bazada esa slotLock bilan UNIQUE (faol bo'lmaganda NULL).
+model DockAppointment {
+  id           String         @id @default(uuid())
+  hubId        String
+  hub          Hub            @relation(fields: [hubId], references: [id], onDelete: Restrict)
+  dockId       String
+  dock         HubDock        @relation(fields: [dockId], references: [id], onDelete: Restrict)
+  purpose      DockPurpose
+  startsAt     DateTime
+  endsAt       DateTime
+  status       DockApptStatus @default(BOOKED)
+  slotLock     String?        @default("A") // BOOKED/ARRIVED uchun "A", boshqa holatlarda NULL
+  bookedById   String
+  bookedBy     User           @relation(fields: [bookedById], references: [id], onDelete: Restrict)
+  vehiclePlate String?
+  note         String?
+  cancelReason String?
+  arrivedAt    DateTime?
+  completedAt  DateTime?
+  intakeId     String?        @unique
+  intake       HubIntake?     @relation(fields: [intakeId], references: [id], onDelete: SetNull)
+  orders       LocalOrder[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@unique([dockId, startsAt, slotLock])
+  @@index([hubId, startsAt])
+  @@index([bookedById, startsAt])
+}
+
+enum CashbackType {
+  EARNED // buyurtma yakunlanganda yozildi
+  SPENT // xizmat haqini qoplash uchun ishlatildi
+  REFUNDED // buyurtma bekor bo'ldi: ishlatilgan keshbek qaytdi
+}
+
+/// Keshbek jurnali. (userId, type, sourceType, sourceId) UNIQUE: bir manbadan ikki marta yozilmaydi/ishlatilmaydi (idempotent).
+model CashbackTransaction {
+  id          String       @id @default(uuid())
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount      Decimal      @db.Decimal(20, 2) // doim musbat; yo'nalishni type belgilaydi
+  type        CashbackType
+  sourceType  String // LOCAL_ORDER | SHIPMENT | WAREHOUSE_ORDER | BOOKING
+  sourceId    String
+  description String
+  createdAt   DateTime     @default(now())
+
+  @@unique([userId, type, sourceType, sourceId])
+  @@index([userId, createdAt])
+}
+
+enum EBolStatus {
+  SIGNED // imzolangan (kuchda)
+  VOID // bekor qilingan (administrator)
+}
+
+/// Elektron yuk xati (e-BOL): fermer telefoniga yuborilgan OTP haydovchi tomonidan kiritilgach yoziladi. Aynan bitta manba (shipmentId yoki localOrderId; CHECK).
+/// contractHash — shartnoma tarkibining SHA-256 izi (keyin o'zgartirilsa aniqlanadi).
+model EBolContract {
+  id           String      @id @default(uuid())
+  shipmentId   String?     @unique
+  shipment     Shipment?   @relation(fields: [shipmentId], references: [id], onDelete: Restrict)
+  localOrderId String?     @unique
+  localOrder   LocalOrder? @relation(fields: [localOrderId], references: [id], onDelete: Restrict)
+  driverId     String
+  driver       Driver      @relation(fields: [driverId], references: [id], onDelete: Restrict)
+  farmerId     String
+  farmer       Farmer      @relation(fields: [farmerId], references: [id], onDelete: Restrict)
+  signedAt     DateTime
+  status       EBolStatus  @default(SIGNED)
+  contractHash String
+  createdAt    DateTime    @default(now())
+
+  @@index([signedAt])
+  @@index([driverId])
+  @@index([farmerId])
+}
+
+/// Savdolashish: market e'londagi narxdan boshqa narx/miqdor taklif qiladi; fermer tasdiqlaydi, rad etadi yoki qarshi taklif yuboradi
+model PriceOffer {
+  id        String  @id @default(uuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  marketId  String
+  market    Market  @relation(fields: [marketId], references: [id], onDelete: Cascade)
+
+  quantityKg        Decimal     @db.Decimal(12, 2)
+  pricePerKg        Decimal     @db.Decimal(12, 2)
+  message           String?
+  // Fermerning qarshi taklifi (COUNTERED): market shu narx/miqdorni qabul qilsa bron yaratiladi
+  counterPricePerKg Decimal?    @db.Decimal(12, 2)
+  counterQuantityKg Decimal?    @db.Decimal(12, 2)
+  counterMessage    String?
+  status            OfferStatus @default(PENDING)
+  bookingId         String?     @unique
+  booking           Booking?    @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  decidedAt         DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId, status])
+  @@index([marketId, status])
+}
+
+enum ComplaintStatus {
+  PENDING // ko'rib chiqilmoqda (3 ish kuni)
+  UPHELD // to'liq asosli: aybdorga +1 penalty
+  PARTIAL // qisman asosli: aybdorga +0.5 penalty
+  REJECTED // asossiz: penalty yo'q
+  WITHDRAWN // shikoyatchi qaytarib oldi (berilgan penalty ayriladi)
+}
+
+/// Shikoyat / spam: hamkor bekor qilish yoki nizo sababi bo'yicha; dispetcher yoki super admin qaror qiladi
+model Complaint {
+  id           String          @id @default(uuid())
+  reporterId   String
+  reporter     User            @relation("ComplaintReporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  accusedId    String
+  accused      User            @relation("ComplaintAccused", fields: [accusedId], references: [id], onDelete: Cascade)
+  reason       String
+  status       ComplaintStatus @default(PENDING)
+  // Aybdorga haqiqatda berilgan penalty (UPHELD 1, PARTIAL 0.5); WITHDRAWN bo'lganda qaytarib ayriladi
+  penalty      Float           @default(0)
+  decisionNote String?
+  decidedById  String?
+  decidedAt    DateTime?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  @@index([reporterId, status])
+  @@index([accusedId, status])
+  @@index([status, createdAt])
+}
+
+enum LeaderboardCategory {
+  DRIVER
+  FARMER
+  MARKET
+}
+
+/// Joriy reyting davri (oy, Toshkent vaqti bo'yicha YYYY-MM): oy almashganda avvalgisi yopiladi, g'oliblarga PRO beriladi, ko'rsatkichlar 0 dan boshlanadi
+model LeaderboardState {
+  id          Int      @id @default(1)
+  activeMonth String
+  updatedAt   DateTime @updatedAt
+}
+
+/// Oy yakunidagi TOP-3 g'oliblar (tarix). value: haydovchi — km, fermer/market — tonna; orders — market zakazlari
+model LeaderboardWinner {
+  id        String              @id @default(uuid())
+  month     String
+  category  LeaderboardCategory
+  rank      Int
+  userId    String
+  name      String
+  value     Float
+  orders    Int                 @default(0)
+  proUntil  DateTime?
+  createdAt DateTime            @default(now())
+
+  @@unique([month, category, rank])
+  @@index([month])
+}
+
+// ===== Agro-Store: dori va o'g'it sotuvchilari =====
+enum AgroSupplierType {
+  PHARMACY   // Dorixona (agro-kimyoviy): litsenziya + STIR guvohnomasi talab qilinadi
+  FERTILIZER // O'g'it sotuvchi: pasport/STIR ma'lumoti yetarli
+}
+
+enum AgroVerification {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum AgroMode {
+  CROP      // ekin dorilari va o'g'itlar
+  LIVESTOCK // chorvachilik mahsulotlari
+}
+
+model AgroSupplier {
+  id           String           @id @default(uuid())
+  userId       String           @unique
+  type         AgroSupplierType
+  orgName      String
+  contactName  String
+  stir         String?
+  passportInfo String?
+  /// Yopiq papkadagi fayllar (private/agro): faqat egasi va xodimlar ko'radi
+  licenseDoc   String?
+  stirDoc      String?
+  verification AgroVerification @default(PENDING)
+  rejectReason String?
+  verifiedAt   DateTime?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  products     AgroProduct[]
+
+  @@index([verification])
+}
+
+model AgroProduct {
+  id          String       @id @default(uuid())
+  supplierId  String
+  mode        AgroMode     @default(CROP)
+  category    String
+  name        String
+  description String       @default("")
+  /// Dozasi / ishlatish yo'riqnomasi
+  usage       String       @default("")
+  price       Decimal      @db.Decimal(14, 2)
+  unit        String       @default("kg")
+  stockQty    Decimal      @db.Decimal(14, 2) @default(0)
+  imageUrl    String?
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  supplier    AgroSupplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  @@index([supplierId])
+  @@index([mode, isActive])
+}
+
+/// Ro'yxatdan o'tishda telefonni SMS kod bilan tasdiqlash (foydalanuvchi hali yaratilmagan, shuning uchun raqam bo'yicha)
+model PhoneVerification {
+  id    String @id @default(uuid())
+  phone String
+
+  codeHash   String // HMAC-SHA256 (server kaliti bilan)
+  attempts   Int       @default(0)
+  expiresAt  DateTime
+  verifiedAt DateTime?
+
+  tokenHash      String?   @unique // kod tasdiqlangach beriladigan bir martalik otpToken (SHA-256)
+  tokenExpiresAt DateTime?
+  usedAt         DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([phone, createdAt])
+  @@index([createdAt])
+}

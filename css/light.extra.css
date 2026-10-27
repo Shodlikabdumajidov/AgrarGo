@@ -1,0 +1,34 @@
+/* Qo'lda yozilgan yorug' mavzu qo'shimchalari (generator ularni css/light.css oxiriga qo'shadi) */
+html[data-theme="light"] body { background-color: #E8EDD8; color: #12301F; }
+html[data-theme="light"] ::selection { background: #6FA022; color: #0b2a14; }
+html[data-theme="light"] { color-scheme: light; }
+
+/* Bosh sarlavhadagi gradient yozuv: och fonda kontrastli (chuqur yashil -> zumrad-teal -> ko'k) */
+html[data-theme="light"] .hero-grad { --tw-gradient-from: #0b6b34; --tw-gradient-to: #1d4ed8; --tw-gradient-stops: #0b6b34, #0f766e 55%, #1d4ed8; }
+
+/* Forma elementlari */
+html[data-theme="light"] input, html[data-theme="light"] select, html[data-theme="light"] textarea { color: #12301F; }
+html[data-theme="light"] input::placeholder, html[data-theme="light"] textarea::placeholder { color: #6a8470; opacity: 1; }
+html[data-theme="light"] select option { background: #F3F2E4; color: #12301F; }
+
+/* Daraja yorliqlari (rang JS'dan --c orqali): och fonda to'qroq */
+html[data-theme="light"] .bdg-tier { filter: brightness(.55) saturate(1.3); }
+
+/* 3D kitob qatlami (kitob bundle'ining o'z CSS'i): yorug' fon, to'q yashil boshqaruv elementlari. Kitobning o'zi (to'q yashil sahifalar) qoladi. */
+html[data-theme="light"] .bk-root { background: radial-gradient(ellipse at 50% 38%, #F1F4E2 0%, #E8EDD8 62%, #DCE4C6 100%); color: #12301F; }
+html[data-theme="light"] .bk-title { color: #0A5F30; }
+html[data-theme="light"] .bk-close { background: rgba(243,242,228,.92); color: #12301F; border-color: rgba(20,80,40,.3); }
+html[data-theme="light"] .bk-close:hover { color: #0A5F30; border-color: #0A5F30; }
+html[data-theme="light"] .bk-navbtn { color: #0A5F30; border-color: rgba(10,95,48,.55); }
+html[data-theme="light"] .bk-navbtn:hover:not(:disabled) { background: rgba(10,95,48,.1); }
+html[data-theme="light"] .bk-navbtn.solid { background: #10B981; color: #0B2A14; border-color: #10B981; }
+html[data-theme="light"] .bk-counter { color: #4A6650; }
+html[data-theme="light"] .bk-hint { background: rgba(243,242,228,.94); color: #0A5F30; border-color: rgba(10,95,48,.65); }
+html[data-theme="light"] .bk3-chip { color: #2C5A38; border-color: rgba(10,95,48,.4); }
+html[data-theme="light"] .bk3-chip.on { background: rgba(16,150,80,.16); color: #0A5F30; border-color: #0A5F30; }
+html[data-theme="light"] .bk3-muted { color: #4A6650; }
+html[data-theme="light"] .bk3-warn { color: #B4233F; }
+html[data-theme="light"] .bk3-modal { background: rgba(26,54,34,.5); }
+
+/* Mahalliy bozor kartochkasi rasmi: to'q gradient ustidagi bosh harf och rangda qoladi */
+html[data-theme="light"] .lc-ph { color: #F4F1E1; }

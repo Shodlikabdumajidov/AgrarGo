@@ -1,0 +1,16 @@
+# --- Glassy Carousel V2 ---
+Batafsil ‖ Подробнее ‖ Details
+Oldingi ‖ Назад ‖ Previous
+Keyingi ‖ Далее ‖ Next
+PIN-himoya yoqilgan ‖ PIN-защита включена ‖ PIN protection on
+PIN talab qilinmaydi ‖ PIN не требуется ‖ PIN not required
+PIN tasdiqlangan ‖ PIN подтверждён ‖ PIN verified
+PIN: yuklashda kutilmoqda ‖ PIN: ожидается при погрузке ‖ PIN: awaiting at pickup
+PIN: topshirishda kutilmoqda ‖ PIN: ожидается при выдаче ‖ PIN: awaiting at delivery
+PIN: yetkazishda faollashadi ‖ PIN: активируется при доставке ‖ PIN: activates on delivery
+Bronlar karuseli ‖ Карусель броней ‖ Bookings carousel
+Mavjud yuklar karuseli ‖ Карусель доступных грузов ‖ Available loads carousel
+E'lonlar karuseli ‖ Карусель объявлений ‖ Listings carousel
+{0} t ‖ {0} т ‖ {0} t
+Yaratilgan sana ‖ Дата создания ‖ Created on
+Tavsif kiritilmagan ‖ Описание не указано ‖ No description provided

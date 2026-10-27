@@ -1,0 +1,31 @@
+# --- Bozor narxlari ---
+Bozor narxlari ‖ Цены на рынках ‖ Market prices
+Toshkent, Samarqand va Jizzax bozorlaridagi bugungi narxlar ‖ Сегодняшние цены на рынках Ташкента, Самарканда и Джизака ‖ Today's prices at markets in Tashkent, Samarkand and Jizzakh
+Yangi narx kiritish ‖ Ввести новую цену ‖ Add new price
+Bozor yoki mahsulot nomi bo'yicha qidiring... ‖ Поиск по названию рынка или продукта... ‖ Search by market or product name...
+Qidiruv ‖ Поиск ‖ Search
+Kecha: {0} so'm ‖ Вчера: {0} сум ‖ Yesterday: {0} UZS
+Bugun: {0} so'm ‖ Сегодня: {0} сум ‖ Today: {0} UZS
+Narx oshgan ‖ Цена выросла ‖ Price went up
+Narx tushgan ‖ Цена снизилась ‖ Price went down
+Narx o'zgarmagan ‖ Цена не изменилась ‖ Price unchanged
+Yangilandi: {0} ‖ Обновлено: {0} ‖ Updated: {0}
+Topildi: {0} ‖ Найдено: {0} ‖ Found: {0}
+Hech narsa topilmadi ‖ Ничего не найдено ‖ Nothing found
+Bozor narxlari hali kiritilmagan ‖ Цены на рынках пока не введены ‖ Market prices have not been entered yet
+Narxlar dispetcher yoki administrator tomonidan kiritiladi. ‖ Цены вводят диспетчер или администратор. ‖ Prices are entered by a dispatcher or an administrator.
+Boshqa bozor yoki mahsulot nomini yozib ko'ring. ‖ Попробуйте другое название рынка или продукта. ‖ Try another market or product name.
+Avvalgi narx avtomatik «Kecha» narxiga o'tadi. ‖ Предыдущая цена автоматически станет ценой «Вчера». ‖ The previous price automatically becomes the "Yesterday" price.
+Bozor ‖ Рынок ‖ Market
+Masalan: Kartoshka ‖ Например: Картофель ‖ E.g. Potato
+Bugungi narx (so'm / kg) ‖ Сегодняшняя цена (сум / кг) ‖ Today's price (UZS / kg)
+Masalan: 5600 ‖ Например: 5600 ‖ E.g. 5600
+Rasm tanlang yoki shu yerga tashlang (JPG, PNG, WEBP, 3 MB gacha) ‖ Выберите изображение или перетащите сюда (JPG, PNG, WEBP, до 3 МБ) ‖ Choose an image or drop it here (JPG, PNG, WEBP, up to 3 MB)
+Narxni saqlash ‖ Сохранить цену ‖ Save price
+Narx saqlandi! ‖ Цена сохранена! ‖ Price saved!
+Bozorni tanlang. ‖ Выберите рынок. ‖ Select a market.
+Bugungi narxni butun son (so'm) ko'rinishida kiriting. ‖ Введите сегодняшнюю цену целым числом (сум). ‖ Enter today's price as a whole number (UZS).
+Narx kiritish faqat administrator va dispetcher uchun. ‖ Ввод цен доступен только администратору и диспетчеру. ‖ Only an administrator or dispatcher can enter prices.
+Bozorlar ro'yxatini yuklab bo'lmadi. ‖ Не удалось загрузить список рынков. ‖ Could not load the list of markets.
+Narxni saqlab bo'lmadi. ‖ Не удалось сохранить цену. ‖ Could not save the price.
+Obuna muddati ‖ Срок подписки ‖ Subscription term

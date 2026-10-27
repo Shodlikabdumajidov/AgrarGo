@@ -1,0 +1,104 @@
+# --- Agro-Store sotuvchilari, verifikatsiya, karusel ---
+Agro-Store sotuvchilari ‖ Продавцы Agro-Store ‖ Agro-Store suppliers
+Postlarim ‖ Мои посты ‖ My posts
+Verifikatsiya va profil ‖ Верификация и профиль ‖ Verification & profile
+Dori & O'g'itlar ‖ Лекарства и удобрения ‖ Crop care & Fertilizers
+Agro-Store sotuvchisi ‖ Продавец Agro-Store ‖ Agro-Store supplier
+Agro-Store Sotuvchisini Qo'shish ‖ Добавить продавца Agro-Store ‖ Add Agro-Store supplier
+Dorixona yoki o'g'it sotuvchisini yarating: u telefon raqam va boshlang'ich parol bilan kiradi. ‖ Создайте аптеку или продавца удобрений: он входит по номеру телефона и начальному паролю. ‖ Create a pharmacy or fertilizer supplier: they sign in with the phone number and initial password.
+Dorixona (Pharmacy/Agro-chem) ‖ Аптека (Pharmacy/Agro-chem) ‖ Pharmacy (Agro-chem)
+O'g'it Sotuvchi (Fertilizer Supplier) ‖ Продавец удобрений (Fertilizer Supplier) ‖ Fertilizer Supplier
+Tashkilot / Do'kon nomi ‖ Название организации / магазина ‖ Organization / shop name
+Mas'ul shaxs F.I.SH. ‖ Ответственное лицо (Ф.И.О.) ‖ Contact person full name
+Sotuvchi turi ‖ Тип продавца ‖ Supplier type
+Mas'ul shaxs ‖ Ответственное лицо ‖ Contact person
+Telefon raqami ‖ Номер телефона ‖ Phone number
+Boshlang'ich parol ‖ Начальный пароль ‖ Initial password
+Sotuvchini qo'shish ‖ Добавить продавца ‖ Add supplier
+Parol kamida 8 ta belgi, harf va raqam bo'lishi kerak. Sotuvchi birinchi kirgach hujjatlarini yuklaydi. ‖ Пароль — не менее 8 символов, буквы и цифры. После первого входа продавец загрузит документы. ‖ Password must be at least 8 characters with letters and digits. The supplier uploads documents after first sign-in.
+Sotuvchi qo'shildi: {0} ‖ Продавец добавлен: {0} ‖ Supplier added: {0}
+Sotuvchilar ‖ Продавцы ‖ Suppliers
+Hali sotuvchi yo'q ‖ Продавцов пока нет ‖ No suppliers yet
+Yuqoridagi forma orqali birinchi sotuvchini qo'shing. ‖ Добавьте первого продавца через форму выше. ‖ Add the first supplier using the form above.
+Postlar ‖ Посты ‖ Posts
+Pasport ‖ Паспорт ‖ Passport
+Sabab ‖ Причина ‖ Reason
+Yetishmaydi ‖ Не хватает ‖ Missing
+Litsenziya ‖ Лицензия ‖ License
+STIR guvohnomasi ‖ Свидетельство ИНН (STIR) ‖ STIR certificate
+STIR / pasport ‖ STIR / паспорт ‖ STIR / passport
+Tasdiqlash (VERIFIED) ‖ Подтвердить (VERIFIED) ‖ Verify (VERIFIED)
+Rad etish ‖ Отклонить ‖ Reject
+Sotuvchi tasdiqlandi. ‖ Продавец подтверждён. ‖ Supplier verified.
+Rad etish sababini yozing ‖ Укажите причину отклонения ‖ Enter the rejection reason
+Xatolik yuz berdi. ‖ Произошла ошибка. ‖ An error occurred.
+Tekshiruvda ‖ На проверке ‖ Under review
+VERIFIED ‖ ПОДТВЕРЖДЁН ‖ VERIFIED
+Rad etildi ‖ Отклонено ‖ Rejected
+Pestitsid ‖ Пестицид ‖ Pesticide
+O'g'it ‖ Удобрение ‖ Fertilizer
+Fungitsid ‖ Фунгицид ‖ Fungicide
+Insektitsid ‖ Инсектицид ‖ Insecticide
+Gerbitsid ‖ Гербицид ‖ Herbicide
+Stimulyator ‖ Стимулятор ‖ Stimulator
+Kombikorm ‖ Комбикорм ‖ Compound feed
+Silos ‖ Силос ‖ Silage
+Vitamin ‖ Витамины ‖ Vitamins
+Briket ‖ Брикет ‖ Briquette
+Xashak ‖ Сено ‖ Hay
+kg ‖ кг ‖ kg
+litr ‖ л ‖ litre
+dona ‖ шт. ‖ pcs
+so'm ‖ сум ‖ UZS
+Yangi post ‖ Новый пост ‖ New post
+Hali post yo'q ‖ Постов пока нет ‖ No posts yet
+Birinchi mahsulotingizni joylang: tasdiqlangach fermerlar katalogda ko'radi. ‖ Разместите первый товар: после подтверждения фермеры увидят его в каталоге. ‖ Post your first product: farmers see it in the catalog once you are verified.
+Ommaga ko'rinadi ‖ Виден всем ‖ Publicly visible
+Yashirin ‖ Скрыт ‖ Hidden
+Tasdiqlangan sotuvchi ‖ Подтверждённый продавец ‖ Verified supplier
+Verifikatsiya kutilmoqda ‖ Ожидается верификация ‖ Verification pending
+Postlar karuseli ‖ Карусель постов ‖ Posts carousel
+Postni tahrirlash ‖ Редактировать пост ‖ Edit post
+Kategoriya ‖ Категория ‖ Category
+Narxi (so'm) ‖ Цена (сум) ‖ Price (UZS)
+Birlik ‖ Единица ‖ Unit
+Zaxira miqdori ‖ Количество на складе ‖ Stock quantity
+Masalan: 1 gektarga 2 litr ‖ Например: 2 литра на 1 гектар ‖ E.g. 2 litres per hectare
+Dozasi / ishlatish yo'riqnomasi ‖ Дозировка / инструкция по применению ‖ Dosage / usage instructions
+Qisqa tavsif ‖ Краткое описание ‖ Short description
+Rejim ‖ Режим ‖ Mode
+Saqlandi ‖ Сохранено ‖ Saved
+Post o'chirilsinmi? ‖ Удалить пост? ‖ Delete this post?
+Postlaringiz fermerlarga ko'rinadi. ‖ Ваши посты видны фермерам. ‖ Your posts are visible to farmers.
+Admin tasdiqlamaguncha postlaringiz ommaga ko'rinmaydi. «Verifikatsiya» bo'limida hujjatlarni to'ldiring. ‖ Пока админ не подтвердит, ваши посты не видны публике. Заполните документы в разделе «Верификация». ‖ Your posts stay hidden until an admin verifies you. Complete the documents in the "Verification" section.
+Kimyoviy va biologik moddalarni sotish uchun litsenziya va STIR guvohnomasi rasmini yuklang. ‖ Для продажи химических и биологических средств загрузите лицензию и свидетельство STIR. ‖ To sell chemical and biological products, upload your license and STIR certificate.
+O'g'it sotuvchi uchun STIR yoki pasport ma'lumotlari va shaxsni tasdiqlash yetarli. ‖ Продавцу удобрений достаточно данных STIR или паспорта и подтверждения личности. ‖ For fertilizer suppliers, STIR or passport details and identity verification are enough.
+Yuklangan ‖ Загружено ‖ Uploaded
+Yuklanmagan ‖ Не загружено ‖ Not uploaded
+Ko'rish ‖ Просмотр ‖ View
+Hujjat yuklandi ‖ Документ загружен ‖ Document uploaded
+Farmatsevtika / Agro-kimyoviy faoliyat litsenziyasi (PDF/rasm) ‖ Лицензия на фармацевтическую / агрохимическую деятельность (PDF/фото) ‖ Pharmaceutical / agro-chemical activity license (PDF/image)
+STIR / Guvohnoma (PDF/rasm) ‖ STIR / свидетельство (PDF/фото) ‖ STIR / certificate (PDF/image)
+Pasport ma'lumotlari ‖ Паспортные данные ‖ Passport details
+Dori va o'g'it yuklarini tashish bo'limi tez orada ishga tushadi. Hozircha bu bo'lim ulanmagan. ‖ Раздел перевозки лекарств и удобрений скоро заработает. Пока он не подключён. ‖ The section for hauling crop-care and fertilizer cargo launches soon. It is not connected yet.
+Karusel ‖ Карусель ‖ Carousel
+Katalog ‖ Каталог ‖ Catalog
+Namuna ma'lumot ‖ Пример данных ‖ Sample data
+Agro-Store karuseli ‖ Карусель Agro-Store ‖ Agro-Store carousel
+AgrarGo Agro-Store ‖ AgrarGo Agro-Store ‖ AgrarGo Agro-Store
+# --- Audit: oylik reyting va ro'yxat formalaridagi tarjimasiz matnlar ---
+Bosib o'tilgan masofa (km) ‖ Пройденное расстояние (км) ‖ Distance driven (km)
+Sotilgan yuk hajmi (tonna) ‖ Объём проданного груза (тонн) ‖ Cargo volume sold (tons)
+(TOP-3) ‖ (ТОП-3) ‖ (TOP-3)
+beriladi, reyting esa 1-sanada qayta 0 dan boshlanadi. ‖ выдаётся, а рейтинг 1-го числа обнуляется. ‖ is granted, and the ranking resets to 0 on the 1st.
+JPG, PNG yoki WEBP, har biri 4 MB gacha. ‖ JPG, PNG или WEBP, до 4 МБ каждый. ‖ JPG, PNG or WEBP, up to 4 MB each.
+(6 tagacha, 4 MB) ‖ (до 6 шт., 4 МБ) ‖ (up to 6, 4 MB)
+Mavjud miqdor (kg) (min.) ‖ Доступное количество (кг) (мин.) ‖ Available quantity (kg) (min.)
+Mavjud miqdor (kg) (maks.) ‖ Доступное количество (кг) (макс.) ‖ Available quantity (kg) (max.)
+Xaridor (logistika narxi mahsulot narxiga qo'shiladi) ‖ Покупатель (стоимость логистики добавляется к цене товара) ‖ Buyer (logistics cost is added to the product price)
+Fermer (logistika narxi sizga to'lanadigan summadan ushlanadi) ‖ Фермер (стоимость логистики удерживается из выплачиваемой вам суммы) ‖ Farmer (logistics cost is deducted from the amount paid to you)
+Mavjud miqdor (kg) ‖ Доступное количество (кг) ‖ Available quantity (kg)
+Telefon ‖ Телефон ‖ Phone
+AgrarGo — bosh sahifaga qaytish ‖ AgrarGo — вернуться на главную ‖ AgrarGo — back to home
+Samarqand ↔ Toshkent, Farg'ona vodiysi ‖ Самарканд ↔ Ташкент, Ферганская долина ‖ Samarkand ↔ Tashkent, Fergana Valley
+Hosilni sotuvga qo'ying, narx va qoldiqni boshqaring ‖ Выставляйте урожай на продажу, управляйте ценой и остатком ‖ List your harvest for sale and manage price and stock

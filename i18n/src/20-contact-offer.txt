@@ -1,0 +1,30 @@
+# --- Bog'lanish va yuk taklifi ---
+Telefon qilish ‖ Позвонить ‖ Call
+Nusxalash ‖ Копировать ‖ Copy
+Nusxalandi ‖ Скопировано ‖ Copied
+Nusxalab bo'lmadi ‖ Не удалось скопировать ‖ Could not copy
+Qo'ng'iroq qilish ‖ Позвонить ‖ Make a call
+Telegram chat ‖ Чат в Telegram ‖ Telegram chat
+Telefon raqami orqali ‖ По номеру телефона ‖ By phone number
+Telegram orqali yozish ‖ Написать в Telegram ‖ Message on Telegram
+Haydovchi Telegram username kiritmagan: chat telefon raqami bo'yicha ochiladi (raqam Telegramda bo'lishi kerak). ‖ Водитель не указал Telegram username: чат откроется по номеру телефона (номер должен быть в Telegram). ‖ The driver has not set a Telegram username: the chat opens by phone number (the number must be on Telegram).
+Telegram username (ixtiyoriy) ‖ Telegram username (необязательно) ‖ Telegram username (optional)
+Telegram username 5-32 belgi bo'lsin: lotin harflari, raqam va _. ‖ Telegram username: 5-32 символа, латинские буквы, цифры и _. ‖ Telegram username must be 5–32 characters: Latin letters, digits and _.
+Yuk taklif qilish ‖ Предложить груз ‖ Offer a cargo
+Yukingizni tanlang — haydovchiga kabinetida va Telegram orqali xabar boradi. ‖ Выберите груз — водитель получит сообщение в кабинете и в Telegram. ‖ Pick your load — the driver gets a message in the cabinet and on Telegram.
+Sizda haydovchisiz ochiq yuk yo'q. Bronni tasdiqlaganingizda yuk shu yerda paydo bo'ladi. ‖ У вас нет открытых грузов без водителя. После подтверждения брони груз появится здесь. ‖ You have no open loads without a driver. A load appears here once a booking is approved.
+Yuklarimni ochish ‖ Открыть мои грузы ‖ Open my loads
+Sig'maydi ‖ Не помещается ‖ Does not fit
+Yukni olish vaqti ‖ Время получения груза ‖ Pickup time
+Masalan: Ertalab 8 da tayyor bo'ladi ‖ Например: будет готов в 8 утра ‖ E.g. Ready at 8 a.m.
+Taklif yuborish ‖ Отправить предложение ‖ Send offer
+Yukni tanlang. ‖ Выберите груз. ‖ Pick a load.
+Taklif yuborildi! ‖ Предложение отправлено! ‖ Offer sent!
+Haydovchiga kabinetida va Telegram orqali xabar jo'natildi. ‖ Водителю отправлено сообщение в кабинет и в Telegram. ‖ The driver was notified in the cabinet and on Telegram.
+Obuna muddati tugagan. Taklif yuborish uchun obunani uzaytiring. ‖ Подписка истекла. Продлите её, чтобы отправлять предложения. ‖ Your subscription has expired. Renew it to send offers.
+Kelgan yuk takliflari ‖ Полученные предложения грузов ‖ Received load offers
+Yuboruvchi: {0} ‖ Отправитель: {0} ‖ From: {0}
+Olish vaqti: {0} ‖ Время получения: {0} ‖ Pickup: {0}
+Mavjud yuklarda ochish ‖ Открыть в доступных грузах ‖ Open in available loads
+O'qildi ‖ Прочитано ‖ Mark as read
+Yuk band qilingan ‖ Груз уже занят ‖ The load is taken

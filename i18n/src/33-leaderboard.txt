@@ -1,0 +1,22 @@
+# --- Oylik reyting (Leaderboard) va gamification ---
+Oylik reyting ‖ Рейтинг месяца ‖ Monthly ranking
+OYLIK REYTING ‖ РЕЙТИНГ МЕСЯЦА ‖ MONTHLY RANKING
+Eng faol hamkorlar. Har oy g'oliblariga ‖ Самые активные партнёры. Победителям каждого месяца ‖ The most active partners. Every month the winners get
+1 oylik bepul PRO obuna ‖ 1 месяц бесплатной PRO-подписки ‖ 1 month of free PRO subscription
+TOP Haydovchilar ‖ ТОП водителей ‖ TOP Drivers
+TOP Fermerlar ‖ ТОП фермеров ‖ TOP Farmers
+TOP Marketlar ‖ ТОП маркетов ‖ TOP Markets
+Xarid hajmi (tonna) va zakazlar ‖ Объём закупок (тонн) и заказы ‖ Purchase volume (tons) and orders
+Katalogni ochish ‖ Открыть каталог ‖ Open the catalog
+Reytingim ‖ Мой рейтинг ‖ My ranking
+Yuk topshirildi! ‖ Груз передан! ‖ Load handed over!
+To'lov fermer va haydovchiga o'tkazildi ‖ Оплата переведена фермеру и водителю ‖ Payment transferred to the farmer and the driver
+{0} ta zakaz ‖ Заказов: {0} ‖ {0} orders
+O'tgan oy ({0}) g'oliblari: {1} ‖ Победители прошлого месяца ({0}): {1} ‖ Last month's ({0}) winners: {1}
+Reytingni yuklab bo'lmadi. ‖ Не удалось загрузить рейтинг. ‖ Could not load the ranking.
+Bu oyda hali natija yo'q ‖ В этом месяце результатов пока нет ‖ No results this month yet
+Bu oyda hali natija yo'q — birinchi bo'ling! ‖ В этом месяце результатов пока нет — станьте первым! ‖ No results this month yet — be the first!
+Oy yakuniga {0} kun qoldi ‖ До конца месяца осталось дней: {0} ‖ {0} days left until the end of the month
+Oy yakuniga {0} kun qoldi. TOP-3 ga 1 oylik bepul PRO obuna beriladi. ‖ До конца месяца осталось дней: {0}. ТОП-3 получают 1 месяц бесплатной PRO-подписки. ‖ {0} days left until the end of the month. The TOP-3 get 1 month of free PRO subscription.
+Sizning o'rningiz: {0}-o'rin ({1} ishtirokchidan) ‖ Ваше место: {0}-е (из {1} участников) ‖ Your position: #{0} (out of {1} participants)
+Reytingga qo'shildi! ‖ Добавлено в рейтинг! ‖ added to your ranking!

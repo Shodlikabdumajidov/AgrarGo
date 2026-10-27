@@ -1,0 +1,62 @@
+# --- Fermer va Haydovchi kabinetlari: soddalashtirilgan menyu ---
+Bo'lim ichki ekranlari ‖ Подразделы ‖ Section screens
+Bosh sahifa ‖ Главная ‖ Home
+Moliya va To'lovlar ‖ Финансы и платежи ‖ Finance and payments
+Profil va Sozlamalar ‖ Профиль и настройки ‖ Profile and settings
+Zakazlar / Yuk tashish ‖ Заказы / Перевозки ‖ Orders / Freight
+Mening zakazlarim / Yo'lim ‖ Мои заказы / В пути ‖ My orders / On the road
+Balans va Moliya ‖ Баланс и финансы ‖ Balance and finance
+Balans va moliya ‖ Баланс и финансы ‖ Balance and finance
+E'lonlarim ‖ Мои объявления ‖ My listings
+Hub orqali sotish ‖ Продажа через Hub ‖ Sell via Hub
+Bronlar ‖ Брони ‖ Bookings
+Ombor buyurtmalari ‖ Заказы со склада ‖ Warehouse orders
+To'lovlar (Escrow) ‖ Платежи (эскроу) ‖ Payments (escrow)
+Qo'llanma (PDF) ‖ Руководство (PDF) ‖ Guide (PDF)
+Hujjatlar (KYC) ‖ Документы (KYC) ‖ Documents (KYC)
+Darajalar ‖ Уровни ‖ Levels
+Yuklarim ‖ Мои грузы ‖ My loads
+Balans ‖ Баланс ‖ Balance
+Qayerdan ‖ Откуда ‖ From
+Qayerga ‖ Куда ‖ To
+Yuk turi ‖ Тип груза ‖ Cargo type
+Tonnaj ‖ Тоннаж ‖ Tonnage
+Barcha yuk turlari ‖ Все типы грузов ‖ All cargo types
+Barcha hududlardan ‖ Из всех регионов ‖ From all regions
+Barcha tonnaj ‖ Любой тоннаж ‖ Any tonnage
+1 t gacha ‖ До 1 т ‖ Up to 1 t
+1-3 t ‖ 1-3 т ‖ 1-3 t
+3-5 t ‖ 3-5 т ‖ 3-5 t
+5-10 t ‖ 5-10 т ‖ 5-10 t
+10 t dan ko'p ‖ Более 10 т ‖ Over 10 t
+Filtrlarni tozalash ‖ Сбросить фильтры ‖ Clear filters
+Filtrga mos yuk yo'q ‖ Нет грузов по фильтру ‖ No loads match the filter
+Yo'nalish, yuk turi yoki tonnajni o'zgartirib ko'ring. ‖ Измените направление, тип груза или тоннаж. ‖ Try changing the route, cargo type or tonnage.
+Hali e'lon yo'q ‖ Объявлений пока нет ‖ No listings yet
+Birinchi e'loningizni joylang: do'konlar uni darhol ko'radi va bron qiladi. ‖ Разместите первое объявление: магазины сразу увидят его и забронируют. ‖ Post your first listing: shops will see and book it right away.
+Hosil: {0} ‖ Урожай: {0} ‖ Harvest: {0}
+Narx ‖ Цена ‖ Price
+E'lon o'chirilsinmi? Bronlari bo'lsa o'chirib bo'lmaydi. ‖ Удалить объявление? Если есть брони, удалить нельзя. ‖ Delete the listing? It cannot be deleted if it has bookings.
+Hisobingizga tushgan va escrow'da kutilayotgan yo'l haqi ‖ Поступившая на счёт и ожидающая в эскроу плата за перевозку ‖ Freight fees received and pending in escrow
+Hisobga tushgan ‖ Поступило на счёт ‖ Received
+Escrow'da kutilmoqda ‖ Ожидает в эскроу ‖ Pending in escrow
+So'nggi tushumlar ‖ Последние поступления ‖ Recent income
+Yetkazilgan va to'lov yopilgan yuklar ‖ Доставленные грузы с закрытой оплатой ‖ Delivered loads with settled payment
+Hali tushum yo'q ‖ Поступлений пока нет ‖ No income yet
+Birinchi yukni yetkazganingizdan keyin yo'l haqi shu yerda ko'rinadi. ‖ После доставки первого груза плата за перевозку появится здесь. ‖ After you deliver your first load, the freight fee will appear here.
+Shahar ichi ‖ По городу ‖ In-city
+2. Mening e'lonlarim ‖ 2. Мои объявления ‖ 2. My listings
+E'lonlar, Hub orqali sotish va omborxona shu bo'limda: yuqoridagi tugmalar bilan almashtirasiz. ‖ Объявления, продажа через Hub и склад — в этом разделе: переключайтесь кнопками сверху. ‖ Listings, Hub sales and the warehouse are in this section: switch with the buttons above.
+3. Zakazlar va yuk tashish ‖ 3. Заказы и перевозки ‖ 3. Orders and freight
+Bronlarni tasdiqlaysiz, haydovchi va yuk holatini kuzatasiz, ombor buyurtmalarini ko'rasiz. ‖ Подтверждайте брони, следите за водителем и грузом, смотрите заказы со склада. ‖ Confirm bookings, track the driver and cargo, view warehouse orders.
+4. Moliya va to'lovlar ‖ 4. Финансы и платежи ‖ 4. Finance and payments
+Xaridor puli xavfsiz (Escrow) saqlanadi va yuk yetkazilgach hisobingizga o'tadi; keshbek ham shu yerda. ‖ Деньги покупателя хранятся в эскроу и после доставки груза переходят на ваш счёт; кешбэк тоже здесь. ‖ The buyer's money is held in escrow and goes to your account after delivery; cashback is here too.
+5. Profil va sozlamalar ‖ 5. Профиль и настройки ‖ 5. Profile and settings
+Ma'lumotlar, Telegram bot, obuna, ishonch badjlari va qo'llanma (PDF) shu bo'limda. ‖ Данные, Telegram-бот, подписка, значки доверия и руководство (PDF) — в этом разделе. ‖ Details, Telegram bot, subscription, trust badges and the guide (PDF) are in this section.
+Hududingizdagi to'lovi kafolatlangan yuklar; yo'nalish, yuk turi va tonnaj bo'yicha filtrlang. ‖ Грузы в вашем регионе с гарантированной оплатой; фильтруйте по направлению, типу груза и тоннажу. ‖ Loads in your region with guaranteed payment; filter by route, cargo type and tonnage.
+2. Mening zakazlarim / Yo'lim ‖ 2. Мои заказы / В пути ‖ 2. My orders / On the road
+Qabul qilgan yuklaringiz, yo'lga chiqish va yetkazish tugmalari, shahar ichi kuryeri shu yerda. ‖ Принятые грузы, кнопки выезда и доставки, городской курьер — здесь. ‖ Your accepted loads, depart and deliver buttons, and the in-city courier are here.
+3. Balans va moliya ‖ 3. Баланс и финансы ‖ 3. Balance and finance
+Hisobingizga tushgan va escrow'da kutilayotgan pul, keshbek. ‖ Деньги, поступившие на счёт и ожидающие в эскроу, кешбэк. ‖ Money received and pending in escrow, cashback.
+4. Profil ‖ 4. Профиль ‖ 4. Profile
+Mashina ma'lumotlari, hujjatlar (KYC), obuna va Telegram xabarnomalar. ‖ Данные машины, документы (KYC), подписка и уведомления Telegram. ‖ Vehicle details, documents (KYC), subscription and Telegram notifications.

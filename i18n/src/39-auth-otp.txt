@@ -1,0 +1,16 @@
+# --- Glassy Login V3 / Glassy OTP V2 ---
+Telefonni tasdiqlash ‖ Подтверждение телефона ‖ Phone verification
+Telefonni tasdiqlang ‖ Подтвердите телефон ‖ Verify your phone
+{0} raqamiga yuborilgan {1} xonali kodni kiriting. ‖ Введите {1}-значный код, отправленный на номер {0}. ‖ Enter the {1}-digit code sent to {0}.
+Kodni yuborish ‖ Отправить код ‖ Send code
+Simulyatsiya: SMS kodi {0} ‖ Симуляция: SMS-код {0} ‖ Simulation: SMS code {0}
+{0}-raqam ‖ Цифра {0} ‖ Digit {0}
+Kodni to'liq kiriting ({0} ta raqam). ‖ Введите код полностью ({0} цифр). ‖ Enter the full code ({0} digits).
+Kod kelmadimi? ‖ Не пришёл код? ‖ Didn't receive the code?
+Simulyatsiya rejimi: ‖ Режим симуляции: ‖ Simulation mode:
+SMS yuborilmaydi. Tasdiqlash kodi: ‖ SMS не отправляется. Код подтверждения: ‖ No SMS is sent. Verification code:
+Tekshirilmoqda... ‖ Проверяем... ‖ Verifying...
+Muvaffaqiyatli tasdiqlandi ‖ Успешно подтверждено ‖ Verified successfully
+Telefon raqamingiz tasdiqlandi. ‖ Ваш номер телефона подтверждён. ‖ Your phone number has been verified.
+SMS kod ‖ SMS-код ‖ SMS code
+Ro'yxatdan o'tish ma'lumotlari topilmadi. Qaytadan urinib ko'ring. ‖ Данные регистрации не найдены. Попробуйте ещё раз. ‖ Registration data not found. Please try again.
