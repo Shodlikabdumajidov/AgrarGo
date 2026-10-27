@@ -140,6 +140,7 @@ export class BookingService {
 
   async reject(farmerId: string, id: string) {
     await this.decide(id, { product: { farmerId } }, BookingStatus.REJECTED, true);
+    this.notify.bookingRejected(id);
     return this.reload(id, 'farmer');
   }
 

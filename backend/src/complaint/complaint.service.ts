@@ -1,6 +1,7 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { ComplaintStatus, Prisma, ProductStatus, Role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationService } from '../telegram/notification.service';
 import { BAN_POINTS } from './risk';
 import { Decision } from './dto/complaint.dto';
 
@@ -18,7 +19,7 @@ export interface ComplaintActor { id: string; role: Role; farmer?: { id: string 
 
 @Injectable()
 export class ComplaintService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly notify: NotificationService) {}
 
   /** Foydalanuvchining zakazlar tarixidagi hamkorlari (bron va yuklar bo'yicha), takrorlanmasdan */
   async partners(user: ComplaintActor) {
@@ -59,6 +60,7 @@ export class ComplaintService {
     const today = await this.prisma.complaint.count({ where: { reporterId: user.id, createdAt: { gte: new Date(Date.now() - 86_400_000) } } });
     if (today >= MAX_COMPLAINTS_PER_DAY) throw new ConflictException("Bir kunda juda ko'p shikoyat yubordingiz. Keyinroq urinib ko'ring");
     const c = await this.prisma.complaint.create({ data: { reporterId: user.id, accusedId, reason: reason.trim() }, include: { accused: { select: userSel } } });
+    this.notify.complaintFiled(c.id); // dispetcher va adminlarga (Telegram)
     return { ...this.mine(c), message: "Shikoyatingiz qabul qilindi va 3 ish kuni ichida ko'rib chiqiladi" };
   }
 
@@ -100,6 +102,7 @@ export class ComplaintService {
 
   /** Qaror: UPHELD +1, PARTIAL +0.5, REJECTED penalty yo'q. 5.0 ga yetsa aybdor avtomatik BANNED */
   async decide(staff: ComplaintActor, id: string, decision: Decision, note?: string) {
+    let newlyBanned: string | null = null;
     const banned = await this.prisma.$transaction(async (tx) => {
       const c = await tx.complaint.findUnique({ where: { id } });
       if (!c) throw new NotFoundException('Shikoyat topilmadi');
@@ -110,9 +113,13 @@ export class ComplaintService {
         data: { status, penalty, decisionNote: note?.trim() || null, decidedById: staff.id, decidedAt: new Date() },
       });
       if (claimed.count === 0) throw new ConflictException("Bu shikoyat allaqachon ko'rib chiqilgan yoki qaytarib olingan");
+      const wasBanned = (await tx.user.findUniqueOrThrow({ where: { id: c.accusedId }, select: { bannedAt: true } })).bannedAt !== null;
       if (penalty > 0) await this.adjust(tx, c.accusedId, penalty);
-      return (await tx.user.findUniqueOrThrow({ where: { id: c.accusedId }, select: { bannedAt: true } })).bannedAt !== null;
+      const isBanned = (await tx.user.findUniqueOrThrow({ where: { id: c.accusedId }, select: { bannedAt: true } })).bannedAt !== null;
+      if (isBanned && !wasBanned) newlyBanned = c.accusedId;
+      return isBanned;
     });
+    if (newlyBanned) this.notify.userBanned(newlyBanned); // avtomatik BAN: dispetcher va adminlarga (Telegram)
     const all = await this.listAll();
     return { ...all.items.find((x) => x.id === id)!, accusedBanned: banned };
   }

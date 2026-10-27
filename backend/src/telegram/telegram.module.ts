@@ -4,12 +4,12 @@ import { AppEnv } from '../config/env.validation';
 import { NotificationService } from './notification.service';
 import { HttpTelegramApi, TELEGRAM_API } from './telegram-api';
 import { TelegramBotService } from './telegram-bot.service';
-import { TelegramController } from './telegram.controller';
+import { TelegramController, TelegramWebhookController } from './telegram.controller';
 import { TelegramService } from './telegram.service';
 
 @Global()
 @Module({
-  controllers: [TelegramController],
+  controllers: [TelegramController, TelegramWebhookController],
   providers: [
     // Token berilmasa null: bot va xabarnomalar butunlay o'chiq, qolgan tizim ishlayveradi
     { provide: TELEGRAM_API, inject: [APP_ENV], useFactory: (env: AppEnv) => (env.TELEGRAM_BOT_TOKEN ? new HttpTelegramApi(env.TELEGRAM_BOT_TOKEN) : null) },

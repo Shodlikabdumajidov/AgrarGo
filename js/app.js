@@ -4592,6 +4592,7 @@
         const SHIPMENT_DONE_MSG = {
             accept: "Yuk sizga biriktirildi. Manzil va aloqa ma'lumotlari ochildi.",
             release: "Yuk qaytarildi va boshqa haydovchilar uchun ochiq.",
+            arrived: "Fermerga xabar yuborildi: yuklash PIN-kodingizni ayting.",
             LOADING: "Yo'lga chiqdingiz. Holat: Yo'lda.",
             IN_TRANSIT: "Yuk yetkazib berildi. Rahmat!"
         };
@@ -4776,6 +4777,7 @@
                 } else {
                     // PIN-kod: haydovchi kodini fermerga aytadi, fermer o'z kabinetida kiritadi (yoqilgan bo'lsa «Yo'lga chiqdim» o'rniga)
                     if (s.pin && s.pin.pickup) actions.appendChild(pinShowBox(T('Yuklash PIN-kodingiz'), s.pin.pickup, T('Yuk ortilganda shu kodni fermerga ayting: u o\'z kabinetida kiritadi.')));
+                    if (s.pin && s.pin.enforced) actions.appendChild(btn('fa-location-dot', 'Yetib keldim (fermerga xabar)', 'border-sky-500/40 bg-sky-500/10 text-sky-200 hover:bg-sky-500/20', 'arrived'));
                     if (!(s.pin && s.pin.enforced)) {
                     // e-BOL: fermer SMS-kodi bilan imzo. Majburiy bo'lmasa (ebolRequired=false) oddiy «Yo'lga chiqdim» ham ishlaydi
                     actions.appendChild(ebolPanel({ kind: 'SHIPMENT', id: s.id, signed: s.isSigned, onSigned: function () { startTracker(s.id, 'gps'); selectDashTab(dashTab); } }));
@@ -5609,13 +5611,21 @@
         }
 
         // ----- Telegram bot: xabarnomalarni ulash / uzish -----
+        // Rolga qarab Telegram orqali keladigan hodisalar
+        const TG_EVENTS = {
+            MARKET: ["Fermer qarshi taklif yuborganda yoki bronni rad etganda (tugmalar bilan javob)", "Yuk yo'lga chiqqanda va qabul PIN-kodingiz shakllanganda", "Yuk manzilga yetib kelganda"],
+            FARMER: ["Yangi bron yoki narx taklifi tushganda (Tasdiqlash / Rad etish tugmalari bilan)", "Haydovchi yukni olish uchun yetib kelganda", "Yuk yo'lda va yetkazilganda"],
+            DRIVER: ["Dispetcher sizga yuk biriktirganda (yuklash PIN-kodi bilan)", "Fermer e'loningizga to'g'ridan-to'g'ri yuk taklif qilganda"],
+            DISPATCHER: ["Yangi shikoyat/spam tushganda (qaror tugmalari bilan)", "Foydalanuvchi 5.0 qizil yulduz bilan avtomatik BAN bo'lganda"],
+            ADMIN: ["Yangi shikoyat/spam tushganda (qaror tugmalari bilan)", "Foydalanuvchi 5.0 qizil yulduz bilan avtomatik BAN bo'lganda"]
+        };
         function buildTelegramCard() {
             const card = el('div', 'glass rounded-3xl border border-white/10 p-6 space-y-4');
             const head = el('div', 'flex items-center gap-3');
             head.appendChild(el('i', 'fa-brands fa-telegram text-3xl text-sky-400'));
             const ht = el('div', 'min-w-0');
             ht.appendChild(el('h3', 'text-lg font-extrabold text-white', 'Telegram xabarnomalar'));
-            ht.appendChild(el('p', 'text-xs text-slate-400', "Bron, to'lov (Escrow) va yuk holati haqidagi xabarlar Telegramga keladi."));
+            ht.appendChild(el('p', 'text-xs text-slate-400', "Bron, taklif, PIN-kod, to'lov (Escrow) va yuk holati haqidagi xabarlar Telegramga keladi."));
             head.appendChild(ht);
             card.appendChild(head);
             const body = el('div', 'space-y-3');
@@ -5645,11 +5655,21 @@
                     const ok = el('div', 'flex flex-wrap items-center gap-3');
                     const badge = el('span', 'inline-flex items-center gap-2 text-sm font-extrabold px-4 py-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/15 text-emerald-300');
                     badge.appendChild(el('i', 'fa-solid fa-circle-check'));
-                    badge.appendChild(el('span', '', 'Telegram ulangan'));
+                    badge.appendChild(el('span', '', 'Telegram ulandi ✅'));
+                    badge.dataset.tgLinked = '1';
                     ok.appendChild(badge);
+                    if (st.botUsername) { const bl = el('a', 'text-xs font-bold text-sky-300 underline', '@' + st.botUsername); bl.href = 'https://t.me/' + st.botUsername; bl.target = '_blank'; bl.rel = 'noopener noreferrer'; ok.appendChild(bl); }
                     if (st.linkedAt) ok.appendChild(el('span', 'text-xs text-slate-500', formatDateTime(st.linkedAt)));
                     nodes.push(ok);
-                    nodes.push(btn('fa-link-slash', 'Uzish', 'border-rose-500/40 text-rose-300 hover:bg-rose-500/10', async function () {
+                    // Shu rol uchun keladigan xabarnomalar ro'yxati
+                    const evs = TG_EVENTS[(currentUser() || {}).role] || [];
+                    if (evs.length) {
+                        const ul = el('ul', 'text-xs text-slate-300 space-y-1');
+                        evs.forEach(function (t) { ul.appendChild(el('li', '', '🔔 ' + T(t))); });
+                        nodes.push(el('p', 'text-[11px] font-bold uppercase tracking-wider text-slate-400', T('Sizga keladigan xabarnomalar')));
+                        nodes.push(ul);
+                    }
+                    nodes.push(btn('fa-link-slash', 'Uzish (Unlink)', 'border-rose-500/40 text-rose-300 hover:bg-rose-500/10', async function () {
                         if (!window.confirm(T('Telegramni uzasizmi? Xabarnomalar kelmay qoladi.'))) return;
                         try { paint(await authed('DELETE', '/profile/telegram')); showToast('Telegram uzildi.', 3000); }
                         catch (err) { if (err.status !== 401) showToast(err.messages[0], 5000); }

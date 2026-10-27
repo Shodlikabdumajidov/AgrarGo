@@ -139,6 +139,7 @@ export class ShipmentService {
     assertRiskAcknowledged(driver.user.penaltyPoints, acknowledgeRisk);
     await this.prisma.$transaction((tx) => this.acceptTx(tx, driver, id));
     this.notify.shipmentAssigned(id);
+    this.notify.driverAssigned(id);
     const row = await this.prisma.shipment.findUniqueOrThrow({ where: { id }, include: SHIPMENT_INCLUDE });
     return this.shape(row, 'staff', undefined, await this.warehouseContact([row]));
   }
@@ -147,6 +148,7 @@ export class ShipmentService {
   async accept(driver: { id: string; capacityKg: Prisma.Decimal }, id: string, acknowledgeRisk?: boolean) {
     await this.assertPartnersSafe(id, acknowledgeRisk);
     await this.prisma.$transaction((tx) => this.acceptTx(tx, driver, id));
+    this.notify.driverAssigned(id); // market (qabul PIN-kodi) va fermerga
     return { ...(await this.reload(id, 'driver-own')), ltl: await this.ltlInfo(id) };
   }
 
@@ -330,9 +332,14 @@ export class ShipmentService {
   /** Yuklash joyiga yetib keldi: fermer telefoniga 4 xonali kod yuboriladi. Ombor yuki dispetcher tomonidan jo'natiladi, shuning uchun kerak emas. */
   async arrived(driverId: string, id: string) {
     const s = await this.prisma.shipment.findFirst({
-      where: { id, driverId }, select: { status: true, isSigned: true, warehouseOrderId: true, farmer: { select: { user: { select: { phone: true } } } } },
+      where: { id, driverId }, select: { status: true, isSigned: true, warehouseOrderId: true, pickupPin: true, farmer: { select: { user: { select: { phone: true } } } } },
     });
     if (!s) throw new NotFoundException('Yuk topilmadi');
+    // PIN rejimi: SMS-kod o'rniga fermerga Telegram orqali «haydovchi yetib keldi» xabari (fermer haydovchining PIN-kodini so'raydi)
+    if (this.env.PIN_ENFORCE && s.pickupPin && s.status === ShipmentStatus.LOADING && !s.warehouseOrderId) {
+      this.notify.driverArrived(id);
+      return { notified: true };
+    }
     this.assertSignable(s);
     return this.ebol.issue('SHIPMENT', id, s.farmer.user.phone);
   }
