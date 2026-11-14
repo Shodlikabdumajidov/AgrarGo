@@ -11241,6 +11241,8 @@
             if (icon) icon.className = 'fa-solid text-lg ' + (t === 'light' ? 'fa-moon' : 'fa-sun');
             const meta = document.querySelector('meta[name="theme-color"]');
             if (meta) meta.setAttribute('content', t === 'light' ? '#F5F0EB' : '#064E3B');
+            const cs = document.querySelector('meta[name="color-scheme"]');
+            if (cs) cs.setAttribute('content', t === 'light' ? ['only', 'light'].join(' ') : 'dark');
             document.dispatchEvent(new CustomEvent('theme:change', { detail: { theme: t } }));
         }
         document.addEventListener('theme:change', function () { // diagrammalar yangi ranglar bilan qayta chiziladi

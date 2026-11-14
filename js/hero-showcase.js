@@ -87,6 +87,17 @@
     function tick() { if (!document.hidden && !hovering && !reduce) go(idx + 1, false, 1); }
     function restart() { clearInterval(timer); if (!reduce) timer = setInterval(tick, INTERVAL); }
 
+    // Telefon/planshet: barmoq bilan chapga/o'ngga surish (touchstart/touchend, kamida 40px) personajni almashtiradi; vertikal scroll bloklanmaydi
+    var tx = 0, ty = 0, tTrack = false;
+    var swipeArea = header || root;
+    swipeArea.addEventListener('touchstart', function (e) { var t = e.changedTouches[0]; tx = t.clientX; ty = t.clientY; tTrack = true; }, { passive: true });
+    swipeArea.addEventListener('touchend', function (e) {
+        if (!tTrack) return; tTrack = false;
+        var t = e.changedTouches[0], dx = t.clientX - tx, dy = t.clientY - ty;
+        if (Math.abs(dx) >= 40 && Math.abs(dx) > Math.abs(dy) * 1.2) go(idx + (dx < 0 ? 1 : -1), true, dx < 0 ? 1 : -1);
+    }, { passive: true });
+    swipeArea.addEventListener('touchcancel', function () { tTrack = false; }, { passive: true });
+
     var hovering = false;
     root.addEventListener('pointerenter', function () { hovering = true; });
     root.addEventListener('pointerleave', function () { hovering = false; });

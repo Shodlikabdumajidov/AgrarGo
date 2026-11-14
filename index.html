@@ -4,11 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Mavzu (qorong'i/yorug') sahifa chizilishidan oldin o'rnatiladi: miltillash bo'lmasin -->
-    <script>(function () { var t = 'light'; try { var v = localStorage.getItem('agrargo_theme'); if (v === 'light' || v === 'dark') t = v; } catch (e) {} document.documentElement.setAttribute('data-theme', t); })();</script>
+    <script>(function () { var t = 'light'; try { var v = localStorage.getItem('agrargo_theme'); if (v === 'light' || v === 'dark') t = v; } catch (e) {} document.documentElement.setAttribute('data-theme', t); var cs = document.querySelector('meta[name="color-scheme"]'); if (cs) cs.setAttribute('content', t === 'dark' ? 'dark' : 'only light'); })();</script>
     <title>AgrarGo — Smart Agro-Logistics Ecosystem</title>
     <!-- PWA -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#064E3B">
+    <meta name="theme-color" content="#F5F0EB">
+    <meta name="color-scheme" content="only light">
     <meta name="application-name" content="AgrarGo">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -60,7 +61,7 @@
 
         /* ===== Interaktiv matematik kataklar: faqat kursor atrofida, "fonar" kabi (js/app.js: initGridFx) ===== */
         :root { --grid-line: rgba(52,211,153,.34); --grid-glow: rgba(52,211,153,.12); --cell: 36px; }
-        html[data-theme="light"] { --grid-line: rgba(14,110,55,.34); --grid-glow: rgba(111,160,32,.20); color-scheme: light; }
+        html[data-theme="light"] { --grid-line: rgba(14,110,55,.34); --grid-glow: rgba(111,160,32,.20); color-scheme: only light; }
         html[data-theme="dark"] { color-scheme: dark; }
         .grid-fx { --x: -999px; --y: -999px; position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: 0; transition: opacity .35s ease;
             background-image: radial-gradient(circle 150px at var(--x) var(--y), var(--grid-glow), transparent 75%), linear-gradient(to right, var(--grid-line) 1px, transparent 1px), linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
@@ -189,7 +190,7 @@
         /* Auth oynasida yashirin bo'limlar (parolni tiklash va h.k.) Tailwind yuklanishiga bog'liq bo'lmay yashirin turadi */
         #auth-modal .hidden, #auth-modal [hidden] { display: none !important; }
         /* Ingichka, dizaynga mos scrollbar (modal, kabinet, ro'yxatlar) */
-        html { color-scheme: dark; }
+        html { color-scheme: only light; } /* sukut: Light; qurilmaning prefers-color-scheme: dark / majburiy qorong'i rejimi (force-dark) ta'sir qilmaydi */
         * { scrollbar-width: thin; scrollbar-color: rgba(16, 185, 129, 0.35) transparent; }
         *::-webkit-scrollbar { width: 6px; height: 6px; }
         *::-webkit-scrollbar-track { background: transparent; }

@@ -87,12 +87,12 @@ const ok=(c,m)=>{console.log((c?'PASS ':'FAIL ')+m); if(!c) process.exitCode=1;}
 
   // ===== 7. Mobil: ustma-ust tushmaydi =====
   pg=await open(null,null,{width:390,height:844});
-  const sbm=await pg.locator('.cs-stage').boundingBox(), ctrl=await pg.locator('.cs-ctrl').boundingBox(), tbox=await pg.locator('#cs-tag').boundingBox();
-  ok(sbm.y+sbm.height<=tbox.y&&ctrl.y+ctrl.height<=tbox.y,'mobile: video + controls above, text below (no overlap)');
-  ok(ctrl.x>=0&&ctrl.x+ctrl.width<=390,'mobile: slide controls inside the viewport');
+  const sbm=await pg.locator('.cs-stage').boundingBox(), tbox=await pg.locator('#cs-tag').boundingBox();
+  ok(await pg.evaluate(()=>getComputedStyle(document.querySelector('.cs-ctrl')).display)==='none','mobile: < o o o > controls hidden (swipe instead)');
+  ok(sbm.x+sbm.width<=tbox.x+1,'mobile: video left, text right (side-by-side, no overlap)');
   ok(await pg.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1),'mobile: no horizontal scroll');
-  await pg.click('#cs-next'); await pg.waitForTimeout(900);
-  const sb2=await pg.locator('.cs-stage').boundingBox(), tb2=await pg.locator('#cs-tag').boundingBox(); ok(sb2.y+sb2.height<=tb2.y,'mobile after switch: still no overlap');
+  await pg.evaluate(()=>HeroShowcase.go(1)); await pg.waitForTimeout(900);
+  const sb2=await pg.locator('.cs-stage').boundingBox(), tb2=await pg.locator('#cs-tag').boundingBox(); ok(sb2.x+sb2.width<=tb2.x+1,'mobile after switch: still no overlap');
   await pg.screenshot({path:'hs-mobile.png',fullPage:false}); await pg.context().close();
 
   // ===== 8. i18n UZ / RU / EN =====
