@@ -1122,7 +1122,7 @@
             const f = productForm;
             const payload = {
                 name: f.elements['name'].value.trim(),
-                category: f.category.value || 'Boshqa', // soddalashtirilgan forma: toifa yashirin, standart qiymat
+                category: f.category.value,
                 quantityKg: Number(f.quantityKg.value) * (f.unit.value === 'tonna' ? 1000 : 1),
                 pricePerKg: Number(f.pricePerKg.value),
                 deliveryPayer: f.deliveryPayer.value || 'BUYER'
@@ -1135,6 +1135,7 @@
             if (payload.name.length < 2) errors.push('Mahsulot nomini kiriting.');
             if (!(payload.quantityKg > 0)) errors.push("Vaznni kiriting (0 dan katta bo'lsin).");
             if (!(payload.pricePerKg > 0)) errors.push("Narxni kiriting (0 dan katta bo'lsin).");
+            if (!payload.category) errors.push('Toifani tanlang.'); // toifa katalog filtri uchun majburiy
             const addr = f.address.value.trim();
             if (addr && addr.length < 3) errors.push("Manzilni to'liq kiriting.");
             if (prodPhotos.existing.length + prodPhotos.pending.length < 1) errors.push("Kamida 1 ta rasm yuklang (mahsulotning haqiqiy holati).");

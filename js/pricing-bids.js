@@ -135,20 +135,15 @@ function pbDisputeBanner(s) {
     return b;
 }
 
-// ---- Escrow 20/80 indikatori (buyurtma rasmiylashtirishda) ----
+// ---- Escrow indikatori: backend jami summaning 100% ini escrow'da muzlatadi ----
 function pbEscrowIndicator(total) {
-    const hold = Math.round(total * 0.2), rest = Math.round(total) - hold;
     const box = el('div', 'pb-escrow'); box.dataset.escrow = '1';
     const head = el('div', 'pb-escrow-head');
     head.appendChild(el('i', 'fa-solid fa-shield-halved'));
-    head.appendChild(el('span', '', T("Kafolat (Escrow): jami summaning 20% band qilinadi")));
+    head.appendChild(el('span', '', T("100% Xavfsiz Escrow (Yuk topshirilguncha muzlatiladi)")));
     box.appendChild(head);
-    const bar = el('div', 'pb-escrow-bar'); bar.setAttribute('role', 'img'); bar.setAttribute('aria-label', '20% / 80%');
-    const a = el('span', 'pb-escrow-a', '20%'); a.style.width = '20%'; const b = el('span', 'pb-escrow-b', '80%'); b.style.width = '80%';
-    bar.appendChild(a); bar.appendChild(b); box.appendChild(bar);
-    const legend = el('div', 'pb-escrow-legend');
-    legend.appendChild(el('span', '', T('Kafolat (band): {0}', bdMoney(hold))));
-    legend.appendChild(el('span', '', T('Qolgan 80%: {0}', bdMoney(rest))));
-    box.appendChild(legend);
+    const bar = el('div', 'pb-escrow-bar'); bar.setAttribute('role', 'img'); bar.setAttribute('aria-label', '100%');
+    const a = el('span', 'pb-escrow-a', '100%'); a.style.width = '100%'; bar.appendChild(a); box.appendChild(bar);
+    box.appendChild(el('div', 'pb-escrow-legend', T("Muzlatiladi: {0}", bdMoney(total))));
     return box;
 }

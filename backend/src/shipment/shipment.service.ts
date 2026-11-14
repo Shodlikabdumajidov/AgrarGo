@@ -100,6 +100,13 @@ export class ShipmentService {
     return rows.map((r) => this.shape(r, 'staff', undefined, wh));
   }
 
+  /** Ochiq nizolar (Dispute): dispetcher hal qilishi kerak bo'lgan yuklar */
+  async listDisputed() {
+    const rows = await this.prisma.shipment.findMany({ where: { disputedAt: { not: null } }, orderBy: { disputedAt: 'desc' }, take: 200, include: SHIPMENT_INCLUDE });
+    const wh = await this.warehouseContact(rows);
+    return rows.map((r) => this.shape(r, 'staff', undefined, wh));
+  }
+
   /**
    * Yuk olishga tayyor haydovchilar: faol (LOADING/IN_TRANSIT) yuki yo'q (LTL e'loni bor haydovchi — bo'sh joyi bor),
    * ixtiyoriy: shu og'irlikka sig'adigan va/yoki viloyat bo'yicha

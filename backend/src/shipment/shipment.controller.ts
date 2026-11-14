@@ -78,6 +78,15 @@ export class ShipmentController {
     return this.shipments.listUnassigned();
   }
 
+  /** Ochiq nizolar ro'yxati (dispetcher hal qiladi) */
+  @Get('disputes')
+  @Roles(Role.DISPATCHER, Role.ADMIN)
+  @AdminRoles(AdminRole.HUB_ADMIN)
+  @Header('Cache-Control', 'no-store')
+  disputes() {
+    return this.shipments.listDisputed();
+  }
+
   /** Yukni muayyan haydovchiga biriktirish */
   @Post(':id/assign-driver')
   @HttpCode(200)

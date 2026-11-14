@@ -2353,8 +2353,8 @@
                     <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="prod-address">Manzil <span class="text-slate-500 normal-case font-medium">(yuk olib ketiladigan joy)</span></label>
                     <input id="prod-address" name="address" type="text" maxlength="200" autocomplete="street-address" placeholder="Viloyat, tuman, ko'cha" class="auth-input">
                 </div>
-                <!-- Texnik maydonlar yashirin: yangi e'londa standart qiymatlar (Boshqa / Xaridor hisobidan), tahrirlashda mavjud qiymatlar saqlanadi -->
-                <div id="prod-advanced" class="hidden" aria-hidden="true">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="prod-category">Toifa</label>
                     <select id="prod-category" name="category" class="auth-input">
                         <option value="">Tanlang...</option>
                         <option value="Sabzavot">Sabzavot</option>
@@ -2363,6 +2363,9 @@
                         <option value="Don">Don</option>
                         <option value="Boshqa">Boshqa</option>
                     </select>
+                </div>
+                <!-- Texnik maydonlar yashirin: hosil sanasi va yetkazish to'lovchisi (yangi e'londa standart: Xaridor hisobidan; tahrirlashda mavjud qiymat saqlanadi) -->
+                <div id="prod-advanced" class="hidden" aria-hidden="true">
                     <input id="prod-harvest" name="harvestDate" type="date" class="auth-input">
                     <select id="prod-payer" name="deliveryPayer" class="auth-input">
                         <option value="BUYER">Xaridor (logistika narxi mahsulot narxiga qo'shiladi)</option>

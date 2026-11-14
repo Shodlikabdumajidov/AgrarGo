@@ -120,7 +120,12 @@ describe('Haydovchi narx taklifi (bidding), nizo (dispute), yo\'l haqi kalkulyat
     expect((await t.prisma.payment.findUniqueOrThrow({ where: { id: w.payment.id } })).status).toBe('HELD'); // escrow saqlanadi
     expect((await auth(t.http().post(`/shipments/${w.ship.id}/dispute/resolve`).send({}), w.market)).status).toBe(403);
     const disp = await createAdmin(t, 'DISPATCHER');
+    const open = await auth(t.http().get('/shipments/disputes'), disp);
+    expect(open.status).toBe(200);
+    expect(open.body.map((x: any) => x.id)).toContain(w.ship.id);
+    expect((await auth(t.http().get('/shipments/disputes'), w.market)).status).toBe(403);
     expect((await auth(t.http().post(`/shipments/${w.ship.id}/dispute/resolve`).send({}), disp)).body.dispute).toBeNull();
+    expect((await auth(t.http().get('/shipments/disputes'), disp)).body.map((x: any) => x.id)).not.toContain(w.ship.id);
     expect((await auth(t.http().post(`/shipments/${w.ship.id}/deliver`).send({ pin: s1.deliveryPin }), w.driver)).status).toBe(200);
   });
 

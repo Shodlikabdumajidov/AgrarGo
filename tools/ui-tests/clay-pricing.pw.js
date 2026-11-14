@@ -54,18 +54,20 @@ const PNG=Buffer.from('89504e470d0a1a0a0000000d494844520000000100000001080600000
   await pg.evaluate(()=>openDashboard('products')); await pg.waitForTimeout(1800);
   await pg.evaluate(()=>openProductModal()); await pg.waitForTimeout(900);
   const vis=async(sel)=>pg.locator(sel).first().isVisible();
-  ok(await vis('#prod-name')&&await vis('#prod-photos')&&await vis('#prod-quantity')&&await vis('#prod-unit')&&await vis('#prod-price')&&await vis('#prod-address'),'form shows only: name, photo, volume(kg/tonna), price, address');
-  ok(!(await vis('#prod-category'))&&!(await vis('#prod-harvest'))&&!(await vis('#prod-payer')),'technical fields hidden (category, harvest date, delivery payer)');
-  ok(await pg.locator('#product-form .auth-input:visible').count()+await pg.locator('#product-form input[type=file]:visible').count()<=7,'compact: few visible inputs');
+  ok(await vis('#prod-name')&&await vis('#prod-photos')&&await vis('#prod-quantity')&&await vis('#prod-unit')&&await vis('#prod-price')&&await vis('#prod-address')&&await vis('#prod-category'),'form shows: name, photo, volume(kg/tonna), price, address and Toifa (category)');
+  ok(!(await vis('#prod-harvest'))&&!(await vis('#prod-payer')),'technical fields hidden (harvest date, delivery payer)');
+  ok(await pg.locator('#product-form .auth-input:visible').count()+await pg.locator('#product-form input[type=file]:visible').count()<=8,"compact: few visible inputs");
   await pg.waitForTimeout(800);
   ok((await pg.inputValue('#prod-address')).includes('Dehqon'),'address prefilled from the farmer profile');
   await pg.screenshot({path:'cp-form-light.png'});
-  await pg.fill('#prod-name','Bodring Tonna'); await pg.fill('#prod-quantity','2'); await pg.selectOption('#prod-unit','tonna'); await pg.fill('#prod-price','4000'); await pg.fill('#prod-address',"Yangi manzil, Urgut 7");
+  await pg.click('#product-form .auth-submit'); await pg.waitForTimeout(500);
+  ok(await pg.locator('#product-alert').innerText().then(t=>/Toifani tanlang/.test(t)),'category is required (no silent "Boshqa")');
+  await pg.fill('#prod-name','Bodring Tonna'); await pg.selectOption('#prod-category','Sabzavot'); await pg.fill('#prod-quantity','2'); await pg.selectOption('#prod-unit','tonna'); await pg.fill('#prod-price','4000'); await pg.fill('#prod-address',"Yangi manzil, Urgut 7");
   await pg.setInputFiles('#prod-photos',{name:'p.png',mimeType:'image/png',buffer:PNG});
   await pg.click('#product-form .auth-submit'); await pg.waitForTimeout(2500);
   const list=(await call('/products',null,f.accessToken,'GET')).body; const bod=list.find(p=>p.name==='Bodring Tonna');
   ok(!!bod&&Number(bod.quantityKg)===2000,'2 tonna saved as 2000 kg');
-  ok(bod&&bod.category==='Boshqa'&&bod.deliveryPayer==='BUYER','hidden fields get defaults (Boshqa / BUYER)');
+  ok(bod&&bod.category==='Sabzavot'&&bod.deliveryPayer==='BUYER','chosen category saved (Sabzavot); payer default BUYER');
   ok((await call('/profile',null,f.accessToken,'GET')).body.farmer.address==='Yangi manzil, Urgut 7','changed address saved to the profile');
   ok(pg.errs.length===0,'no page errors (form) '+pg.errs.join('|'));
   await lumAudit(pg,'#dash-content','Farmer listings (light default)');
@@ -133,6 +135,20 @@ const PNG=Buffer.from('89504e470d0a1a0a0000000d494844520000000100000001080600000
   ok(blocked.status===409,'delivery blocked while the dispute is open');
   await pg.screenshot({path:'cp-dispute-light.png'}); await pg.context().close();
 
+  // ===== 5b. Dispetcher: ochiq nizolar va «Nizoni yopish» =====
+  const dsp=rnd(); const prismaD=new PrismaClient(); await prismaD.user.create({data:{phone:dsp,fullName:'Dispetcher CP',role:'DISPATCHER',passwordHash:await bcrypt.hash(PW,4)}}); await prismaD.$disconnect();
+  pg=await open(dsp,null,null);
+  await pg.evaluate(()=>openDashboard('dispatch')); await pg.waitForTimeout(2300);
+  ok(await pg.locator('#dsp-disputes').count()===1,'dispatcher panel: "Ochiq nizolar" section');
+  const rb=pg.locator(`[data-resolve-dispute="${A.ship.id}"]`);
+  ok(await rb.count()===1&&/Nizoni yopish \(Resolve Dispute\)/.test(await rb.innerText()),'dispute card has "Nizoni yopish (Resolve Dispute)" button');
+  ok(await pg.locator(`#dsp-${A.ship.id} [data-assign]`).count()===0,'in-transit dispute card has no assign button');
+  await rb.click(); await pg.waitForTimeout(2200);
+  ok(await pg.locator(`[data-resolve-dispute="${A.ship.id}"]`).count()===0,'resolved: card leaves the open-disputes list');
+  const sh2=(await call('/shipments/mine',null,d.accessToken,'GET')).body.find(s=>s.id===A.ship.id); ok(sh2.dispute===null,'dispute cleared on the server (POST /shipments/:id/dispute/resolve)');
+  const dl=await call(`/shipments/${A.ship.id}/deliver`,{pin:dpin},d.accessToken); ok(dl.status===200,'after resolving, delivery works again');
+  ok(pg.errs.length===0,'no page errors (dispatcher) '+pg.errs.join('|')); await pg.context().close();
+
   // ===== 6. Escrow 20/80 indikatori (market, buyurtma rasmiylashtirish) =====
   const B=(await call('/products',{name:'Sabzi CP-B',category:'Sabzavot',quantityKg:9000,pricePerKg:3000},f.accessToken)).body;
   pg=await open(mph,null,null);
@@ -141,10 +157,11 @@ const PNG=Buffer.from('89504e470d0a1a0a0000000d494844520000000100000001080600000
   if(!(await pg.locator('#booking-modal.open').count())){ await pg.evaluate((p)=>openBookingModal(p),{id:B.id,name:B.name,pricePerKg:3000,quantityKg:9000,photos:[],farmer:{farmName:'Agro CP',region:'Samarqand',district:'Siyob',penaltyPoints:0}}); await pg.waitForTimeout(600); }
   await pg.fill('#booking-qty','1000'); await pg.waitForTimeout(1500);
   const esc=pg.locator('#booking-est [data-escrow]');
-  ok(await esc.count()===1,'booking: escrow 20/80 indicator visible');
-  const et=await esc.innerText(); ok(/20%/.test(et)&&/80%/.test(et),'indicator shows 20% / 80%');
+  ok(await esc.count()===1,'booking: escrow indicator visible');
+  const et=await esc.innerText(); ok(/100% Xavfsiz Escrow \(Yuk topshirilguncha muzlatiladi\)/.test(et),'indicator text: "100% Xavfsiz Escrow (Yuk topshirilguncha muzlatiladi)"');
+  ok(!/20%|80%/.test(et),'no misleading 20/80 split');
   const tot=num((await pg.locator('#booking-est').innerText()).split('Taxminiy jami')[1])[0];
-  const nums=num(et.replace(/\n/g,' ')); ok(nums[0]===Math.round(tot*0.2)&&nums[1]===tot-Math.round(tot*0.2),`20% of total (${tot}) = ${nums[0]}, 80% = ${nums[1]}`);
+  ok(num(et.replace(/\n/g,' '))[0]===tot,`frozen amount equals the full total (${tot})`);
   ok(/1\.5%.*300 000/.test(await pg.locator('#booking-est').innerText()),'service-fee label: 1.5%, max 300 000');
   await pg.screenshot({path:'cp-booking-light.png'}); await lumAudit(pg,'#booking-modal','Booking modal (light)');
   await pg.context().close();
@@ -182,7 +199,7 @@ const PNG=Buffer.from('89504e470d0a1a0a0000000d494844520000000100000001080600000
     await q.context().close();
     q=await open(mph,null,lang);
     await q.evaluate((p)=>openBookingModal(p),{id:B.id,name:B.name,pricePerKg:3000,quantityKg:9000,photos:[],farmer:{farmName:'Agro CP',region:'Samarqand',district:'Siyob',penaltyPoints:0}}); await q.waitForTimeout(500); await q.fill('#booking-qty','1000'); await q.waitForTimeout(1500);
-    const et=await q.locator('#booking-est [data-escrow]').innerText(); ok(lang==='ru'?/Гарантия.*20%/.test(et)&&/Остальные 80%/.test(et):/Guarantee.*20%/.test(et)&&/Remaining 80%/.test(et),`[${lang}] escrow indicator translated`);
+    const et=await q.locator('#booking-est [data-escrow]').innerText(); ok(lang==='ru'?/100% безопасный эскроу/i.test(et):/100% Secure Escrow/i.test(et),`[${lang}] escrow indicator translated`);
     const miss2=await q.evaluate(()=>Object.keys(window.I18N_MISSES||{})).then(a=>a.filter(x=>UZ.test(x)&&!NOISE.test(x))); ok(miss2.length===0,`[${lang}] booking modal: no untranslated strings ${JSON.stringify(miss2.slice(0,8))}`);
     await q.context().close();
   }

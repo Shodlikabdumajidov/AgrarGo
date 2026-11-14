@@ -44,3 +44,11 @@ Qolgan 80%: {0} ‖ Остальные 80%: {0} ‖ Remaining 80%: {0}
 Platforma xizmat haqi (1.5%, maks. 300 000 so'm) ‖ Сервисный сбор платформы (1,5%, макс. 300 000 сум) ‖ Platform service fee (1.5%, max 300,000 UZS)
 Ommaviy oferta shartlariga roziman va mahsulot sifati, xavfsizligi hamda yorlig'idagi ma'lumotlarning to'g'riligi uchun sotuvchi sifatida shaxsan javobgarligimni tasdiqlayman. ‖ Я принимаю условия публичной оферты и как продавец лично отвечаю за качество, безопасность товара и достоверность данных на этикетке. ‖ I accept the public offer and confirm my personal responsibility as the seller for product quality, safety and the accuracy of label information.
 Post joylash uchun ommaviy oferta va javobgarlik roziligini tasdiqlang. ‖ Для публикации подтвердите согласие с публичной офертой и ответственностью. ‖ To post, confirm your agreement to the public offer and responsibility.
+Toifani tanlang. ‖ Выберите категорию. ‖ Select a category.
+Ochiq nizolar ‖ Открытые споры ‖ Open disputes
+Sifatsiz yuk / rad etish bo'yicha nizolar. Nizoni yopsangiz, topshirish davom etadi. ‖ Споры по некачественному грузу / отказу. После закрытия спора выдача продолжится. ‖ Disputes over poor-quality cargo / rejection. Once closed, handover continues.
+Nizoni yopish (Resolve Dispute) ‖ Закрыть спор (Resolve Dispute) ‖ Resolve Dispute
+Nizo yopilsinmi? Topshirish davom etadi. ‖ Закрыть спор? Выдача продолжится. ‖ Close the dispute? Handover will continue.
+Nizo yopildi. ‖ Спор закрыт. ‖ Dispute closed.
+100% Xavfsiz Escrow (Yuk topshirilguncha muzlatiladi) ‖ 100% безопасный эскроу (замораживается до выдачи груза) ‖ 100% Secure Escrow (frozen until the cargo is delivered)
+Muzlatiladi: {0} ‖ Будет заморожено: {0} ‖ Frozen: {0}

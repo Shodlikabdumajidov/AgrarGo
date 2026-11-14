@@ -1040,7 +1040,8 @@ async function renderDispatchPanel(user) {
     const rid = ++dashRenderId;
     dashContent.replaceChildren(dashMessage('fa-spinner fa-spin', 'Yuklar yuklanmoqda...'));
     let list;
-    try { list = await authed('GET', '/shipments/unassigned'); }
+    let disputes = [];
+    try { list = await authed('GET', '/shipments/unassigned'); disputes = await authed('GET', '/shipments/disputes').catch(function () { return []; }); }
     catch (err) {
         if (err.status === 401 || rid !== dashRenderId) return;
         return dashContent.replaceChildren(dashMessage('fa-triangle-exclamation text-rose-400', err.messages[0], function () { renderDispatchPanel(user); }));
@@ -1058,6 +1059,13 @@ async function renderDispatchPanel(user) {
     stats.appendChild(statCard('fa-shield-halved', "To'lovi kafolatlangan", String(list.filter(function (s) { return s.paymentStatus === 'HELD'; }).length), 'text-emerald-400'));
     head.appendChild(stats);
     const nodes = [head];
+    if (disputes.length) {
+        const dh = el('div', 'space-y-1'); dh.id = 'dsp-disputes';
+        dh.appendChild(el('h3', 'text-lg font-extrabold text-rose-300', T('Ochiq nizolar') + ' (' + disputes.length + ')'));
+        dh.appendChild(el('p', 'text-xs text-slate-400', T("Sifatsiz yuk / rad etish bo'yicha nizolar. Nizoni yopsangiz, topshirish davom etadi.")));
+        nodes.push(dh);
+        disputes.forEach(function (s) { nodes.push(dispatchCard(s, user)); });
+    }
     if (!list.length) nodes.push(emptyState({ art: 'shipments', compact: true, title: "Haydovchisiz yuk yo'q", text: "Barcha yuklar haydovchilarga biriktirilgan.", cta: { label: 'Yangilash', icon: 'fa-rotate', fn: function () { renderDispatchPanel(user); } } }));
     list.forEach(function (s) { nodes.push(dispatchCard(s, user)); });
     dashContent.replaceChildren.apply(dashContent, nodes);
@@ -1079,14 +1087,26 @@ function dispatchCard(s, user) {
     if (s.farmer) who.push(T('Fermer') + ': ' + s.farmer.farmName + ' · ' + s.farmer.phone);
     if (s.market) who.push(T('Market') + ': ' + s.market.companyName + ' · ' + s.market.phone);
     who.forEach(function (t) { card.appendChild(el('p', 'text-xs text-slate-300 break-words', t)); });
+    if (typeof pbDisputeBanner === 'function') { const db = pbDisputeBanner(s); if (db) card.appendChild(db); }
+    if (s.dispute) {
+        const rb = el('button', 'flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-extrabold border border-rose-500/50 bg-rose-500/10 text-rose-300 hover:bg-rose-500/20 transition disabled:opacity-50'); rb.type = 'button'; rb.dataset.resolveDispute = s.id;
+        rb.appendChild(el('i', 'fa-solid fa-gavel')); rb.appendChild(el('span', '', 'Nizoni yopish (Resolve Dispute)'));
+        rb.addEventListener('click', async function () {
+            if (!window.confirm(T('Nizo yopilsinmi? Topshirish davom etadi.'))) return;
+            rb.disabled = true;
+            try { await authed('POST', '/shipments/' + s.id + '/dispute/resolve', {}); showToast(T('Nizo yopildi.'), 3000, 'success'); renderDispatchPanel(user); }
+            catch (err) { if (err.status !== 401) showToast((err.messages && err.messages[0]) || T('Xatolik yuz berdi.'), 4500, 'error'); rb.disabled = false; }
+        });
+        card.appendChild(rb);
+    }
     const ready = s.paymentStatus === 'HELD';
     const btn = el('button', 'flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-extrabold border transition disabled:opacity-50 disabled:cursor-not-allowed bg-emerald-500 border-emerald-500 text-slate-950 hover:bg-emerald-400');
     btn.type = 'button'; btn.dataset.assign = s.id; btn.disabled = !ready;
     btn.appendChild(el('i', 'fa-solid fa-user-plus')); btn.appendChild(el('span', '', 'Haydovchiga biriktirish'));
     btn.addEventListener('click', function () { openAssignDriverModal(s, user); });
-    card.appendChild(btn);
+    if (s.status === 'OPEN' && !s.driver) card.appendChild(btn); // nizo kartasida (yo'ldagi yuk) biriktirish tugmasi kerak emas
     const bolRow = el('div', 'flex flex-wrap gap-2'); bolRow.appendChild(bolButtons(s.id)); card.appendChild(bolRow);
-    if (!ready) card.appendChild(el('p', 'text-xs text-amber-300', "Xaridor to'lovi escrow'ga o'tgach biriktirish mumkin."));
+    if (!ready && s.status === 'OPEN') card.appendChild(el('p', 'text-xs text-amber-300', "Xaridor to'lovi escrow'ga o'tgach biriktirish mumkin."));
     return card;
 }
 
