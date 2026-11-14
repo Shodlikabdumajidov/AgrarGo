@@ -10,15 +10,15 @@ const ok=(c,m)=>{console.log((c?'PASS ':'FAIL ')+m); if(!c) process.exitCode=1;}
     await pg.route('https://unpkg.com/aos**',r=>r.fulfill({contentType:'application/javascript',body:'window.AOS={init(){}}'}));
     await pg.goto('http://localhost:8080/index.html');await pg.waitForTimeout(2500); return pg;};
   const idx=pg=>pg.evaluate(()=>HeroShowcase.index());
-  const txt=pg=>pg.evaluate(()=>({tag:document.getElementById('cs-tag').innerText.trim(),title:document.getElementById('hero-title').innerText.replace(/\s+/g,' ').trim(),sub:document.getElementById('cs-sub').innerText.trim(),cta:document.getElementById('cs-cta').innerText.trim(),role:document.getElementById('cs-role').innerText.trim(),next:document.getElementById('cs-next-name').innerText.trim()}));
+  const txt=pg=>pg.evaluate(()=>({tag:document.getElementById('cs-tag').innerText.trim(),title:document.getElementById('hero-title').innerText.replace(/\s+/g,' ').trim(),sub:document.getElementById('cs-sub').innerText.trim(),cta:document.getElementById('cs-cta').innerText.trim()}));
   const accent=pg=>pg.evaluate(()=>getComputedStyle(document.getElementById('hero-showcase')).getPropertyValue('--cs-accent').trim().toUpperCase());
 
   // ===== 1. Tuzilma: logotip yo'q, 3 ta video, controls yo'q =====
   let pg=await open(null,null);
   ok(await pg.evaluate(()=>document.querySelectorAll('#hero-header .logo-stage, #hero-header .logo-3d, #hero-header img[src*="newlogo"]').length)===0,'rotating hero logo removed');
   const vs=await pg.evaluate(()=>[...document.querySelectorAll('#hero-showcase video')].map(v=>({src:v.dataset.mp4,webm:v.dataset.webm,cur:v.getAttribute('src'),controls:v.controls,muted:v.muted,loop:v.loop,pip:v.hasAttribute('disablepictureinpicture'),inline:v.hasAttribute('playsinline'),poster:v.getAttribute('poster')})));
-  ok(vs.length===3&&vs.map(v=>v.src).join()==='P1.mp4,P2.mp4,P3.mp4','three videos built from P1.mp4, P2.mp4, P3.mp4');
-  ok(vs.every((v,i)=>v.webm===`images/showcase/p${i+1}.webm`&&v.cur===v.webm),'alpha WebM (transparent background) is used: '+vs.map(v=>v.cur).join());
+  ok(vs.length===3&&vs.map(v=>v.src).join()==='P3.mp4,P2.mp4,P1.mp4','three videos built from P3.mp4, P2.mp4, P1.mp4 (slide order)');
+  ok(vs.every((v,i)=>v.webm===`images/showcase/p${3-i}.webm`&&v.cur===v.webm),'alpha WebM (transparent background) is used: '+vs.map(v=>v.cur).join());
   ok(await pg.evaluate(()=>document.getElementById('hero-showcase').classList.contains('cs-alpha')),'cs-alpha mode active');
   ok(vs.every(v=>!v.controls&&v.muted&&v.loop&&v.pip&&v.inline&&v.poster),'muted, loop, playsinline, disablePictureInPicture, no controls, poster set');
   ok(await pg.evaluate(()=>document.querySelector('#hero-showcase video').hasAttribute('autoplay')),'autoplay attribute on the first video');
@@ -38,15 +38,17 @@ const ok=(c,m)=>{console.log((c?'PASS ':'FAIL ')+m); if(!c) process.exitCode=1;}
   ok(await pg.evaluate(()=>document.querySelectorAll('#hero-showcase video')[1].preload)==='auto','next video is preloading');
   await pg.screenshot({path:'hs-light-p1.png'});
   // ===== 2. Boshlang'ich holat: P1 Fermer =====
-  let t=await txt(pg); console.log('(info) P1 texts',JSON.stringify(t)); ok(await idx(pg)===0&&/^market egasi$/i.test(t.role)&&/Yangi hosilni fermerdan/i.test(t.title)&&/bevosita xarid qiling/i.test(t.title)&&/^Xarid qilish$/i.test(t.cta)&&/^Haydovchi$/i.test(t.next),'P1 video = Market egasi: title / CTA "Xarid qilish" / next = Haydovchi');
-  ok(await accent(pg)==='#D8C3A5','P1 (Market egasi) accent: Warm Sand #D8C3A5');
+  let t=await txt(pg); console.log('(info) P1 texts',JSON.stringify(t)); ok(await idx(pg)===0&&/Hosilingizni/i.test(t.title)&&/xaridorga soting/i.test(t.title)&&/^Mahsulot joylash$/i.test(t.cta)&&/Dehqon va bog'bonlar uchun/i.test(t.tag),'first slide = Fermer (P3 video): title / CTA "Mahsulot joylash" / tag "Dehqon va bog\'bonlar uchun"');
+  ok(await accent(pg)==='#84A99B','first slide accent: Sage Mint #84A99B');
   if(webm){ await pg.waitForTimeout(600); ok(await pg.evaluate(()=>{const v=document.querySelector('#hero-showcase video'); return !v.paused&&v.currentTime>0;}),'active video is playing'); }
-  const nx=await pg.locator('#cs-next-card').boundingBox(), sb=await pg.locator('.cs-stage').boundingBox();
-  ok(nx.x>sb.x+sb.width*0.6&&nx.y>sb.y+sb.height*0.6,'next-character preview sits at the bottom-right of the stage');
+  // Olib tashlangan elementlar: rol nishoni (badge) va «Keyingisi» preview kartochkasi
+  ok(await pg.evaluate(()=>document.querySelectorAll('.cs-role, .cs-next, #cs-next-card, #cs-role, #cs-next-img').length)===0,'role badge and next-character preview card are removed');
+  ok(await pg.evaluate(()=>!!document.getElementById('cs-prev')&&!!document.getElementById('cs-next')&&document.querySelectorAll('.cs-dot').length===3),'< and > arrows + 3 dots remain');
+  ok(await pg.evaluate(()=>[...document.querySelectorAll('#hero-showcase video')].map(v=>v.dataset.mp4).join())==='P3.mp4,P2.mp4,P1.mp4','slide order by video: P3 (fermer), P2 (haydovchi), P1 (market)');
   // ===== 3. Preview ustiga bosish -> P2 Haydovchi =====
   const h0=(await pg.locator('.cs-stage').boundingBox()).height;
-  await pg.click('#cs-next-card'); await pg.waitForTimeout(900);
-  t=await txt(pg); ok(await idx(pg)===1&&/^haydovchi$/i.test(t.role)&&/Bo'sh yo'lingizni/i.test(t.title)&&/daromadga aylantiring/i.test(t.title)&&/^Yuk topish$/i.test(t.cta)&&/^Fermer$/i.test(t.next),'P2 Haydovchi: title / CTA "Yuk topish" / next = Fermer');
+  await pg.click('#cs-next'); await pg.waitForTimeout(900);
+  t=await txt(pg); ok(await idx(pg)===1&&/Bo'sh yo'lingizni/i.test(t.title)&&/daromadga aylantiring/i.test(t.title)&&/^Yuk topish$/i.test(t.cta),'P2 Haydovchi: title / CTA "Yuk topish"');
   ok(await accent(pg)==='#9CC3D5','accent: Powder Blue #9CC3D5');
   ok(await pg.evaluate(()=>document.getElementById('hero-header').dataset.role)==='driver','hero header accent follows the role');
   ok(Math.abs((await pg.locator('.cs-stage').boundingBox()).height-h0)<1,'no layout shift on switch');
@@ -54,12 +56,12 @@ const ok=(c,m)=>{console.log((c?'PASS ':'FAIL ')+m); if(!c) process.exitCode=1;}
   await pg.screenshot({path:'hs-light-p2.png'});
   // > tugmasi -> P3
   await pg.click('#cs-next'); await pg.waitForTimeout(900); t=await txt(pg);
-  ok(await idx(pg)===2&&/^fermer$/i.test(t.role)&&/Hosilingizni/i.test(t.title)&&/^Mahsulot joylash$/i.test(t.cta)&&/^Market egasi$/i.test(t.next),'P3 video = Fermer: title / CTA "Mahsulot joylash" / next = Market egasi (wraps)');
-  ok(await accent(pg)==='#84A99B','P3 (Fermer) accent: Sage Mint #84A99B');
+  ok(await idx(pg)===2&&/Yangi hosilni fermerdan/i.test(t.title)&&/^Xarid qilish$/i.test(t.cta),'third slide = Market egasi (P1 video): title / CTA "Xarid qilish"');
+  ok(await accent(pg)==='#D8C3A5','third slide accent: Warm Sand #D8C3A5');
   await pg.screenshot({path:'hs-light-p3.png'});
-  await pg.click('#cs-next'); await pg.waitForTimeout(900); ok(await idx(pg)===0,'P3 -> P1 loop');
-  await pg.click('#cs-prev'); await pg.waitForTimeout(900); ok(await idx(pg)===2,'< button goes back (P1 -> P3)');
-  await pg.click('#cs-prev'); await pg.waitForTimeout(900); ok(await idx(pg)===1,'< again (P3 -> P2)');
+  await pg.click('#cs-next'); await pg.waitForTimeout(900); ok(await idx(pg)===0,'3rd -> 1st loop (back to Fermer)');
+  await pg.click('#cs-prev'); await pg.waitForTimeout(900); ok(await idx(pg)===2,'< button goes back (1st -> 3rd)');
+  await pg.click('#cs-prev'); await pg.waitForTimeout(900); ok(await idx(pg)===1,'< again (3rd -> 2nd)');
   await pg.locator('.cs-dot').nth(0).click(); await pg.waitForTimeout(900); ok(await idx(pg)===0,'dots navigate');
   // ===== 4. Avtomatik almashish (7-8 s), tegilsa kechikadi =====
   await pg.mouse.move(5,5); await pg.waitForTimeout(100);
@@ -69,11 +71,11 @@ const ok=(c,m)=>{console.log((c?'PASS ':'FAIL ')+m); if(!c) process.exitCode=1;}
   await pg.mouse.move(5,5);
   // ===== 5. CTA amallari =====
   await pg.evaluate(()=>HeroShowcase.stop()); // avto-almashish poygasiz test qilish uchun to'xtatiladi
-  await pg.evaluate(()=>HeroShowcase.go(2)); await pg.waitForTimeout(800); await pg.click('#cs-cta'); await pg.waitForTimeout(800);
+  await pg.evaluate(()=>HeroShowcase.go(0)); await pg.waitForTimeout(800); await pg.click('#cs-cta'); await pg.waitForTimeout(800);
   ok(await pg.locator('#auth-modal.open').count()===1,'farmer CTA -> login (post a product needs an account)'); await pg.evaluate(()=>closeAuthModal());
   await pg.evaluate(()=>HeroShowcase.go(1)); await pg.waitForTimeout(800); await pg.click('#cs-cta'); await pg.waitForTimeout(800);
   ok(await pg.locator('#auth-modal.open').count()===1&&await pg.locator('#register-driver-form').isVisible(),'driver CTA -> driver registration'); await pg.evaluate(()=>closeAuthModal());
-  await pg.evaluate(()=>HeroShowcase.go(0)); await pg.waitForTimeout(800); await pg.click('#cs-cta'); await pg.waitForTimeout(1200);
+  await pg.evaluate(()=>HeroShowcase.go(2)); await pg.waitForTimeout(800); await pg.click('#cs-cta'); await pg.waitForTimeout(1200);
   ok(await pg.evaluate(()=>{const c=document.getElementById('catalog-view'); return !!c&&c.classList.contains('open');}).catch(()=>false)||await pg.evaluate(()=>location.hash==='#market'||!!document.querySelector('#catalog-view.open, .catalog-open')),'market CTA -> catalog');
   ok(pg.errs.length===0,'no page errors '+pg.errs.join('|')); await pg.context().close();
 
@@ -85,21 +87,21 @@ const ok=(c,m)=>{console.log((c?'PASS ':'FAIL ')+m); if(!c) process.exitCode=1;}
 
   // ===== 7. Mobil: ustma-ust tushmaydi =====
   pg=await open(null,null,{width:390,height:844});
-  const sbm=await pg.locator('.cs-stage').boundingBox(), ctrl=await pg.locator('.cs-ctrl').boundingBox(), nxm=await pg.locator('#cs-next-card').boundingBox(), tbox=await pg.locator('#cs-tag').boundingBox();
+  const sbm=await pg.locator('.cs-stage').boundingBox(), ctrl=await pg.locator('.cs-ctrl').boundingBox(), tbox=await pg.locator('#cs-tag').boundingBox();
   ok(sbm.y+sbm.height<=tbox.y&&ctrl.y+ctrl.height<=tbox.y,'mobile: video + controls above, text below (no overlap)');
-  ok(nxm.x>=0&&nxm.x+nxm.width<=390,'mobile: next preview inside the viewport');
+  ok(ctrl.x>=0&&ctrl.x+ctrl.width<=390,'mobile: slide controls inside the viewport');
   ok(await pg.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1),'mobile: no horizontal scroll');
   await pg.click('#cs-next'); await pg.waitForTimeout(900);
   const sb2=await pg.locator('.cs-stage').boundingBox(), tb2=await pg.locator('#cs-tag').boundingBox(); ok(sb2.y+sb2.height<=tb2.y,'mobile after switch: still no overlap');
   await pg.screenshot({path:'hs-mobile.png',fullPage:false}); await pg.context().close();
 
   // ===== 8. i18n UZ / RU / EN =====
-  const EXP={ru:{tag:/Для рынков/i,title:/Покупайте свежий урожай/i,cta:/Купить/i,role:/Владелец магазина/i},en:{tag:/For markets/i,title:/Buy fresh harvest/i,cta:/Buy now/i,role:/Market owner/i}};
+  const EXP={ru:{tag:/Для фермеров/i,title:/Продавайте урожай напрямую/i,cta:/Разместить товар/i},en:{tag:/For farmers/i,title:/Sell your harvest directly/i,cta:/Post a product/i}};
   for(const lang of ['ru','en']){
     pg=await open(null,lang); let x=await txt(pg);
-    ok(EXP[lang].tag.test(x.tag)&&EXP[lang].title.test(x.title)&&EXP[lang].cta.test(x.cta)&&EXP[lang].role.test(x.role),`[${lang}] first slide texts translated`);
+    ok(EXP[lang].tag.test(x.tag)&&EXP[lang].title.test(x.title)&&EXP[lang].cta.test(x.cta),`[${lang}] first slide texts translated`);
     for(const i of [1,2]){ await pg.evaluate((k)=>HeroShowcase.go(k),i); await pg.waitForTimeout(900); x=await txt(pg);
-      const bad=[x.tag,x.title,x.sub,x.cta,x.role,x.next].filter(s=>/[oOgG]['‘’ʻ]|\b(uchun|va|yoki)\b/.test(s)); ok(bad.length===0,`[${lang}] role ${i+1} fully translated ${JSON.stringify(bad)}`); }
+      const bad=[x.tag,x.title,x.sub,x.cta].filter(s=>/[oOgG]['‘’ʻ]|\b(uchun|va|yoki)\b/.test(s)); ok(bad.length===0,`[${lang}] role ${i+1} fully translated ${JSON.stringify(bad)}`); }
     const miss=await pg.evaluate(()=>Object.keys(window.I18N_MISSES||{})); const own=miss.filter(s=>/Hosil|xaridor|Yuk |Bo'sh|daromad|Market egasi|Haydovchi|Fermer|Keyingi|Oldingi|Personaj|Mahsulot joylash|Xarid qilish|escrow|PIN-kod/.test(s)); ok(own.length===0,`[${lang}] no untranslated hero strings ${JSON.stringify(own.slice(0,5))}`);
     await pg.screenshot({path:`hs-${lang}.png`}); await pg.context().close();
   }

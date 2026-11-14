@@ -1,6 +1,6 @@
 /* ===== Main (Hero): Interactive Character Showcase =====
- * P1.mp4 — Market egasi, P2.mp4 — Haydovchi, P3.mp4 — Fermer (repo ildizidagi videolar). Orqa fon shaffof: alpha kanalli WebM (images/showcase/p*.webm, tools/make-showcase-alpha.py); alpha qo'llamaydigan brauzerlarda (Safari) asl MP4.
- * Aktiv personaj katta ko'rinadi, navbatdagisi o'ng pastda preview kartochka; < > tugmalari, preview va nuqtalar orqali (hamda har 7.5 s da,
+ * P3.mp4 — Fermer (1-slayd), P2.mp4 — Haydovchi, P1.mp4 — Market egasi (repo ildizidagi videolar). Orqa fon shaffof: alpha kanalli WebM (images/showcase/p*.webm, tools/make-showcase-alpha.py); alpha qo'llamaydigan brauzerlarda (Safari) asl MP4.
+ * Aktiv personaj katta ko'rinadi; < > tugmalari va nuqtalar orqali (hamda har 7.5 s da,
  * agar foydalanuvchi tegmasa) silliq fade + scale/slide bilan almashadi. Sarlavha, tushuntirish, CTA va urg'u rangi rolga mos o'zgaradi.
  * Matnlar o'zbekcha manba sifatida DOM'ga yoziladi: i18n engine (UZ/RU/EN) ularni avtomatik tarjima qiladi (i18n/src/41-hero-showcase.txt).
  */
@@ -10,9 +10,6 @@
     if (!root) return;
     var header = document.getElementById('hero-header');
     var videos = Array.prototype.slice.call(root.querySelectorAll('.cs-video'));
-    var roleEl = document.getElementById('cs-role');
-    var nextImg = document.getElementById('cs-next-img');
-    var nextName = document.getElementById('cs-next-name');
     var dotsBox = root.querySelector('.cs-dots');
     var INTERVAL = 7500;
 
@@ -23,18 +20,19 @@
     root.classList.toggle('cs-alpha', useAlpha); root.classList.toggle('cs-noalpha', !useAlpha);
     videos.forEach(function (v) { v.src = useAlpha ? v.dataset.webm : v.dataset.mp4; });
 
-    // Video P1 (planshetli sotuvchi) — Market egasi, P2 (kuryer) — Haydovchi, P3 (olmali dehqon) — Fermer
+    // Slaydlar tartibi: 1) Fermer (P3 video — olmali dehqon), 2) Haydovchi (P2 — kuryer), 3) Market egasi (P1 — planshetli sotuvchi)
     var ROLES = [
-        { key: 'market', name: 'Market egasi', poster: 'images/showcase/p1.webp', tag: "Bozor, do'kon va ulgurji xaridorlar uchun", lead: 'Yangi hosilni fermerdan', grad: 'bevosita xarid qiling',
-          sub: "Sifatli mahsulotni to'g'ri narxda toping, PIN-kod bilan qabul qiling — pulingiz yuk topshirilguncha escrow'da xavfsiz.", cta: 'Xarid qilish',
-          go: function () { if (typeof openCatalog === 'function') openCatalog(); } },
+        { key: 'farmer', name: 'Fermer', poster: 'images/showcase/p3.webp', tag: "Dehqon va bog'bonlar uchun", lead: "Hosilingizni to'g'ridan-to'g'ri", grad: 'xaridorga soting',
+          sub: "Vositachisiz, o'z narxingizda soting: do'konlar e'loningizni darhol ko'radi, pul esa escrow orqali kafolatlanadi.", cta: 'Mahsulot joylash',
+          go: function () { if (typeof onPostAdClick === 'function') onPostAdClick(); } },
         { key: 'driver', name: 'Haydovchi', poster: 'images/showcase/p2.webp', tag: 'Yuk tashuvchi va logistlar uchun', lead: "Bo'sh yo'lingizni", grad: 'daromadga aylantiring',
           sub: "Yo'nalishingizdagi tayyor yuklarni toping, o'z narxingizni taklif qiling va yo'l haqini kafolatli oling.", cta: 'Yuk topish',
           go: function () { var u = typeof currentUser === 'function' ? currentUser() : null; if (u && typeof openDashboard === 'function') openDashboard(u.role === 'DRIVER' ? 'loads' : undefined); else if (typeof openAuthModal === 'function') openAuthModal('register', 'DRIVER'); } },
-        { key: 'farmer', name: 'Fermer', poster: 'images/showcase/p3.webp', tag: "Dehqon va bog'bonlar uchun", lead: "Hosilingizni to'g'ridan-to'g'ri", grad: 'xaridorga soting',
-          sub: "Vositachisiz, o'z narxingizda soting: do'konlar e'loningizni darhol ko'radi, pul esa escrow orqali kafolatlanadi.", cta: 'Mahsulot joylash',
-          go: function () { if (typeof onPostAdClick === 'function') onPostAdClick(); } }
+        { key: 'market', name: 'Market egasi', poster: 'images/showcase/p1.webp', tag: "Bozor, do'kon va ulgurji xaridorlar uchun", lead: 'Yangi hosilni fermerdan', grad: 'bevosita xarid qiling',
+          sub: "Sifatli mahsulotni to'g'ri narxda toping, PIN-kod bilan qabul qiling — pulingiz yuk topshirilguncha escrow'da xavfsiz.", cta: 'Xarid qilish',
+          go: function () { if (typeof openCatalog === 'function') openCatalog(); } }
     ];
+
 
     var n = ROLES.length, idx = 0, timer = null, touched = false;
     var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -53,15 +51,12 @@
     function preloadNext() { var nv = videos[(idx + 1) % n]; if (nv && nv.preload !== 'auto') { nv.preload = 'auto'; try { nv.load(); } catch (e) { /* */ } } }
 
     function paintText(animate) {
-        var r = ROLES[idx], nx = ROLES[(idx + 1) % n];
+        var r = ROLES[idx];
         var apply = function () {
             set('cs-tag', ''); var tag = document.getElementById('cs-tag');
             if (tag) { tag.innerHTML = '<i class="fa-solid fa-circle"></i> <span></span>'; tag.querySelector('span').textContent = r.tag; }
             set('cs-title-lead', r.lead); set('cs-title-grad', r.grad); set('cs-sub', r.sub);
             var cta = document.getElementById('cs-cta'); if (cta) cta.querySelector('span').textContent = r.cta;
-            if (roleEl) roleEl.textContent = r.name;
-            if (nextName) nextName.textContent = nx.name;
-            if (nextImg) nextImg.src = nx.poster;
         };
         var box = document.getElementById('cs-text-box') || header.querySelector('.lg\\:col-span-7');
         if (!animate || reduce || !box) { apply(); return; }
@@ -99,7 +94,6 @@
     root.addEventListener('focusout', function () { hovering = false; });
     document.getElementById('cs-prev').addEventListener('click', function () { go(idx - 1, true, -1); });
     document.getElementById('cs-next').addEventListener('click', function () { go(idx + 1, true, 1); });
-    document.getElementById('cs-next-card').addEventListener('click', function () { go(idx + 1, true, 1); });
     root.addEventListener('keydown', function (e) { if (e.key === 'ArrowLeft') { e.preventDefault(); go(idx - 1, true, -1); } else if (e.key === 'ArrowRight') { e.preventDefault(); go(idx + 1, true, 1); } });
     var cta = document.getElementById('cs-cta');
     if (cta) cta.addEventListener('click', function () { ROLES[idx].go(); });
