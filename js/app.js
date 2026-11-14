@@ -870,16 +870,35 @@
                 shown[i] = src;
             };
             let timers = [];
+            const stop = function () { timers.forEach(function (t) { clearInterval(t); clearTimeout(t); }); timers = []; };
             const start = function () {
                 stop();
+                if (isLight()) return; // Light rejimda slayd taymeri umuman ishlamaydi
                 // O'ng tomon 5 soniya kechikib almashadi: ikkala rasm bir vaqtda o'zgarmaydi
-                timers = [setInterval(function () { swap(0); }, INTERVAL_MS)];
-                timers.push(setTimeout(function () { timers.push(setInterval(function () { swap(1); }, INTERVAL_MS)); }, INTERVAL_MS / 2));
+                timers = [setInterval(function () { if (!isLight()) swap(0); }, INTERVAL_MS)];
+                timers.push(setTimeout(function () { if (!isLight()) timers.push(setInterval(function () { if (!isLight()) swap(1); }, INTERVAL_MS)); }, INTERVAL_MS / 2));
             };
-            const stop = function () { timers.forEach(function (t) { clearInterval(t); clearTimeout(t); }); timers = []; };
-            document.addEventListener('visibilitychange', function () { document.hidden ? stop() : start(); });
-            swap(0).then(function () { return swap(1); }).then(start);
-            document.addEventListener('theme:change', function () { if (!isLight()) swap(0).then(function () { return swap(1); }); }); // qorong'i rejimga qaytilganda fon yana ko'rinadi
+            // Yagona holat sinxronizatori: Light'da taymer to'xtaydi va rasmlar tozalanadi; faqat Dark'da ishlaydi.
+            // Mavzu, «Yengil rejim», tab ko'rinishi va SPA navigatsiyasi (kabinet/rol sahifasi) o'zgarganda chaqiriladi.
+            const sync = function () {
+                if (isLight() || document.hidden) {
+                    stop();
+                    if (isLight()) {
+                        panes.forEach(function (p) { p.querySelectorAll('.hero-layer').forEach(function (l) { l.classList.remove('on'); l.style.backgroundImage = ''; }); });
+                        shown[0] = shown[1] = null;
+                    }
+                    return;
+                }
+                if (!timers.length) swap(0).then(function () { return swap(1); }).then(function () { if (!isLight() && !timers.length) start(); });
+            };
+            document.addEventListener('visibilitychange', sync);
+            document.addEventListener('theme:change', sync);
+            window.addEventListener('pageshow', sync);
+            window.addEventListener('popstate', sync);
+            window.addEventListener('hashchange', sync);
+            if (window.Perf && typeof window.Perf.subscribe === 'function') window.Perf.subscribe(sync); // «Yengil rejim» yoqilganda/o'chirilganda
+            new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'class'] }); // kabinetga kirish-chiqish (html.dash-open) va mavzu
+            sync();
         })();
 
         const PHONE_ERR = "Telefon raqamni to'liq kiriting (9 ta raqam).";

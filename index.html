@@ -682,7 +682,7 @@
         .bdg.locked .bdg-ico::after { content: '\f023'; font-family: 'Font Awesome 6 Free'; font-weight: 900; position: absolute; right: -.35rem; bottom: -.35rem; width: 1.4rem; height: 1.4rem; border-radius: 9999px; background: #0f172a; border: 1px solid rgba(255,255,255,.2); color: #94a3b8; font-size: .65rem; display: flex; align-items: center; justify-content: center; }
         .bdg.unlocked { border-color: rgba(var(--c), .6); box-shadow: 0 0 0 1px rgba(var(--c), .2), 0 18px 44px -22px rgba(var(--c), .8); }
         .bdg.unlocked:hover { transform: translateY(-5px) rotate(-.4deg); }
-        .bdg.unlocked::before { content: ''; position: absolute; inset: 0; background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,.22) 50%, transparent 65%); transform: translateX(-120%); animation: bdgShine 3.8s ease-in-out infinite; pointer-events: none; }
+        .bdg.unlocked::before { content: ''; position: absolute; inset: 0; background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,.22) 50%, transparent 65%); transform: translateX(-120%); animation: none; display: none; pointer-events: none; }
         .bdg.unlocked .bdg-ico { animation: bdgFloat 3.2s ease-in-out infinite; box-shadow: 0 0 26px -4px rgba(var(--c), .8); }
         .bdg.fresh { animation: bdgBurst 1.2s cubic-bezier(.34,1.56,.64,1) both; }
         .tr-ring { position: relative; width: 8.5rem; height: 8.5rem; flex: none; }
@@ -1085,7 +1085,7 @@
         /* Skelet yuklanish: pulsatsiyalanuvchi shisha bloklar */
         .sk { position: relative; overflow: hidden; border-radius: .75rem; background: rgba(255,255,255,.06); animation: sk-pulse 1.9s ease-in-out infinite; }
         .sk::after { content: ''; position: absolute; inset: 0; transform: translateX(-100%);
-            background: linear-gradient(100deg, transparent 20%, rgba(52,211,153,.14) 50%, transparent 80%); animation: sk-sweep 1.8s ease-in-out infinite; }
+            background: linear-gradient(100deg, transparent 20%, rgba(52,211,153,.14) 50%, transparent 80%); animation: none; opacity: 0; } /* shimmer/light sweep o'chirilgan */
         .sk-round { border-radius: 9999px; }
         .sk-card { border-radius: 1.5rem; border: 1px solid rgba(255,255,255,.09); background: rgba(255,255,255,.035); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 1.25rem; display: grid; gap: .8rem; }
         @keyframes sk-pulse { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }

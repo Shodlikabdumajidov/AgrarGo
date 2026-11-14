@@ -6,7 +6,7 @@
 .gc-slide:not(.is-active) { filter: blur(1.6px) saturate(.9); }
 .gc-slide:not(.is-active) .gc-detail { display: none; }
 .gc-slide.is-active { cursor: default; }
-.gc-slide.is-active::before { content: ''; position: absolute; inset: -2px; z-index: -1; border-radius: inherit; background: conic-gradient(from var(--gc-a, 0deg), rgba(16,185,129,0), rgba(16,185,129,.95), rgba(56,189,248,.85), rgba(16,185,129,0) 60%); filter: blur(7px); opacity: .85; animation: gc-spin 5s linear infinite; }
+.gc-slide.is-active::before { content: ''; position: absolute; inset: -2px; z-index: -1; border-radius: inherit; background: conic-gradient(from var(--gc-a, 0deg), rgba(16,185,129,0), rgba(16,185,129,.95), rgba(56,189,248,.85), rgba(16,185,129,0) 60%); filter: blur(7px); opacity: .85;  }
 @property --gc-a { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
 @keyframes gc-spin { to { --gc-a: 360deg; } }
 .gc-sum { padding: 0; overflow: hidden; border-radius: 1.5rem 1.5rem 0 0; }

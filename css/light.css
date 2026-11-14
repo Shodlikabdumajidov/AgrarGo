@@ -627,16 +627,29 @@ html[data-theme="light"] .bk3-modal { background: rgba(60,50,40,.5); }
 html[data-theme="light"] .lc-ph { color: #F4F1E1; }
 
 /* Oylik reyting (TOP Haydovchilar / Fermerlar / Marketlar): kun rejimida oq/och fon, qora matn */
-html[data-theme="light"] .lb-card { background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 10px 28px -16px rgba(30,60,35,.28); }
-html[data-theme="light"] .lb-head h3 { color: #0f172a; }
-html[data-theme="light"] .lb-head p { color: #475569; }
-html[data-theme="light"] .lb-head > i { background: rgba(5,150,105,.12); color: #047857; border-color: rgba(5,150,105,.35); }
-html[data-theme="light"] .lb-row { background: #f8fafc; border-color: #e2e8f0; }
+html[data-theme="light"] .lb-card { background: #FBF9F6; border: 1px solid #e4ddd5; box-shadow: 0 10px 28px -16px rgba(30,60,35,.28); }
+html[data-theme="light"] .lb-head h3 { color: #2D3436; }
+html[data-theme="light"] .lb-head p { color: #636E72; }
+html[data-theme="light"] .lb-head > i { background: rgba(132,169,155,.2); color: #3f6b5c; border-color: rgba(132,169,155,.55); }
+html[data-theme="light"] .lb-row { background: #F5F0EB; border-color: #e4ddd5; }
 html[data-theme="light"] .lb-row.r1 { background: linear-gradient(90deg, rgba(245,158,11,.2), rgba(245,158,11,.04)); border-color: rgba(217,119,6,.5); }
-html[data-theme="light"] .lb-row.r2 { background: linear-gradient(90deg, rgba(148,163,184,.22), rgba(148,163,184,.05)); border-color: rgba(100,116,139,.4); }
+html[data-theme="light"] .lb-row.r2 { background: linear-gradient(90deg, rgba(176,168,158,.25), rgba(148,163,184,.05)); border-color: rgba(140,130,120,.4); }
 html[data-theme="light"] .lb-row.r3 { background: linear-gradient(90deg, rgba(180,83,9,.16), rgba(180,83,9,.03)); border-color: rgba(180,83,9,.4); }
-html[data-theme="light"] .lb-name b { color: #0f172a; }
-html[data-theme="light"] .lb-name span, html[data-theme="light"] .lb-val small, html[data-theme="light"] .lb-empty { color: #475569; }
-html[data-theme="light"] .lb-val { color: #047857; }
-html[data-theme="light"] .lb-skel { background: #e2e8f0; }
-html[data-theme="light"] #lb-last { color: #475569; }
+html[data-theme="light"] .lb-name b { color: #2D3436; }
+html[data-theme="light"] .lb-name span, html[data-theme="light"] .lb-val small, html[data-theme="light"] .lb-empty { color: #636E72; }
+html[data-theme="light"] .lb-val { color: #3f6b5c; }
+html[data-theme="light"] .lb-skel { background: #e4ddd5; }
+html[data-theme="light"] #lb-last { color: #636E72; }
+
+/* Light rejimda Hero orqa fon slayd rasmlari butunlay yo'q (JS ham yuklamaydi; bu CSS esa har qanday holatda to'siq) */
+html[data-theme="light"] .hero-bg, html[data-theme="light"] .hero-pane, html[data-theme="light"] .hero-layer { display: none !important; background-image: none !important; }
+
+/* Profil dropdown menyusi (Light): 100% shaffof emas (solid) Soft Claymorphism */
+html[data-theme="light"] #account-menu { background: #FBF9F6 !important; background-image: none !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; border: 1px solid rgba(255,255,255,.95) !important; border-radius: 1.5rem; box-shadow: 10px 10px 24px #ddd6ce, -8px -8px 18px #ffffff !important; z-index: 90; opacity: 1; }
+html[data-theme="light"] #account-menu:not(.open) { opacity: 0; }
+html[data-theme="light"] #account-menu > * { background-color: transparent !important; background-image: none !important; border-color: #e8e1d9 !important; }
+html[data-theme="light"] #account-menu > div:first-child { background-color: #F5F0EB !important; }
+html[data-theme="light"] #account-menu, html[data-theme="light"] #account-menu button, html[data-theme="light"] #account-menu span, html[data-theme="light"] #account-menu div, html[data-theme="light"] #account-menu a { color: #2D3436; }
+html[data-theme="light"] #account-menu .text-slate-400, html[data-theme="light"] #account-menu .text-slate-500, html[data-theme="light"] #account-menu small { color: #636E72; }
+html[data-theme="light"] #account-menu button:hover { background-color: #F5F0EB !important; }
+html[data-theme="light"] #account-menu i { color: #3f6b5c; }

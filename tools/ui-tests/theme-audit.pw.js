@@ -35,6 +35,42 @@ const call=async(path,body,tok,method='POST')=>{const r=await fetch(API+path,{me
   const darkLeft=async(pg,label)=>{ // yorug' rejimda to'q fon qolib ketmagan: kartalar/panel fonlari
     const bad=await pg.evaluate(()=>{ const out=[]; document.querySelectorAll('#dash-content *, #dashboard-view .dash-side *, #main-nav, #top-util').forEach(el=>{const r=el.getBoundingClientRect(); if(r.width<60||r.height<24) return; const c=getComputedStyle(el).backgroundColor.match(/[\d.]+/g); if(!c) return; const a=c[3]===undefined?1:+c[3]; if(a<.9) return; const l=(+c[0]*0.2126+ +c[1]*0.7152+ +c[2]*0.0722); if(l<70){ const cs=getComputedStyle(el); if(cs.backgroundImage.includes('gradient')||cs.backgroundImage.includes('url(')) return; out.push(el.tagName+'.'+String(el.className).slice(0,34)+' rgb('+c.slice(0,3)+')'); }}); return out.slice(0,8); });
     ok(bad.length===0,`${label}: no leftover dark backgrounds in light mode ${JSON.stringify(bad)}`); };
+  // ===== UI bugfix: hero fon (Light + Lite + SPA), profil menyusi, shimmer =====
+  const heroImgs=(pg)=>pg.evaluate(()=>[...document.querySelectorAll('.hero-layer')].filter(l=>l.style.backgroundImage||l.classList.contains('on')).length);
+  const heroVisible=(pg)=>pg.evaluate(()=>{const b=document.querySelector('.hero-bg'); return getComputedStyle(b).display!=='none';});
+  let hp=await open(null,'dark');
+  ok(await heroImgs(hp)>=1,'dark: hero slides run');
+  await hp.click('#theme-toggle'); await hp.waitForTimeout(1200);
+  ok(await hp.evaluate(()=>document.documentElement.dataset.theme)==='light'&&await heroImgs(hp)===0&&!(await heroVisible(hp)),'dark -> light: slide images cleared and hero background hidden');
+  await hp.waitForTimeout(11000); ok(await heroImgs(hp)===0,'light: slide timer stays blocked (no image after 11 s)');
+  await hp.evaluate(()=>Perf.set(true)); await hp.waitForTimeout(600); ok(await heroImgs(hp)===0,'Lite mode ON in Light: no hero images');
+  await hp.evaluate(()=>Perf.set(false)); await hp.waitForTimeout(800); ok(await heroImgs(hp)===0&&!(await heroVisible(hp)),'Lite mode OFF in Light: still no hero images');
+  await hp.evaluate(()=>Perf.set(true)); await hp.evaluate(()=>Perf.set(false)); await hp.evaluate(()=>{history.pushState({},'','#market'); window.dispatchEvent(new PopStateEvent('popstate')); window.dispatchEvent(new HashChangeEvent('hashchange'));}); await hp.waitForTimeout(800);
+  ok(await heroImgs(hp)===0,'SPA navigation (popstate/hashchange) in Light: no hero images');
+  await hp.click('#theme-toggle'); await hp.waitForTimeout(2500); ok(await heroImgs(hp)>=1&&await heroVisible(hp),'light -> dark: hero slides come back (dark only)');
+  await hp.context().close();
+  hp=await open(fph,'light');
+  await hp.evaluate(()=>openDashboard('overview')); await hp.waitForTimeout(1500); await hp.evaluate(()=>closeDashboard()); await hp.waitForTimeout(800);
+  ok(await heroImgs(hp)===0,'Light: entering and leaving the cabinet keeps hero images off');
+  await hp.evaluate(()=>{window.scrollTo(0,0);}); await hp.click('#auth-nav-btn'); await hp.waitForTimeout(700);
+  const mi=await hp.evaluate(()=>{const m=document.getElementById('account-menu'); const c=getComputedStyle(m); const r=m.getBoundingClientRect(); const top=document.elementFromPoint(r.left+r.width/2, r.top+r.height/2); const items=[...m.querySelectorAll('button')].map(b=>getComputedStyle(b).color); return {bg:c.backgroundColor,bf:c.backdropFilter,z:c.zIndex,op:c.opacity,inside:m.contains(top),items:[...new Set(items)],shadow:c.boxShadow};});
+  ok(mi.bg==='rgb(251, 249, 246)'&&(mi.bf==='none'||mi.bf==='')&&mi.op==='1','profile menu is solid #FBF9F6 (no transparency/blur) '+mi.bg+' blur:'+mi.bf);
+  ok(Number(mi.z)>=90&&mi.inside,'profile menu on top (z-index '+mi.z+', nothing bleeds over it)');
+  ok(mi.items.length>0&&mi.items.every(c=>c==='rgb(45, 52, 54)'),'menu item text is #2D3436 '+JSON.stringify(mi.items));
+  ok(/221, 214, 206|ddd6ce/i.test(mi.shadow)||mi.shadow!=='none','soft 3D shadow');
+  await hp.screenshot({path:'ta-account-menu-light.png',clip:{x:700,y:50,width:580,height:520}});
+  await audit(hp,'#account-menu','profile menu','light');
+  await hp.context().close();
+  hp=await open(fph,'dark'); await hp.click('#auth-nav-btn'); await hp.waitForTimeout(700);
+  ok(await hp.evaluate(()=>getComputedStyle(document.getElementById('account-menu')).backgroundColor).then(c=>{const n=c.match(/[\d.]+/g).map(Number);return n[0]<60;}),'dark mode profile menu unchanged (dark)'); await hp.context().close();
+  hp=await open(fph,'light'); await hp.evaluate(()=>openDashboard('products')); await hp.waitForTimeout(2200);
+  const anim=await hp.evaluate(()=>document.getAnimations().map(a=>a.animationName).filter(n=>/sk-sweep|bdgShine|gc-spin|shimmer|sweep/i.test(n||'')));
+  ok(anim.length===0,'carousel/cards: no shimmer / light-sweep animations running '+JSON.stringify(anim));
+  const glow=await hp.evaluate(()=>{const e=document.querySelector('.gc-slide.is-active'); return e?getComputedStyle(e,'::before').animationName:'none';}); ok(glow==='none','carousel glow ring is static (no animation: '+glow+')');
+  await hp.context().close();
+  hp=await open(fph,'dark'); await hp.evaluate(()=>openDashboard('products')); await hp.waitForTimeout(2200);
+  ok((await hp.evaluate(()=>{const e=document.querySelector('.gc-slide.is-active'); return e?getComputedStyle(e,'::before').animationName:'none';}))==='none','dark: carousel glow is static too'); await hp.context().close();
+
   for(const theme of ['light','dark']){
     let pg=await open(null,theme); await audit(pg,'body','landing',theme); await pg.evaluate(()=>document.getElementById('leaderboard').scrollIntoView()); await pg.waitForTimeout(1500); await audit(pg,'#leaderboard','monthly ranking',theme); await pg.screenshot({path:`ta-landing-${theme}.png`}); await pg.context().close();
     for(const [ph,tab,label] of [[fph,'overview','farmer overview'],[fph,'products','farmer listings'],[fph,'bookings','farmer bookings'],[fph,'shipments','farmer shipments'],[fph,'agrostore','farmer agro-store'],[fph,'payments','farmer finance'],[mph,'overview','market overview'],[mph,'bookings','market bookings'],[mph,'payments','market finance'],[dph,'loads','driver loads'],[dph,'agrodriver','driver agro (soon)'],[aph,'agrosuppliers','admin suppliers'],[aph,'adm-dashboard','admin dashboard']]){
