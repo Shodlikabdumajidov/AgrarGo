@@ -1,5 +1,5 @@
 /* ===== Main (Hero): Interactive Character Showcase =====
- * P1.mp4 — Fermer, P2.mp4 — Haydovchi, P3.mp4 — Market egasi (repo ildizidagi videolar). Orqa fon shaffof: alpha kanalli WebM (images/showcase/p*.webm, tools/make-showcase-alpha.py); alpha qo'llamaydigan brauzerlarda (Safari) asl MP4.
+ * P1.mp4 — Market egasi, P2.mp4 — Haydovchi, P3.mp4 — Fermer (repo ildizidagi videolar). Orqa fon shaffof: alpha kanalli WebM (images/showcase/p*.webm, tools/make-showcase-alpha.py); alpha qo'llamaydigan brauzerlarda (Safari) asl MP4.
  * Aktiv personaj katta ko'rinadi, navbatdagisi o'ng pastda preview kartochka; < > tugmalari, preview va nuqtalar orqali (hamda har 7.5 s da,
  * agar foydalanuvchi tegmasa) silliq fade + scale/slide bilan almashadi. Sarlavha, tushuntirish, CTA va urg'u rangi rolga mos o'zgaradi.
  * Matnlar o'zbekcha manba sifatida DOM'ga yoziladi: i18n engine (UZ/RU/EN) ularni avtomatik tarjima qiladi (i18n/src/41-hero-showcase.txt).
@@ -23,17 +23,19 @@
     root.classList.toggle('cs-alpha', useAlpha); root.classList.toggle('cs-noalpha', !useAlpha);
     videos.forEach(function (v) { v.src = useAlpha ? v.dataset.webm : v.dataset.mp4; });
 
+    // Video P1 (planshetli sotuvchi) — Market egasi, P2 (kuryer) — Haydovchi, P3 (olmali dehqon) — Fermer
     var ROLES = [
-        { key: 'farmer', name: 'Fermer', poster: 'images/showcase/p1.webp', tag: "Dehqon va bog'bonlar uchun", lead: "Hosilingizni to'g'ridan-to'g'ri", grad: 'xaridorga soting',
-          sub: "Vositachisiz, o'z narxingizda soting: do'konlar e'loningizni darhol ko'radi, pul esa escrow orqali kafolatlanadi.", cta: 'Mahsulot joylash',
-          go: function () { if (typeof onPostAdClick === 'function') onPostAdClick(); } },
+        { key: 'market', name: 'Market egasi', poster: 'images/showcase/p1.webp', tag: "Bozor, do'kon va ulgurji xaridorlar uchun", lead: 'Yangi hosilni fermerdan', grad: 'bevosita xarid qiling',
+          sub: "Sifatli mahsulotni to'g'ri narxda toping, PIN-kod bilan qabul qiling — pulingiz yuk topshirilguncha escrow'da xavfsiz.", cta: 'Xarid qilish',
+          go: function () { if (typeof openCatalog === 'function') openCatalog(); } },
         { key: 'driver', name: 'Haydovchi', poster: 'images/showcase/p2.webp', tag: 'Yuk tashuvchi va logistlar uchun', lead: "Bo'sh yo'lingizni", grad: 'daromadga aylantiring',
           sub: "Yo'nalishingizdagi tayyor yuklarni toping, o'z narxingizni taklif qiling va yo'l haqini kafolatli oling.", cta: 'Yuk topish',
           go: function () { var u = typeof currentUser === 'function' ? currentUser() : null; if (u && typeof openDashboard === 'function') openDashboard(u.role === 'DRIVER' ? 'loads' : undefined); else if (typeof openAuthModal === 'function') openAuthModal('register', 'DRIVER'); } },
-        { key: 'market', name: 'Market egasi', poster: 'images/showcase/p3.webp', tag: "Bozor, do'kon va ulgurji xaridorlar uchun", lead: 'Yangi hosilni fermerdan', grad: 'bevosita xarid qiling',
-          sub: "Sifatli mahsulotni to'g'ri narxda toping, PIN-kod bilan qabul qiling — pulingiz yuk topshirilguncha escrow'da xavfsiz.", cta: 'Xarid qilish',
-          go: function () { if (typeof openCatalog === 'function') openCatalog(); } }
+        { key: 'farmer', name: 'Fermer', poster: 'images/showcase/p3.webp', tag: "Dehqon va bog'bonlar uchun", lead: "Hosilingizni to'g'ridan-to'g'ri", grad: 'xaridorga soting',
+          sub: "Vositachisiz, o'z narxingizda soting: do'konlar e'loningizni darhol ko'radi, pul esa escrow orqali kafolatlanadi.", cta: 'Mahsulot joylash',
+          go: function () { if (typeof onPostAdClick === 'function') onPostAdClick(); } }
     ];
+
     var n = ROLES.length, idx = 0, timer = null, touched = false;
     var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -109,5 +111,5 @@
     paintState(); paintText(false); play(videos[0]); preloadNext();
     window.addEventListener('load', function () { videos.forEach(function (v) { if (v.preload !== 'auto') { v.preload = 'auto'; } }); }); // keyingi videolar oldindan yuklanadi
     restart();
-    window.HeroShowcase = { go: function (i) { go(i, true); }, index: function () { return idx; }, roles: ROLES.map(function (r) { return r.key; }) };
+    window.HeroShowcase = { go: function (i) { go(i, true); }, stop: function () { clearInterval(timer); timer = null; }, index: function () { return idx; }, roles: ROLES.map(function (r) { return r.key; }) };
 })();
