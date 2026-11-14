@@ -197,25 +197,6 @@
         *::-webkit-scrollbar-thumb:hover { background: rgba(16, 185, 129, 0.6); }
         .auth-card { scrollbar-width: none; }
         .auth-card::-webkit-scrollbar { display: none; }
-        /* Hero orqa fon slayderi: chap/o'ng bloklar, xira va markazga qarab so'nadi */
-        .hero-bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
-        .hero-pane { position: absolute; top: 0; bottom: 0; width: 46%; }
-        .hero-pane.left { left: 0; -webkit-mask-image: linear-gradient(to right, #000 0%, rgba(0,0,0,.8) 55%, transparent 100%); mask-image: linear-gradient(to right, #000 0%, rgba(0,0,0,.8) 55%, transparent 100%); }
-        .hero-pane.right { right: 0; -webkit-mask-image: linear-gradient(to left, #000 0%, rgba(0,0,0,.8) 55%, transparent 100%); mask-image: linear-gradient(to left, #000 0%, rgba(0,0,0,.8) 55%, transparent 100%); }
-        .hero-layer { position: absolute; inset: -6%; background-size: cover; background-position: center; filter: blur(3px) saturate(1.15); opacity: 0; transition: opacity 1.8s ease-in-out; will-change: opacity; }
-        .hero-layer.on { opacity: .75; }
-        /* Matn joylashgan markazga qarab qorayuvchi qatlam (o'qish qiyinlashmasin) */
-        .hero-bg::after { content: ''; position: absolute; inset: 0; background:
-            radial-gradient(ellipse at center, rgba(2,6,23,.82) 0%, rgba(2,6,23,.45) 40%, rgba(2,6,23,0) 70%),
-            linear-gradient(to bottom, rgba(2,6,23,.55) 0%, rgba(2,6,23,0) 25%, rgba(2,6,23,0) 70%, rgba(2,6,23,1) 100%); }
-        @media (max-width: 1023px) {
-            .hero-pane { width: 100%; }
-            .hero-pane.left { bottom: 50%; -webkit-mask-image: linear-gradient(to bottom, #000 0%, transparent 100%); mask-image: linear-gradient(to bottom, #000 0%, transparent 100%); }
-            .hero-pane.right { top: 50%; -webkit-mask-image: linear-gradient(to top, #000 0%, transparent 100%); mask-image: linear-gradient(to top, #000 0%, transparent 100%); }
-            .hero-layer { filter: blur(2px) saturate(1.15); }
-            .hero-layer.on { opacity: .6; }
-        }
-        @media (prefers-reduced-motion: reduce) { .hero-layer { transition: none; } }
         /* Xarita (Leaflet) va belgilar */
         .trk-map { isolation: isolate; position: relative; z-index: 0; }
         .trk-map.leaflet-container { background: #0b1220; font-family: inherit; }
@@ -1431,11 +1412,7 @@
     <!-- HERO SECTION (Updated with Left Rotating Logo Space & Right Text) -->
     <header class="relative min-h-[80vh] flex items-center justify-center pt-16 pb-20 px-6 sm:px-12 overflow-hidden">
         <!-- Orqa fon: chap va o'ng bloklar (kontent ostida) -->
-        <div class="hero-bg" aria-hidden="true">
-            <div class="hero-pane left"><div class="hero-layer"></div><div class="hero-layer"></div></div>
-            <div class="hero-pane right"><div class="hero-layer"></div><div class="hero-layer"></div></div>
-        </div>
-        <div class="relative z-10 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                <div class="relative z-10 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             
             <!-- LEFT SIDE: Rotating 3D Logo / Shape Space -->
             <div class="lg:col-span-5 flex flex-col items-center justify-center space-y-6" data-aos="fade-right" data-aos-duration="1000">

@@ -1,6 +1,6 @@
 /* AVTOMATIK YARATILGAN: python3 tools/build-light-theme.py (qo'lda tahrirlamang; o'zgarishlar css/light.extra.css ga) */
 
-/* ===== index.html <style> bloki -> yorug' mavzu (340 qoida) ===== */
+/* ===== index.html <style> bloki -> yorug' mavzu (339 qoida) ===== */
 html[data-theme="light"] .glass { background: rgba(251,249,246,0.95); }
 html[data-theme="light"] .na-track { background: rgba(120,100,80,0.28); }
 html[data-theme="light"] .na-thumb { background: rgba(251,249,246,1); box-shadow: 0 1px 4px rgba(120,100,80,0.18); }
@@ -9,8 +9,6 @@ html[data-theme="light"] #main-nav.nav-shrunk { background-color: rgba(251,249,2
 html[data-theme="light"] .hover-glow:hover { box-shadow: 0 0 25px rgba(120,100,80,0.21); }
 html[data-theme="light"] *::-webkit-scrollbar-thumb { background: rgba(19,174,123,0.27); }
 html[data-theme="light"] *::-webkit-scrollbar-thumb:hover { background: rgba(19,174,123,0.54); }
-html[data-theme="light"] .hero-bg::after { background: radial-gradient(ellipse at center, rgba(245,240,235,0.82) 0%, rgba(245,240,235,0.45) 40%, rgba(245,240,235,0) 70%),
-            linear-gradient(to bottom, rgba(245,240,235,0.55) 0%, rgba(245,240,235,0) 25%, rgba(245,240,235,0) 70%, rgba(245,240,235,1) 100%); }
 html[data-theme="light"] .trk-map.leaflet-container { background: rgba(251,249,246,1); }
 html[data-theme="light"] .trk-live-dot { box-shadow: 0 0 0 0 rgba(120,100,80,0.36); }
 html[data-theme="light"] .trk-truck { background: rgba(251,249,246,1); border: 2px solid rgba(29,134,95,1); color: rgba(63,107,92,1); box-shadow: 0 4px 14px rgba(120,100,80,0.33); }
@@ -641,8 +639,6 @@ html[data-theme="light"] .lb-val { color: #3f6b5c; }
 html[data-theme="light"] .lb-skel { background: #e4ddd5; }
 html[data-theme="light"] #lb-last { color: #636E72; }
 
-/* Light rejimda Hero orqa fon slayd rasmlari butunlay yo'q (JS ham yuklamaydi; bu CSS esa har qanday holatda to'siq) */
-html[data-theme="light"] .hero-bg, html[data-theme="light"] .hero-pane, html[data-theme="light"] .hero-layer { display: none !important; background-image: none !important; }
 
 /* Profil dropdown menyusi (Light): 100% shaffof emas (solid) Soft Claymorphism */
 html[data-theme="light"] #account-menu { background: #FBF9F6 !important; background-image: none !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; border: 1px solid rgba(255,255,255,.95) !important; border-radius: 1.5rem; box-shadow: 10px 10px 24px #ddd6ce, -8px -8px 18px #ffffff !important; z-index: 90; opacity: 1; }

@@ -35,15 +35,13 @@ const PNG=Buffer.from('89504e470d0a1a0a0000000d494844520000000100000001080600000
   // ===== 1. Default LIGHT, hero rasmlari o'chiq, Claymorphism =====
   let pg=await open(null,null,null);
   ok(await pg.evaluate(()=>document.documentElement.dataset.theme)==='light','default theme is LIGHT (nothing stored)');
-  ok(await pg.evaluate(()=>[...document.querySelectorAll('.hero-layer')].filter(e=>e.style.backgroundImage).length)===0,'light: rotating hero background images are not loaded');
-  ok(await pg.evaluate(()=>getComputedStyle(document.querySelector('.hero-bg')).display)!=='block'||await pg.evaluate(()=>[...document.querySelectorAll('.hero-layer')].every(e=>!e.style.backgroundImage)),'light: hero layers empty');
+  ok(await pg.evaluate(()=>document.querySelectorAll('.hero-layer, .hero-bg').length)===0,'no rotating hero background (removed)');
   const bodyBg=await pg.evaluate(()=>getComputedStyle(document.body).backgroundColor+'|'+getComputedStyle(document.body).backgroundImage);
   ok(/rgb\(245, 240, 235\)|#F5F0EB|250, 247, 244/i.test(bodyBg)||/gradient/.test(bodyBg),'cream background ('+bodyBg.slice(0,80)+')');
   ok(await pg.evaluate(()=>getComputedStyle(document.body).color)==='rgb(45, 52, 54)','text color #2D3436');
   await pg.screenshot({path:'cp-landing-light.png'});
   await pg.click('#theme-toggle'); await pg.waitForTimeout(2500);
   ok(await pg.evaluate(()=>document.documentElement.dataset.theme)==='dark','toggle -> dark');
-  ok(await pg.evaluate(()=>[...document.querySelectorAll('.hero-layer')].filter(e=>e.style.backgroundImage).length)>=1,'dark: hero background images run');
   ok(await pg.evaluate(()=>{const c=getComputedStyle(document.body).backgroundColor.match(/\d+/g).map(Number);return c[0]<40&&c[1]<40;}),'dark mode keeps the dark background');
   await pg.context().close();
   // saqlangan 'dark' tanlovi hurmat qilinadi

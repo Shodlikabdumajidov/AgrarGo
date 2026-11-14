@@ -48,8 +48,6 @@ html[data-theme="light"] .lb-val { color: #3f6b5c; }
 html[data-theme="light"] .lb-skel { background: #e4ddd5; }
 html[data-theme="light"] #lb-last { color: #636E72; }
 
-/* Light rejimda Hero orqa fon slayd rasmlari butunlay yo'q (JS ham yuklamaydi; bu CSS esa har qanday holatda to'siq) */
-html[data-theme="light"] .hero-bg, html[data-theme="light"] .hero-pane, html[data-theme="light"] .hero-layer { display: none !important; background-image: none !important; }
 
 /* Profil dropdown menyusi (Light): 100% shaffof emas (solid) Soft Claymorphism */
 html[data-theme="light"] #account-menu { background: #FBF9F6 !important; background-image: none !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; border: 1px solid rgba(255,255,255,.95) !important; border-radius: 1.5rem; box-shadow: 10px 10px 24px #ddd6ce, -8px -8px 18px #ffffff !important; z-index: 90; opacity: 1; }
