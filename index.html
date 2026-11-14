@@ -1175,6 +1175,7 @@
     <link rel="stylesheet" href="css/glassy-auth.css">
     <link rel="stylesheet" href="css/pricing-bids.css">
     <link rel="stylesheet" href="css/clay.css">
+    <link rel="stylesheet" href="css/hero-showcase.css">
     <link rel="stylesheet" href="css/perf-layout.css">
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans antialiased selection:bg-emerald-500 selection:text-slate-950">
@@ -1410,45 +1411,29 @@
     </nav>
 
     <!-- HERO SECTION (Updated with Left Rotating Logo Space & Right Text) -->
-    <header class="relative min-h-[80vh] flex items-center justify-center pt-16 pb-20 px-6 sm:px-12 overflow-hidden">
+    <header id="hero-header" data-role="farmer" class="relative min-h-[80vh] flex items-center justify-center pt-16 pb-20 px-6 sm:px-12 overflow-hidden">
         <!-- Orqa fon: chap va o'ng bloklar (kontent ostida) -->
                 <div class="relative z-10 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             
-            <!-- LEFT SIDE: Rotating 3D Logo / Shape Space -->
-            <div class="lg:col-span-5 flex flex-col items-center justify-center space-y-6" data-aos="fade-right" data-aos-duration="1000">
-                <div class="relative w-56 h-56 sm:w-64 sm:h-64 flex items-center justify-center">
-                    <!-- Glowing Background Circle Effect -->
-                    <div class="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-500/20 via-teal-500/10 to-blue-500/25 blur-2xl animate-pulse"></div>
-                    
-                    <!-- Rotating 3D Logo -->
-                    <div class="logo-glow relative">
-                        <div class="logo-stage relative w-60 h-28 sm:w-72 sm:h-32">
-                            <div class="logo-ring" aria-hidden="true"></div>
-                            <div class="logo-tilt">
-                            <div class="logo-3d">
-                                    <span class="logo-edge" style="--z:-8.00px"></span>
-                                    <span class="logo-edge" style="--z:-6.50px"></span>
-                                    <span class="logo-edge" style="--z:-5.00px"></span>
-                                    <span class="logo-edge" style="--z:-3.50px"></span>
-                                    <span class="logo-edge" style="--z:-2.00px"></span>
-                                    <span class="logo-edge" style="--z:-0.50px"></span>
-                                    <span class="logo-edge" style="--z:1.00px"></span>
-                                    <span class="logo-edge" style="--z:2.50px"></span>
-                                    <span class="logo-edge" style="--z:4.00px"></span>
-                                    <span class="logo-edge" style="--z:5.50px"></span>
-                                    <span class="logo-edge" style="--z:7.00px"></span>
-                                <img src="images/newlogo.png" alt="AgrarGo" class="logo-face front">
-                                <img src="images/newlogo.png" alt="" aria-hidden="true" class="logo-face back">
-                            </div>
-                            </div>
-                            <div class="logo-shadow"></div>
-                        </div>
+            <!-- LEFT SIDE: Interactive Character Showcase (P1 fermer, P2 haydovchi, P3 market) -->
+            <div class="lg:col-span-5 flex flex-col items-center justify-center">
+                <div id="hero-showcase" class="cs" data-role="farmer" aria-roledescription="carousel" aria-label="Personajlar">
+                    <div class="cs-blob" aria-hidden="true"></div>
+                    <div class="cs-stage">
+                        <video class="cs-video is-on" data-i="0" data-webm="images/showcase/p1.webm" data-mp4="P1.mp4" poster="images/showcase/p1.webp" autoplay loop muted playsinline disablepictureinpicture disableremoteplayback preload="auto" tabindex="-1" aria-hidden="true"></video>
+                        <video class="cs-video" data-i="1" data-webm="images/showcase/p2.webm" data-mp4="P2.mp4" poster="images/showcase/p2.webp" loop muted playsinline disablepictureinpicture disableremoteplayback preload="auto" tabindex="-1" aria-hidden="true"></video>
+                        <video class="cs-video" data-i="2" data-webm="images/showcase/p3.webm" data-mp4="P3.mp4" poster="images/showcase/p3.webp" loop muted playsinline disablepictureinpicture disableremoteplayback preload="metadata" tabindex="-1" aria-hidden="true"></video>
+                        <span class="cs-role" id="cs-role">Fermer</span>
                     </div>
-                </div>
-                <!-- Site Brand Name Under Shape -->
-                <div class="text-center space-y-1">
-                    <h3 class="text-2xl sm:text-3xl font-extrabold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">AgrarGo</h3>
-                    <p class="text-xs uppercase tracking-widest text-slate-400 font-semibold">Smart Agro-Logistics</p>
+                    <button type="button" class="cs-next" id="cs-next-card" aria-label="Keyingi personaj">
+                        <img id="cs-next-img" src="images/showcase/p2.webp" alt="" width="96" height="128" loading="eager" decoding="async">
+                        <span class="cs-next-label"><small>Keyingisi</small><b id="cs-next-name">Haydovchi</b></span>
+                    </button>
+                    <div class="cs-ctrl">
+                        <button type="button" class="cs-arrow" id="cs-prev" aria-label="Oldingi personaj"><i class="fa-solid fa-chevron-left"></i></button>
+                        <div class="cs-dots" role="tablist" aria-label="Personajlar"></div>
+                        <button type="button" class="cs-arrow" id="cs-next" aria-label="Keyingi personaj"><i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
                 </div>
             </div>
 
@@ -1457,12 +1442,14 @@
                 <div class="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm font-bold uppercase tracking-widest shadow-xl">
                     <i class="fa-solid fa-seedling"></i> O'zbekistondagi Birinchi Raqamli Agro-Logistika Zanjiri
                 </div>
+                <p class="cs-tag" id="cs-tag"><i class="fa-solid fa-circle"></i> <span>Dehqon va bog'bonlar uchun</span></p>
                 <h1 id="hero-title" class="hero-title text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight">
-                    <span class="hero-lead">Dehqondan Do'konga —</span> <br class="hidden sm:inline"><span class="hero-grad text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-blue-400">Vositachilarsiz Kelajak</span>
+                    <span class="hero-lead" id="cs-title-lead">Hosilingizni to'g'ridan-to'g'ri</span> <br class="hidden sm:inline"><span class="hero-grad text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-blue-400" id="cs-title-grad">xaridorga soting</span>
                 </h1>
-                <p class="text-slate-300 text-base sm:text-xl max-w-2xl leading-relaxed font-medium">
-                    Fermerlarning og'ir mehnatini qadrlash, narx monopoliyasiga barham berish va mahsulotni to'g'ridan-to'g'ri bozor hamda supermarketlarga yetkazishning ishonchli ekotizimi.
+                <p class="text-slate-300 text-base sm:text-xl max-w-2xl leading-relaxed font-medium" id="cs-sub">
+                    Vositachisiz, o'z narxingizda soting: do'konlar e'loningizni darhol ko'radi, pul esa escrow orqali kafolatlanadi.
                 </p>
+                <div class="cs-cta-row"><button type="button" class="cs-cta" id="cs-cta"><i class="fa-solid fa-arrow-right"></i> <span>Mahsulot joylash</span></button></div>
             </div>
 
         </div>
@@ -2915,6 +2902,7 @@
     <script src="js/local.js" defer></script>
     <script src="js/agro-supplier.js" defer></script>
     <script src="js/pricing-bids.js" defer></script>
+    <script src="js/hero-showcase.js" defer></script>
     <script src="js/hub-ops.js" defer></script>
     <script src="js/finance.js" defer></script>
     <script src="js/ebol.js" defer></script>

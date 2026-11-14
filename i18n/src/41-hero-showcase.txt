@@ -1,0 +1,23 @@
+# --- Main (Hero): Interactive Character Showcase ---
+Fermer ‖ Фермер ‖ Farmer
+Haydovchi ‖ Водитель ‖ Driver
+Market egasi ‖ Владелец магазина ‖ Market owner
+Dehqon va bog'bonlar uchun ‖ Для фермеров и садоводов ‖ For farmers and gardeners
+Hosilingizni to'g'ridan-to'g'ri ‖ Продавайте урожай напрямую ‖ Sell your harvest directly
+xaridorga soting ‖ покупателю ‖ to the buyer
+Vositachisiz, o'z narxingizda soting: do'konlar e'loningizni darhol ko'radi, pul esa escrow orqali kafolatlanadi. ‖ Продавайте без посредников по своей цене: магазины сразу видят ваше объявление, а оплата гарантирована через эскроу. ‖ Sell without middlemen at your own price: shops see your listing right away and payment is guaranteed through escrow.
+Mahsulot joylash ‖ Разместить товар ‖ Post a product
+Yuk tashuvchi va logistlar uchun ‖ Для перевозчиков и логистов ‖ For carriers and logisticians
+Bo'sh yo'lingizni ‖ Превратите свой свободный путь ‖ Turn your empty route
+daromadga aylantiring ‖ в доход ‖ into income
+Yo'nalishingizdagi tayyor yuklarni toping, o'z narxingizni taklif qiling va yo'l haqini kafolatli oling. ‖ Найдите готовые грузы на вашем маршруте, предложите свою цену и получите оплату гарантированно. ‖ Find ready loads on your route, offer your own price and get paid with a guarantee.
+Yuk topish ‖ Найти груз ‖ Find a load
+Bozor, do'kon va ulgurji xaridorlar uchun ‖ Для рынков, магазинов и оптовых покупателей ‖ For markets, shops and wholesale buyers
+Yangi hosilni fermerdan ‖ Покупайте свежий урожай у фермера ‖ Buy fresh harvest from the farmer
+bevosita xarid qiling ‖ напрямую ‖ directly
+Sifatli mahsulotni to'g'ri narxda toping, PIN-kod bilan qabul qiling — pulingiz yuk topshirilguncha escrow'da xavfsiz. ‖ Находите качественный товар по честной цене и принимайте по PIN-коду — ваши деньги в безопасности в эскроу до выдачи груза. ‖ Find quality produce at a fair price and receive it with a PIN code — your money stays safe in escrow until delivery.
+Xarid qilish ‖ Купить ‖ Buy now
+Keyingisi ‖ Следующий ‖ Next up
+Keyingi personaj ‖ Следующий персонаж ‖ Next character
+Oldingi personaj ‖ Предыдущий персонаж ‖ Previous character
+Personajlar ‖ Персонажи ‖ Characters
