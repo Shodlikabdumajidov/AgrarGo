@@ -1,0 +1,37 @@
+# --- Keshbek (loyalty) ---
+Mening keshbeklarim ‖ Мои кешбэки ‖ My cashback
+Keshbek ‖ Кешбэк ‖ Cashback
+keshbek ‖ кешбэк ‖ cashback
+Keshbek qoplaydi ‖ Покрывает кешбэк ‖ Covered by cashback
+To'lanadi ‖ К оплате ‖ To pay
+Har bir yakunlangan buyurtmadan keshbek yig'iladi va platforma xizmat haqini qoplash uchun ishlatiladi ‖ С каждого завершённого заказа копится кешбэк; им можно покрыть сервисный сбор платформы ‖ Every completed order earns cashback that can cover the platform service fee
+Joriy balans ‖ Текущий баланс ‖ Current balance
+Jami yig'ilgan: {0} ‖ Всего накоплено: {0} ‖ Total earned: {0}
+Ishlatilgan: {0} ‖ Использовано: {0} ‖ Spent: {0}
+Qanday ishlaydi? ‖ Как это работает? ‖ How does it work?
+Buyurtma muvaffaqiyatli yakunlanganda sizga {0}% keshbek yoziladi ({1}). ‖ При успешном завершении заказа вам начисляется {0}% кешбэка ({1}). ‖ You earn {0}% cashback when an order completes successfully ({1}).
+sotuv summasidan ‖ от суммы продажи ‖ of the sale amount
+yo'l haqidan ‖ от платы за перевозку ‖ of the delivery fee
+xarid summasidan ‖ от суммы покупки ‖ of the purchase amount
+To'lovda keshbek platforma xizmat haqining {0}% igacha qoplaydi; fermer, Hub va kuryer ulushlari o'zgarmaydi. ‖ При оплате кешбэк покрывает до {0}% сервисного сбора платформы; доли фермера, Hub и курьера не меняются. ‖ At checkout cashback covers up to {0}% of the platform service fee; farmer, Hub and courier shares do not change.
+Buyurtma bekor qilinsa, ishlatilgan keshbek balansingizga qaytadi. ‖ Если заказ отменён, использованный кешбэк вернётся на баланс. ‖ If the order is cancelled, the cashback you used returns to your balance.
+Tushum va xarajatlar tarixi ‖ История начислений и списаний ‖ Earnings and spending history
+Hali keshbek yo'q ‖ Кешбэка пока нет ‖ No cashback yet
+Birinchi buyurtmangiz yakunlangach keshbek shu yerda paydo bo'ladi. ‖ Кешбэк появится здесь после завершения первого заказа. ‖ Cashback will appear here after your first order completes.
+Ko'proq ko'rsatish ‖ Показать ещё ‖ Show more
+Keshbek yozildi ‖ Кешбэк начислен ‖ Cashback earned
+Xizmat haqiga ishlatildi ‖ Списано на сервисный сбор ‖ Spent on the service fee
+Qaytarildi ‖ Возвращено ‖ Refunded
+Chakana buyurtma ‖ Розничный заказ ‖ Retail order
+Ombor buyurtmasi ‖ Заказ со склада ‖ Warehouse order
+Bron ‖ Бронь ‖ Booking
+Xarid uchun keshbek ‖ Кешбэк за покупку ‖ Cashback for a purchase
+Sotuv uchun keshbek ‖ Кешбэк за продажу ‖ Cashback for a sale
+Yetkazib berish uchun keshbek ‖ Кешбэк за доставку ‖ Cashback for delivery
+Platforma xizmat haqi keshbek bilan qoplandi ‖ Сервисный сбор платформы покрыт кешбэком ‖ Platform service fee covered by cashback
+Bekor qilingan buyurtma: keshbek qaytdi ‖ Заказ отменён: кешбэк возвращён ‖ Order cancelled: cashback returned
+Keshbek balansidan foydalanish (Sizda {0} so'm bor) ‖ Использовать баланс кешбэка (у вас {0} сум) ‖ Use cashback balance (you have {0} UZS)
+Platforma xizmat haqidan {0} so'm qoplanadi; fermer, Hub va kuryer ulushlari o'zgarmaydi. ‖ Сервисный сбор платформы покрывается на {0} сум; доли фермера, Hub и курьера не меняются. ‖ {0} UZS of the platform service fee is covered; farmer, Hub and courier shares do not change.
+Keshbek balansi yetarli emas. Sahifani yangilang ‖ Недостаточно кешбэка. Обновите страницу ‖ Not enough cashback balance. Refresh the page
+Yorug' rejimga o'tish ‖ Включить светлую тему ‖ Switch to light mode
+Qorong'i rejimga o'tish ‖ Включить тёмную тему ‖ Switch to dark mode

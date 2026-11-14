@@ -1,0 +1,34 @@
+# --- RBAC, e-BOL va Safety paneli ---
+Safety: e-BOL va tasdiqlash ‖ Safety: e-BOL и верификация ‖ Safety: e-BOL & verification
+Safety paneli ‖ Панель Safety ‖ Safety panel
+Safety admin ‖ Safety-админ ‖ Safety admin
+Finance admin ‖ Finance-админ ‖ Finance admin
+Hub admin ‖ Hub-админ ‖ Hub admin
+Super admin ‖ Суперадмин ‖ Super admin
+Admin paneli (faqat Admin uchun) ‖ Панель админа (только для Админа) ‖ Admin panel (Admin only)
+Admin paneli roli ‖ Роль админ-панели ‖ Admin panel role
+Panel roli ‖ Роль панели ‖ Panel role
+Rol o'zgarsa xodimning sessiyalari yopiladi: qayta kirishi kerak. ‖ При смене роли сессии сотрудника закрываются: ему нужно войти заново. ‖ Changing the role closes the staff member's sessions: they must sign in again.
+Panel roli yangilandi. ‖ Роль панели обновлена. ‖ Panel role updated.
+e-BOL imzolangan ‖ e-BOL подписан ‖ e-BOL signed
+e-BOL: fermer kodi bilan imzolash ‖ e-BOL: подписание кодом фермера ‖ e-BOL: sign with the farmer's code
+Yuklash joyiga yetib kelgach «Kod yuborish» ni bosing: fermer telefoniga 4 xonali kod boradi. Fermer kodni aytgach, uni kiriting. ‖ По прибытии на место погрузки нажмите «Отправить код»: фермеру придёт 4-значный код. Введите его, когда фермер назовёт. ‖ On arrival at the pickup point press "Send code": the farmer gets a 4-digit code. Enter it once the farmer tells you.
+Yetib keldim: kod yuborish ‖ Я на месте: отправить код ‖ I've arrived: send code
+Fermerdan olingan kod ‖ Код, полученный от фермера ‖ Code received from the farmer
+Imzolash ‖ Подписать ‖ Sign
+Imzolash va yo'lga chiqish ‖ Подписать и выехать ‖ Sign and depart
+Kod {0} raqamiga yuborildi. Muddati: {1} gacha. ‖ Код отправлен на номер {0}. Действует до {1}. ‖ Code sent to {0}. Valid until {1}.
+e-BOL imzolandi ‖ e-BOL подписан ‖ e-BOL signed
+Hub buyurtmasi ‖ Заказ Hub ‖ Hub order
+ID nusxalandi ‖ ID скопирован ‖ ID copied
+Kutayotgan foydalanuvchilarni tasdiqlash ‖ Подтверждение ожидающих пользователей ‖ Verify pending users
+Tekshiruvni kutayotgan arizalar: {0} ta ‖ Заявок на проверку: {0} ‖ Applications awaiting review: {0}
+Imzolangan e-BOL shartnomalari ro'yxati ‖ Список подписанных договоров e-BOL ‖ List of signed e-BOL contracts
+Haydovchi fermer SMS-kodini kiritganda shartnoma yoziladi: vaqt tamg'asi va ID bilan ‖ Договор записывается, когда водитель вводит SMS-код фермера: с отметкой времени и ID ‖ A contract is recorded when the driver enters the farmer's SMS code: with timestamp and ID
+Barcha turlar ‖ Все типы ‖ All types
+Shartnoma ID ‖ ID договора ‖ Contract ID
+Imzolangan vaqt ‖ Время подписания ‖ Signed at
+Imzolangan shartnomalar hali yo'q. ‖ Подписанных договоров пока нет. ‖ No signed contracts yet.
+Tasdiq kutmoqda ‖ Ожидают подтверждения ‖ Awaiting verification
+Imzolangan e-BOL ‖ Подписано e-BOL ‖ Signed e-BOL
+Bugun imzolangan ‖ Подписано сегодня ‖ Signed today

@@ -1,0 +1,22 @@
+{
+  "name": "agrargo-book",
+  "private": true,
+  "type": "module",
+  "version": "1.0.0",
+  "description": "AgrarGo «Mening e'lonlarim» — 3D raqamli kitob (React Three Fiber + Three.js, zaxira: CSS-3D)",
+  "scripts": {
+    "build": "esbuild src/index.jsx --bundle --minify --format=iife --global-name=AgrarBook --target=es2019 --loader:.css=text --define:process.env.NODE_ENV=\\\"production\\\" --outfile=../js/book/agrar-book.js",
+    "watch": "esbuild src/index.jsx --bundle --format=iife --global-name=AgrarBook --target=es2019 --loader:.css=text --define:process.env.NODE_ENV=\\\"development\\\" --outfile=../js/book/agrar-book.js --watch",
+    "test": "node --test test/lib.test.mjs test/model3d.test.mjs"
+  },
+  "dependencies": {
+    "@react-three/fiber": "^8.17.10",
+    "framer-motion": "^11.11.17",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "three": "^0.160.1"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0"
+  }
+}

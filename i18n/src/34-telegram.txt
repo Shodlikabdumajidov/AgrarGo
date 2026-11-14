@@ -1,0 +1,16 @@
+# --- Telegram bot: ulanish va xabarnomalar ro'yxati ---
+Fermerga xabar yuborildi: yuklash PIN-kodingizni ayting. ‖ Фермеру отправлено уведомление: назовите ваш PIN-код погрузки. ‖ The farmer was notified: tell them your pickup PIN.
+Yuk yo'lga chiqqanda va qabul PIN-kodingiz shakllanganda ‖ Когда груз отправлен в путь и сформирован ваш PIN-код приёмки ‖ When the load is on the road and your receiving PIN is generated
+Yuk manzilga yetib kelganda ‖ Когда груз прибыл на место ‖ When the load arrives at the destination
+Haydovchi yukni olish uchun yetib kelganda ‖ Когда водитель прибыл за грузом ‖ When the driver arrives to pick up the load
+Yuk yo'lda va yetkazilganda ‖ Когда груз в пути и доставлен ‖ When the load is on the road and delivered
+Fermer e'loningizga to'g'ridan-to'g'ri yuk taklif qilganda ‖ Когда фермер напрямую предлагает груз по вашему объявлению ‖ When a farmer offers you a load directly for your post
+Foydalanuvchi 5.0 qizil yulduz bilan avtomatik BAN bo'lganda ‖ Когда пользователь автоматически забанен при 5.0 красных звёздах ‖ When a user is automatically banned at 5.0 red stars
+Telegram ulandi ✅ ‖ Telegram подключён ✅ ‖ Telegram connected ✅
+Sizga keladigan xabarnomalar ‖ Уведомления, которые вы будете получать ‖ Notifications you will receive
+Fermer qarshi taklif yuborganda yoki bronni rad etganda (tugmalar bilan javob) ‖ Когда фермер присылает встречное предложение или отклоняет бронь (ответ кнопками) ‖ When the farmer sends a counter offer or rejects the booking (reply with buttons)
+Yangi bron yoki narx taklifi tushganda (Tasdiqlash / Rad etish tugmalari bilan) ‖ При новой брони или ценовом предложении (кнопки «Подтвердить» / «Отклонить») ‖ On a new booking or price offer (Confirm / Reject buttons)
+Dispetcher sizga yuk biriktirganda (yuklash PIN-kodi bilan) ‖ Когда диспетчер назначает вам груз (с PIN-кодом погрузки) ‖ When a dispatcher assigns you a load (with the pickup PIN)
+Yangi shikoyat/spam tushganda (qaror tugmalari bilan) ‖ При новой жалобе/спаме (кнопки решения) ‖ On a new complaint/spam (decision buttons)
+Uzish (Unlink) ‖ Отключить (Unlink) ‖ Disconnect (Unlink)
+Yetib keldim (fermerga xabar) ‖ Я прибыл (уведомить фермера) ‖ I have arrived (notify the farmer)

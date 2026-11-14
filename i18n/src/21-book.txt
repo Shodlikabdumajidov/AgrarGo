@@ -1,0 +1,33 @@
+# --- «Mening e'lonlarim» raqamli kitobi ---
+Mening E'lonlarim ‖ Мои объявления ‖ My Listings
+Varaqlash uchun bosing ‖ Нажмите, чтобы листать ‖ Click to turn the page
+Mundarija ‖ Содержание ‖ Contents
+Hali e'lon qo'shmagansiz. Pastdagi «Yangi e'lon» sahifasidan birinchi mahsulotingizni joylang. ‖ Вы ещё не добавили объявлений. Разместите первый товар на странице «Новое объявление». ‖ You have not added any listings yet. Post your first product on the "New listing" page.
+Jami e'lonlar: ‖ Всего объявлений: ‖ Total listings:
+E'lon № ‖ Объявление № ‖ Listing No.
+Vazni ‖ Вес ‖ Weight
+Narxi ‖ Цена ‖ Price
+Jami qiymat ‖ Общая стоимость ‖ Total value
+O'rim-yig'im ‖ Урожай ‖ Harvest
+Joylangan ‖ Размещено ‖ Posted
+FAOL ‖ АКТИВНО ‖ ACTIVE
+ARXIVDA ‖ В АРХИВЕ ‖ ARCHIVED
+BRON QILINGAN ‖ ЗАБРОНИРОВАНО ‖ BOOKED
+SOTILGAN ‖ ПРОДАНО ‖ SOLD
+O'chirishni tasdiqlaysizmi? ‖ Подтвердить удаление? ‖ Confirm deletion?
+Ha, o'chirish ‖ Да, удалить ‖ Yes, delete
+Yangi sahifa ‖ Новая страница ‖ New page
+Tanlang... ‖ Выберите... ‖ Select...
+Saqlanmoqda... ‖ Сохраняется... ‖ Saving...
+Saqlab bo'lmadi. Qayta urinib ko'ring. ‖ Не удалось сохранить. Попробуйте ещё раз. ‖ Could not save. Please try again.
+Oldingi ‖ Назад ‖ Previous
+Keyingi ‖ Далее ‖ Next
+Sahifa ‖ Страница ‖ Page
+Ochish uchun bosing yoki suring ‖ Нажмите или потяните, чтобы открыть ‖ Click or drag to open
+Mundarija (davomi) ‖ Содержание (продолжение) ‖ Contents (continued)
+Muqova ‖ Обложка ‖ Cover
+Ochish ‖ Открыть ‖ Open
+Mundarijadan e'lonni tanlang yoki sahifani varaqlang ‖ Выберите объявление в содержании или листайте страницы ‖ Pick a listing from the contents or turn the pages
+Mening e'lonlarim kitobi ‖ Книга «Мои объявления» ‖ "My Listings" book
+3D kitob ‖ 3D-книга ‖ 3D book
+Sahifani tanlash ‖ Выбор страницы ‖ Choose page

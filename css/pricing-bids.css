@@ -1,0 +1,28 @@
+/* Yo'l haqi kalkulyatori, narx taklifi va Escrow 20/80 indikatori */
+.pb-calc { margin-top: .9rem; padding-top: .8rem; border-top: 1px dashed rgba(255,255,255,.18); display: grid; gap: .6rem; }
+.pb-calc-title { font-size: .72rem; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; color: #7dd3fc; }
+.pb-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
+.pb-sel span { display: block; font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #94a3b8; margin-bottom: .2rem; }
+.pb-sel select { padding: .45rem .6rem; font-size: .8rem; }
+.pb-range { padding: .6rem .75rem; border-radius: .9rem; border: 1px solid rgba(56,189,248,.4); background: rgba(56,189,248,.1); text-align: center; }
+.pb-range-label { font-size: .68rem; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: #7dd3fc; }
+.pb-range-val { font-size: 1.05rem; font-weight: 900; color: #fff; margin-top: .15rem; }
+.pb-range-rec { font-size: .72rem; color: #bae6fd; margin-top: .1rem; }
+.pb-escrow { padding: .7rem .85rem; border-radius: 1rem; border: 1px solid rgba(16,185,129,.4); background: rgba(16,185,129,.1); display: grid; gap: .45rem; }
+.pb-escrow-head { display: flex; gap: .5rem; align-items: center; font-size: .78rem; font-weight: 800; color: #6ee7b7; }
+.pb-escrow-bar { display: flex; height: .9rem; border-radius: 9999px; overflow: hidden; border: 1px solid rgba(255,255,255,.18); }
+.pb-escrow-a { background: linear-gradient(90deg, #10b981, #34d399); color: #022c22; font-size: .62rem; font-weight: 900; display: flex; align-items: center; justify-content: center; }
+.pb-escrow-b { background: rgba(148,163,184,.3); color: #e2e8f0; font-size: .62rem; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+.pb-escrow-legend { display: flex; justify-content: space-between; gap: .5rem; flex-wrap: wrap; font-size: .72rem; color: #cbd5e1; }
+html[data-theme="light"] .pb-calc { border-top-color: #d6cfc7; }
+html[data-theme="light"] .pb-calc-title, html[data-theme="light"] .pb-range-label { color: #4d7a8c; }
+html[data-theme="light"] .pb-sel span { color: #636E72; }
+html[data-theme="light"] .pb-range { background: rgba(156,195,213,.28); border-color: #9CC3D5; }
+html[data-theme="light"] .pb-range-val { color: #2D3436; }
+html[data-theme="light"] .pb-range-rec { color: #4d7a8c; }
+html[data-theme="light"] .pb-escrow { background: rgba(163,196,184,.28); border-color: #84A99B; }
+html[data-theme="light"] .pb-escrow-head { color: #3f6b5c; }
+html[data-theme="light"] .pb-escrow-bar { border-color: #d6cfc7; }
+html[data-theme="light"] .pb-escrow-a { background: linear-gradient(90deg, #84A99B, #A3C4B8); color: #1f3a31; }
+html[data-theme="light"] .pb-escrow-b { background: rgba(214,207,199,.7); color: #2D3436; }
+html[data-theme="light"] .pb-escrow-legend { color: #636E72; }

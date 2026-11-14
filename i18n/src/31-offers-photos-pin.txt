@@ -1,0 +1,49 @@
+# --- Savdolashish, e'lon rasmlari, Incoterms va PIN-kod tasdiqlash ---
+Yetkazib berish kimning hisobidan? ‖ За чей счёт доставка? ‖ Who pays for delivery?
+Mahsulot rasmlari ‖ Фотографии товара ‖ Product photos
+Rasmni olib tashlash ‖ Удалить фото ‖ Remove photo
+Ko'pi bilan {0} ta rasm yuklash mumkin. ‖ Можно загрузить не более {0} фото. ‖ You can upload at most {0} photos.
+{0}: 4 MB dan oshmasligi kerak. ‖ {0}: не более 4 МБ. ‖ {0}: must not exceed 4 MB.
+Fayl: 4 MB dan oshmasligi kerak. ‖ Файл: не более 4 МБ. ‖ File: must not exceed 4 MB.
+Rasm yuklanmadi ‖ Фото не загружено ‖ Photo was not uploaded
+Kamida 1 ta rasm yuklang (mahsulotning haqiqiy holati). ‖ Загрузите минимум 1 фото (реальное состояние товара). ‖ Upload at least 1 photo (the real condition of the product).
+Yetkazish: fermer hisobidan ‖ Доставка: за счёт фермера ‖ Delivery: paid by the farmer
+Yetkazish: xaridor hisobidan ‖ Доставка: за счёт покупателя ‖ Delivery: paid by the buyer
+O'z taklifimni berish ‖ Предложить свою цену ‖ Make an offer
+Kutishdagi takliflar ‖ Ожидающие предложения ‖ Pending offers
+Takliflarim ‖ Мои предложения ‖ My offers
+PIN-kod 4 ta raqamdan iborat bo'lishi kerak. ‖ PIN-код должен состоять из 4 цифр. ‖ The PIN must be 4 digits.
+Yuklash PIN-kodingiz ‖ Ваш PIN-код погрузки ‖ Your pickup PIN
+Yuk ortilganda shu kodni fermerga ayting: u o'z kabinetida kiritadi. ‖ При погрузке назовите этот код фермеру: он введёт его в своём кабинете. ‖ Tell this code to the farmer when loading: they enter it in their cabinet.
+Marketning PIN-kodi ‖ PIN-код маркета ‖ Market's PIN
+Yuk topshirildi: to'lov fermer va haydovchiga o'tkazildi ‖ Груз передан: оплата переведена фермеру и водителю ‖ Load handed over: payment transferred to the farmer and the driver
+Yuk topshirildi ‖ Груз передан ‖ Load handed over
+Haydovchining PIN-kodi ‖ PIN-код водителя ‖ Driver's PIN
+Yuklashni tasdiqlash ‖ Подтвердить погрузку ‖ Confirm loading
+Yuk yo'lga chiqdi ‖ Груз отправлен в путь ‖ The load is on its way
+Qabul PIN-kodingiz ‖ Ваш PIN-код приёмки ‖ Your receiving PIN
+Yuk yetib kelganda shu kodni haydovchiga ayting. Boshqa hech kimga bermang. ‖ Когда груз прибудет, назовите этот код водителю. Никому больше не сообщайте. ‖ When the load arrives, tell this code to the driver. Do not share it with anyone else.
+Javob kutilmoqda ‖ Ожидает ответа ‖ Awaiting reply
+Qarshi taklif ‖ Встречное предложение ‖ Counter offer
+Narx taklif qilish uchun Market akkaunti kerak. Kiring yoki ro'yxatdan o'ting. ‖ Для предложения цены нужен аккаунт Маркета. Войдите или зарегистрируйтесь. ‖ A Market account is required to make an offer. Log in or sign up.
+Narx taklif qilish faqat Market akkauntlari uchun. ‖ Предлагать цену могут только аккаунты Маркета. ‖ Only Market accounts can make price offers.
+Taklif yuborildi. Fermer javobini kutib turing. ‖ Предложение отправлено. Дождитесь ответа фермера. ‖ Offer sent. Wait for the farmer's reply.
+Market taklifi ‖ Предложение маркета ‖ Market's offer
+Sizning qarshi taklifingiz ‖ Ваше встречное предложение ‖ Your counter offer
+Fermerning qarshi taklifi ‖ Встречное предложение фермера ‖ Farmer's counter offer
+Taklif tasdiqlandi: bron yaratildi. ‖ Предложение принято: бронь создана. ‖ Offer accepted: booking created.
+Qayta taklif ‖ Встречное предложение ‖ Counter offer
+Qarshi taklif yuborildi. ‖ Встречное предложение отправлено. ‖ Counter offer sent.
+Taklifni rad etasizmi? ‖ Отклонить предложение? ‖ Reject the offer?
+Taklif rad etildi. ‖ Предложение отклонено. ‖ Offer rejected.
+Qarshi taklif qabul qilindi: bron yaratildi. ‖ Встречное предложение принято: бронь создана. ‖ Counter offer accepted: booking created.
+Taklif bekor qilindi. ‖ Предложение отменено. ‖ Offer cancelled.
+Bronlarga o'tish ‖ Перейти к броням ‖ Go to bookings
+Buyurtmalarimga o'tish ‖ Перейти к моим заказам ‖ Go to my orders
+Takliflar yuklanmoqda... ‖ Предложения загружаются... ‖ Loading offers...
+Fermerlarga yuborgan narx takliflaringiz ‖ Ваши ценовые предложения фермерам ‖ Price offers you sent to farmers
+Javobingizni kutayotgan takliflar: {0} ‖ Предложений, ожидающих вашего ответа: {0} ‖ Offers waiting for your reply: {0}
+Hozircha takliflar yo'q ‖ Пока предложений нет ‖ No offers yet
+Hali taklif yubormagansiz ‖ Вы ещё не отправляли предложений ‖ You haven't sent any offers yet
+Katalogdan e'lon tanlab «O'z taklifimni berish» tugmasini bosing. ‖ Выберите объявление в каталоге и нажмите «Предложить свою цену». ‖ Pick a listing in the catalog and press "Make an offer".
+fermer hisobidan ‖ за счёт фермера ‖ paid by the farmer

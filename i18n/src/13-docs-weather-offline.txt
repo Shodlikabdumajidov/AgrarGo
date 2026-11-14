@@ -1,0 +1,59 @@
+# --- TTN/Chek, Excel, ob-havo, oflayn navbat, tovush ---
+TTN yuklab olish (PDF) ‖ Скачать ТТН (PDF) ‖ Download waybill (PDF)
+Chek (PDF) ‖ Чек (PDF) ‖ Receipt (PDF)
+Excel'ga yuklash (.xlsx) ‖ Выгрузить в Excel (.xlsx) ‖ Export to Excel (.xlsx)
+Hisobot davri ‖ Период отчёта ‖ Report period
+Barcha vaqt ‖ За всё время ‖ All time
+Fayl: xulosa, bronlar, to'lovlar (Escrow holati bilan) va ombor buyurtmalari. ‖ Файл: сводка, брони, платежи (со статусом Escrow) и складские заказы. ‖ File: summary, bookings, payments (with Escrow status) and warehouse orders.
+Fayl yuklab olindi ‖ Файл скачан ‖ File downloaded
+Serverga ulanib bo'lmadi. Internet aloqasini tekshiring. ‖ Не удалось подключиться к серверу. Проверьте интернет. ‖ Could not reach the server. Check your internet connection.
+Hujjat topilmadi (to'lov hali boshlanmagan bo'lishi mumkin). ‖ Документ не найден (возможно, оплата ещё не начата). ‖ Document not found (the payment may not have started yet).
+Faylni yuklab bo'lmadi. ‖ Не удалось скачать файл. ‖ Could not download the file.
+Agro ob-havo ‖ Агро-погода ‖ Agro weather
+Viloyatlar bo'yicha ob-havo va logistika maslahatlari ‖ Погода по областям и логистические советы ‖ Regional weather and logistics tips
+Yomg'ir, qor yoki muzlama kutilsa, yukni qanday tashish kerakligini oldindan ko'rsatamiz. ‖ Если ожидается дождь, снег или заморозки, мы заранее подскажем, как перевозить груз. ‖ If rain, snow or frost is expected, we tell you in advance how to transport the cargo.
+Agro ob-havo: 5 kunlik prognoz ‖ Агро-погода: прогноз на 5 дней ‖ Agro weather: 5-day forecast
+Ob-havo ‖ Погода ‖ Weather
+Viloyat ‖ Область ‖ Region
+Bugun ‖ Сегодня ‖ Today
+Ertaga ‖ Завтра ‖ Tomorrow
+Open-Meteo: jonli ma'lumot ‖ Open-Meteo: актуальные данные ‖ Open-Meteo: live data
+Oxirgi saqlangan ma'lumot (tarmoq yo'q) ‖ Последние сохранённые данные (нет сети) ‖ Last saved data (no network)
+Taxminiy zaxira ma'lumot (tarmoq yo'q) ‖ Примерные резервные данные (нет сети) ‖ Approximate fallback data (no network)
+Momaqaldiroq ‖ Гроза ‖ Thunderstorm
+Qor ‖ Снег ‖ Snow
+Yomg'ir ‖ Дождь ‖ Rain
+Mayda yomg'ir ‖ Морось ‖ Drizzle
+Bulutli ‖ Облачно ‖ Cloudy
+Qisman bulutli ‖ Переменная облачность ‖ Partly cloudy
+{0}: momaqaldiroq kutilmoqda. Yo'lga chiqishni kechiktirish yoki xavfsiz joyda to'xtash tavsiya etiladi. ‖ {0}: ожидается гроза. Рекомендуется отложить выезд или остановиться в безопасном месте. ‖ {0}: thunderstorm expected. Delay departure or stop in a safe place.
+{0}: qor kutilmoqda. Yukni yopiq kuzovda tashish tavsiya etiladi, yo'llarda ehtiyot bo'ling. ‖ {0}: ожидается снег. Рекомендуется перевозить груз в закрытом кузове, будьте осторожны на дорогах. ‖ {0}: snow expected. Transport the cargo in a closed body and drive carefully.
+{0}: yomg'ir kutilmoqda. Yukni yopiq kuzovda tashish tavsiya etiladi. ‖ {0}: ожидается дождь. Рекомендуется перевозить груз в закрытом кузове. ‖ {0}: rain expected. Transporting the cargo in a closed body is recommended.
+{0}: muzlama xavfi ({1}°C gacha). Yo'llarda muzlama xavfi bor, tezlikni kamaytiring. ‖ {0}: риск заморозков (до {1}°C). На дорогах возможен гололёд, снизьте скорость. ‖ {0}: frost risk (down to {1}°C). Roads may be icy, reduce your speed.
+Sovuqda nozik ekin va mahsulotlarni himoya qiling, tashishda izolyatsiyalangan kuzovdan foydalaning. ‖ Защищайте нежные культуры и продукцию от холода, при перевозке используйте утеплённый кузов. ‖ Protect delicate crops and produce from the cold and use an insulated body for transport.
+{0}: jazirama ({1}°C). Tez buziladigan mahsulotlarni sovutgichli yoki soyali kuzovda tashing. ‖ {0}: жара ({1}°C). Скоропортящиеся продукты перевозите в рефрижераторе или в тени. ‖ {0}: heat ({1}°C). Transport perishable produce in a refrigerated or shaded body.
+{0}: kuchli shamol kutilmoqda. Ochiq kuzovdagi yukni mahkam bog'lang. ‖ {0}: ожидается сильный ветер. Надёжно закрепите груз в открытом кузове. ‖ {0}: strong wind expected. Secure cargo in an open body firmly.
+Yaqin kunlarda xavfli ob-havo kutilmayapti. Yuk tashish uchun qulay. ‖ В ближайшие дни опасной погоды не ожидается. Условия для перевозок хорошие. ‖ No dangerous weather is expected in the coming days. Good conditions for transport.
+Sinxronlanmoqda... ‖ Синхронизация... ‖ Syncing...
+Oflayn rejim ‖ Офлайн-режим ‖ Offline mode
+Yuborilmoqda ‖ Отправка ‖ Sending
+· {0} ta amal kutmoqda ‖ · ожидает действий: {0} ‖ · {0} actions pending
+Oflayn saqlandi: «{0}». Internet tiklanganda avtomatik yuboriladi. ‖ Сохранено офлайн: «{0}». Будет отправлено автоматически при появлении интернета. ‖ Saved offline: "{0}". It will be sent automatically when the internet is back.
+E'lon yaratish ‖ Создание объявления ‖ Create listing
+E'lonni o'chirish ‖ Удаление объявления ‖ Delete listing
+Bronga javob ‖ Ответ на бронь ‖ Booking response
+Yuk amali ‖ Действие с грузом ‖ Cargo action
+Yuk holati ‖ Статус груза ‖ Cargo status
+GPS nuqtasi ‖ GPS-точка ‖ GPS point
+Omborga yuk e'loni ‖ Складское объявление ‖ Warehouse listing
+Oflayn saqlangan ma'lumotlar server bilan sinxronlashtirildi ‖ Офлайн-данные синхронизированы с сервером ‖ Offline data has been synchronized with the server
+{0} ta oflayn amal bajarilmadi (ma'lumot allaqachon o'zgargan). ‖ Офлайн-действий не выполнено: {0} (данные уже изменились). ‖ {0} offline actions failed (the data had already changed).
+Internet aloqasi tiklandi ‖ Интернет-соединение восстановлено ‖ Internet connection restored
+Internet uzildi. Amallar oflayn saqlanadi va keyin yuboriladi. ‖ Интернет пропал. Действия сохранятся офлайн и отправятся позже. ‖ Internet is down. Actions are saved offline and sent later.
+Tovush effektlari ‖ Звуковые эффекты ‖ Sound effects
+Muhim amallar (bron, narx, obuna to'lovi) bajarilganda qisqa signal chalinadi. ‖ При важных действиях (бронь, цена, оплата подписки) звучит короткий сигнал. ‖ A short sound plays on important actions (booking, price, subscription payment).
+Tinglab ko'rish ‖ Прослушать ‖ Preview
+Tovush hozir o'chirilgan ‖ Звук сейчас отключён ‖ Sound is currently off
+Tovushni o'chirish ‖ Выключить звук ‖ Turn sound off
+Tovushni yoqish ‖ Включить звук ‖ Turn sound on
+{0} mm ‖ {0} мм ‖ {0} mm

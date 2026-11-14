@@ -1,0 +1,134 @@
+# --- PWA, rol sahifalari, jonli sharhlar ---
+Ilovani o'rnatish ‖ Установить приложение ‖ Install the app
+AgrarGo ilovasini o'rnating: tezroq ochiladi va oflayn ham ishlaydi. ‖ Установите приложение AgrarGo: оно открывается быстрее и работает офлайн. ‖ Install the AgrarGo app: it opens faster and works offline too.
+O'rnatish ‖ Установить ‖ Install
+Keyinroq ‖ Позже ‖ Later
+Tushunarli ‖ Понятно ‖ Got it
+Brauzer menyusidan «Ilovani o'rnatish» yoki «Bosh ekranga qo'shish» ni tanlang. ‖ В меню браузера выберите «Установить приложение» или «Добавить на главный экран». ‖ In your browser menu choose "Install app" or "Add to Home screen".
+Safari'da pastdagi «Ulashish» tugmasini bosing, so'ng «Bosh ekranga qo'shish» ni tanlang. ‖ В Safari нажмите кнопку «Поделиться» внизу, затем выберите «На экран Домой». ‖ In Safari tap the "Share" button below, then choose "Add to Home Screen".
+AgrarGo ilovasi o'rnatildi! ‖ Приложение AgrarGo установлено! ‖ The AgrarGo app is installed!
+Oflayn rejim: ma'lumotlar yangilanmaydi ‖ Офлайн-режим: данные не обновляются ‖ Offline mode: data is not refreshed
+Aloqa tiklandi. ‖ Соединение восстановлено. ‖ Connection restored.
+AgrarGo yangi versiyasi tayyor. Yangilash uchun sahifani qayta yuklang. ‖ Новая версия AgrarGo готова. Перезагрузите страницу для обновления. ‖ A new AgrarGo version is ready. Reload the page to update.
+AgrarGo ekotizimidan amalda foydalanayotganlarning haqiqiy sharhlari: yangi fikrlar bu yerda darhol paydo bo'ladi. ‖ Настоящие отзывы тех, кто пользуется экосистемой AgrarGo: новые мнения появляются здесь сразу. ‖ Real reviews from people using the AgrarGo ecosystem: new opinions appear here instantly.
+Siz ham fikringizni qoldiring: ‖ Оставьте и вы свой отзыв: ‖ Leave your feedback too:
+Fermer sifatida ‖ Как фермер ‖ As a farmer
+Haydovchi sifatida ‖ Как водитель ‖ As a driver
+Market sifatida ‖ Как магазин ‖ As a market
+Hali sharhlar yo'q. Birinchi bo'lib fikringizni qoldiring! ‖ Отзывов пока нет. Оставьте свой отзыв первым! ‖ No reviews yet. Be the first to share your opinion!
+{0} ta baho ‖ Оценок: {0} ‖ {0} ratings
+Kabinetga o'tish ‖ Перейти в кабинет ‖ Go to dashboard
+Ro'yxatdan o'tish / Kirish ‖ Регистрация / Вход ‖ Sign up / Log in
+Avval qanday edi? ‖ Как было раньше? ‖ How was it before?
+Oldingi muammolar ‖ Прежние проблемы ‖ Previous problems
+AgrarGo foydalari va yechimlari ‖ Преимущества и решения AgrarGo ‖ AgrarGo benefits and solutions
+Endi esa ‖ А теперь ‖ Now
+Kelajak rejalari ‖ Планы на будущее ‖ Future plans
+Tez orada ‖ Скоро ‖ Coming soon
+Baholash va sharhlar ‖ Оценки и отзывы ‖ Ratings and reviews
+Foydalanuvchilar fikri ‖ Мнения пользователей ‖ What users say
+Sharhlarni yuklab bo'lmadi. Keyinroq urinib ko'ring. ‖ Не удалось загрузить отзывы. Попробуйте позже. ‖ Could not load reviews. Please try again later.
+Yana ko'rsatish ‖ Показать ещё ‖ Show more
+Bu rol bo'yicha hali sharhlar yo'q. Birinchi bo'ling! ‖ Отзывов от этой роли пока нет. Будьте первым! ‖ No reviews from this role yet. Be the first!
+Fikringizni qoldiring ‖ Оставьте свой отзыв ‖ Leave your feedback
+Sharh qoldirish uchun shu rol sifatida tizimga kiring yoki ro'yxatdan o'ting. ‖ Чтобы оставить отзыв, войдите или зарегистрируйтесь в этой роли. ‖ To leave a review, log in or sign up in this role.
+Kirish / Ro'yxatdan o'tish ‖ Вход / Регистрация ‖ Log in / Sign up
+Bu sahifada faqat shu rol vakillari sharh qoldira oladi. Siz boshqa rol sifatida kirgansiz. ‖ На этой странице отзывы могут оставлять только представители этой роли. Вы вошли в другой роли. ‖ Only members of this role can leave reviews on this page. You are logged in as another role.
+Sharhni faqat fermer, haydovchi va marketlar qoldira oladi. ‖ Отзывы могут оставлять только фермеры, водители и магазины. ‖ Only farmers, drivers and markets can leave reviews.
+O'z sahifamga o'tish ‖ Перейти на мою страницу ‖ Go to my page
+Sizning sharhingiz saytda ko'rinib turibdi. Uni yangilashingiz mumkin. ‖ Ваш отзыв виден на сайте. Вы можете его обновить. ‖ Your review is visible on the site. You can update it.
+Sharhingiz moderator tasdiqlashini kutmoqda. ‖ Ваш отзыв ожидает подтверждения модератора. ‖ Your review is awaiting moderator approval.
+Baho ‖ Оценка ‖ Rating
+Izohingiz ‖ Ваш комментарий ‖ Your comment
+AgrarGo sizga qanday yordam berdi? Nimani yaxshilash mumkin? ‖ Чем вам помог AgrarGo? Что можно улучшить? ‖ How did AgrarGo help you? What could be improved?
+Sharhni yangilash ‖ Обновить отзыв ‖ Update review
+Sharh yuborish ‖ Отправить отзыв ‖ Submit review
+Sharhni o'chirish ‖ Удалить отзыв ‖ Delete review
+Sharhingizni o'chirasizmi? ‖ Удалить ваш отзыв? ‖ Delete your review?
+Sharh o'chirildi. ‖ Отзыв удалён. ‖ Review deleted.
+Iltimos, yulduzchalar bilan baho bering. ‖ Пожалуйста, поставьте оценку звёздами. ‖ Please rate with the stars.
+Izoh kamida 10 ta belgidan iborat bo'lishi kerak. ‖ Комментарий должен содержать не менее 10 символов. ‖ The comment must be at least 10 characters.
+Rahmat! Sharhingiz saytda paydo bo'ldi. ‖ Спасибо! Ваш отзыв появился на сайте. ‖ Thank you! Your review has appeared on the site.
+Rahmat! Sharhingiz moderator tasdiqlagach ko'rinadi. ‖ Спасибо! Ваш отзыв появится после подтверждения модератором. ‖ Thank you! Your review will appear after moderator approval.
+Sharhlar ‖ Отзывы ‖ Reviews
+Yashirilgan sharh asosiy sahifada ko'rinmaydi. Spam yoki nomaqbul sharhlarni yashiring yoki o'chiring. ‖ Скрытый отзыв не отображается на главной странице. Скрывайте или удаляйте спам и неподобающие отзывы. ‖ A hidden review is not shown on the main page. Hide or delete spam and inappropriate reviews.
+Barcha sharhlar ‖ Все отзывы ‖ All reviews
+Ochiq ‖ Открыт ‖ Public
+Yashirilgan ‖ Скрыт ‖ Hidden
+Yashirin ‖ Скрыт ‖ Hidden
+Yashirish ‖ Скрыть ‖ Hide
+Ko'rsatish ‖ Показать ‖ Show
+Sharhni butunlay o'chirasizmi? ‖ Удалить отзыв полностью? ‖ Delete the review permanently?
+Sharhlar topilmadi. ‖ Отзывы не найдены. ‖ No reviews found.
+Muallif ‖ Автор ‖ Author
+Fermerlar uchun AgrarGo ‖ AgrarGo для фермеров ‖ AgrarGo for farmers
+Haydovchilar uchun AgrarGo ‖ AgrarGo для водителей ‖ AgrarGo for drivers
+Marketlar va do'konlar uchun AgrarGo ‖ AgrarGo для магазинов и маркетов ‖ AgrarGo for markets and shops
+Hosilingizni vositachilarsiz, adolatli narxda va kafolatlangan to'lov bilan soting. ‖ Продавайте урожай без посредников, по справедливой цене и с гарантированной оплатой. ‖ Sell your harvest without middlemen, at a fair price and with guaranteed payment.
+Bo'sh yurmang: to'lovi kafolatlangan yuklarni toping, yo'lda GPS bilan himoyalaning. ‖ Не ездите порожняком: находите грузы с гарантированной оплатой и будьте защищены GPS в пути. ‖ Don't drive empty: find cargo with guaranteed payment and stay protected by GPS on the road.
+Yangi mahsulotni fermerdan bevosita, shaffof narx va xavfsiz to'lov bilan xarid qiling. ‖ Покупайте свежую продукцию напрямую у фермера: прозрачная цена и безопасная оплата. ‖ Buy fresh produce directly from farmers with transparent prices and secure payment.
+Vositachilar narxni tushiradi ‖ Посредники занижают цену ‖ Middlemen push prices down
+Dehqon mahsulotini arzon topshirar, vositachi esa uni bozorda bir necha baravar qimmat sotardi. ‖ Фермер отдавал продукцию дёшево, а посредник продавал её на рынке в несколько раз дороже. ‖ The farmer handed over produce cheaply while the middleman sold it at the market for several times more.
+Xaridor topish qiyin ‖ Трудно найти покупателя ‖ Hard to find buyers
+Hosil pishganda xaridor izlash, telefonlashish va bozorga qatnashga ko'p vaqt ketardi. ‖ Когда созревал урожай, на поиск покупателей, звонки и поездки на рынок уходило много времени. ‖ When the harvest ripened, finding buyers, phoning around and travelling to the market took a lot of time.
+To'lov xavfi ‖ Риск неоплаты ‖ Payment risk
+Mahsulot topshirilgach pul kechikishi yoki umuman to'lanmasligi holatlari uchrardi. ‖ После передачи товара оплата задерживалась или вообще не поступала. ‖ After handing over the goods, payment was delayed or not made at all.
+Hosil saqlanmay nobud bo'lardi ‖ Урожай портился без хранения ‖ The harvest spoiled without storage
+Sovutgich va ombor yo'qligi sababli mahsulotni narx tushganda ham zudlik bilan sotishga to'g'ri kelardi. ‖ Из-за отсутствия холодильников и складов продукцию приходилось срочно продавать даже при низких ценах. ‖ Without refrigeration and storage, produce had to be sold urgently even when prices were low.
+To'g'ridan-to'g'ri bozor ‖ Прямой рынок ‖ Direct market
+E'lon joylashtiring: supermarketlar va do'konlar sizning narxingizda bron qiladi. ‖ Разместите объявление: супермаркеты и магазины забронируют по вашей цене. ‖ Post a listing: supermarkets and shops will book at your price.
+Xaridor puli yuk yetkazilguncha xavfsiz saqlanadi va tasdiqlangach hisobingizga o'tadi. ‖ Деньги покупателя надёжно хранятся до доставки груза и после подтверждения поступают вам. ‖ The buyer's money is held securely until delivery and is released to you once confirmed.
+Yuk tashish avtomatik ‖ Автоматическая перевозка ‖ Automatic transport
+Bron tasdiqlanishi bilan haydovchi biriktiriladi, yukni jonli xaritada kuzatasiz. ‖ После подтверждения брони назначается водитель, а груз можно отслеживать на живой карте. ‖ Once a booking is confirmed a driver is assigned and you track the cargo on a live map.
+Omborxona va sovutgichlar ‖ Склад и холодильники ‖ Warehouse and cold storage
+Hosilni sifat nazorati bilan omborda saqlang va narx ko'tarilganda soting. ‖ Храните урожай на складе с контролем качества и продавайте, когда цена вырастет. ‖ Store the harvest in the warehouse with quality control and sell when prices rise.
+Narx tahlili va prognoz ‖ Анализ цен и прогноз ‖ Price analysis and forecast
+Hududlar bo'yicha narx dinamikasi va talabga asoslangan tavsiyalar. ‖ Динамика цен по регионам и рекомендации на основе спроса. ‖ Regional price trends and demand-based recommendations.
+Fermerlar uchun mikromoliya ‖ Микрофинансирование для фермеров ‖ Microfinance for farmers
+Kelgusi hosil ta'minoti asosida urug' va o'g'it uchun qulay moliyalashtirish. ‖ Удобное финансирование семян и удобрений под будущий урожай. ‖ Convenient financing for seeds and fertiliser backed by the future harvest.
+Mobil ilova va tezkor e'lon ‖ Мобильное приложение и быстрые объявления ‖ Mobile app and quick listings
+Telefon orqali bir necha soniyada e'lon joylash va xabarnomalar. ‖ Размещение объявления с телефона за несколько секунд и уведомления. ‖ Post a listing from your phone in seconds, plus notifications.
+Bo'sh qaytish ‖ Порожний возврат ‖ Empty return trips
+Yuk topilmay, mashina yo'lning yarmida bo'sh qaytar va yoqilg'i zarar bo'lardi. ‖ Груз не находился, машина возвращалась порожней, а топливо шло в убыток. ‖ Without cargo the truck returned empty and fuel was wasted.
+Noaniq buyurtmalar ‖ Неясные заказы ‖ Unclear orders
+Yukning og'irligi, manzili va narxi kelishilmasdan ish boshlanardi. ‖ Работа начиналась без согласования веса, адреса и цены груза. ‖ Work started without agreeing on the cargo's weight, address and price.
+To'lovni kutish ‖ Ожидание оплаты ‖ Waiting for payment
+Yetkazilgach pulni olish uchun haftalab qo'ng'iroq qilishga to'g'ri kelardi. ‖ Чтобы получить деньги после доставки, приходилось неделями звонить. ‖ After delivery you had to call for weeks to get paid.
+Hisobsiz yo'l ‖ Путь без учёта ‖ Untracked trips
+Reyslar, soatlar va masofa qo'lda yozilar, bahsli holatlar isbotsiz qolardi. ‖ Рейсы, часы и расстояние записывались вручную, а спорные случаи оставались без доказательств. ‖ Trips, hours and distance were noted by hand and disputes stayed unproven.
+Mavjud yuklar ro'yxati ‖ Список доступных грузов ‖ Available cargo list
+Hududingizdagi tasdiqlangan va to'lovi kafolatlangan yuklarni tanlab oling. ‖ Выбирайте подтверждённые грузы в вашем регионе с гарантированной оплатой. ‖ Pick confirmed cargo in your region with guaranteed payment.
+To'lov kafolati ‖ Гарантия оплаты ‖ Payment guarantee
+Yuk faqat mablag' Escrow'ga o'tgandan keyin olinadi: pulingiz xavfsiz. ‖ Груз берётся только после поступления средств в Escrow: ваши деньги в безопасности. ‖ Cargo is taken only after funds reach Escrow: your money is safe.
+GPS kuzatuv va ELD jurnali ‖ GPS-отслеживание и журнал ELD ‖ GPS tracking and ELD log
+Harakatingiz avtomatik yoziladi, fermer va market yukni jonli ko'radi. ‖ Ваше движение записывается автоматически, фермер и магазин видят груз в реальном времени. ‖ Your driving is logged automatically and the farmer and market see the cargo live.
+Omborxona yuklari ‖ Грузы со склада ‖ Warehouse cargo
+Omborxonadan ham yuklar chiqadi: dispetcher yuklab tasdiqlagach yo'lga chiqasiz. ‖ Грузы отправляются и со склада: после погрузки и подтверждения диспетчера вы выезжаете. ‖ Cargo also leaves the warehouse: you set off once the dispatcher confirms loading.
+Qaytish yuklarini birlashtirish ‖ Объединение обратных грузов ‖ Combining return loads
+Marshrutingiz bo'yicha qaytish yukini avtomatik taklif qilish. ‖ Автоматическое предложение обратного груза по вашему маршруту. ‖ Automatic return-load suggestions along your route.
+Reyting va bonus tizimi ‖ Рейтинг и бонусная система ‖ Rating and bonus system
+Vaqtida yetkazgan haydovchilar uchun mukofot va ustuvor yuklar. ‖ Награды и приоритетные грузы для водителей, доставляющих вовремя. ‖ Rewards and priority cargo for drivers who deliver on time.
+Yoqilg'i va ta'mirlash hamkorlari ‖ Партнёры по топливу и ремонту ‖ Fuel and repair partners
+Hamkor shoxobchalarda chegirmalar va xizmat. ‖ Скидки и услуги у партнёрских точек. ‖ Discounts and services at partner stations.
+Sifat va muddat kafolatsiz ‖ Нет гарантии качества и сроков ‖ No guarantee of quality or timing
+Mahsulot sifati va yetib kelish vaqti ko'pincha kafolatlanmasdi. ‖ Качество продукции и сроки доставки часто не гарантировались. ‖ Product quality and delivery time were often not guaranteed.
+Qimmat vositachilik ‖ Дорогое посредничество ‖ Costly intermediaries
+Zanjirdagi har bir vositachi narxni oshirib yuborardi. ‖ Каждый посредник в цепочке повышал цену. ‖ Every middleman in the chain pushed the price up.
+To'lovda ishonchsizlik ‖ Недоверие в оплате ‖ Distrust in payment
+Oldindan to'lash xavfli, keyin to'lash esa fermer uchun noqulay edi. ‖ Предоплата была рискованной, а оплата после — неудобной для фермера. ‖ Paying upfront was risky and paying afterwards was inconvenient for the farmer.
+Yukni kuzatib bo'lmasdi ‖ Груз нельзя было отследить ‖ Cargo could not be tracked
+Buyurtma qayerdaligi noma'lum, zaxirani rejalash qiyin edi. ‖ Было неизвестно, где заказ, и сложно планировать запасы. ‖ Nobody knew where the order was, making stock planning hard.
+Fermerdan bevosita xarid ‖ Покупка напрямую у фермера ‖ Buy directly from farmers
+Katalogdan mahsulot tanlab, qo'ng'iroqsiz bron qiling. ‖ Выберите товар в каталоге и забронируйте без звонков. ‖ Choose a product from the catalogue and book without phone calls.
+Escrow: xavfsiz to'lov ‖ Escrow: безопасная оплата ‖ Escrow: secure payment
+Pul yuk yetkazilguncha muzlatiladi va qabul qilganingizdan keyingina fermerga o'tadi. ‖ Деньги замораживаются до доставки и переходят фермеру только после вашего подтверждения. ‖ Money is frozen until delivery and goes to the farmer only after you confirm receipt.
+Jonli kuzatuv va xabarnoma ‖ Живое отслеживание и уведомления ‖ Live tracking and notifications
+Yuk xaritada ko'rinadi, holat o'zgarishi Telegramga keladi. ‖ Груз виден на карте, изменения статуса приходят в Telegram. ‖ The cargo is visible on the map and status changes arrive in Telegram.
+Sifat nazoratidagi omborxona ‖ Склад с контролем качества ‖ Quality-controlled warehouse
+Saralangan, qadoqlangan va shtrix-kodli mahsulotlarni ombordan buyurtma qiling. ‖ Заказывайте со склада отсортированную, упакованную продукцию со штрихкодом. ‖ Order sorted, packaged and barcoded products from the warehouse.
+Doimiy shartnoma va takroriy buyurtma ‖ Постоянные договоры и повторные заказы ‖ Standing contracts and repeat orders
+Haftalik avtomatik buyurtmalar va barqaror narx kelishuvlari. ‖ Еженедельные автоматические заказы и стабильные ценовые соглашения. ‖ Weekly automatic orders and stable price agreements.
+Hisob-faktura va ERP integratsiyasi ‖ Счета-фактуры и интеграция с ERP ‖ Invoices and ERP integration
+Buxgalteriya va zaxira tizimlari bilan bog'lanish. ‖ Связь с бухгалтерскими и складскими системами. ‖ Connection with accounting and inventory systems.
+Sertifikatlangan mahsulotlar ‖ Сертифицированная продукция ‖ Certified products
+Organik va sifat sertifikatli yetkazib beruvchilar bo'yicha filtr. ‖ Фильтр по поставщикам с органическими и сертификатами качества. ‖ Filter for suppliers with organic and quality certificates.

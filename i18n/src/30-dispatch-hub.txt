@@ -1,0 +1,14 @@
+# --- Dispetcher paneli va Marketning Hub zaxirasidan buyurtmasi ---
+Dispetcher paneli ‖ Панель диспетчера ‖ Dispatcher panel
+Fermer e'lonlari ‖ Объявления фермеров ‖ Farmer listings
+Hub zaxirasi ‖ Запасы Hub ‖ Hub stock
+Hub buyurtmalari ‖ Заказы Hub ‖ Hub orders
+Hub zaxirasidan ham buyurtma berishingiz mumkin ‖ Вы также можете заказать из запасов Hub ‖ You can also order from the Hub stock
+Mahalliy bozordan faqat «Xaridor» yoki «Market» akkaunti xarid qila oladi. ‖ Из местного рынка могут покупать только аккаунты «Покупатель» или «Маркет». ‖ Only "Consumer" or "Market" accounts can buy from the local market.
+Platformadagi haydovchisiz yuklar. To'lovi escrow'ga o'tgan yukni mos haydovchiga biriktiring. ‖ Грузы платформы без водителя. Назначьте подходящего водителя на груз с оплатой в эскроу. ‖ Loads on the platform without a driver. Assign a suitable driver to a load whose payment is in escrow.
+Haydovchisiz yuk yo'q ‖ Нет грузов без водителя ‖ No loads without a driver
+Barcha yuklar haydovchilarga biriktirilgan. ‖ Все грузы назначены водителям. ‖ All loads are assigned to drivers.
+Xaridor to'lovi escrow'ga o'tgach biriktirish mumkin. ‖ Назначить можно после перевода оплаты покупателя в эскроу. ‖ You can assign once the buyer's payment is in escrow.
+Yuk og'irligi: {0} kg. Faqat bo'sh va sig'adigan haydovchilar ko'rsatiladi. ‖ Вес груза: {0} кг. Показаны только свободные водители, у которых груз поместится. ‖ Load weight: {0} kg. Only free drivers with enough capacity are shown.
+Hozircha bo'sh va sig'adigan haydovchi yo'q. ‖ Пока нет свободных водителей с достаточной грузоподъёмностью. ‖ No free drivers with enough capacity yet.
+Yuk {0} ga biriktirildi ‖ Груз назначен: {0} ‖ Load assigned to {0}

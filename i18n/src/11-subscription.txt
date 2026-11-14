@@ -1,0 +1,43 @@
+# --- Obuna va bepul sinov ---
+Obuna ‖ Подписка ‖ Subscription
+Tarifingiz, sinov muddati va to'lov tarixi ‖ Ваш тариф, пробный период и история платежей ‖ Your plan, trial period and payment history
+Obuna ma'lumotlari yuklanmoqda... ‖ Загрузка данных подписки... ‖ Loading subscription details...
+Sizning rolingiz uchun obuna talab qilinmaydi. ‖ Для вашей роли подписка не требуется. ‖ No subscription is required for your role.
+Bepul sinov ‖ Бесплатный пробный период ‖ Free trial
+Obuna faol ‖ Подписка активна ‖ Subscription active
+Muddati tugagan ‖ Срок истёк ‖ Expired
+{0} / oy ‖ {0} / мес. ‖ {0} / month
+Sinov tugashi: {0} ‖ Пробный период до: {0} ‖ Trial ends: {0}
+Obuna tugashi: {0} ‖ Подписка до: {0} ‖ Subscription ends: {0}
+{0} bloklangan. ‖ {0} заблокировано. ‖ {0} is blocked.
+Obunani uzaytirish ‖ Продлить подписку ‖ Extend subscription
+{0} oy ‖ {0} мес. ‖ {0} mo.
+Yangi muddat: {0} gacha ‖ Новый срок: до {0} ‖ New term: until {0}
+Hozircha to'lov simulyatsiya rejimida: haqiqiy pul yechilmaydi. Qolgan sinov kunlari yo'qolmaydi. ‖ Сейчас оплата в режиме симуляции: реальные деньги не списываются. Оставшиеся дни пробного периода не сгорают. ‖ Payment is currently simulated: no real money is charged. Remaining trial days are not lost.
+Tarifga kiradi ‖ В тариф входит ‖ Included in your plan
+To'lov tarixi ‖ История платежей ‖ Payment history
+Hali to'lovlar yo'q. Sinov muddati davomida hammasi bepul. ‖ Платежей пока нет. В пробный период всё бесплатно. ‖ No payments yet. Everything is free during the trial.
+{0} — {1} ‖ {0} — {1} ‖ {0} — {1}
+Obuna uzaytirildi! ‖ Подписка продлена! ‖ Subscription extended!
+{0} gacha faol ‖ Активна до {0} ‖ Active until {0}
+kun qoldi ‖ дн. осталось ‖ days left
+Bepul sinov muddati tugadi ‖ Бесплатный пробный период закончился ‖ Your free trial has ended
+{0} bloklangan. Davom etish uchun obunani uzaytiring. ‖ {0} заблокировано. Чтобы продолжить, продлите подписку. ‖ {0} is blocked. Extend your subscription to continue.
+Sinov muddati {0} kunda tugaydi ‖ Пробный период закончится через {0} дн. ‖ Your trial ends in {0} days
+Obuna {0} kunda tugaydi ‖ Подписка закончится через {0} дн. ‖ Your subscription ends in {0} days
+{0} dan keyin asosiy funksiyalar bloklanadi. ‖ После {0} основные функции будут заблокированы. ‖ After {0} the main features will be blocked.
+Bepul sinov: {0} kun qoldi ‖ Бесплатный пробный период: осталось {0} дн. ‖ Free trial: {0} days left
+Sinov {0} da tugaydi. ‖ Пробный период заканчивается {0}. ‖ The trial ends on {0}.
+E'lon berish va ombor e'lonlari ‖ Размещение объявлений и складские объявления ‖ Posting listings and warehouse listings
+Yuk bron qilish ‖ Бронирование грузов ‖ Booking cargo
+Yuklarni qabul qilish ‖ Приём грузов ‖ Accepting loads
+Bepul sinov muddati tugadi. Davom etish uchun obunani uzaytiring. ‖ Бесплатный пробный период закончился. Чтобы продолжить, продлите подписку. ‖ Your free trial has ended. Extend your subscription to continue.
+Cheksiz e'lon joylash ‖ Неограниченное размещение объявлений ‖ Unlimited listings
+Omborxonaga yuk topshirish ‖ Сдача груза на склад ‖ Warehouse drop-off
+To'lov kafolati (Escrow) va GPS kuzatuv ‖ Гарантия оплаты (Escrow) и GPS-отслеживание ‖ Payment guarantee (Escrow) and GPS tracking
+Fermerlardan to'g'ridan-to'g'ri bron qilish ‖ Прямое бронирование у фермеров ‖ Book directly from farmers
+Escrow to'lov va yuk kuzatuvi ‖ Escrow-оплата и отслеживание грузов ‖ Escrow payment and cargo tracking
+Omborxona buyurtmalari va hisobotlar ‖ Складские заказы и отчёты ‖ Warehouse orders and reports
+To'lovi kafolatlangan yuklarni qabul qilish ‖ Приём грузов с гарантированной оплатой ‖ Accept loads with guaranteed payment
+GPS va harakat jurnali (ELD) ‖ GPS и журнал движения (ELD) ‖ GPS and driving log (ELD)
+Marshrut va daromad statistikasi ‖ Статистика маршрутов и доходов ‖ Route and earnings statistics

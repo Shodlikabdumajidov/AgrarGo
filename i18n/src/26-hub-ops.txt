@@ -1,0 +1,67 @@
+# --- Hub operatsiyalari: Master QR, OS&D, PaaS ---
+QR Skaner (qabul qilish) ‖ QR-сканер (приёмка) ‖ QR scanner (receiving)
+OS&D hisobotlari ‖ Отчёты OS&D ‖ OS&D reports
+Qadoqlanishi kerak bo'lganlar ‖ Требуют упаковки ‖ To be packaged
+Qadoqlanishi kerak bo'lgan yuklar ‖ Грузы, требующие упаковки ‖ Cargo to be packaged
+Fermer «Hub'da qadoqlash xizmati»ni tanlagan topshirishlar ‖ Поставки, где фермер выбрал «Упаковку в Hub» ‖ Deliveries where the farmer chose "Packaging at the Hub"
+Qadoqlanadigan yuk yo'q ‖ Нет грузов для упаковки ‖ Nothing to package
+Fermer qadoqlash xizmatini tanlagan topshirishlar shu yerda ko'rinadi. ‖ Поставки с выбранной упаковкой появятся здесь. ‖ Deliveries with the packaging service appear here.
+Omborda: qadoqlash mumkin ‖ На складе: можно упаковывать ‖ In stock: ready to package
+Yuk hali kelmagan ‖ Груз ещё не прибыл ‖ Cargo has not arrived yet
+Qadoqlandi ‖ Упаковано ‖ Packaged
+Qadoqlandi deb belgilandi. ‖ Отмечено как упакованное. ‖ Marked as packaged.
+Qadoqlanadi ‖ Будет упаковано ‖ To be packaged
+Master QR ‖ Мастер-QR ‖ Master QR
+Master QR yaratish ‖ Создать мастер-QR ‖ Create master QR
+Master QR biriktirish ‖ Привязать мастер-QR ‖ Attach master QR
+Master QR biriktirildi. ‖ Мастер-QR привязан. ‖ Master QR attached.
+Master QR kodi ‖ Код мастер-QR ‖ Master QR code
+Master QR ni kameraga yaqinlashtiring. ‖ Поднесите мастер-QR к камере. ‖ Hold the master QR up to the camera.
+QR yaratish ‖ Создать QR ‖ Create QR
+Quti (tara) soni ‖ Количество коробок (тары) ‖ Number of boxes (units)
+Quti (tara) soni — Master QR uchun ‖ Количество коробок (тары) — для мастер-QR ‖ Number of boxes (units) — for the master QR
+Butun partiyaga bitta Master QR yorlig'i beriladi: «1 QR = N quti». Bo'sh qoldirsangiz, QR ni Hub xodimi biriktiradi. ‖ На всю партию выдаётся один мастер-QR: «1 QR = N коробок». Если оставить пустым, QR привяжет сотрудник Hub. ‖ The whole batch gets one master QR label: "1 QR = N boxes". If left empty, the Hub staff attaches the QR.
+QR kod (ixtiyoriy: oldindan bosilgan yorliq bo'lsa) ‖ QR-код (необязательно: если этикетка уже напечатана) ‖ QR code (optional: if the label is pre-printed)
+Hub'da qadoqlash xizmatidan foydalanish ‖ Воспользоваться услугой упаковки в Hub ‖ Use the Hub packaging service
+Narx: {0} so'm/kg (qabul qilingan vaznga hisoblanadi). Hub xodimi yukni siz uchun qadoqlaydi. ‖ Цена: {0} сум/кг (считается по принятому весу). Сотрудник Hub упакует груз за вас. ‖ Price: {0} UZS/kg (charged on the received weight). Hub staff will package the cargo for you.
+{0} quti ‖ {0} коробок ‖ {0} boxes
+Yaroqsiz: {0} quti ‖ Негодных: {0} коробок ‖ Damaged: {0} boxes
+«1 QR = {0} quti». QR yorlig'ini butun partiyaga (pallet) yopishtiring: Hub xodimi uni skanerlab qabul qiladi. ‖ «1 QR = {0} коробок». Наклейте QR на всю партию (паллету): сотрудник Hub отсканирует и примет её. ‖ "1 QR = {0} boxes". Stick the QR label on the whole batch (pallet): Hub staff will scan and receive it.
+Skaner bilan qabul ‖ Принять сканером ‖ Receive by scanner
+Partiyaning Master QR kodini skanerlang: «1 QR = N quti». Kamera, USB skaner yoki qo'lda kiritish. ‖ Отсканируйте мастер-QR партии: «1 QR = N коробок». Камера, USB-сканер или ввод вручную. ‖ Scan the batch master QR: "1 QR = N boxes". Camera, USB scanner or manual entry.
+Topish ‖ Найти ‖ Find
+Kamera ‖ Камера ‖ Camera
+Yaroqsiz qutilar soni ‖ Количество негодных коробок ‖ Number of damaged boxes
+Yaroqsiz qutilar soni 1 dan {0} gacha bo'lsin. ‖ Количество негодных коробок — от 1 до {0}. ‖ Damaged boxes must be between 1 and {0}.
+Qabul: {0} quti = {1} · yaroqsiz: {2} quti = {3} ‖ Принято: {0} кор. = {1} · негодных: {2} кор. = {3} ‖ Accepted: {0} boxes = {1} · damaged: {2} boxes = {3}
+Qisman ziyon (Partial Damage) ‖ Частичный ущерб (Partial Damage) ‖ Partial damage
+Sabab / izoh ‖ Причина / примечание ‖ Reason / note
+Masalan: yomg'irda ho'l bo'lgan, ezilgan ‖ Например: намокли под дождём, помяты ‖ E.g. soaked by rain, crushed
+Qabul qilindi: yaroqli qism omborga yozildi, OS&D hisobotiga tushdi. ‖ Принято: годная часть записана на склад, данные попали в отчёт OS&D. ‖ Received: the good part was added to stock and logged in the OS&D report.
+e'lon qilingan ‖ заявлено ‖ declared
+quti (tara) ‖ коробок (тара) ‖ boxes (units)
+1 quti ‖ 1 коробка ‖ 1 box
+Fermer qadoqlash xizmatini tanlagan: qabuldan keyin «Qadoqlash» bo'limiga tushadi. ‖ Фермер выбрал упаковку: после приёмки груз попадёт в раздел «Упаковка». ‖ The farmer chose packaging: after receiving, the cargo goes to the "Packaging" section.
+Bu partiya allaqachon ko'rib chiqilgan ‖ Эта партия уже обработана ‖ This batch has already been processed
+Quti soni belgilanmagan. Avval quti sonini kiriting. ‖ Количество коробок не указано. Сначала введите его. ‖ The box count is not set. Enter it first.
+To'liq qabul qilish ‖ Принять полностью ‖ Receive in full
+Qabul qilindi: {0} omborga yozildi. ‖ Принято: {0} записано на склад. ‖ Received: {0} added to stock.
+Qabul paytidagi yo'qotishlar: yaroqsiz va kam vaznli partiyalar ‖ Потери при приёмке: негодные и недовесные партии ‖ Receiving losses: damaged and short-weight batches
+Hisobotlar ‖ Отчёты ‖ Reports
+Yaroqsiz qutilar ‖ Негодные коробки ‖ Damaged boxes
+Yo'qotish ulushi ‖ Доля потерь ‖ Loss share
+Yo'qotish (kg) ‖ Потери (кг) ‖ Loss (kg)
+Yo'qotish ‖ Потери ‖ Loss
+Qutilar ‖ Коробки ‖ Boxes
+{0} / {1} yaroqsiz ‖ {0} из {1} негодных ‖ {0} of {1} damaged
+Yaroqsiz (Damaged) ‖ Негодный (Damaged) ‖ Damaged
+Kam vazn (Short) ‖ Недовес (Short) ‖ Short weight
+Kutilgan → qabul ‖ Ожидалось → принято ‖ Expected → received
+Izoh / xodim ‖ Примечание / сотрудник ‖ Note / staff
+So'nggi 7 kun ‖ Последние 7 дней ‖ Last 7 days
+So'nggi 30 kun ‖ Последние 30 дней ‖ Last 30 days
+So'nggi 90 kun ‖ Последние 90 дней ‖ Last 90 days
+OS&D hisobotlari yo'q: hamma partiya to'liq qabul qilingan. ‖ Отчётов OS&D нет: все партии приняты полностью. ‖ No OS&D reports: all batches were received in full.
+Hub omborlaridagi joriy qoldiq: mavjud, zaxiralangan va sotuvga ochiq ‖ Текущие остатки на складах Hub: наличие, резерв и доступно к продаже ‖ Current Hub stock: on hand, reserved and available for sale
+Zaxirada ‖ В резерве ‖ Reserved
+Sotuvga ochiq ‖ Доступно к продаже ‖ Available for sale

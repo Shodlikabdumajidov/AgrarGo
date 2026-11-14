@@ -1,0 +1,77 @@
+/* ===== AgrarGo: kabinet layout (alohida scroll) va unumdorlik (kuchsiz qurilmalar) =====
+ * index.html dagi inline uslublardan KEYIN yuklanadi (css/light.css dan keyin). Mantiq:
+ *  1) LAYOUT  — #dashboard-view: height 100dvh + overflow hidden + flex; Sidebar (#dash-tabs) va Main (#dash-scroll) alohida scroll.
+ *               Mobilda Sidebar pastki navigatsiya paneliga (ikonka + matn) aylanadi.
+ *  2) PERF    — doim: takrorlanadigan kartalarda backdrop-filter yo'q, doimiy will-change yo'q, ekrandan tashqari kartalar renderlanmaydi
+ *               (content-visibility), overlay ostidagi/yashirin tabdagi animatsiyalar to'xtatiladi.
+ *  3) LITE    — html.perf-lite (js/perf.js: kuchsiz qurilmada avtomatik yoki menyudagi «Yengil rejim»): blur, doimiy animatsiya, katta soyalar o'chadi.
+ */
+
+/* ---------- 1) LAYOUT ---------- */
+#dashboard-view { height: 100vh; height: 100dvh; padding-bottom: 0 !important; overscroll-behavior: none; contain: layout paint; }
+.dash-head { flex: 0 0 auto; position: relative; z-index: 3; }
+.dash-shell { flex: 1 1 auto; min-height: 0; width: 100%; max-width: 72rem; margin: 0 auto; padding: 0 1.5rem; display: flex; gap: 1.5rem; position: relative; z-index: 2; }
+/* Sidebar: o'z scrolli bor, sahifani qimirlatmaydi */
+.dash-side { flex: 0 0 15rem; display: flex; flex-direction: column; gap: .5rem; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 1.5rem .25rem 1.5rem 0; scrollbar-width: thin; scrollbar-color: rgba(148,163,184,.35) transparent; }
+.dash-main { flex: 1 1 auto; min-width: 0; min-height: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; scroll-behavior: smooth; padding: 1.5rem .25rem 2.5rem 0; scrollbar-width: thin; scrollbar-color: rgba(148,163,184,.35) transparent; -webkit-overflow-scrolling: touch; }
+.dash-side::-webkit-scrollbar, .dash-main::-webkit-scrollbar { width: 8px; }
+.dash-side::-webkit-scrollbar-thumb, .dash-main::-webkit-scrollbar-thumb { background: rgba(148,163,184,.3); border-radius: 8px; }
+.dash-side .dash-tab { flex: 0 0 auto; }
+
+/* Mobil / planshet: Sidebar -> pastki navigatsiya paneli (ikonka ostida matn) */
+@media (max-width: 1023px) {
+    .dash-shell { flex-direction: column; gap: 0; padding: 0 1rem; }
+    .dash-main { padding: 1rem 0 calc(5.4rem + env(safe-area-inset-bottom, 0px)); }
+    .dash-side { position: fixed; left: 0; right: 0; bottom: 0; z-index: 48; flex-direction: row; gap: .1rem; align-items: stretch; padding: .3rem .4rem calc(.3rem + env(safe-area-inset-bottom, 0px)); overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; scroll-snap-type: x proximity; background: rgba(2,6,23,.98); border-top: 1px solid rgba(255,255,255,.14); box-shadow: 0 -8px 24px -12px rgba(0,0,0,.7); transform: translateZ(0); scrollbar-width: none; }
+    .dash-side::-webkit-scrollbar { display: none; }
+    .dash-side .dash-tab { position: relative; flex-direction: column; justify-content: center; gap: .18rem; flex: 1 0 4.4rem; min-width: 4.4rem; max-width: 6rem; min-height: 3.5rem; padding: .3rem .2rem; border: 0 !important; border-radius: .85rem; font-size: .62rem; line-height: 1.1; text-align: center; white-space: normal; scroll-snap-align: center; color: #94a3b8; }
+    .dash-side .dash-tab > i { width: auto !important; font-size: 1.15rem; margin: 0; }
+    .dash-side .dash-tab > span:not([id^="dash-badge-"]) { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; max-width: 100%; word-break: break-word; }
+    .dash-side .dash-tab > span[id^="dash-badge-"] { position: absolute; top: .1rem; right: .5rem; margin: 0; height: 1rem; min-width: 1rem; font-size: .6rem; padding: 0 .25rem; }
+    .dash-side .dash-tab.active { color: #6ee7b7; background: radial-gradient(circle at 50% 0%, rgba(16,185,129,.28), rgba(16,185,129,.05) 70%); }
+    .dash-side .dash-tab.active::before { content: ''; position: absolute; top: 0; left: 28%; right: 28%; height: 2px; border-radius: 9999px; background: #34d399; }
+    /* Kabinet ochiq bo'lsa sayt pastki paneli o'rniga kabinet paneli ko'rinadi */
+    html.dash-open #bottom-nav { display: none !important; }
+    html.dash-open .toast-stack, html.dash-open .oq-pill { bottom: calc(5rem + env(safe-area-inset-bottom, 0px)); }
+}
+@media (max-width: 640px) { .dash-shell { padding: 0 .75rem; } }
+
+/* Bo'lim ichki ekranlari (pill navigatsiya): Main scroll'ining tepasida yopishib turadi */
+.dash-subnav { position: sticky; top: -1.5rem; z-index: 4; display: flex; flex-wrap: wrap; gap: .5rem; margin: -1.5rem 0 1rem; padding: 1.5rem 0 .6rem; background: linear-gradient(180deg, #020617 70%, rgba(2,6,23,0)); }
+.dash-subnav.hidden { display: none; }
+@media (max-width: 1023px) { .dash-subnav { top: -1rem; margin-top: -1rem; padding-top: 1rem; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; } .dash-subnav::-webkit-scrollbar { display: none; } .dash-subnav .dp-pill { flex: 0 0 auto; } }
+
+/* ---------- 2) PERF (doim) ---------- */
+/* Takrorlanadigan kartalar: backdrop-filter qimmat (har biri alohida blur o'tishi); fon allaqachon deyarli shaffof emas, ko'rinish deyarli bir xil */
+.glass, .sk-card, .bd-card, .dp-card, .dp-badge, .pr-card, .pr-search input, .lc-card, .gd-card, .wx, .ct-row, .bdg, .kyc-step, .rd-panel, .toast-item, .ds-trigger {
+    -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+}
+/* Ekrandan tashqaridagi kartalar renderlanmaydi (ro'yxat "virtualizatsiyasi" brauzer darajasida); o'lcham taxminiy, scroll sakramaydi */
+.dp-card, .pr-card, .lc-card, .bd-card, .gd-card, .wx, .ct-row { content-visibility: auto; contain-intrinsic-size: auto 14rem; }
+/* Doimiy GPU qatlamlari faqat doim harakatlanuvchi/yopishqoq elementlarda */
+#bottom-nav, .dash-side { transform: translateZ(0); }
+.logo-stage, .logo-3d { will-change: transform; }
+/* Overlay (kabinet, rol sahifasi) ochiq yoki tab yashirin: orqadagi cheksiz animatsiyalar to'xtaydi (CPU/GPU bekor ishlamasin) */
+html.overlay-open .logo-stage, html.overlay-open .logo-3d, html.overlay-open .logo-glow::before, html.overlay-open .logo-ring, html.overlay-open .logo-shadow,
+html.overlay-open .marquee-track, html.overlay-open .animate-pulse, html.overlay-open [class*="hero"], html.overlay-open #hero-section *,
+html.tab-hidden *, html.tab-hidden *::before, html.tab-hidden *::after { animation-play-state: paused !important; }
+html.overlay-open body > .grid-fx { display: none; }
+/* Maxfiy: sahifa scroll qatlami sahifa ostida qolmasin */
+html.dash-open, html.dash-open body { overscroll-behavior: none; }
+
+/* ---------- 3) LITE rejim ---------- */
+html.perf-lite *, html.perf-lite *::before, html.perf-lite *::after {
+    -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+    animation-duration: .001ms !important; animation-iteration-count: 1 !important; animation-delay: 0s !important;
+    transition-duration: .12s !important; transition-delay: 0s !important; scroll-behavior: auto !important;
+}
+html.perf-lite .fa-spin, html.perf-lite .animate-spin { animation: fa-spin 1s linear infinite !important; } /* yuklanish belgisi turib qolmasin */
+html.perf-lite [class*="shadow-"], html.perf-lite .logo-face, html.perf-lite .toast-item, html.perf-lite .dp-card, html.perf-lite .pr-card, html.perf-lite .lc-card, html.perf-lite .bd-card, html.perf-lite .gd-card { box-shadow: 0 1px 2px rgba(0,0,0,.45) !important; }
+html.perf-lite .logo-glow { filter: none !important; }
+html.perf-lite .logo-glow::before, html.perf-lite .logo-ring, html.perf-lite .logo-shadow, html.perf-lite .grid-fx, html.perf-lite .blur-2xl, html.perf-lite .blur-3xl { display: none !important; }
+html.perf-lite .rp-bg-layer { filter: none !important; transform: none !important; will-change: auto !important; }
+html.perf-lite .marquee-track { animation: none !important; }
+html.perf-lite .marquee { overflow-x: auto; -webkit-mask-image: none; mask-image: none; }
+html.perf-lite [data-aos] { opacity: 1 !important; transform: none !important; transition: none !important; }
+html.perf-lite .logo-3d { will-change: auto; }
+html.perf-lite #sidebar-overlay, html.perf-lite [class*="backdrop-blur"] { background-color: rgba(0,0,0,.82); }

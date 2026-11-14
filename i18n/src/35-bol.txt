@@ -1,0 +1,5 @@
+# --- BOL / Hisob-faktura PDF ---
+Bu hujjatga kirish huquqingiz yo'q. ‖ У вас нет доступа к этому документу. ‖ You do not have access to this document.
+Hujjatni ochib bo'lmadi. ‖ Не удалось открыть документ. ‖ Could not open the document.
+Yuklab olish ‖ Скачать ‖ Download
+AgrarGo yuklanmoqda ‖ AgrarGo загружается ‖ AgrarGo is loading

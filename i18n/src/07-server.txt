@@ -1,0 +1,142 @@
+# --- Serverdan keladigan xabarlar (API javoblari) ---
+Foydalanuvchi topilmadi ‖ Пользователь не найден ‖ User not found
+Ism va familiya 2-100 ta belgidan iborat bo'lishi kerak ‖ Имя и фамилия должны содержать от 2 до 100 символов ‖ The full name must be 2–100 characters long
+O'zingizni bloklab bo'lmaydi ‖ Нельзя заблокировать самого себя ‖ You can't block yourself
+Oxirgi faol administratorni bloklab bo'lmaydi ‖ Нельзя заблокировать последнего активного администратора ‖ You can't block the last active administrator
+Bu telefon raqam allaqachon ro'yxatdan o'tgan ‖ Этот номер телефона уже зарегистрирован ‖ This phone number is already registered
+Kamida bitta maydonni yuboring ‖ Отправьте хотя бы одно поле ‖ Send at least one field
+E'lon topilmadi ‖ Объявление не найдено ‖ Listing not found
+Bu e'lon bo'yicha bronlar bor: o'chirib bo'lmaydi. Statusni SOLD qilib arxivlang ‖ По этому объявлению есть брони: удалить нельзя. Архивируйте, установив статус SOLD ‖ This listing has bookings and can't be deleted. Archive it by setting the status to SOLD
+Telefon raqam +998XXXXXXXXX formatida bo'lishi kerak ‖ Номер телефона должен быть в формате +998XXXXXXXXX ‖ The phone number must be in the format +998XXXXXXXXX
+Telefon raqam yoki parol noto'g'ri ‖ Неверный номер телефона или пароль ‖ Incorrect phone number or password
+{0}. {1} sifatida kirib bo'lmaydi ‖ {0}. Войти как «{1}» нельзя ‖ {0}. You can't sign in as {1}
+Bu STIR allaqachon ro'yxatdan o'tgan ‖ Этот ИНН (STIR) уже зарегистрирован ‖ This TIN (STIR) is already registered
+Bu davlat raqami allaqachon ro'yxatdan o'tgan ‖ Этот госномер уже зарегистрирован ‖ This licence plate is already registered
+Joriy parolni kiriting ‖ Введите текущий пароль ‖ Enter your current password
+Kod 6 ta raqamdan iborat bo'lishi kerak ‖ Код должен состоять из 6 цифр ‖ The code must consist of 6 digits
+Tiklash tokeni noto'g'ri ‖ Неверный токен восстановления ‖ The recovery token is invalid
+Transport turini kiriting ‖ Укажите тип транспорта ‖ Enter the vehicle type
+Davlat raqami noto'g'ri (masalan, 01A123BC) ‖ Госномер указан неверно (например, 01A123BC) ‖ The licence plate is invalid (e.g. 01A123BC)
+Yuk sig'imi raqam bo'lishi kerak (kg) ‖ Грузоподъёмность должна быть числом (кг) ‖ The load capacity must be a number (kg)
+Yuk sig'imi 0 dan katta bo'lishi kerak ‖ Грузоподъёмность должна быть больше 0 ‖ The load capacity must be greater than 0
+STIR 9 ta raqamdan iborat bo'lishi kerak ‖ ИНН (STIR) должен состоять из 9 цифр ‖ The TIN (STIR) must consist of 9 digits
+Kompaniya nomini kiriting ‖ Введите название компании ‖ Enter the company name
+Parol matn bo'lishi kerak ‖ Пароль должен быть строкой ‖ The password must be text
+Parol kamida {0} ta belgidan iborat bo'lishi kerak ‖ Пароль должен содержать не менее {0} символов ‖ The password must be at least {0} characters long
+Parol talabga javob bermaydi ‖ Пароль не соответствует требованиям ‖ The password does not meet the requirements
+Kod noto'g'ri yoki muddati o'tgan. Yangi kod so'rang ‖ Код неверный или просрочен. Запросите новый код ‖ The code is incorrect or expired. Request a new code
+Tiklash sessiyasi yaroqsiz yoki muddati o'tgan. Jarayonni qaytadan boshlang ‖ Сессия восстановления недействительна или истекла. Начните процесс заново ‖ The recovery session is invalid or expired. Start the process again
+Joriy parol noto'g'ri ‖ Текущий пароль неверный ‖ The current password is incorrect
+Yangi parol joriy paroldan farq qilishi kerak ‖ Новый пароль должен отличаться от текущего ‖ The new password must differ from the current one
+Parol yangilandi. Boshqa qurilmalardagi sessiyalar yopildi. ‖ Пароль обновлён. Сессии на других устройствах закрыты. ‖ Password updated. Sessions on other devices were signed out.
+Agar raqam ro'yxatdan o'tgan bo'lsa, tasdiqlash kodi SMS orqali yuborildi ‖ Если номер зарегистрирован, код подтверждения отправлен по SMS ‖ If the number is registered, a verification code was sent by SMS
+Market profili topilmadi ‖ Профиль маркета не найден ‖ Market profile not found
+Fermer profili topilmadi ‖ Профиль фермера не найден ‖ Farmer profile not found
+E'lon topilmadi yoki hozir faol emas ‖ Объявление не найдено или сейчас неактивно ‖ The listing was not found or is not active right now
+Yetarli miqdor yo'q. Mavjud: {0} kg ‖ Недостаточно количества. В наличии: {0} кг ‖ Not enough quantity. Available: {0} kg
+Bron topilmadi ‖ Бронь не найдена ‖ Booking not found
+Bu bron allaqachon ko'rib chiqilgan ‖ Эта бронь уже рассмотрена ‖ This booking has already been processed
+E'lon identifikatori noto'g'ri ‖ Неверный идентификатор объявления ‖ The listing identifier is invalid
+Miqdor raqam bo'lishi kerak (kg) ‖ Количество должно быть числом (кг) ‖ The quantity must be a number (kg)
+Miqdor 0 dan katta bo'lishi kerak ‖ Количество должно быть больше 0 ‖ The quantity must be greater than 0
+Ushbu raqam allaqachon {0} sifatida ro'yxatdan o'tgan ‖ Этот номер уже зарегистрирован как «{0}» ‖ This number is already registered as {0}
+Bu amal uchun sizda ruxsat yo'q ‖ У вас нет прав на это действие ‖ You don't have permission for this action
+Bron identifikatori noto'g'ri ‖ Неверный идентификатор брони ‖ The booking identifier is invalid
+To'lovni faqat xaridor (market) amalga oshiradi ‖ Оплату производит только покупатель (маркет) ‖ Only the buyer (market) can make the payment
+To'lov allaqachon amalga oshirilgan yoki yopilgan (holati: {0}) ‖ Оплата уже произведена или закрыта (статус: {0}) ‖ The payment has already been made or closed (status: {0})
+Buyurtma bekor qilingan ‖ Заказ отменён ‖ The order was cancelled
+Pul escrow'da emas (to'lov holati: {0}) ‖ Деньги не на эскроу (статус платежа: {0}) ‖ The money is not in escrow (payment status: {0})
+Pul faqat yuk yetkazib berilgandan keyin chiqariladi ‖ Деньги выдаются только после доставки груза ‖ The money is released only after the load is delivered
+Yetkazib berilgan vaqt noma'lum ‖ Время доставки неизвестно ‖ The delivery time is unknown
+Qaytarib bo'lmaydi (to'lov holati: {0}) ‖ Возврат невозможен (статус платежа: {0}) ‖ A refund is not possible (payment status: {0})
+Yuk yo'lga chiqqandan keyin pulni faqat administrator qaytara oladi ‖ После отправки груза деньги может вернуть только администратор ‖ Once the load is on the road only an administrator can refund the money
+Haydovchi biriktirilgandan keyin xaridor bekor qila olmaydi. Administratorga murojaat qiling ‖ После назначения водителя покупатель не может отменить заказ. Обратитесь к администратору ‖ The buyer can't cancel after a driver is assigned. Contact an administrator
+To'lov holati o'zgargan. Sahifani yangilang ‖ Статус платежа изменился. Обновите страницу ‖ The payment status has changed. Refresh the page
+Yuk holati o'zgargan (haydovchi biriktirilgan bo'lishi mumkin). Qayta urinib ko'ring ‖ Статус груза изменился (возможно, назначен водитель). Повторите попытку ‖ The load status changed (a driver may have been assigned). Try again
+Bu rol uchun to'lovlar mavjud emas ‖ Для этой роли платежей нет ‖ There are no payments for this role
+To'lov topilmadi ‖ Платёж не найден ‖ Payment not found
+To'lov provayderi bilan bog'lanib bo'lmadi. {0}, holat o'zgarmadi. Birozdan keyin qayta urinib ko'ring ‖ Не удалось связаться с платёжным провайдером. {0}, статус не изменился. Повторите чуть позже ‖ Could not reach the payment provider. {0}; the status did not change. Please try again shortly
+Mahsulot nomi kamida 2 ta belgidan iborat bo'lishi kerak ‖ Название продукта должно содержать не менее 2 символов ‖ The product name must be at least 2 characters long
+Kategoriyani kiriting ‖ Введите категорию ‖ Enter the category
+Vazn raqam bo'lishi kerak (kg) ‖ Вес должен быть числом (кг) ‖ The weight must be a number (kg)
+Vazn 0 dan katta bo'lishi kerak ‖ Вес должен быть больше 0 ‖ The weight must be greater than 0
+Narx raqam bo'lishi kerak (so'm) ‖ Цена должна быть числом (сум) ‖ The price must be a number (UZS)
+Narx 0 dan katta bo'lishi kerak ‖ Цена должна быть больше 0 ‖ The price must be greater than 0
+O'rim-yig'im sanasi YYYY-MM-DD formatida bo'lishi kerak ‖ Дата сбора урожая должна быть в формате ГГГГ-ММ-ДД ‖ The harvest date must be in YYYY-MM-DD format
+Holat faqat ACTIVE yoki ARCHIVED bo'lishi mumkin ‖ Статус может быть только ACTIVE или ARCHIVED ‖ The status can only be ACTIVE or ARCHIVED
+Bu e'londa faol bronlar yoki to'lov tarixi bor. Uni o'chirmasdan arxivlang ‖ В этом объявлении есть активные брони или история платежей. Архивируйте его, не удаляя ‖ This listing has active bookings or a payment history. Archive it instead of deleting
+Ism kamida 2 ta belgidan iborat bo'lishi kerak ‖ Имя должно содержать не менее 2 символов ‖ The name must be at least 2 characters long
+Xo'jalik nomi kamida 2 ta belgi bo'lishi kerak ‖ Название хозяйства должно содержать не менее 2 символов ‖ The farm name must be at least 2 characters long
+Viloyatni kiriting ‖ Введите область ‖ Enter the region
+Tumanni kiriting ‖ Введите район ‖ Enter the district
+Bu rol uchun profil tahrirlash mavjud emas ‖ Для этой роли редактирование профиля недоступно ‖ Profile editing is not available for this role
+Rasm faylini yuboring (file maydoni) ‖ Отправьте файл изображения (поле file) ‖ Send the image file (the "file" field)
+Juda ko'p urinish. {0}dan keyin qayta urinib ko'ring. ‖ Слишком много попыток. Повторите через {0}. ‖ Too many attempts. Please try again in {0}.
+Havola https:// bilan boshlanadigan to'g'ri URL bo'lishi kerak ‖ Ссылка должна быть корректным URL, начинающимся с https:// ‖ The link must be a valid URL starting with https://
+Telefon raqam noto'g'ri formatda (masalan, +998 78 140 09 09) ‖ Номер телефона в неверном формате (например, +998 78 140 09 09) ‖ The phone number has an invalid format (e.g. +998 78 140 09 09)
+Email manzil noto'g'ri ‖ Неверный адрес электронной почты ‖ The email address is invalid
+Telegram nomi noto'g'ri (masalan, @agrargobot) ‖ Неверное имя в Telegram (например, @agrargobot) ‖ The Telegram handle is invalid (e.g. @agrargobot)
+Haydovchi profili topilmadi ‖ Профиль водителя не найден ‖ Driver profile not found
+Sizda yakunlanmagan yuk bor. Avval uni yetkazib bering yoki qaytarib bering ‖ У вас есть незавершённый груз. Сначала доставьте или верните его ‖ You have an unfinished load. Deliver or return it first
+Yuk topilmadi ‖ Груз не найден ‖ Load not found
+Bu yuk allaqachon boshqa haydovchiga biriktirilgan ‖ Этот груз уже закреплён за другим водителем ‖ This load has already been assigned to another driver
+Xaridor to'lovi hali kafolatlanmagan. To'lov escrow'ga o'tgandan keyin yukni olish mumkin ‖ Оплата покупателя ещё не гарантирована. Груз можно взять после поступления оплаты на эскроу ‖ The buyer's payment is not guaranteed yet. You can take the load once the payment reaches escrow
+Yuk og'irligi ({0} kg) transportingiz sig'imidan ({1} kg) ko'p ‖ Вес груза ({0} кг) превышает грузоподъёмность вашего транспорта ({1} кг) ‖ The load weight ({0} kg) exceeds your vehicle's capacity ({1} kg)
+Yukni faqat yo'lga chiqishdan oldin qaytarish mumkin ‖ Груз можно вернуть только до выезда ‖ A load can be returned only before departure
+Yuk holati allaqachon o'zgargan. Sahifani yangilang ‖ Статус груза уже изменился. Обновите страницу ‖ The load status has already changed. Refresh the page
+Bu rol uchun yuklar mavjud emas ‖ Для этой роли грузов нет ‖ There are no loads for this role
+Simulyatsiya (demo) rejimi bu serverda o'chirilgan ‖ Режим симуляции (демо) на этом сервере отключён ‖ Simulation (demo) mode is disabled on this server
+timestamp noto'g'ri ‖ Неверная метка времени (timestamp) ‖ The timestamp is invalid
+timestamp kelajakda bo'lishi mumkin emas ‖ Метка времени (timestamp) не может быть в будущем ‖ The timestamp can't be in the future
+timestamp juda eski (10 daqiqadan ortiq) ‖ Метка времени (timestamp) слишком старая (более 10 минут) ‖ The timestamp is too old (over 10 minutes)
+Joylashuvni faqat yo'ldagi (YO'LDA) yuk uchun yuborish mumkin ‖ Местоположение можно отправлять только для груза в пути ‖ Location can be sent only for a load that is in transit
+Joylashuv oldingi nuqtadan juda uzoq: GPS signalini tekshiring ‖ Местоположение слишком далеко от предыдущей точки: проверьте GPS-сигнал ‖ The location is too far from the previous point: check the GPS signal
+Bu rol uchun joylashuv mavjud emas ‖ Для этой роли местоположение недоступно ‖ Location is not available for this role
+rfidTag 4-64 ta harf, raqam yoki '-' bo'lishi kerak ‖ rfidTag должен содержать 4–64 буквы, цифры или «-» ‖ rfidTag must be 4–64 letters, digits or '-'
+Ochiq buyurtmalar soni chegarasiga ({0}) yetdingiz. Avval mavjudlari yakunlansin ‖ Вы достигли лимита открытых заказов ({0}). Сначала завершите существующие ‖ You reached the open-order limit ({0}). Finish the existing ones first
+Mahsulot topilmadi yoki jo'natishga tayyor emas ‖ Продукт не найден или не готов к отгрузке ‖ The product was not found or is not ready for dispatch
+Omborda yetarli miqdor yo'q. Mavjud miqdorni yangilab, qayta urinib ko'ring ‖ На складе недостаточно количества. Обновите доступное количество и повторите ‖ Not enough stock in the warehouse. Refresh the available quantity and try again
+Bu rol uchun buyurtmalar mavjud emas ‖ Для этой роли заказов нет ‖ There are no orders for this role
+Buyurtma allaqachon yig'ilmoqda yoki yakunlangan ‖ Заказ уже комплектуется или завершён ‖ The order is already being picked or has finished
+Avval buyurtma yig'ishni boshlang ‖ Сначала начните комплектацию заказа ‖ Start picking the order first
+Buyurtma topilmadi ‖ Заказ не найден ‖ Order not found
+Jo'natish uchun buyurtma avval to'liq yig'ilgan bo'lishi kerak ‖ Для отгрузки заказ должен быть полностью скомплектован ‖ The order must be fully picked before dispatch
+Haydovchi topilmadi ‖ Водитель не найден ‖ Driver not found
+Buyurtma ({0} kg) haydovchining sig'imidan ({1} kg) og'ir ‖ Заказ ({0} кг) тяжелее грузоподъёмности водителя ({1} кг) ‖ The order ({0} kg) is heavier than the driver's capacity ({1} kg)
+Buyurtma holati o'zgargan. Sahifani yangilang ‖ Статус заказа изменился. Обновите страницу ‖ The order status has changed. Refresh the page
+Buyurtma allaqachon bekor qilingan ‖ Заказ уже отменён ‖ The order has already been cancelled
+Bu bosqichda buyurtmani bekor qilib bo'lmaydi ‖ На этом этапе заказ нельзя отменить ‖ The order can't be cancelled at this stage
+Buyurtma hali jo'natilmagan yoki allaqachon yetkazilgan ‖ Заказ ещё не отправлен или уже доставлен ‖ The order hasn't been dispatched yet or has already been delivered
+Kutilayotgan e'lonlar juda ko'p. Avval mavjudlari qabul qilinishini kuting ‖ Слишком много ожидающих объявлений. Дождитесь приёмки существующих ‖ Too many pending announcements. Wait until the existing ones are received
+Faqat hali qabul qilinmagan e'lonni bekor qilish mumkin ‖ Отменить можно только ещё не принятое объявление ‖ Only an announcement that hasn't been received yet can be cancelled
+Kod noto'g'ri ‖ Неверный код ‖ The code is invalid
+Bu kod bo'yicha yuk topilmadi ‖ По этому коду груз не найден ‖ No load found for this code
+Shtrix-kod yaratib bo'lmadi, qayta urinib ko'ring ‖ Не удалось создать штрих-код, повторите попытку ‖ Could not generate a barcode, please try again
+Yuk hali qabul qilinmagan ‖ Груз ещё не принят ‖ The load hasn't been received yet
+Bu yuk allaqachon qabul qilingan ‖ Этот груз уже принят ‖ This load has already been received
+Bu yuk allaqachon tekshirilgan ‖ Этот груз уже проверен ‖ This load has already been inspected
+Bu RFID teg boshqa yukka biriktirilgan ‖ Эта RFID-метка закреплена за другим грузом ‖ This RFID tag is assigned to another load
+Yaroqsiz miqdor yuk og'irligidan ko'p bo'lishi mumkin emas ‖ Бракованное количество не может превышать вес груза ‖ The rejected quantity can't exceed the load weight
+Sifat bahosini (A/B/C) tanlang ‖ Выберите оценку качества (A/B/C) ‖ Select the quality grade (A/B/C)
+Faqat sifat tekshiruvidan o'tgan yukni zonalar orasida ko'chirish mumkin ‖ Перемещать между зонами можно только груз, прошедший проверку качества ‖ Only a load that passed the quality inspection can be moved between zones
+"{0}" zonasidan "{1}" zonasiga o'tib bo'lmaydi ‖ Нельзя перейти из зоны «{0}» в зону «{1}» ‖ You can't move from the "{0}" zone to the "{1}" zone
+Buyurtmalar uchun zaxiralangan yukni jo'natish zonasidan chiqarib bo'lmaydi ‖ Груз, зарезервированный под заказы, нельзя убрать из зоны отгрузки ‖ A load reserved for orders can't be removed from the dispatch zone
+Saqlash uchun kamera/omborni tanlang (unitId) ‖ Выберите камеру/склад для хранения (unitId) ‖ Choose a chamber/warehouse for storage (unitId)
+Kamera/ombor topilmadi ‖ Камера/склад не найдены ‖ Chamber/warehouse not found
+Bu mahsulot uchun "{0}" turidagi joy kerak, "{1}" ({2}) mos emas. Majburan joylash uchun override: true yuboring ‖ Для этого продукта нужно место типа «{0}», «{1}» ({2}) не подходит. Для принудительного размещения отправьте override: true ‖ This product needs a "{0}" type of place; "{1}" ({2}) is not suitable. Send override: true to force placement
+"{0}" sig'imi yetmaydi (sig'im: {1} kg) ‖ Вместимости «{0}» недостаточно (вместимость: {1} кг) ‖ "{0}" doesn't have enough capacity (capacity: {1} kg)
+Yuk holati o'zgargan. Sahifani yangilang ‖ Статус груза изменился. Обновите страницу ‖ The load status has changed. Refresh the page
+Saralash faqat "Saralash va qadoqlash" zonasidagi yuk uchun ‖ Сортировка доступна только для груза в зоне «Сортировка и упаковка» ‖ Sorting is only available for a load in the "Sorting & packaging" zone
+Kamida bitta maydonni yuboring (sizeClass, rejectedKg, packagingType, packageWeightKg) ‖ Отправьте хотя бы одно поле (sizeClass, rejectedKg, packagingType, packageWeightKg) ‖ Send at least one field (sizeClass, rejectedKg, packagingType, packageWeightKg)
+Yaroqsiz miqdor mavjud qoldiqdan ko'p bo'lishi mumkin emas ‖ Бракованное количество не может превышать доступный остаток ‖ The rejected quantity can't exceed the available stock
+Sanalgan miqdor zaxiralangan miqdordan ({0} kg) kam bo'lishi mumkin emas. Avval buyurtmalarni bekor qiling ‖ Подсчитанное количество не может быть меньше зарезервированного ({0} кг). Сначала отмените заказы ‖ The counted quantity can't be less than the reserved quantity ({0} kg). Cancel the orders first
+Faqat omborda turgan (faol) yuk sanaladi ‖ Пересчитывается только груз, находящийся на складе (активный) ‖ Only a load that is in the warehouse (active) can be counted
+Minimal harorat maksimaldan kichik bo'lishi kerak ‖ Минимальная температура должна быть ниже максимальной ‖ The minimum temperature must be lower than the maximum
+Minimal namlik maksimaldan kichik bo'lishi kerak ‖ Минимальная влажность должна быть ниже максимальной ‖ The minimum humidity must be lower than the maximum
+Kameralar allaqachon yaratilgan ‖ Камеры уже созданы ‖ The chambers have already been created
+Bu nomdagi kamera/ombor allaqachon bor ‖ Камера/склад с таким названием уже существует ‖ A chamber/warehouse with this name already exists
+Kamera/ombor topilmadi ‖ Камера/склад не найдены ‖ Chamber/warehouse not found
+Yaroqsiz fayl ‖ Недопустимый файл ‖ Invalid file
+Faqat JPG, PNG yoki WEBP rasm yuklash mumkin ‖ Можно загружать только изображения JPG, PNG или WEBP ‖ Only JPG, PNG or WEBP images can be uploaded
+Rasm faylini yuboring ‖ Отправьте файл изображения ‖ Send the image file
+Xodim topilmadi ‖ Сотрудник не найден ‖ Staff member not found

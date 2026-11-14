@@ -1,0 +1,114 @@
+# --- Super Admin paneli ---
+Bloklanganlar ‖ Заблокированные ‖ Blocked
+Faol yuklar ‖ Активные грузы ‖ Active loads
+To'lovlar aylanmasi ‖ Оборот платежей ‖ Payment turnover
+Escrow'da ‖ На эскроу ‖ In escrow
+Ombor qoldig'i ‖ Остаток на складе ‖ Warehouse stock
+Foydalanuvchilar rollar bo'yicha ‖ Пользователи по ролям ‖ Users by role
+So'nggi 14 kunda ro'yxatdan o'tganlar ‖ Регистрации за последние 14 дней ‖ Sign-ups in the last 14 days
+Bronlar ‖ Брони ‖ Bookings
+Yuklar ‖ Грузы ‖ Shipments
+Omborxona zonalari ‖ Зоны склада ‖ Warehouse zones
+Oxirgi 24 soatda audit jurnaliga yozilgan amallar: {0} ‖ Действий, записанных в журнал аудита за последние 24 часа: {0} ‖ Actions logged in the audit log in the last 24 hours: {0}
+Xo'jalik nomi ‖ Название хозяйства ‖ Farm name
+Viloyat ‖ Область ‖ Region
+Tuman ‖ Район ‖ District
+Manzil ‖ Адрес ‖ Address
+Transport turi ‖ Тип транспорта ‖ Vehicle type
+Davlat raqami ‖ Госномер ‖ Licence plate
+Yuk sig'imi (kg) ‖ Грузоподъёмность (кг) ‖ Load capacity (kg)
+Faoliyat viloyati ‖ Область деятельности ‖ Operating region
+Haydovchilik guvohnomasi ‖ Водительское удостоверение ‖ Driver's licence
+Kompaniya / do'kon nomi ‖ Название компании / магазина ‖ Company / store name
+Bloklangan ‖ Заблокирован ‖ Blocked
+Ism va familiya ‖ Имя и фамилия ‖ Full name
+Foydalanuvchini tahrirlash ‖ Редактирование пользователя ‖ Edit User
+Foydalanuvchi ma'lumotlari yangilandi. ‖ Данные пользователя обновлены. ‖ User details updated.
+Foydalanuvchini bloklash ‖ Блокировка пользователя ‖ Block User
+Foydalanuvchini faollashtirish ‖ Активация пользователя ‖ Activate User
+Bloklash ‖ Заблокировать ‖ Block
+Sabab (audit jurnaliga yoziladi) ‖ Причина (записывается в журнал аудита) ‖ Reason (recorded in the audit log)
+Bloklangach foydalanuvchining barcha sessiyalari darhol yopiladi va kira olmaydi. Tasdiqlayman. ‖ После блокировки все сессии пользователя немедленно закрываются, и он не сможет войти. Подтверждаю. ‖ Once blocked, all of the user's sessions are closed immediately and they can't sign in. I confirm.
+Foydalanuvchi bloklandi. ‖ Пользователь заблокирован. ‖ The user was blocked.
+Foydalanuvchi faollashtirildi. ‖ Пользователь активирован. ‖ The user was activated.
+Parolni almashtirish ‖ Смена пароля ‖ Reset Password
+Parolni o'rnatish ‖ Установить пароль ‖ Set password
+Yangi parol ‖ Новый пароль ‖ New password
+Kamida 8 belgi, harf va raqam. Foydalanuvchining barcha sessiyalari yopiladi. ‖ Не менее 8 символов, буквы и цифры. Все сессии пользователя будут закрыты. ‖ At least 8 characters, letters and digits. All of the user's sessions will be closed.
+Parol o'zgartirildi. ‖ Пароль изменён. ‖ The password was changed.
+Xodim qo'shish ‖ Добавить сотрудника ‖ Add Staff Member
+Dispetcher yoki administrator akkaunti yaratiladi. ‖ Будет создан аккаунт диспетчера или администратора. ‖ A dispatcher or administrator account will be created.
+Telefon (+998XXXXXXXXX) ‖ Телефон (+998XXXXXXXXX) ‖ Phone (+998XXXXXXXXX)
+Rol ‖ Роль ‖ Role
+Vaqtinchalik parol ‖ Временный пароль ‖ Temporary password
+Kamida 8 belgi, harf va raqam. ‖ Не менее 8 символов, буквы и цифры. ‖ At least 8 characters, letters and digits.
+Xodim yaratildi. ‖ Сотрудник создан. ‖ The staff member was created.
+Ism, telefon, xo'jalik yoki davlat raqami... ‖ Имя, телефон, хозяйство или госномер... ‖ Name, phone, farm or licence plate...
+Barcha rollar ‖ Все роли ‖ All roles
+Barcha holatlar ‖ Все статусы ‖ All statuses
+Foydalanuvchi ‖ Пользователь ‖ User
+Tashkilot / hudud ‖ Организация / регион ‖ Organisation / region
+Holat ‖ Статус ‖ Status
+Ro'yxatdan o'tgan ‖ Дата регистрации ‖ Registered
+Amallar ‖ Действия ‖ Actions
+Parol ‖ Пароль ‖ Password
+Foydalanuvchilar topilmadi. ‖ Пользователи не найдены. ‖ No users found.
+Tavsif ‖ Описание ‖ Description
+E'lon yangilandi. ‖ Объявление обновлено. ‖ Listing updated.
+E'lon ‖ Объявление ‖ Listing
+"{0}" e'lonini o'chirasizmi? ‖ Удалить объявление «{0}»? ‖ Delete the "{0}" listing?
+E'lonlar topilmadi. ‖ Объявления не найдены. ‖ No listings found.
+Yuk ‖ Груз ‖ Load
+Yo'nalish ‖ Маршрут ‖ Route
+Fermer → Market ‖ Фермер → Маркет ‖ Farmer → Market
+To'lov ‖ Платёж ‖ Payment
+Yangilangan ‖ Обновлено ‖ Updated
+Yuklar topilmadi. ‖ Грузы не найдены. ‖ No shipments found.
+Pulni fermerga o'tkazish ‖ Перевод денег фермеру ‖ Release Money to the Farmer
+Pulni qaytarish / bekor qilish ‖ Возврат денег / отмена ‖ Refund / Cancel
+Izoh (tranzaksiya tarixiga yoziladi) ‖ Комментарий (записывается в историю транзакций) ‖ Note (recorded in the transaction history)
+Bu amalni qaytarib bo'lmasligini tushunaman. ‖ Я понимаю, что это действие нельзя отменить. ‖ I understand this action cannot be undone.
+Amalni tasdiqlash uchun katakchani belgilang. ‖ Отметьте флажок, чтобы подтвердить действие. ‖ Tick the checkbox to confirm the action.
+Mablag' fermerga o'tkazildi. ‖ Средства переведены фермеру. ‖ The funds were released to the farmer.
+Buyurtma bekor qilindi / mablag' qaytarildi. ‖ Заказ отменён / средства возвращены. ‖ The order was cancelled / the funds were refunded.
+To'lov tranzaksiyalari ‖ Платёжные транзакции ‖ Payment Transactions
+To'lov kutilmoqda ‖ Ожидается оплата ‖ Payment pending
+To'langan ‖ Оплачено ‖ Paid
+Qaytarilgan ‖ Возвращено ‖ Refunded
+Buyurtma ‖ Заказ ‖ Order
+Summa ‖ Сумма ‖ Amount
+Fermerga o'tkazish ‖ Перевести фермеру ‖ Release to farmer
+Qaytarish ‖ Вернуть ‖ Refund
+To'lovlar topilmadi. ‖ Платежи не найдены. ‖ No payments found.
+Eng so'nggi 200 ta tranzaksiya ko'rsatildi. ‖ Показаны последние 200 транзакций. ‖ The latest 200 transactions are shown.
+Bu yerdagi o'zgarishlar saytning yuqori paneli va pastki qismida (footer) darhol ko'rinadi. ‖ Изменения здесь сразу отображаются в верхней панели и внизу сайта (футере). ‖ Changes made here appear immediately in the site's top bar and footer.
+Aloqa ‖ Контакты ‖ Contact
+Sayt nomi ‖ Название сайта ‖ Site name
+Email ‖ Email ‖ Email
+Call-center telefonlari ‖ Телефоны колл-центра ‖ Call-centre phones
+Har bir raqam yangi qatordan (1 tadan 5 tagacha). Birinchisi sayt tepasida ko'rsatiladi. ‖ Каждый номер с новой строки (от 1 до 5). Первый показывается вверху сайта. ‖ One number per line (1 to 5). The first one is shown at the top of the site.
+Ijtimoiy tarmoqlar ‖ Социальные сети ‖ Social networks
+Telegram nomi ‖ Имя в Telegram ‖ Telegram handle
+Telegram havolasi ‖ Ссылка на Telegram ‖ Telegram link
+Instagram havolasi ‖ Ссылка на Instagram ‖ Instagram link
+Facebook havolasi ‖ Ссылка на Facebook ‖ Facebook link
+YouTube havolasi ‖ Ссылка на YouTube ‖ YouTube link
+Havolalar faqat https:// bilan boshlanishi kerak. Bo'sh qoldirilsa, belgi saytda ko'rinmaydi. ‖ Ссылки должны начинаться только с https://. Если оставить пустым, значок на сайте не отображается. ‖ Links must start with https:// only. If left empty, the icon is not shown on the site.
+Ish vaqti (har bir til uchun) ‖ Рабочее время (для каждого языка) ‖ Working hours (for each language)
+Manzil (har bir til uchun) ‖ Адрес (для каждого языка) ‖ Address (for each language)
+Saqlandi. O'zgarishlar saytda darhol ko'rinadi. ‖ Сохранено. Изменения сразу видны на сайте. ‖ Saved. The changes are visible on the site immediately.
+Sayt sozlamalari yangilandi. ‖ Настройки сайта обновлены. ‖ Site settings updated.
+Sozlamalar ‖ Настройки ‖ Settings
+Vaqt ‖ Время ‖ Time
+Kim ‖ Кто ‖ Who
+Amal ‖ Действие ‖ Action
+Ob'ekt ‖ Объект ‖ Object
+Tafsilot ‖ Детали ‖ Details
+Jurnal bo'sh. ‖ Журнал пуст. ‖ The log is empty.
+Hammasi ‖ Все ‖ All
+Ombor ‖ Склад ‖ Warehouse
+Foydalanuvchi: ‖ Пользователь: ‖ User:
+Yuklanmoqda... ‖ Загрузка... ‖ Loading...
+Oldingi ‖ Назад ‖ Previous
+Keyingi ‖ Далее ‖ Next
+{0} / {1} · jami {2} ‖ {0} / {1} · всего {2} ‖ {0} / {1} · {2} in total

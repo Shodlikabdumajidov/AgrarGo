@@ -1,0 +1,106 @@
+# --- Landing: yangi bo'limlar (Tizim qanday ishlaydi, Zanjir, Tariflar, Hamkorlar, FAQ, Aloqa) ---
+Sayt bo'limlari ‖ Разделы сайта ‖ Site sections
+Tizim qanday ishlaydi? ‖ Как работает система? ‖ How does it work?
+Ko'p beriladigan savollar ‖ Часто задаваемые вопросы ‖ Frequently asked questions
+O'z rolingizni tanlang: har biri uchun jarayon 4 ta sodda qadamdan iborat. ‖ Выберите свою роль: для каждой процесс состоит из 4 простых шагов. ‖ Choose your role: the process for each takes 4 simple steps.
+Rol bo'yicha jarayon ‖ Процесс по ролям ‖ Process by role
+Telefon raqam bilan bepul ro'yxatdan o'ting va xo'jalik ma'lumotlarini kiriting. ‖ Бесплатно зарегистрируйтесь по номеру телефона и укажите данные хозяйства. ‖ Sign up for free with your phone number and enter your farm details.
+E'lon joylang ‖ Разместите объявление ‖ Post a listing
+Mahsulot turi, miqdori va narxini kiriting. Do'konlar e'loningizni darhol ko'radi. ‖ Укажите вид продукции, количество и цену. Магазины сразу увидят ваше объявление. ‖ Enter the product type, quantity and price. Shops see your listing right away.
+Bronni tasdiqlang ‖ Подтвердите бронь ‖ Confirm the booking
+Market bron qilgach tasdiqlang: yuk tashish buyurtmasi avtomatik yaratiladi. ‖ Подтвердите бронь магазина: заказ на перевозку создаётся автоматически. ‖ Confirm the market's booking: a transport order is created automatically.
+Pulni oling ‖ Получите деньги ‖ Get paid
+Yuk yetkazilgach Escrow'da saqlangan mablag' hisobingizga o'tadi. ‖ После доставки груза средства из Escrow поступают на ваш счёт. ‖ Once the cargo is delivered, the funds held in Escrow go to your account.
+Profilni to'ldiring ‖ Заполните профиль ‖ Complete your profile
+Transport turi, davlat raqami, yuk sig'imi va faoliyat hududini kiriting. ‖ Укажите тип транспорта, госномер, грузоподъёмность и регион работы. ‖ Enter your vehicle type, plate number, capacity and operating region.
+Yukni tanlang ‖ Выберите груз ‖ Choose a load
+To'lovi Escrow'da kafolatlangan yuklar ro'yxatidan o'zingizga mosini oling. ‖ Выберите подходящий груз из списка с гарантированной оплатой в Escrow. ‖ Pick a suitable load from the list of cargo with payment guaranteed in Escrow.
+Yo'lga chiqing ‖ Отправляйтесь в путь ‖ Hit the road
+GPS kuzatuv va ELD jurnali harakatingizni avtomatik yozib boradi. ‖ GPS-отслеживание и журнал ELD автоматически записывают ваше движение. ‖ GPS tracking and the ELD log record your driving automatically.
+Yetkazing ‖ Доставьте ‖ Deliver
+Yukni topshiring: yetkazish tasdiqlanadi va hamma tomonga xabar boradi. ‖ Сдайте груз: доставка подтверждается, и все стороны получают уведомление. ‖ Hand over the cargo: delivery is confirmed and everyone is notified.
+Katalogdan tanlang ‖ Выберите в каталоге ‖ Choose from the catalogue
+Fermerlarning e'lonlarini kategoriya, hudud va narx bo'yicha filtrlang. ‖ Фильтруйте объявления фермеров по категории, региону и цене. ‖ Filter farmers' listings by category, region and price.
+Bron qiling ‖ Забронируйте ‖ Book it
+Kerakli miqdorni band qiling: narx bron paytida qotiriladi. ‖ Забронируйте нужное количество: цена фиксируется при бронировании. ‖ Reserve the amount you need: the price is locked at booking.
+Escrow'ga to'lang ‖ Оплатите в Escrow ‖ Pay into Escrow
+Pul yuk yetkazilguncha xavfsiz saqlanadi: fermer ham, siz ham himoyadasiz. ‖ Деньги надёжно хранятся до доставки: защищены и фермер, и вы. ‖ The money is held safely until delivery: both the farmer and you are protected.
+Qabul qiling ‖ Примите груз ‖ Receive it
+Yukni xaritada kuzating, qabul qilib tasdiqlang va fikringizni qoldiring. ‖ Следите за грузом на карте, примите и подтвердите, затем оставьте отзыв. ‖ Track the cargo on the map, confirm receipt and leave your feedback.
+Dehqondan javongacha: yagona raqamli zanjir ‖ От фермера до полки: единая цифровая цепочка ‖ From farm to shelf: one digital chain
+Har bir bosqich bitta platformada: vositachisiz, shaffof va kuzatiladigan. ‖ Каждый этап на одной платформе: без посредников, прозрачно и с отслеживанием. ‖ Every stage on one platform: no middlemen, transparent and trackable.
+Dehqon ‖ Фермер ‖ Farmer
+E'lon va hosil ‖ Объявление и урожай ‖ Listing and harvest
+Sifat nazorati va saqlash ‖ Контроль качества и хранение ‖ Quality control and storage
+Logistika ‖ Логистика ‖ Logistics
+GPS va ELD kuzatuv ‖ GPS и ELD-мониторинг ‖ GPS and ELD tracking
+Bron va Escrow to'lov ‖ Бронь и оплата через Escrow ‖ Booking and Escrow payment
+Xaridor ‖ Покупатель ‖ Buyer
+Yangi va sifatli mahsulot ‖ Свежая и качественная продукция ‖ Fresh, quality produce
+Shaffof narx ‖ Прозрачная цена ‖ Transparent price
+Dehqon belgilagan narx bron paytida qotiriladi va o'zgarmaydi. ‖ Цена, указанная фермером, фиксируется при бронировании и не меняется. ‖ The farmer's price is locked at booking and does not change.
+Mablag' Escrow'da saqlanadi va yetkazilgach fermerga o'tadi. ‖ Средства хранятся в Escrow и после доставки переходят фермеру. ‖ Funds are held in Escrow and go to the farmer after delivery.
+Yuk xaritada ko'rinadi va har bosqichda Telegram xabari keladi. ‖ Груз виден на карте, а на каждом этапе приходит уведомление в Telegram. ‖ The cargo is visible on the map and a Telegram message arrives at every stage.
+Shaffof tariflar, yashirin to'lovlarsiz ‖ Прозрачные тарифы без скрытых платежей ‖ Transparent rates, no hidden fees
+Yuk tashish turini tanlang. Aniq narx masofa, yuk og'irligi va mavsumga qarab hisoblanadi. ‖ Выберите тип перевозки. Точная цена рассчитывается по расстоянию, весу груза и сезону. ‖ Choose a transport type. The exact price depends on distance, cargo weight and season.
+Bron yuki ‖ Груз по брони ‖ Booking cargo
+Fermerdan marketgacha to'g'ridan-to'g'ri reys. ‖ Прямой рейс от фермера до магазина. ‖ A direct trip from the farmer to the market.
+Narx haydovchi bilan shaffof kelishiladi ‖ Цена прозрачно согласуется с водителем ‖ The price is agreed transparently with the driver
+Escrow orqali kafolatlangan to'lov ‖ Гарантированная оплата через Escrow ‖ Payment guaranteed through Escrow
+Telegram xabarnomalar ‖ Уведомления в Telegram ‖ Telegram notifications
+Narx so'rash ‖ Запросить цену ‖ Request a price
+Eng mashhur ‖ Самый популярный ‖ Most popular
+Omborxona yuki ‖ Груз со склада ‖ Warehouse cargo load
+Omborxonadan marketga: saralangan va shtrix-kodli mahsulot. ‖ Со склада в магазин: отсортированная продукция со штрихкодом. ‖ From the warehouse to the market: sorted, barcoded produce.
+Xizmat haqi buyurtma summasidan foiz sifatida ‖ Комиссия — процент от суммы заказа ‖ Service fee as a percentage of the order amount
+Sifat nazorati, saralash va qadoqlash ‖ Контроль качества, сортировка и упаковка ‖ Quality control, sorting and packaging
+Dispetcher yuklab tasdiqlaydi ‖ Диспетчер подтверждает погрузку ‖ The dispatcher confirms loading
+Escrow, GPS va ELD birga ‖ Escrow, GPS и ELD вместе ‖ Escrow, GPS and ELD together
+Korporativ ‖ Корпоративный ‖ Corporate
+Tarmoq do'konlari va doimiy buyurtmalar uchun. ‖ Для сетевых магазинов и постоянных заказов. ‖ For store chains and regular orders.
+Individual shartlar va hajm chegirmalari ‖ Индивидуальные условия и скидки за объём ‖ Individual terms and volume discounts
+Doimiy shartnoma va takroriy buyurtma ‖ Постоянные договоры и повторные заказы ‖ Standing contracts and repeat orders
+Shaxsiy menejer ‖ Персональный менеджер ‖ Personal manager
+Hisobot va integratsiya ‖ Отчётность и интеграция ‖ Reporting and integration
+Bizga ishonadigan hamkorlar ‖ Партнёры, которые нам доверяют ‖ Partners who trust us
+Supermarketlar, logistika kompaniyalari va omborxonalar AgrarGo ekotizimida birga ishlaydi. ‖ Супермаркеты, логистические компании и склады работают вместе в экосистеме AgrarGo. ‖ Supermarkets, logistics companies and warehouses work together in the AgrarGo ecosystem.
+Hamkorlar ‖ Партнёры ‖ Partners
+Supermarket tarmog'i ‖ Сеть супермаркетов ‖ Supermarket chain
+Chakana savdo ‖ Розничная торговля ‖ Retail
+Logistika kompaniyasi ‖ Логистическая компания ‖ Logistics company
+Sovutgichli omborlar ‖ Холодильные склады ‖ Cold storage warehouses
+Saqlash va sovutish ‖ Хранение и охлаждение ‖ Storage and cooling
+Agro-kooperativ ‖ Агрокооператив ‖ Agro cooperative
+Fermerlar uyushmasi ‖ Ассоциация фермеров ‖ Farmers' association
+To'lov xizmati ‖ Платёжный сервис ‖ Payment service
+Xavfsiz to'lovlar ‖ Безопасные платежи ‖ Secure payments
+Sug'urta kompaniyasi ‖ Страховая компания ‖ Insurance company
+Yuk sug'urtasi ‖ Страхование грузов ‖ Cargo insurance
+Qadoqlash ishlab chiqaruvchisi ‖ Производитель упаковки ‖ Packaging manufacturer
+Qadoq va yorliqlar ‖ Упаковка и этикетки ‖ Packaging and labels
+Mobil aloqa operatori ‖ Оператор мобильной связи ‖ Mobile operator
+Aloqa va SMS ‖ Связь и SMS ‖ Communication and SMS
+Platformaning ishlash tartibi bo'yicha qisqa javoblar. ‖ Краткие ответы о том, как работает платформа. ‖ Short answers about how the platform works.
+Fermerlar uchun ro'yxatdan o'tish bepulmi? ‖ Бесплатна ли регистрация для фермеров? ‖ Is registration free for farmers?
+Ha, fermerlar uchun ro'yxatdan o'tish va e'lon joylashtirish mutlaqo bepul. ‖ Да, регистрация и размещение объявлений для фермеров абсолютно бесплатны. ‖ Yes, registration and posting listings are completely free for farmers.
+Kafolatlangan to'lov (Escrow) qanday ishlaydi? ‖ Как работает гарантированная оплата (Escrow)? ‖ How does guaranteed payment (Escrow) work?
+Xaridor to'lagan mablag' yuk yetkazilguncha platformada xavfsiz saqlanadi. Yuk qabul qilinib tasdiqlangach pul fermerga o'tkaziladi, bekor qilinsa xaridorga qaytariladi. ‖ Деньги покупателя надёжно хранятся на платформе до доставки груза. После подтверждения получения они переводятся фермеру, а при отмене возвращаются покупателю. ‖ The buyer's money is held securely on the platform until delivery. Once receipt is confirmed it goes to the farmer; if cancelled it is returned to the buyer.
+Sifat kafolati qanday nazorat qilinadi? ‖ Как контролируется гарантия качества? ‖ How is the quality guarantee controlled?
+Omborxonada yuk tortiladi, sifat bahosi (A/B/C) beriladi va saralanadi. Yo'lda esa GPS kuzatuv va ELD jurnali orqali dispetcher nazorat qiladi. ‖ На складе груз взвешивается, ему присваивается оценка качества (A/B/C) и он сортируется. В пути диспетчер контролирует его через GPS и журнал ELD. ‖ At the warehouse the cargo is weighed, graded (A/B/C) and sorted. On the road the dispatcher monitors it through GPS and the ELD log.
+Narx tushganda hosilni saqlash mumkinmi? ‖ Можно ли хранить урожай, когда цена падает? ‖ Can I store the harvest when prices fall?
+Ha. Omborxona (sovutgichli kameralar) orqali mahsulotni saqlab, narx ko'tarilganda sotishingiz mumkin. ‖ Да. Вы можете хранить продукцию на складе (холодильные камеры) и продать, когда цена вырастет. ‖ Yes. You can store produce in the warehouse (cold rooms) and sell when prices rise.
+Haydovchi bo'lib qanday yuk olaman? ‖ Как водителю получить груз? ‖ How do I get cargo as a driver?
+Haydovchi sifatida ro'yxatdan o'ting, "Mavjud yuklar" bo'limidan to'lovi Escrow'ga o'tgan va transportingizga mos yukni tanlang. Bir vaqtda bitta yuk olinadi. ‖ Зарегистрируйтесь как водитель и в разделе «Доступные грузы» выберите груз с оплатой в Escrow, подходящий вашему транспорту. За раз берётся один груз. ‖ Sign up as a driver, and in "Available loads" pick cargo whose payment is in Escrow and that fits your vehicle. You can take one load at a time.
+Xabarnomalarni Telegramda olsam bo'ladimi? ‖ Можно ли получать уведомления в Telegram? ‖ Can I get notifications in Telegram?
+Ha. Profil bo'limida "Telegram botni ulash" tugmasini bosing: bron, to'lov va yuk holati haqidagi xabarlar avtomatik keladi. ‖ Да. В профиле нажмите «Подключить Telegram-бота»: уведомления о брони, оплате и статусе груза будут приходить автоматически. ‖ Yes. In your profile press "Connect Telegram bot": booking, payment and shipment status messages arrive automatically.
+Ilovani telefonga o'rnatish mumkinmi? ‖ Можно ли установить приложение на телефон? ‖ Can I install the app on my phone?
+Ha, AgrarGo PWA sifatida ishlaydi: menyudagi "Ilovani o'rnatish" tugmasi orqali bosh ekranga qo'shing, u tezroq ochiladi va oflayn ham ishlaydi. ‖ Да, AgrarGo работает как PWA: добавьте его на главный экран кнопкой «Установить приложение» в меню — он открывается быстрее и работает офлайн. ‖ Yes, AgrarGo works as a PWA: add it to your home screen with the "Install app" button in the menu; it opens faster and works offline too.
+Hamkor bo'lish uchun kimga murojaat qilaman? ‖ К кому обратиться, чтобы стать партнёром? ‖ Who do I contact to become a partner?
+Pastdagi "Hamkorlik / Aloqa" bo'limidagi telefon yoki Telegram orqali bog'laning: jamoamiz sizga mos hamkorlik shartlarini taklif qiladi. ‖ Свяжитесь по телефону или Telegram из раздела «Сотрудничество / Контакты» ниже: наша команда предложит подходящие условия. ‖ Reach out by phone or Telegram in the "Partnership / Contact" section below: our team will propose suitable terms.
+Birga o'sishga tayyormisiz? ‖ Готовы расти вместе? ‖ Ready to grow together?
+Supermarket tarmog'i, logistika kompaniyasi yoki omborxona bo'lsangiz, ekotizimimizga qo'shiling. Tarif, integratsiya va hamkorlik shartlari bo'yicha savollaringizga javob beramiz. ‖ Если вы сеть супермаркетов, логистическая компания или склад — присоединяйтесь к нашей экосистеме. Ответим на вопросы по тарифам, интеграции и условиям сотрудничества. ‖ If you are a supermarket chain, logistics company or warehouse, join our ecosystem. We will answer your questions about rates, integration and partnership terms.
+Supermarketlar ‖ Супермаркеты ‖ Supermarkets
+Omborxonalar ‖ Склады ‖ Warehouses
+Qo'ng'iroq qiling ‖ Позвоните ‖ Call us
+Telegramda yozing ‖ Напишите в Telegram ‖ Message us on Telegram
+Elektron pochta ‖ Электронная почта ‖ Email

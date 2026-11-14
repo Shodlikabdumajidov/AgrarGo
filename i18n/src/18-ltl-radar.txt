@@ -1,0 +1,35 @@
+# --- LTL va Yuk radari ---
+Yuk tashish rejimi ‖ Режим перевозки ‖ Load mode
+Faqat to'liq yuk (FTL) ‖ Только полная загрузка (FTL) ‖ Full truckload only (FTL)
+Qisman yuklar yig'ishga tayyor (LTL) ‖ Готов собирать сборные грузы (LTL) ‖ Ready to consolidate partial loads (LTL)
+LTL: bir reysda bir nechta kichik yuk olasiz. Yuk olganingizda bo'sh joy kamayadi, yetkazilgach tiklanadi. ‖ LTL: за один рейс вы берёте несколько небольших грузов. При получении груза свободное место уменьшается, после доставки восстанавливается. ‖ LTL: you take several small loads in one trip. Free space shrinks when you take a load and is restored after delivery.
+Umumiy sig'im (kg) ‖ Общая вместимость (кг) ‖ Total capacity (kg)
+Hozirgi bo'sh joy (kg) ‖ Текущее свободное место (кг) ‖ Current free space (kg)
+Bo'sh qoldirsangiz — to'liq sig'im ‖ Если пусто — вся вместимость ‖ Leave empty for full capacity
+Joylashuvimni aniqlash ‖ Определить моё местоположение ‖ Detect my location
+Joylashuv aniqlandi ‖ Местоположение определено ‖ Location detected
+Aniqlanmasa — shahar nomi bo'yicha taxminiy joy olinadi ‖ Если не определено — примерное место берётся по названию города ‖ If not detected, an approximate place is taken from the city name
+Bo'sh joy 0 dan umumiy sig'imgacha bo'lishi kerak. ‖ Свободное место должно быть от 0 до общей вместимости. ‖ Free space must be between 0 and the total capacity.
+{0} tonnadan {1} tonnasi to'ldi, {2} tonna bo'sh joy bor ‖ Занято {1} т из {0} т, свободно {2} т ‖ {1} of {0} tonnes filled, {2} tonnes free
+Mashina bandligi (LTL) ‖ Загрузка машины (LTL) ‖ Vehicle load (LTL)
+Sizda yana {0} tonna bo'sh joy bor. ‖ У вас ещё {0} т свободного места. ‖ You still have {0} tonnes of free space.
+Shu yo'nalishdagi boshqa kichik yuklarni ham olasizmi? ‖ Возьмёте ли вы и другие небольшие грузы по этому маршруту? ‖ Would you also take other small loads on this route?
+Mos yuklar qidirilmoqda... ‖ Подбираем подходящие грузы... ‖ Looking for matching loads...
+Hozircha mos tushadigan yuk yo'q. Yuk radarida atrofingizdagi yuklarni qidirib ko'ring. ‖ Подходящих грузов пока нет. Поищите грузы поблизости на радаре. ‖ No matching loads yet. Try searching nearby loads on the radar.
+Yuk radari ‖ Радар грузов ‖ Load radar
+Mashina to'ldi: yangi yuk uchun bo'sh joy qolmadi. ‖ Машина заполнена: свободного места для нового груза нет. ‖ The vehicle is full: no space left for a new load.
+Keyinroq ‖ Позже ‖ Later
+📍 Mening atrofimdan izlash ‖ 📍 Искать рядом со мной ‖ 📍 Search near me
+Radarni o'chirish ‖ Выключить радар ‖ Turn off radar
+Qidiruv radiusi ‖ Радиус поиска ‖ Search radius
+{0} km ‖ {0} км ‖ {0} km
+Siz shu yerdasiz ‖ Вы здесь ‖ You are here
+{0} km radiusda topildi: {1} ‖ В радиусе {0} км найдено: {1} ‖ Found within {0} km: {1}
+{0} km radiusda hech narsa topilmadi. Radiusni kattalashtiring. ‖ В радиусе {0} км ничего не найдено. Увеличьте радиус. ‖ Nothing found within {0} km. Increase the radius.
+{0} km uzoqlikda ‖ в {0} км от вас ‖ {0} km away
+Joylashuvga ruxsat berilmadi. Brauzer sozlamalarida ruxsat bering. ‖ Доступ к геолокации запрещён. Разрешите его в настройках браузера. ‖ Location access was denied. Allow it in your browser settings.
+Joylashuvni aniqlash vaqti tugadi. Qayta urinib ko'ring. ‖ Время определения местоположения истекло. Попробуйте ещё раз. ‖ Location detection timed out. Please try again.
+Joylashuvni aniqlab bo'lmadi. ‖ Не удалось определить местоположение. ‖ Could not detect your location.
+Oddiy rejimda bir vaqtda bitta yuk olib yura olasiz; LTL e'loni bo'lsa — bo'sh joy yetguncha bir nechta. ‖ В обычном режиме вы можете везти один груз за раз; с LTL-объявлением — несколько, пока хватает места. ‖ In normal mode you can carry one load at a time; with an LTL listing — several, as long as there is space.
+📦 LTL ‖ 📦 LTL ‖ 📦 LTL
+🚚 FTL ‖ 🚚 FTL ‖ 🚚 FTL

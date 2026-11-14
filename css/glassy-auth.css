@@ -1,0 +1,92 @@
+/* Glassy Login V3 & Glassy OTP V2: kirish, ro'yxatdan o'tish, parolni tiklash va SMS kod tasdiqlash oynasi */
+#auth-modal { background: radial-gradient(ellipse at 50% 30%, rgba(16,185,129,.16), rgba(2,6,23,.82) 65%); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+#auth-modal .auth-card {
+    background: linear-gradient(180deg, rgba(15,23,42,.62), rgba(2,6,23,.8));
+    border: 1px solid rgba(16,185,129,.3);
+    box-shadow: 0 0 50px rgba(16,185,129,.15), inset 0 1px 0 rgba(255,255,255,.08);
+    overflow-x: hidden;
+}
+/* perf-layout.css .glass'da blur'ni o'chiradi: kirish kartasi premium ko'rinish uchun qaytariladi (lite rejimda emas) */
+html:not(.perf-lite) #auth-modal .auth-card.glass { backdrop-filter: blur(24px) !important; -webkit-backdrop-filter: blur(24px) !important; }
+#auth-modal .auth-card::before { content: ''; position: absolute; inset: 0 0 auto 0; height: 2px; background: linear-gradient(90deg, transparent, #10b981, #22d3ee, transparent); opacity: .9; pointer-events: none; }
+#auth-modal .auth-input { background: rgba(2,6,23,.55); border-color: rgba(255,255,255,.14); backdrop-filter: blur(6px); }
+#auth-modal .auth-input:focus { border-color: #34d399; box-shadow: 0 0 0 3px rgba(16,185,129,.22), 0 0 22px rgba(16,185,129,.28); }
+#auth-modal .auth-submit { background: linear-gradient(90deg, #10b981, #22d3ee) !important; color: #022c22 !important; box-shadow: 0 10px 30px -8px rgba(16,185,129,.55); }
+#auth-modal .auth-submit:hover:not(:disabled) { filter: brightness(1.08); box-shadow: 0 14px 36px -8px rgba(34,211,238,.5); }
+#auth-modal .auth-tab.active { background: linear-gradient(90deg, #10b981, #22d3ee); color: #022c22; }
+#auth-tabs { backdrop-filter: blur(8px); }
+
+/* Formalar orasida silliq slayd o'tish (Framer Motion o'rnida: CSS keyframes) */
+@keyframes auth-pane-fwd { from { opacity: 0; transform: translateX(34px); } to { opacity: 1; transform: none; } }
+@keyframes auth-pane-back { from { opacity: 0; transform: translateX(-34px); } to { opacity: 1; transform: none; } }
+.auth-pane-in { animation: auth-pane-fwd .42s cubic-bezier(.22,.8,.3,1) backwards; }
+.auth-pane-in.back { animation-name: auth-pane-back; }
+@media (prefers-reduced-motion: reduce) { .auth-pane-in, .auth-pane-in.back { animation: none; } }
+
+/* ===== OTP V2 ===== */
+.otp-form { position: static; } /* qatlam butun kartani qoplaydi */
+.otp-head { display: flex; flex-direction: column; align-items: center; gap: .6rem; text-align: center; }
+.otp-shield { width: 3.4rem; height: 3.4rem; border-radius: 9999px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: #6ee7b7; background: rgba(16,185,129,.12); border: 1px solid rgba(16,185,129,.4); box-shadow: 0 0 28px rgba(16,185,129,.3); }
+.otp-hint { font-size: .85rem; color: #cbd5e1; }
+.otp-row { display: flex; justify-content: center; gap: .75rem; }
+.otp-box { width: 3.4rem; height: 4rem; text-align: center; font-size: 1.7rem; font-weight: 900; color: #fff; caret-color: #34d399; border-radius: 1rem; background: rgba(2,6,23,.55); border: 1.5px solid rgba(255,255,255,.16); outline: none; backdrop-filter: blur(8px); transition: border-color .2s, box-shadow .2s, transform .15s; }
+.otp-box:focus { border-color: #34d399; transform: translateY(-2px) scale(1.04); box-shadow: 0 0 0 3px rgba(16,185,129,.22), 0 0 26px rgba(16,185,129,.55); animation: otp-glow 1.6s ease-in-out infinite; }
+.otp-box.filled { border-color: rgba(52,211,153,.7); box-shadow: 0 0 16px rgba(16,185,129,.3); }
+@keyframes otp-glow { 50% { box-shadow: 0 0 0 4px rgba(34,211,238,.2), 0 0 34px rgba(34,211,238,.55); border-color: #22d3ee; } }
+.otp-form.err .otp-row { animation: otp-shake .4s; }
+.otp-form.err .otp-box { border-color: #fb7185; box-shadow: 0 0 18px rgba(244,63,94,.4); }
+@keyframes otp-shake { 20%, 60% { transform: translateX(-7px); } 40%, 80% { transform: translateX(7px); } }
+.otp-sim-note { display: flex; gap: .6rem; align-items: flex-start; padding: .65rem .9rem; border-radius: .9rem; background: rgba(245,158,11,.1); border: 1px solid rgba(245,158,11,.35); color: #fde68a; font-size: .75rem; }
+.otp-sim-code { font-size: 1.05rem; letter-spacing: .25em; color: #fff; }
+.otp-resend { display: flex; justify-content: center; align-items: center; gap: .5rem; font-size: .85rem; color: #94a3b8; flex-wrap: wrap; }
+.otp-resend-btn { font-weight: 800; color: #34d399; }
+.otp-resend-btn:hover:not(:disabled) { text-decoration: underline; }
+.otp-resend-btn:disabled { color: #64748b; cursor: not-allowed; }
+
+/* Tekshirilmoqda (loading) va Muvaffaqiyat (success) qatlamlari */
+.otp-overlay { position: absolute; inset: 0; z-index: 5; display: flex; align-items: center; justify-content: center; border-radius: 1.5rem; opacity: 0; visibility: hidden; pointer-events: none; background: rgba(2,6,23,.62); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); transition: opacity .3s ease, visibility .3s ease; }
+.otp-overlay[data-state="loading"], .otp-overlay[data-state="success"] { opacity: 1; visibility: visible; pointer-events: auto; }
+.otp-loading, .otp-success { display: none; flex-direction: column; align-items: center; gap: .8rem; text-align: center; color: #e2e8f0; }
+.otp-overlay[data-state="loading"] .otp-loading { display: flex; }
+.otp-overlay[data-state="success"] .otp-success { display: flex; animation: otp-pop .5s cubic-bezier(.2,1.2,.3,1) both; }
+.otp-loading { position: relative; width: 7.5rem; height: 7.5rem; justify-content: center; }
+.otp-ring { position: absolute; inset: 0; border-radius: 9999px; border: 3px solid transparent; border-top-color: #34d399; border-right-color: rgba(34,211,238,.6); filter: drop-shadow(0 0 10px rgba(16,185,129,.8)); animation: otp-spin 1s linear infinite; }
+.otp-ring.r2 { inset: .9rem; border-top-color: rgba(34,211,238,.9); border-right-color: transparent; animation-duration: 1.6s; animation-direction: reverse; }
+.otp-loading p { position: absolute; bottom: -2rem; font-size: .8rem; font-weight: 700; color: #6ee7b7; white-space: nowrap; animation: otp-pulse 1.2s ease-in-out infinite; }
+@keyframes otp-spin { to { transform: rotate(360deg); } }
+@keyframes otp-pulse { 50% { opacity: .45; } }
+.otp-success { padding: 1.6rem 1.4rem; border-radius: 1.5rem; background: rgba(15,23,42,.78); border: 1px solid rgba(16,185,129,.5); box-shadow: 0 0 50px rgba(16,185,129,.35); max-width: 86%; }
+.otp-success h3 { font-weight: 900; font-size: 1.15rem; color: #fff; }
+.otp-success p { font-size: .8rem; color: #94a3b8; }
+@keyframes otp-pop { from { opacity: 0; transform: scale(.85); } to { opacity: 1; transform: none; } }
+.otp-check { width: 4.4rem; height: 4.4rem; border-radius: 9999px; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, rgba(16,185,129,.35), rgba(16,185,129,.08)); box-shadow: 0 0 36px rgba(16,185,129,.7), 0 0 80px rgba(16,185,129,.35); animation: otp-glow-check 1.8s ease-in-out infinite; }
+.otp-check svg { width: 3.2rem; height: 3.2rem; }
+.otp-check circle { stroke: rgba(52,211,153,.9); stroke-width: 2.5; stroke-dasharray: 151; stroke-dashoffset: 151; animation: otp-draw .6s .1s ease forwards; }
+.otp-check path { stroke: #6ee7b7; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 40; stroke-dashoffset: 40; animation: otp-draw .45s .5s ease forwards; }
+@keyframes otp-draw { to { stroke-dashoffset: 0; } }
+@keyframes otp-glow-check { 50% { box-shadow: 0 0 46px rgba(34,211,238,.8), 0 0 100px rgba(16,185,129,.4); } }
+@media (prefers-reduced-motion: reduce) { .otp-ring, .otp-box:focus, .otp-check { animation: none; } }
+@media (max-width: 420px) { .otp-box { width: 2.9rem; height: 3.5rem; font-size: 1.45rem; } .otp-row { gap: .5rem; } }
+
+/* ===== Kun rejimi ===== */
+html[data-theme="light"] #auth-modal { background: radial-gradient(ellipse at 50% 30%, rgba(16,185,129,.22), rgba(226,232,240,.78) 65%); }
+html[data-theme="light"] #auth-modal .auth-card { background: linear-gradient(180deg, rgba(255,255,255,.82), rgba(236,253,245,.78)); border-color: rgba(5,150,105,.35); box-shadow: 0 0 50px rgba(16,185,129,.18), 0 30px 60px -20px rgba(30,60,35,.3), inset 0 1px 0 rgba(255,255,255,.9); }
+html[data-theme="light"] #auth-modal .auth-input { background: rgba(255,255,255,.85); border-color: #cbd5e1; color: #0f172a; }
+html[data-theme="light"] #auth-modal .auth-input:focus { border-color: #059669; box-shadow: 0 0 0 3px rgba(16,185,129,.2), 0 0 18px rgba(16,185,129,.25); }
+html[data-theme="light"] #auth-modal #auth-tabs { background: rgba(226,232,240,.7); border-color: #cbd5e1; }
+html[data-theme="light"] .otp-shield { color: #047857; background: rgba(16,185,129,.14); }
+html[data-theme="light"] .otp-hint, html[data-theme="light"] .otp-resend { color: #334155; }
+html[data-theme="light"] .otp-box { background: rgba(255,255,255,.92); color: #0f172a; border-color: #cbd5e1; caret-color: #059669; }
+html[data-theme="light"] .otp-box.filled { border-color: #10b981; }
+html[data-theme="light"] .otp-sim-note { background: #fef3c7; color: #78350f; border-color: #f59e0b; }
+html[data-theme="light"] .otp-sim-code { color: #0f172a; }
+html[data-theme="light"] .otp-resend-btn { color: #047857; }
+html[data-theme="light"] .otp-resend-btn:disabled { color: #64748b; }
+html[data-theme="light"] .otp-overlay { background: rgba(236,253,245,.72); }
+html[data-theme="light"] .otp-loading, html[data-theme="light"] .otp-success { color: #0f172a; }
+html[data-theme="light"] .otp-loading p { color: #047857; }
+html[data-theme="light"] .otp-success { background: rgba(255,255,255,.92); border-color: rgba(5,150,105,.45); }
+html[data-theme="light"] .otp-success h3 { color: #0f172a; }
+html[data-theme="light"] .otp-success p { color: #475569; }
+html[data-theme="light"] .otp-check svg path { stroke: #059669; }
+html[data-theme="light"] .otp-check circle { stroke: #10b981; }

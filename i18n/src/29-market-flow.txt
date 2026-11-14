@@ -1,0 +1,20 @@
+# --- Market kabineti: 4 bo'lim va buyurtma zanjiri ---
+Mening buyurtmalarim ‖ Мои заказы ‖ My orders
+Bronlarim ‖ Мои брони ‖ My bookings
+Yo'ldagi va yetib kelgan yuklar ‖ Грузы в пути и прибывшие ‖ Loads on the road and arrived
+Yo'ldagi yuklar ‖ Грузы в пути ‖ Loads on the road
+Fermerlarning tayyor mahsulotlari ‖ Готовая продукция фермеров ‖ Farmers' ready products
+Hozircha e'lonlar yo'q. ‖ Пока объявлений нет. ‖ No listings yet.
+Katalogni yuklab bo'lmadi. ‖ Не удалось загрузить каталог. ‖ Could not load the catalog.
+Yuk qabul qilindi: to'lov haydovchi va fermerga o'tkazildi ‖ Груз принят: оплата переведена водителю и фермеру ‖ Load received: payment transferred to the driver and the farmer
+Haydovchiga biriktirish ‖ Назначить водителя ‖ Assign to a driver
+Yukni qabul qildim ‖ Я принял груз ‖ I received the load
+Katalogda fermerlarning tayyor mahsulotlarini ko'ring va bron qiling. ‖ Смотрите готовую продукцию фермеров в каталоге и бронируйте. ‖ Browse the farmers' ready products in the catalog and book them.
+2. Buyurtmalaringiz shu yerda ‖ 2. Ваши заказы здесь ‖ 2. Your orders are here
+3. Moliya va to'lovlar ‖ 3. Финансы и платежи ‖ 3. Finance and payments
+4. Profil va sozlamalar ‖ 4. Профиль и настройки ‖ 4. Profile and settings
+Moliya hisobotlari va Excel ‖ Финансовые отчёты и Excel ‖ Financial reports and Excel
+Haydovchilar yuklanmoqda... ‖ Водители загружаются... ‖ Loading drivers...
+Hozircha faol haydovchi e'lonlari yo'q. ‖ Пока нет активных объявлений водителей. ‖ No active driver posts yet.
+Kutilayotgan, yo'ldagi va yetib kelgan yuklar; yo'lda jonli xarita, yetib kelganda «Yukni qabul qildim» tugmasi. ‖ Ожидающие, в пути и прибывшие грузы; в пути — живая карта, по прибытии — кнопка «Я принял груз». ‖ Pending, on-the-road and arrived loads; a live map on the road and the "I received the load" button on arrival.
+Escrow hisob, hisob-fakturalar va oylik Excel hisobotlar. Pul yukni qabul qilganingizdan keyin avtomatik haydovchi va fermerga bo'linadi. ‖ Эскроу-счёт, счета-фактуры и ежемесячные отчёты Excel. После приёмки груза деньги автоматически делятся между водителем и фермером. ‖ Escrow account, invoices and monthly Excel reports. After you receive the load the money is split automatically between the driver and the farmer.

@@ -1,0 +1,18 @@
+# --- Agro-Store (Dori & O'g'itlar): TEZ KUNDA ---
+Agro-Store (Dori & O'g'itlar) ‖ Agro-Store (Лекарства и удобрения) ‖ Agro-Store (Crop care & Fertilizers)
+Dori, o'g'it va chorva ozuqalarini fermer narxida sotib oling — platforma yuk tashuvchilari yetkazadi. ‖ Покупайте препараты, удобрения и корма для скота по фермерским ценам — доставят перевозчики платформы. ‖ Buy crop-care products, fertilizers and livestock feed at farmer prices — delivered by platform carriers.
+TEZ KUNDA ‖ СКОРО ‖ COMING SOON
+Bu bo'lim tez orada ishga tushadi. Hozircha ko'rgazma uchun namunaviy ma'lumotlar ko'rsatilmoqda. ‖ Этот раздел скоро заработает. Пока показаны примерные данные для демонстрации. ‖ This section launches soon. For now, sample data is shown for demonstration.
+Ekin dorilari va O'g'itlar ‖ Препараты и удобрения для растений ‖ Crop care & Fertilizers
+Chorvachilik Mahsulotlari ‖ Товары для животноводства ‖ Livestock Products
+Ishlatish bo'yicha qo'llanma ‖ Инструкция по применению ‖ Usage instructions
+Narxi ‖ Цена ‖ Price
+so'm/litr ‖ сум/л ‖ UZS/litre
+so'm/kg ‖ сум/кг ‖ UZS/kg
+Shahar ichida yetkazish ‖ Доставка по городу ‖ City delivery
+PARTIAL FREIGHT (Qisman yuklash) ‖ PARTIAL FREIGHT (Частичная загрузка) ‖ PARTIAL FREIGHT (Partial load)
+Yuk tashuvchilar boshqa yuklar bilan birga partial (qisman) olib ketishi mumkin. ‖ Перевозчики могут забрать груз частично вместе с другими грузами. ‖ Carriers may pick this up as a partial load together with other cargo.
+Buyurtma berish (tez kunda) ‖ Заказать (скоро) ‖ Order (coming soon)
+Chorvador fermerlar postlari ‖ Посты фермеров-животноводов ‖ Livestock farmers' posts
+Hamkasblar e'lon va savollari (namuna) ‖ Объявления и вопросы коллег (пример) ‖ Posts and questions from fellow farmers (sample)
+Katalogni yuklab bo'lmadi. ‖ Не удалось загрузить каталог. ‖ Could not load the catalog.

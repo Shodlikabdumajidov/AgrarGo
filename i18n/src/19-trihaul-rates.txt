@@ -1,0 +1,33 @@
+# --- Dinamik narx indikatori ---
+Qaynoq narx / Yuqori daromad ‖ Горячая цена / Высокий доход ‖ Hot price / High earnings
+Bozordan {0} past ‖ На {0} ниже рынка ‖ {0} below market
+Bozor narxida ‖ По рыночной цене ‖ At market price
+So'nggi {0} kundagi o'rtacha stavkalar asosida hisoblandi ‖ Рассчитано по средним ставкам за последние {0} дн. ‖ Calculated from average rates over the last {0} days
+O'rtacha bozor stavkasi: {0} so'm/km ‖ Средняя рыночная ставка: {0} сум/км ‖ Average market rate: {0} UZS/km
+Sizning stavkangiz: {0} so'm/km ‖ Ваша ставка: {0} сум/км ‖ Your rate: {0} UZS/km
+Shu yo'nalishda yakunlangan reyslar: {0} ‖ Завершённых рейсов по этому маршруту: {0} ‖ Completed trips on this route: {0}
+Bu yo'nalishda ma'lumot kam: barcha yo'nalishlar o'rtachasi ishlatildi ‖ По этому маршруту мало данных: использовано среднее по всем маршрутам ‖ Little data for this route: the all-routes average is used
+Hali yakunlangan reyslar yetarli emas: joriy tarif ishlatildi ‖ Завершённых рейсов пока недостаточно: использован текущий тариф ‖ Not enough completed trips yet: the current tariff is used
+bozor narxiga mos ‖ соответствует рыночной цене ‖ in line with the market price
+bozor narxidan {0} baland ‖ на {0} выше рыночной цены ‖ {0} above the market price
+bozor narxidan {0} past ‖ на {0} ниже рыночной цены ‖ {0} below the market price
+Joriy o'rtacha bozor narxi: {0} so'm/kg. ‖ Текущая средняя рыночная цена: {0} сум/кг. ‖ Current average market price: {0} UZS/kg.
+Sizning taklifingiz {0}. ‖ Ваше предложение {0}. ‖ Your offer is {0}.
+Ushbu yo'nalish bo'yicha joriy o'rtacha bozor stavkasi: {0} so'm/km. ‖ Текущая средняя рыночная ставка по этому маршруту: {0} сум/км. ‖ Current average market rate on this route: {0} UZS/km.
+Stavka: {0} so'm/km — {1} ‖ Ставка: {0} сум/км — {1} ‖ Rate: {0} UZS/km — {1}
+bozor o'rtachasiga mos ‖ соответствует среднерыночной ‖ in line with the market average
+bozor o'rtachasidan {0} baland ‖ на {0} выше среднерыночной ‖ {0} above the market average
+bozor o'rtachasidan {0} past ‖ на {0} ниже среднерыночной ‖ {0} below the market average
+# --- TriHaul ---
+TriHaul Tavsiyasi ‖ Рекомендация TriHaul ‖ TriHaul Recommendation
+{0} dan to'g'ridan-to'g'ri qaytish o'rniga {1} orqali qayting va umumiy daromadingizni {2}% ga oshiring! ‖ Вместо прямого возвращения из {0} вернитесь через {1} и увеличьте общий доход на {2}%! ‖ Instead of returning directly from {0}, come back via {1} and raise your total earnings by {2}%!
+Jami masofa ‖ Общее расстояние ‖ Total distance
+Bo'sh yurish ‖ Порожний пробег ‖ Empty run
+Jami daromad ‖ Общий доход ‖ Total earnings
+Bitta yukda: {0} ‖ С одним грузом: {0} ‖ With one load: {0}
+Ikkinchi yuk: {0} · {1} → {2} · {3} kg · {4} ‖ Второй груз: {0} · {1} → {2} · {3} кг · {4} ‖ Second load: {0} · {1} → {2} · {3} kg · {4}
+Ikkalasini birdan bron qilish ‖ Забронировать оба сразу ‖ Book both at once
+Birinchi yukni yetkazgach, ikkinchi yukni «Mavjud yuklar» bo'limidan oling. ‖ Доставив первый груз, возьмите второй в разделе «Доступные грузы». ‖ After delivering the first load, take the second from "Available loads".
+Zanjirli bron qilindi! ‖ Цепочка забронирована! ‖ Chain booked!
+Ikkala yuk sizga biriktirildi. Avval birinchisini yetkazing. ‖ Оба груза закреплены за вами. Сначала доставьте первый. ‖ Both loads are assigned to you. Deliver the first one first.
+Obuna muddati tugagan. Yuk olish uchun obunani uzaytiring. ‖ Подписка истекла. Продлите её, чтобы брать грузы. ‖ Your subscription has expired. Renew it to take loads.

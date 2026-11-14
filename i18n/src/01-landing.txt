@@ -1,0 +1,156 @@
+# Format:  o'zbekcha ‖ русский ‖ English     ({0}, {1} — o'zgaruvchan qismlar, har uchala tilda bir xil bo'lishi shart)
+# --- Sahifa sarlavhasi va yuqori panel ---
+AgrarGo — Smart Agro-Logistics Ecosystem ‖ AgrarGo — Экосистема умной агро-логистики ‖ AgrarGo — Smart Agro-Logistics Ecosystem
+AgrarGo B2B Hub ‖ AgrarGo B2B Hub ‖ AgrarGo B2B Hub
+Hamkorlik / Aloqa ‖ Сотрудничество / Контакты ‖ Partnership / Contact
+Logistika Tariflari ‖ Логистические тарифы ‖ Logistics Rates
+Market.uz Zanjiri ‖ Сеть Market.uz ‖ Market.uz Network
+Omborxona ‖ Склад ‖ Warehouse
+E'lon Joylash ‖ Разместить объявление ‖ Post a Listing
+Til / Language ‖ Язык / Language ‖ Language / Til
+Barcha yo'nalishlar ‖ Все направления ‖ All categories
+Sabzavot ‖ Овощи ‖ Vegetables
+Meva ‖ Фрукты ‖ Fruits
+Poliz ‖ Бахчевые ‖ Melons
+Don ‖ Зерно ‖ Grain
+Boshqa ‖ Другое ‖ Other
+Filtrlar ‖ Фильтры ‖ Filters
+Kabinetga Kirish ‖ Войти в кабинет ‖ Sign In
+Mening kabinetim ‖ Мой кабинет ‖ My Dashboard
+Mening e'lonlarim ‖ Мои объявления ‖ My Listings
+Profil sozlamalari ‖ Настройки профиля ‖ Profile Settings
+Chiqish ‖ Выйти ‖ Sign Out
+Ekotizim Menusi ‖ Меню экосистемы ‖ Ecosystem Menu
+Rolingizni tanlang. Bitta telefon raqam faqat bitta rolda ro'yxatdan o'ta oladi. ‖ Выберите свою роль. Один номер телефона можно зарегистрировать только в одной роли. ‖ Choose your role. A phone number can be registered under only one role.
+AgrarGo Farm (Fermer) ‖ AgrarGo Farm (Фермер) ‖ AgrarGo Farm (Farmer)
+Faol ‖ Активно ‖ Active
+AgrarGo Driver (Haydovchi) ‖ AgrarGo Driver (Водитель) ‖ AgrarGo Driver (Driver)
+AgrarGo Market (B2B Do'kon) ‖ AgrarGo Market (B2B магазин) ‖ AgrarGo Market (B2B Store)
+Market ‖ Маркет ‖ Market
+AgrarGo Hub (Dispetcher) ‖ AgrarGo Hub (Диспетчер) ‖ AgrarGo Hub (Dispatcher)
+Markaz ‖ Центр ‖ Hub
+ELD Tracking & Maps ‖ ELD-трекинг и карты ‖ ELD Tracking & Maps
+Onlayn ‖ Онлайн ‖ Online
+Warehouse Storage (Ombor) ‖ Warehouse Storage (Склад) ‖ Warehouse Storage
+Zaxira ‖ Резерв ‖ Reserve
+AgrarGo Enterprise Platform v2.0 ‖ AgrarGo Enterprise Platform v2.0 ‖ AgrarGo Enterprise Platform v2.0
+# --- Hero ---
+Smart Agro-Logistics ‖ Умная агро-логистика ‖ Smart Agro-Logistics
+O'zbekistondagi Birinchi Raqamli Agro-Logistika Zanjiri ‖ Первая в Узбекистане цифровая агро-логистическая цепочка ‖ Uzbekistan's First Digital Agro-Logistics Chain
+Dehqondan Do'konga — ‖ От фермера до магазина — ‖ From Farm to Store —
+Vositachilarsiz Kelajak ‖ будущее без посредников ‖ a Future Without Middlemen
+Fermerlarning og'ir mehnatini qadrlash, narx monopoliyasiga barham berish va mahsulotni to'g'ridan-to'g'ri bozor hamda supermarketlarga yetkazishning ishonchli ekotizimi. ‖ Надёжная экосистема, которая ценит тяжёлый труд фермеров, прекращает ценовую монополию и доставляет продукцию напрямую на рынки и в супермаркеты. ‖ A reliable ecosystem that values farmers' hard work, ends price monopolies and delivers produce straight to markets and supermarkets.
+# --- Katalog ---
+AgrarGo Market ‖ AgrarGo Market ‖ AgrarGo Market
+Fermerlardan To'g'ridan-to'g'ri E'lonlar ‖ Объявления напрямую от фермеров ‖ Listings Straight from Farmers
+Faol e'lonlarni ko'ring, filtrlang va B2B bron qiling. Vositachilarsiz, fermer narxida. ‖ Просматривайте активные объявления, фильтруйте и бронируйте по B2B. Без посредников, по цене фермера. ‖ Browse active listings, filter them and place B2B bookings. No middlemen, at the farmer's price.
+Barcha viloyatlar ‖ Все области ‖ All regions
+Toshkent shahri ‖ г. Ташкент ‖ Tashkent City
+Toshkent viloyati ‖ Ташкентская область ‖ Tashkent Region
+Andijon ‖ Андижан ‖ Andijan
+Buxoro ‖ Бухара ‖ Bukhara
+Farg'ona ‖ Фергана ‖ Fergana
+Jizzax ‖ Джизак ‖ Jizzakh
+Namangan ‖ Наманган ‖ Namangan
+Navoiy ‖ Навои ‖ Navoiy
+Qashqadaryo ‖ Кашкадарья ‖ Qashqadaryo
+Qoraqalpog'iston ‖ Каракалпакстан ‖ Karakalpakstan
+Samarqand ‖ Самарканд ‖ Samarkand
+Sirdaryo ‖ Сырдарья ‖ Sirdaryo
+Surxondaryo ‖ Сурхандарья ‖ Surxondaryo
+Xorazm ‖ Хорезм ‖ Khorezm
+Eng yangilari ‖ Сначала новые ‖ Newest first
+Narx: arzonidan ‖ Цена: по возрастанию ‖ Price: low to high
+Narx: qimmatidan ‖ Цена: по убыванию ‖ Price: high to low
+# --- Modullar ---
+Kompleks Yechimlar ‖ Комплексные решения ‖ Complete Solutions
+AgrarGo Ekotizim Modullari ‖ Модули экосистемы AgrarGo ‖ AgrarGo Ecosystem Modules
+Dehqon, haydovchi, do'kon va dispetcherlar uchun mukammal avtomatlashtirilgan raqamli infratuzilma. ‖ Совершенная автоматизированная цифровая инфраструктура для фермеров, водителей, магазинов и диспетчеров. ‖ A fully automated digital infrastructure for farmers, drivers, stores and dispatchers.
+AgrarGo Farm ‖ AgrarGo Farm ‖ AgrarGo Farm
+Fermerlar o'z hosilini yerdan turib bozor narxida bevosita do'konlarga taqdim etadi. Daromad to'g'ridan-to'g'ri dehqon hamyoniga tushadi. ‖ Фермеры предлагают свой урожай напрямую магазинам по рыночной цене, не выходя с поля. Доход поступает прямо фермеру. ‖ Farmers offer their harvest directly to stores at market prices, right from the field. The income goes straight to the farmer.
+AgrarGo Driver ‖ AgrarGo Driver ‖ AgrarGo Driver
+Yuk tashuvchilar uchun maxsus ilova. Bo'sh reyslarni topish, ELD GPS xarita orqali masofaviy kuzatuv va xavfsiz marshrut. ‖ Специальное приложение для перевозчиков. Поиск свободных рейсов, дистанционное наблюдение по ELD GPS-карте и безопасный маршрут. ‖ A dedicated app for carriers. Find free trips, track remotely on the ELD GPS map and drive a safe route.
+Supermarket va chakana savdo tarmoqlari uchun B2B buyurtma portali. Sifat nazorati va qat'iy kafolat mexanizmlari bilan ta'minlangan. ‖ B2B-портал заказов для супермаркетов и розничных сетей. Обеспечен контролем качества и строгими механизмами гарантий. ‖ A B2B ordering portal for supermarkets and retail chains, backed by quality control and strict guarantee mechanisms.
+AgrarGo Hub ‖ AgrarGo Hub ‖ AgrarGo Hub
+Markaziy dispetcherlik xizmati. Logistika zanjiridagi barcha jarayonlarni 24/7 rejimida muvofiqlashtiradi va tezkor hal etadi. ‖ Центральная диспетчерская служба. Координирует и оперативно решает все процессы логистической цепочки в режиме 24/7. ‖ The central dispatch service. It coordinates and promptly resolves every process in the logistics chain, 24/7.
+ELD GPS & Maps ‖ ELD GPS и карты ‖ ELD GPS & Maps
+Yuk mashinalari uchun zamonaviy GPS qurilmalari va interaktiv xarita. Harakat tezligi, vaqt va joylashuvni aniq ko'rsatadi. ‖ Современные GPS-устройства для грузовиков и интерактивная карта. Точно показывает скорость движения, время и местоположение. ‖ Modern GPS devices for trucks and an interactive map. It shows speed, time and location precisely.
+Warehouse Storage ‖ Warehouse Storage ‖ Warehouse Storage
+Mavsumiy narx tushib ketganda hosilni yo'qotmaslik uchun zamonaviy omborxonalarda saqlash va qulay vaqtda sotish imkoniyati. ‖ Возможность хранить урожай на современных складах и продать в удобное время, чтобы не потерять его при сезонном падении цен. ‖ Store your harvest in modern warehouses and sell at a good time, so you don't lose it when seasonal prices drop.
+# --- Muammo va yechim ---
+Muammo va Yechim ‖ Проблема и решение ‖ Problem and Solution
+Nega AgrarGo Sektoruchun Inqilobiy? ‖ Почему AgrarGo революционен для отрасли? ‖ Why Is AgrarGo Revolutionary for the Sector?
+Eski tizim keltiradigan zararlar va biz joriy etayotgan zamonaviy raqamli afzalliklar. ‖ Потери, которые приносит старая система, и современные цифровые преимущества, которые мы внедряем. ‖ The losses of the old system and the modern digital advantages we are introducing.
+An'anaviy Bozor Muammolari ‖ Проблемы традиционного рынка ‖ Problems of the Traditional Market
+Monopolvositalar: ‖ Монополия посредников: ‖ Middlemen monopoly:
+Dehqon yerida yetishtirgan hosilini olib-sotarlarga arzon berishga majbur. ‖ Фермер вынужден отдавать выращенный урожай перекупщикам по дешёвке. ‖ Farmers are forced to sell their harvest to resellers cheaply.
+Shaffof bo'lmagan narxlar: ‖ Непрозрачные цены: ‖ Opaque prices:
+Real talab va narxlardan dehqonning vaqtida xabari bo'lmaydi. ‖ Фермер не знает вовремя о реальном спросе и ценах. ‖ Farmers don't learn about real demand and prices in time.
+Ombor yo'qligi: ‖ Отсутствие складов: ‖ No warehouses:
+Narx past paytda mahsulotni saqlolmay arzon sotish yoki buzib qo'yish. ‖ Когда цена низкая, продукцию нельзя сохранить — приходится продавать дёшево или она портится. ‖ When prices are low the produce can't be stored — it is sold cheaply or spoils.
+AgrarGo Raqamli Yechimi ‖ Цифровое решение AgrarGo ‖ The AgrarGo Digital Solution
+To'g'ridan-to'g'ri B2B savdo: ‖ Прямая B2B-торговля: ‖ Direct B2B trade:
+Vositachilarsiz adolatli narxdagi savdo zanjiri. ‖ Цепочка продаж по справедливой цене без посредников. ‖ A sales chain at fair prices with no middlemen.
+Real vaqt ma'lumotlari: ‖ Данные в реальном времени: ‖ Real-time data:
+Bozor narxlari va talab dinamikasini onlayn kuzatish. ‖ Онлайн-мониторинг рыночных цен и динамики спроса. ‖ Follow market prices and demand dynamics online.
+Ombor xavfsizligi: ‖ Безопасность склада: ‖ Warehouse security:
+Hosilni omborga joylab, yuqori narxda sotish orqali yuqori daromad. ‖ Высокий доход за счёт хранения урожая на складе и продажи по высокой цене. ‖ Higher income by storing the harvest and selling it at a higher price.
+# --- Qadamlar ---
+Qadamlar ‖ Шаги ‖ Steps
+AgrarGo Qanday Ishlaydi? ‖ Как работает AgrarGo? ‖ How Does AgrarGo Work?
+Hosildan to oxirgi xaridorga yetib borguncha 4 ta sodda qadam. ‖ 4 простых шага от урожая до конечного покупателя. ‖ 4 simple steps from harvest to the final buyer.
+E'lon Berish ‖ Размещение объявления ‖ Post a Listing
+Fermer mahsulot turi va narxini platformaga joylashtiradi. ‖ Фермер размещает на платформе вид продукции и цену. ‖ The farmer posts the product type and price on the platform.
+B2B Bron Qilish ‖ B2B-бронирование ‖ B2B Booking
+Supermarketlar kerakli hajmdagi mahsulotni band qiladi. ‖ Супермаркеты бронируют нужный объём продукции. ‖ Supermarkets reserve the volume of produce they need.
+Smart Logistika ‖ Умная логистика ‖ Smart Logistics
+ELD GPS orqali harakat dispetcher tomonidan kuzatiladi. ‖ Движение отслеживается диспетчером через ELD GPS. ‖ The dispatcher tracks movement via ELD GPS.
+Kafolatlangan To'lov ‖ Гарантированная оплата ‖ Guaranteed Payment
+Mahsulot yetib borgach, mablag' dehqon balansiga o'tadi. ‖ После доставки продукции средства переходят на баланс фермера. ‖ Once the goods arrive, the funds go to the farmer's balance.
+# --- Natijalar / Taqrizlar / FAQ ---
+Natijalar ‖ Результаты ‖ Results
+Raqamlarda AgrarGo Ta'siri ‖ Влияние AgrarGo в цифрах ‖ AgrarGo's Impact in Numbers
+Hududiy agrar logistikani raqamlashtirish ko'rsatkichlari. ‖ Показатели цифровизации региональной агро-логистики. ‖ Indicators of digitalising regional agro-logistics.
+Faol Fermerlar ‖ Активные фермеры ‖ Active Farmers
+ELD Transporterlar ‖ ELD-транспорт ‖ ELD Carriers
+Tejalgan Xarajatlar ‖ Сэкономленные расходы ‖ Costs Saved
+12 Tonna ‖ 12 тонн ‖ 12 Tonnes
+Kunlik Yetkazish ‖ Ежедневная доставка ‖ Daily Deliveries
+Taqrizlar ‖ Отзывы ‖ Reviews
+Fermer va Hamkorlarimiz Fikrlari ‖ Мнения фермеров и партнёров ‖ What Our Farmers and Partners Say
+AgrarGo ekotizimidan amalda foydalanayotganlar taassurotlari. ‖ Впечатления тех, кто уже пользуется экосистемой AgrarGo. ‖ Impressions from people who use the AgrarGo ecosystem.
+"AgrarGo Farm tufayli to'g'ridan-to'g'ri do'konlarga chiqib, daromadimizni sezilarli oshirdik." ‖ «Благодаря AgrarGo Farm мы вышли напрямую в магазины и заметно увеличили доход.» ‖ "Thanks to AgrarGo Farm we reached stores directly and noticeably increased our income."
+Shavkat aka ‖ Шавкат-ака ‖ Shavkat aka
+Samarqandlik Fermer ‖ Фермер из Самарканда ‖ Farmer from Samarkand
+"ELD GPS tracking va bo'sh yuklarni topish moduli ishlarimizni tartibga soldi. Reyslarimiz aniq." ‖ «Модуль ELD GPS-трекинга и поиска свободных грузов упорядочил нашу работу. Рейсы стали чёткими.» ‖ "The ELD GPS tracking and free-load search module put our work in order. Our trips are precise."
+Jasur Bekmurodov ‖ Жасур Бекмуродов ‖ Jasur Bekmurodov
+Logistika Haydovchisi ‖ Водитель-логист ‖ Logistics Driver
+"Supermarketimiz uchun dehqondan bevosita yangi mahsulot olishimizda AgrarGo Market qo'l keldi." ‖ «AgrarGo Market помог нам получать свежую продукцию для супермаркета напрямую от фермеров.» ‖ "AgrarGo Market helped us source fresh produce for our supermarket directly from farmers."
+Umid Tursunov ‖ Умид Турсунов ‖ Umid Tursunov
+B2B Market Rahbari ‖ Руководитель B2B-маркета ‖ B2B Market Manager
+FAQ ‖ FAQ ‖ FAQ
+Ko'p Beriladigan Savollar ‖ Часто задаваемые вопросы ‖ Frequently Asked Questions
+Platformaning ishlash tartibi bo'yicha batafsil javoblar. ‖ Подробные ответы о порядке работы платформы. ‖ Detailed answers about how the platform works.
+Dehqonlar uchun ro'yxatdan o'tish bepulmi? ‖ Регистрация для фермеров бесплатна? ‖ Is registration free for farmers?
+Ha, fermerlar va dehqonlar uchun ro'yxatdan o'tish hamda e'lon joylashtirish mutlaqo bepul. ‖ Да, регистрация и размещение объявлений для фермеров абсолютно бесплатны. ‖ Yes, registration and posting listings are completely free for farmers.
+Sifat kafolati qanday nazorat qilinadi? ‖ Как контролируется гарантия качества? ‖ How is the quality guarantee controlled?
+Sifat mezonlari, jarima tizimi va ELD GPS tracking orqali dispetcherlik nazorat qiladi. ‖ Диспетчерская служба контролирует качество по критериям, системе штрафов и ELD GPS-трекингу. ‖ Dispatch controls quality through quality criteria, a penalty system and ELD GPS tracking.
+Bozorda narx tushganda hosilni saqlash mumkinmi? ‖ Можно ли сохранить урожай, когда цены на рынке падают? ‖ Can the harvest be stored when market prices fall?
+Ha, Warehouse Storage orqali mahsulotni omborda saqlab, narx ko'tarilganda sotishingiz mumkin. ‖ Да, через Warehouse Storage вы можете хранить продукцию на складе и продать, когда цена вырастет. ‖ Yes, with Warehouse Storage you can keep the produce in a warehouse and sell when the price rises.
+# --- Footer ---
+O'zbekiston agrar sektori uchun zamonaviy raqamli logistika va ta'minot ekotizimi. ‖ Современная цифровая экосистема логистики и снабжения для аграрного сектора Узбекистана. ‖ A modern digital logistics and supply ecosystem for Uzbekistan's agricultural sector.
+Modullar ‖ Модули ‖ Modules
+Texnologiyalar ‖ Технологии ‖ Technologies
+ELD GPS Tracking ‖ ELD GPS-трекинг ‖ ELD GPS Tracking
+Bog'lanish ‖ Контакты ‖ Contact
+Samarqand, O'zbekiston ‖ Самарканд, Узбекистан ‖ Samarkand, Uzbekistan
+© 2026 AgrarGo. Barcha huquqlar himoyalangan. ‖ © 2026 AgrarGo. Все права защищены. ‖ © 2026 AgrarGo. All rights reserved.
+Saytga qaytish ‖ Вернуться на сайт ‖ Back to Site
+Kabinet ‖ Кабинет ‖ Dashboard
+Kabinet bo'limlari ‖ Разделы кабинета ‖ Dashboard sections
+mahsulot, kategoriya yoki fermer nomi... ‖ продукт, категория или название фермы... ‖ product, category or farm name...
+Qidirish ‖ Поиск ‖ Search
+Saralash ‖ Сортировка ‖ Sorting
+Sahifalash ‖ Постраничная навигация ‖ Pagination
+Yopish ‖ Закрыть ‖ Close
+AgrarGo Logo ‖ Логотип AgrarGo ‖ AgrarGo Logo

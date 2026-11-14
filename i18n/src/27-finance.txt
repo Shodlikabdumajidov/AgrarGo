@@ -1,0 +1,92 @@
+# --- Moliya paneli, escrow qayta hisoblash, ziyon (OS&D) ---
+Moliya paneli ‖ Финансовая панель ‖ Finance panel
+Ziyon (OS&D): yaroqsiz qutilar ‖ Ущерб (OS&D): негодные коробки ‖ Damage (OS&D): damaged boxes
+Ziyon (OS&D) ‖ Ущерб (OS&D) ‖ Damage (OS&D)
+Mahsulot summasi: {0} ‖ Сумма товара: {0} ‖ Goods amount: {0}
+Qayd etish va qayta hisoblash ‖ Зафиксировать и пересчитать ‖ Record and recalculate
+Buyurtmadagi jami qutilar ‖ Всего коробок в заказе ‖ Total boxes in the order
+Yaroqsiz qutilar soni 1 dan jami qutilar soniga qadar bo'lsin. ‖ Число негодных коробок — от 1 до общего числа коробок. ‖ Damaged boxes must be from 1 up to the total number of boxes.
+Hamma quti yaroqsiz: buyurtma to'liq bekor qilinadi, butun summa xaridorga qaytadi. ‖ Все коробки негодны: заказ полностью отменяется, вся сумма возвращается покупателю. ‖ All boxes are damaged: the order is cancelled in full and the whole amount is refunded to the buyer.
+Xaridorga qaytadi: {0} · fermerga qoladi: {1} · yo'l haqi o'zgarmaydi ‖ Покупателю вернётся: {0} · фермеру останется: {1} · плата за доставку не меняется ‖ Refunded to the buyer: {0} · farmer keeps: {1} · delivery fee unchanged
+Ziyon qayd etildi: to'lov qayta hisoblandi. ‖ Ущерб зафиксирован: платёж пересчитан. ‖ Damage recorded: the payment was recalculated.
+Xaridorga qaytgan ‖ Возвращено покупателю ‖ Refunded to buyer
+Chakana buyurtma ‖ Розничный заказ ‖ Retail order
+Master QR / manba ‖ Мастер-QR / источник ‖ Master QR / source
+Qadoqlash haqi ‖ Плата за упаковку ‖ Packaging fee
+Nizo qarori ‖ Решение по спору ‖ Dispute ruling
+Bron (B2B) ‖ Бронь (B2B) ‖ Booking (B2B)
+Ombor buyurtmasi ‖ Заказ со склада ‖ Warehouse order
+Chakana (Hub) ‖ Розница (Hub) ‖ Retail (Hub)
+Hold (escrow) ‖ Hold (эскроу) ‖ Hold (escrow)
+Ziyon: yaroqsiz qutilar bo'yicha qisman qaytarish ‖ Ущерб: частичный возврат по негодным коробкам ‖ Damage: partial refund for damaged boxes
+Mahsulot summasining foizini qaytarish ‖ Вернуть процент от суммы товара ‖ Refund a percentage of the goods amount
+Escrow'ni fermerga chiqarish ‖ Выплатить эскроу фермеру ‖ Release the escrow to the farmer
+To'liq qaytarish (xaridorga) ‖ Полный возврат (покупателю) ‖ Full refund (to the buyer)
+Nizoni hal qilish ‖ Решить спор ‖ Resolve dispute
+Qaror ‖ Решение ‖ Decision
+Qarorni bajarish ‖ Выполнить решение ‖ Execute decision
+Jami qutilar soni ‖ Общее число коробок ‖ Total number of boxes
+Qaytariladigan foiz (1-99) ‖ Процент к возврату (1-99) ‖ Percentage to refund (1-99)
+Yuk holatiga qarab (avtomatik) ‖ По состоянию груза (автоматически) ‖ By cargo state (automatic)
+Haydovchi to'liq oladi ‖ Водитель получает полностью ‖ Driver gets the full fee
+Nisbatan qirqiladi ‖ Сокращается пропорционально ‖ Reduced proportionally
+Qaror sababi (audit jurnaliga yoziladi) ‖ Причина решения (записывается в журнал аудита) ‖ Reason (recorded in the audit log)
+Qaror bajarildi: escrow qayta hisoblandi. ‖ Решение выполнено: эскроу пересчитан. ‖ Decision executed: escrow recalculated.
+Mahsulot (fermer) ‖ Товар (фермер) ‖ Goods (farmer)
+Komissiya ‖ Комиссия ‖ Commission
+Hub haqi ‖ Плата Hub ‖ Hub fee
+Keshbek bilan qoplangan ‖ Покрыто кешбэком ‖ Covered by cashback
+Xaridor to'lagan jami ‖ Всего оплатил покупатель ‖ Total paid by the buyer
+Xaridorga qaytarilgan: {0} ‖ Возвращено покупателю: {0} ‖ Refunded to the buyer: {0}
+Ulushlar ‖ Доли ‖ Shares
+Qayta hisoblashlar ‖ Пересчёты ‖ Recalculations
+qaytgan {0} ‖ возвращено {0} ‖ refunded {0}
+Hub'ga {0} ‖ Hub: {0} ‖ To Hub: {0}
+Tarix ‖ История ‖ History
+To'lov tafsiloti ‖ Детали платежа ‖ Payment details
+Komissiya (yalpi) ‖ Комиссия (валовая) ‖ Commission (gross)
+Keshbek bilan qoplangan qismi ‖ Часть, покрытая кешбэком ‖ Part covered by cashback
+Sof komissiya ‖ Чистая комиссия ‖ Net commission
+Omborxona xizmat haqi ‖ Плата за услуги склада ‖ Warehouse service fee
+Qadoqlash xizmati (Hub ulushi) ‖ Услуга упаковки (доля Hub) ‖ Packaging service (Hub share)
+Jami platforma foydasi ‖ Итого прибыль платформы ‖ Total platform profit
+Yakunlangan (Released) to'lovlar bo'yicha. Hub saqlash haqlari ({0}) Hub'lar daromadi, platforma foydasiga kirmaydi. ‖ По завершённым (Released) платежам. Платы Hub за хранение ({0}) — доход Hub, в прибыль платформы не входят. ‖ Based on released payments. Hub storage fees ({0}) are Hub income and not part of platform profit.
+Platforma foydasi ‖ Прибыль платформы ‖ Platform profit
+Yozilgan ‖ Начислено ‖ Earned
+Ishlatilgan ‖ Использовано ‖ Spent
+Qaytgan ‖ Возвращено ‖ Restored
+Foydalanuvchilar balansi ‖ Баланс пользователей ‖ User balances
+Aylanma (yozilgan + ishlatilgan): {0} ‖ Оборот (начислено + использовано): {0} ‖ Turnover (earned + spent): {0}
+Oylar bo'yicha ‖ По месяцам ‖ By month
+Cashback aylanmasi ‖ Оборот кешбэка ‖ Cashback turnover
+Barcha holatlar ‖ Все статусы ‖ All statuses
+Hold ‖ Hold ‖ Hold
+Kutilmoqda ‖ Ожидает ‖ Pending
+Barcha turlar ‖ Все типы ‖ All types
+To'lov ‖ Платёж ‖ Payment
+Tur ‖ Тип ‖ Type
+Holat ‖ Статус ‖ Status
+Xaridor ‖ Покупатель ‖ Buyer
+Fermer ‖ Фермер ‖ Farmer
+Jami ‖ Итого ‖ Total
+Qaytarilgan ‖ Возвращено ‖ Refunded
+Sana ‖ Дата ‖ Date
+Tafsilot ‖ Детали ‖ Details
+Ziyon: Hub xodimi (qadoqlash) ‖ Ущерб: сотрудник Hub (упаковка) ‖ Damage: Hub staff (packing)
+To'lovlar topilmadi. ‖ Платежи не найдены. ‖ No payments found.
+Turi ‖ Тип ‖ Type
+Qutilar ‖ Коробки ‖ Boxes
+Hub'ga o'tgan ‖ Передано Hub ‖ Transferred to Hub
+Qayta hisoblashlar hali yo'q. ‖ Пересчётов пока нет. ‖ No recalculations yet.
+Hisob-kitob izchil: ulushlar, holatlar, qaytarishlar va qadoqlash haqlari jurnal bilan mos. ‖ Расчёты согласованы: доли, статусы, возвраты и плата за упаковку соответствуют журналу. ‖ Accounts reconcile: shares, statuses, refunds and packaging fees match the ledger.
+Hisob-kitobda nomuvofiqlik aniqlandi: {0} ta ‖ Обнаружены расхождения в расчётах: {0} ‖ Reconciliation issues found: {0}
+Ziyon va nizo qaytarishlari ‖ Возвраты по ущербу и спорам ‖ Damage and dispute refunds
+{0} ta qaror ‖ Решений: {0} ‖ {0} decisions
+Escrow jadvallari ‖ Таблицы эскроу ‖ Escrow tables
+Hold, Released va Refunded holatidagi to'lovlar; nizoli to'lovga qaror chiqarish mumkin ‖ Платежи в статусах Hold, Released и Refunded; по спорному платежу можно вынести решение ‖ Payments in Hold, Released and Refunded states; a ruling can be issued for a disputed payment
+Qayta hisoblashlar jurnali ‖ Журнал пересчётов ‖ Recalculation log
+Ziyon, qadoqlash haqi ushlanmasi va nizo qarorlari ‖ Ущерб, удержания платы за упаковку и решения по спорам ‖ Damage, packaging fee deductions and dispute rulings
+{0} ta ‖ {0} шт. ‖ {0}
+Yangi Alifbo ‖ Новый алфавит ‖ New alphabet
+Yengil rejim ‖ Лёгкий режим ‖ Lite mode
+Yengil rejim: effektlar va animatsiyalar kamayadi ‖ Лёгкий режим: меньше эффектов и анимаций ‖ Lite mode: fewer effects and animations

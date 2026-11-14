@@ -1,0 +1,183 @@
+# --- Xarita / GPS / ELD ---
+Jonli kuzatuv ‖ Отслеживание в реальном времени ‖ Live tracking
+Demo (simulyatsiya) ‖ Демо (симуляция) ‖ Demo (simulation)
+Joylashuv yuklanmoqda... ‖ Загрузка местоположения... ‖ Loading location...
+Haydovchi joylashuvi hali kelmadi ‖ Местоположение водителя ещё не получено ‖ The driver's location hasn't arrived yet
+Oxirgi signal: {0} ‖ Последний сигнал: {0} ‖ Last signal: {0}
+{0} km/soat ‖ {0} км/ч ‖ {0} km/h
+Manzilgacha ≈ {0} km ‖ До места назначения ≈ {0} км ‖ To destination ≈ {0} km
+{0} km ‖ {0} км ‖ {0} km
+Haydovchidan {0} signal kelmadi: aloqa uzilgan yoki telefon o'chiq bo'lishi mumkin. ‖ От водителя нет сигнала ({0}): возможно, нет связи или телефон выключен. ‖ No signal from the driver ({0}): the connection may be lost or the phone switched off.
+Xaritani yuklab bo'lmadi (internetni tekshiring). ‖ Не удалось загрузить карту (проверьте интернет). ‖ Could not load the map (check your internet).
+{0}, {1} — xaritada ochish ‖ {0}, {1} — открыть на карте ‖ {0}, {1} — open on map
+Yuk olingan joy: {0} ‖ Место погрузки: {0} ‖ Pickup point: {0}
+Yetkaziladi: {0} ‖ Доставка: {0} ‖ Delivery: {0}
+Joylashuvni olib bo'lmadi. ‖ Не удалось получить местоположение. ‖ Could not get the location.
+Yuk endi yo'lda emas ({0}). Ro'yxat yangilanmoqda... ‖ Груз больше не в пути ({0}). Список обновляется... ‖ The load is no longer on the road ({0}). Refreshing the list...
+Haydovchi hali joylashuv yubormadi. Birinchi nuqta kelishi bilan xaritada ko'rinadi. ‖ Водитель ещё не отправил местоположение. Как только придёт первая точка, она появится на карте. ‖ The driver hasn't sent a location yet. It will appear on the map as soon as the first point arrives.
+Marshrut viloyat markazlari orasida taxminiy chizilgan. Yashil chiziq — haydovchining haqiqiy yo'li. ‖ Маршрут приблизительно проложен между центрами областей. Зелёная линия — фактический путь водителя. ‖ The route is drawn approximately between regional centres. The green line is the driver's actual path.
+Bu brauzerda GPS mavjud emas yoki sahifa xavfsiz (HTTPS) emas. Demo rejimidan foydalaning. ‖ В этом браузере нет GPS или страница небезопасна (не HTTPS). Используйте демо-режим. ‖ GPS is unavailable in this browser or the page is not secure (HTTPS). Use demo mode.
+Geolokatsiya ruxsati rad etildi. Brauzer sozlamalarida ruxsat bering. ‖ Доступ к геолокации отклонён. Разрешите его в настройках браузера. ‖ Geolocation permission was denied. Allow it in your browser settings.
+GPS signali topilmadi. Ochiq joyga chiqing. ‖ GPS-сигнал не найден. Выйдите на открытое место. ‖ No GPS signal found. Move to an open area.
+Demo uchun marshrut koordinatalari topilmadi. ‖ Для демо не найдены координаты маршрута. ‖ Route coordinates for the demo were not found.
+GPS aniqligi past ({0} m). Ochiq joyga chiqing. ‖ Низкая точность GPS ({0} м). Выйдите на открытое место. ‖ Low GPS accuracy ({0} m). Move to an open area.
+Yangi GPS signali kutilmoqda... ‖ Ожидается новый GPS-сигнал... ‖ Waiting for a new GPS signal...
+Yuk endi yo'lda emas: joylashuv yuborish to'xtatildi. ‖ Груз больше не в пути: отправка местоположения остановлена. ‖ The load is no longer on the road: location sharing was stopped.
+Demo rejimi bu serverda o'chirilgan. ‖ Демо-режим на этом сервере отключён. ‖ Demo mode is disabled on this server.
+Juda tez yuborildi, biroz kutilmoqda. ‖ Отправлено слишком часто, небольшая пауза. ‖ Sent too fast, waiting a moment.
+GPS signali noaniq: oxirgi nuqta o'tkazib yuborildi. ‖ GPS-сигнал неточен: последняя точка пропущена. ‖ The GPS signal is imprecise: the last point was skipped.
+Aloqa yo'q. Internet qaytgach avtomatik davom etadi. ‖ Нет связи. Продолжится автоматически, когда интернет вернётся. ‖ No connection. It will resume automatically when the internet is back.
+{0} · oxirgi: {1} ‖ {0} · последняя: {1} ‖ {0} · last: {1}
+Demo rejim: simulyatsiya qilingan harakat yuborilmoqda ‖ Демо-режим: отправляется симулированное движение ‖ Demo mode: simulated movement is being sent
+Joylashuv yuborilmoqda ‖ Местоположение отправляется ‖ Sending location
+Demo boshlanmoqda... ‖ Запуск демо... ‖ Starting demo...
+GPS signali qidirilmoqda... ‖ Поиск GPS-сигнала... ‖ Searching for a GPS signal...
+Joylashuv yuborilmayapti. Fermer va xaridor sizni xaritada ko'rishi uchun yoqing. ‖ Местоположение не отправляется. Включите, чтобы фермер и покупатель видели вас на карте. ‖ Location is not being shared. Turn it on so the farmer and buyer can see you on the map.
+Yuborishni to'xtatish ‖ Остановить отправку ‖ Stop sharing
+Joylashuv yuborish to'xtatildi. ‖ Отправка местоположения остановлена. ‖ Location sharing stopped.
+GPS orqali yuborish ‖ Отправлять по GPS ‖ Share via GPS
+Yo'lda ekranni yoqilgan va sahifani ochiq qoldiring: brauzer orqa fonda GPS'ni cheklashi mumkin. ‖ В пути оставляйте экран включённым и страницу открытой: браузер может ограничивать GPS в фоне. ‖ On the road keep the screen on and the page open: the browser may restrict GPS in the background.
+Bugungi harakat jurnali (ELD) ‖ Журнал движения за сегодня (ELD) ‖ Today's activity log (ELD)
+Yo'lda · signal bor ‖ В пути · сигнал есть ‖ On the road · signal OK
+Yo'lda · signal yo'q ‖ В пути · нет сигнала ‖ On the road · no signal
+Faol yuk yo'q ‖ Нет активного груза ‖ No active load
+Haydash vaqti ‖ Время в движении ‖ Driving time
+To'xtash vaqti ‖ Время стоянок ‖ Stopped time
+Masofa ‖ Расстояние ‖ Distance
+Maks. tezlik ‖ Макс. скорость ‖ Max. speed
+Kunlik haydash chegarasi ({0}) ‖ Суточный лимит вождения ({0}) ‖ Daily driving limit ({0})
+Kunlik haydash chegarasidan oshdingiz. Dam oling: charchoq xavfli. ‖ Вы превысили суточный лимит вождения. Отдохните: усталость опасна. ‖ You exceeded the daily driving limit. Take a rest: fatigue is dangerous.
+Chegaraga yaqinlashyapsiz. Qisqa dam olishni rejalashtiring. ‖ Вы приближаетесь к лимиту. Запланируйте короткий отдых. ‖ You're approaching the limit. Plan a short rest.
+Bugungi birinchi signal: {0} · oxirgisi: {1} (Toshkent vaqti) ‖ Первый сигнал сегодня: {0} · последний: {1} (время Ташкента) ‖ First signal today: {0} · last: {1} (Tashkent time)
+So'nggi to'xtashlar ‖ Последние остановки ‖ Recent stops
+Kamida 3 daqiqa joyida turgan holatlar ‖ Случаи, когда машина стояла на месте не менее 3 минут ‖ Cases when the vehicle stood still for at least 3 minutes
+Xaritada ‖ На карте ‖ On map
+So'nggi kunlarda to'xtashlar qayd etilmagan. ‖ В последние дни остановок не зафиксировано. ‖ No stops were recorded in recent days.
+Kunlar bo'yicha ‖ По дням ‖ By day
+Toshkent vaqti (UTC+5), so'nggi 7 kun ‖ Время Ташкента (UTC+5), последние 7 дней ‖ Tashkent time (UTC+5), last 7 days
+Sana ‖ Дата ‖ Date
+Haydash ‖ Движение ‖ Driving
+To'xtash ‖ Стоянка ‖ Stopped
+To'xtashlar ‖ Остановки ‖ Stops
+Hali harakat jurnali yo'q. Yukni yo'lga olib chiqqaningizda joylashuv yozib boriladi. ‖ Журнала движения пока нет. Местоположение будет записываться, когда вы отправитесь в путь с грузом. ‖ There is no activity log yet. Your location will be recorded once you set off with a load.
+Jurnal juda katta: eng so'nggi yozuvlar ko'rsatildi. ‖ Журнал слишком большой: показаны самые свежие записи. ‖ The log is too large: the most recent entries are shown.
+Jurnal yuklanmoqda... ‖ Загрузка журнала... ‖ Loading log...
+Harakat jurnali (ELD) ‖ Журнал движения (ELD) ‖ Activity log (ELD)
+{0} soat {1} daq ‖ {0} ч {1} мин ‖ {0} h {1} min
+{0} daq ‖ {0} мин ‖ {0} min
+# --- Yuk tashish ---
+Haydovchi kutilmoqda ‖ Ожидается водитель ‖ Waiting for a driver
+Yuklanmoqda ‖ Погрузка ‖ Loading
+Yo'lda ‖ В пути ‖ In transit
+Yetkazib berildi ‖ Доставлено ‖ Delivered
+Yuk olinadi ‖ Погрузка ‖ Pickup
+Yetkaziladi ‖ Доставка ‖ Delivery
+Yuk sizga biriktirildi. Manzil va aloqa ma'lumotlari ochildi. ‖ Груз закреплён за вами. Адрес и контакты открыты. ‖ The load was assigned to you. The address and contacts are unlocked.
+Yuk qaytarildi va boshqa haydovchilar uchun ochiq. ‖ Груз возвращён и доступен другим водителям. ‖ The load was returned and is open to other drivers.
+Yo'lga chiqdingiz. Holat: Yo'lda. ‖ Вы отправились в путь. Статус: в пути. ‖ You're on your way. Status: In transit.
+Yuk yetkazib berildi. Rahmat! ‖ Груз доставлен. Спасибо! ‖ The load was delivered. Thank you!
+Buyurtma bekor qilingan, yuk tashish to'xtatilgan. ‖ Заказ отменён, перевозка остановлена. ‖ The order was cancelled, shipping was stopped.
+Haydovchi yo'lga chiqqach, jonli xarita shu yerda paydo bo'ladi. ‖ Когда водитель отправится в путь, здесь появится живая карта. ‖ A live map will appear here once the driver is on the road.
+Yuk olinadigan joy ‖ Место погрузки ‖ Pickup location
+Yetkaziladigan joy ‖ Место доставки ‖ Delivery location
+Haydovchi hali biriktirilmagan. Biriktirilganda ma'lumotlari shu yerda ko'rinadi. ‖ Водитель ещё не назначен. Его данные появятся здесь после назначения. ‖ No driver assigned yet. Their details will appear here once assigned.
+Aniq manzil va aloqa ma'lumotlari yukni biriktirgandan keyin ochiladi. ‖ Точный адрес и контакты откроются после закрепления груза. ‖ The exact address and contact details are revealed after you take the load.
+Xaridor to'lovi kutilmoqda. To'lov escrow'ga o'tgach yukni olish mumkin. ‖ Ожидается оплата покупателя. Груз можно взять после поступления оплаты на эскроу. ‖ Waiting for the buyer's payment. You can take the load once the payment reaches escrow.
+To'lov kafolatlangan: yetkazganingizdan keyin pul fermerga o'tadi. ‖ Оплата гарантирована: после доставки деньги перейдут фермеру. ‖ Payment is guaranteed: the money goes to the farmer after delivery.
+Yuk transportingiz sig'imidan og'ir. ‖ Груз тяжелее грузоподъёмности вашего транспорта. ‖ The load is heavier than your vehicle's capacity.
+Yetkazib berilgan: {0} ‖ Доставлено: {0} ‖ Delivered: {0}
+Yukni olish ‖ Взять груз ‖ Take the load
+Yo'lga chiqdim ‖ Я выехал ‖ I'm on my way
+Yetkazib berdim ‖ Я доставил ‖ I've delivered
+Yuklar yuklanmoqda... ‖ Загрузка грузов... ‖ Loading shipments...
+Tasdiqlangan bronlar uchun yuk tashish buyurtmalari va ularning holati. ‖ Заказы на перевозку по подтверждённым броням и их статус. ‖ Shipping orders for approved bookings and their status.
+Bu holatdagi yuklar yo'q. ‖ Нет грузов в этом статусе. ‖ No shipments with this status.
+Hali yuk biriktirmagansiz. "Mavjud yuklar" bo'limidan tanlang. ‖ Вы ещё не взяли ни одного груза. Выберите в разделе «Доступные грузы». ‖ You haven't taken any load yet. Choose one in the "Available loads" section.
+Hali yuk tashish buyurtmalari yo'q. Bron tasdiqlanganda avtomatik yaratiladi. ‖ Заказов на перевозку пока нет. Они создаются автоматически при подтверждении брони. ‖ No shipping orders yet. They are created automatically when a booking is approved.
+Bo'sh yuklar yuklanmoqda... ‖ Загрузка свободных грузов... ‖ Loading free loads...
+Yukni biriktirganingizdan keyin manzil va aloqa ma'lumotlari ochiladi. Bir vaqtda bitta yuk olib yura olasiz. ‖ Адрес и контакты откроются после закрепления груза. Одновременно можно везти только один груз. ‖ The address and contacts are revealed after you take a load. You can carry only one load at a time.
+Yuk olinadigan viloyat ‖ Область погрузки ‖ Pickup region
+Barcha hududlardan ‖ Из всех регионов ‖ From all regions
+{0} dan ‖ Из: {0} ‖ From {0}
+Bu hududdan bo'sh yuk yo'q. Boshqa hududni tanlab ko'ring. ‖ Из этого региона нет свободных грузов. Попробуйте другой регион. ‖ There are no free loads from this region. Try another region.
+Hozircha bo'sh yuklar yo'q. Fermer bronni tasdiqlaganda yangi yuk paydo bo'ladi. ‖ Свободных грузов пока нет. Новый груз появится, когда фермер подтвердит бронь. ‖ No free loads yet. A new load appears when a farmer approves a booking.
+# --- To'lovlar (Escrow) ---
+Mablag' xavfsiz saqlanmoqda (Escrow) ‖ Средства надёжно хранятся (эскроу) ‖ Funds are held securely (Escrow)
+Escrow ‖ Эскроу ‖ Escrow
+To'landi ‖ Оплачено ‖ Paid
+Xaridorga qaytarilgan ‖ Возвращено покупателю ‖ Refunded to buyer
+Bekor ‖ Отмена ‖ Cancelled
+To'lov kutilmoqda ‖ Ожидается оплата ‖ Payment pending
+Mablag' escrow'ga o'tkazildi ‖ Средства переведены на эскроу ‖ Funds moved to escrow
+Mablag' fermerga o'tkazildi ‖ Средства переведены фермеру ‖ Funds released to the farmer
+Mablag' xaridorga qaytarildi ‖ Средства возвращены покупателю ‖ Funds returned to the buyer
+To'lanmagan buyurtma bekor qilindi ‖ Неоплаченный заказ отменён ‖ Unpaid order cancelled
+Administrator ‖ Администратор ‖ Administrator
+Tizim ‖ Система ‖ System
+Xaridor ‖ Покупатель ‖ Buyer
+Escrow'da saqlanmoqda ‖ Хранится на эскроу ‖ Held in escrow
+To'lov: {0} ‖ Оплата: {0} ‖ Payment: {0}
+Yuk faqat to'lov escrow'ga o'tgandan keyin yo'lga chiqadi. ‖ Груз отправится в путь только после поступления оплаты на эскроу. ‖ The load departs only after the payment reaches escrow.
+Xaridor to'lovini kutmoqda. To'lov kafolatlangach yuk haydovchiga ochiladi. ‖ Ожидается оплата покупателя. После гарантии оплаты груз станет доступен водителям. ‖ Waiting for the buyer's payment. Once it is guaranteed, the load opens to drivers.
+Pul kafolatlangan: yukni xotirjam yuklashingiz mumkin. Yetkazilgach hisobingizga o'tadi. ‖ Деньги гарантированы: можете спокойно грузить. После доставки они поступят на ваш счёт. ‖ The money is guaranteed: you can load with confidence. It reaches your account after delivery.
+Mablag' yetkazib berilguncha xavfsiz saqlanadi. ‖ Средства надёжно хранятся до доставки. ‖ The funds are held securely until delivery.
+To'lash ‖ Оплатить ‖ Pay
+so'm ‖ сум ‖ UZS
+To'lash — {0} so'm ‖ Оплатить — {0} сум ‖ Pay — {0} UZS
+Mablag' escrow'ga o'tkazildi va xavfsiz saqlanmoqda. Yuk yetkazilgach fermerga o'tadi. ‖ Средства переведены на эскроу и надёжно хранятся. После доставки груза они перейдут фермеру. ‖ The funds moved to escrow and are held securely. They go to the farmer after the load is delivered.
+Mablag' hisobingizga o'tkazildi. ‖ Средства переведены на ваш счёт. ‖ The funds were transferred to your account.
+Qabul tasdiqlandi. Mablag' fermerga o'tkazildi. Rahmat! ‖ Получение подтверждено. Средства переведены фермеру. Спасибо! ‖ Receipt confirmed. The funds were released to the farmer. Thank you!
+To'lanmagan buyurtma bekor qilindi. Miqdor e'longa qaytarildi. ‖ Неоплаченный заказ отменён. Количество возвращено в объявление. ‖ The unpaid order was cancelled. The quantity returned to the listing.
+Buyurtma bekor qilindi, mablag' xaridorga qaytarildi. ‖ Заказ отменён, средства возвращены покупателю. ‖ The order was cancelled and the funds were returned to the buyer.
+Fermer: ‖ Фермер: ‖ Farmer:
+Xaridor: ‖ Покупатель: ‖ Buyer:
+{0} da mablag' xaridorga qaytarilgan ‖ {0}: средства возвращены покупателю ‖ Funds refunded to the buyer on {0}
+Mablag' xaridorga qaytarilgan ‖ Средства возвращены покупателю ‖ Funds refunded to the buyer
+Pul harakati bo'lmagan: to'lov amalga oshirilmagan ‖ Движения денег не было: оплата не производилась ‖ No money moved: payment was not made
+Yuk holati: ‖ Статус груза: ‖ Load status:
+Pulni fermerga o'tkazishni tasdiqlaysizmi? Bu amalni qaytarib bo'lmaydi. ‖ Подтвердить перевод денег фермеру? Это действие нельзя отменить. ‖ Confirm releasing the money to the farmer? This cannot be undone.
+Buyurtmani bekor qilib, pulni qaytarishni tasdiqlaysizmi? ‖ Подтвердить отмену заказа и возврат денег? ‖ Confirm cancelling the order and refunding the money?
+To'lanmagan buyurtmani bekor qilishni tasdiqlaysizmi? ‖ Подтвердить отмену неоплаченного заказа? ‖ Confirm cancelling the unpaid order?
+Ha, tasdiqlayman ‖ Да, подтверждаю ‖ Yes, I confirm
+Yuk qabul qilindi: pulni o'tkazish ‖ Груз получен: перевести деньги ‖ Load received: release the money
+Pulni olish ‖ Получить деньги ‖ Receive the money
+Buyurtmani bekor qilish ‖ Отменить заказ ‖ Cancel the order
+Bekor qilib pulni qaytarish ‖ Отменить и вернуть деньги ‖ Cancel and refund
+Pulni qaytarish ‖ Вернуть деньги ‖ Refund
+Tranzaksiyalar tarixi ({0}) ‖ История транзакций ({0}) ‖ Transaction history ({0})
+To'lovlar yuklanmoqda... ‖ Загрузка платежей... ‖ Loading payments...
+Kafolatlangan to'lov (Escrow): xaridor to'lagan mablag' yuk yetkazib berilguncha platformada xavfsiz saqlanadi va tasdiqlangach fermerga o'tadi.{0} ‖ Гарантированная оплата (эскроу): деньги покупателя надёжно хранятся на платформе до доставки груза и после подтверждения переходят фермеру.{0} ‖ Guaranteed payment (Escrow): the buyer's money is held securely on the platform until the load is delivered and goes to the farmer once confirmed.{0}
+Kafolatlangan to'lov (Escrow): xaridor to'lagan mablag' yuk yetkazib berilguncha platformada xavfsiz saqlanadi va tasdiqlangach fermerga o'tadi. ‖ Гарантированная оплата (эскроу): деньги покупателя надёжно хранятся на платформе до доставки груза и после подтверждения переходят фермеру. ‖ Guaranteed payment (Escrow): the buyer's money is held securely on the platform until the load is delivered and goes to the farmer once confirmed.
+Test rejimi: haqiqiy pul harakati yo'q. ‖ Тестовый режим: реального движения денег нет. ‖ Test mode: no real money moves.
+To'lanishi kerak ‖ К оплате ‖ To be paid
+Escrow'da (kafolatlangan) ‖ На эскроу (гарантировано) ‖ In escrow (guaranteed)
+Qabul qilingan ‖ Получено ‖ Received
+Qaytarilgan / bekor ‖ Возврат / отмена ‖ Refunded / cancelled
+Bu holatdagi to'lovlar yo'q. ‖ Нет платежей в этом статусе. ‖ No payments with this status.
+Hali to'lovlar yo'q. Bron tasdiqlanganda to'lov avtomatik yaratiladi. ‖ Платежей пока нет. Платёж создаётся автоматически при подтверждении брони. ‖ No payments yet. A payment is created automatically when a booking is approved.
+To'lovni amalga oshirish ‖ Совершить оплату ‖ Make the Payment
+Kafolatlangan to'lov ‖ Гарантированная оплата ‖ Guaranteed payment
+Siz to'laysiz, mablag' fermerga emas, platformadagi ‖ Вы платите, но деньги идут не фермеру, а хранятся на ‖ You pay, but the money doesn't go to the farmer — it stays in the platform's
+escrow ‖ эскроу ‖ escrow
+hisobida saqlanadi. ‖ -счёте платформы. ‖ account.
+Haydovchi yukni olib borib, yetkazib beradi. ‖ Водитель забирает груз и доставляет его. ‖ The driver picks up and delivers the load.
+Siz qabul qilganingizni tasdiqlaysiz, pul fermerga o'tadi. Bekor bo'lsa, to'liq qaytariladi. ‖ Вы подтверждаете получение, и деньги переходят фермеру. При отмене возвращаются полностью. ‖ You confirm receipt and the money goes to the farmer. If cancelled, it is fully refunded.
+to'lov simulyatsiya qilinadi, haqiqiy pul yechilmaydi. ‖ оплата симулируется, реальные деньги не списываются. ‖ the payment is simulated; no real money is charged.
+B2B Bron ‖ B2B-бронь ‖ B2B Booking
+Kerakli miqdorni kiriting. Qolgan miqdor boshqa xaridorlar uchun qoladi. ‖ Введите нужное количество. Остаток останется для других покупателей. ‖ Enter the quantity you need. The rest stays available for other buyers.
+Miqdor (kg) ‖ Количество (кг) ‖ Quantity (kg)
+Jami summa ‖ Итоговая сумма ‖ Total amount
+0 so'm ‖ 0 сум ‖ 0 UZS
+Izoh ‖ Комментарий ‖ Note
+Kafolatlangan to'lov (Escrow) ‖ Гарантированная оплата (эскроу) ‖ Guaranteed payment (Escrow)
+Bron so'rovi ‖ Запрос брони ‖ Booking request
+Fermer tasdiqlaydi ‖ Фермер подтверждает ‖ The farmer approves
+To'lov: mablag' escrow'da ‖ Оплата: средства на эскроу ‖ Payment: funds in escrow
+Yetkazilgach fermerga o'tadi ‖ После доставки переходят фермеру ‖ Released to the farmer after delivery
+To'lov fermer so'rovni tasdiqlagandan keyin amalga oshiriladi (holat: ‖ Оплата производится после подтверждения запроса фермером (статус: ‖ Payment is made after the farmer approves the request (status:
+). Mablag' yetkazib berilguncha xavfsiz saqlanadi, bekor bo'lsa to'liq qaytariladi. ‖ ). Средства надёжно хранятся до доставки, при отмене возвращаются полностью. ‖ ). The funds are held securely until delivery and fully refunded if cancelled.
+Fermer so'rovni tasdiqlagandan keyingina telefon raqamlar ikkala tomonga ochiladi. ‖ Номера телефонов откроются обеим сторонам только после подтверждения запроса фермером. ‖ Phone numbers are revealed to both sides only after the farmer approves the request.
+Bron so'rovini yuborish ‖ Отправить запрос на бронь ‖ Send booking request
+{0} · {1} kg × {2} so'm ‖ {0} · {1} кг × {2} сум ‖ {0} · {1} kg × {2} UZS
+Mablag' escrow'ga o'tkazildi ({0}) ‖ Средства переведены на эскроу ({0}) ‖ Funds moved to escrow ({0})
+Mablag' fermerga o'tkazildi ({0}) ‖ Средства переведены фермеру ({0}) ‖ Funds released to the farmer ({0})

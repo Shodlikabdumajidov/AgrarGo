@@ -1,0 +1,44 @@
+# --- Umumiy andozalar (o'zgaruvchan qismli matnlar) ---
+{0} * ‖ {0} * ‖ {0} *
+{0} kiritilishi shart. ‖ Поле «{0}» обязательно для заполнения. ‖ {0} is required.
+{0} son bo'lishi kerak. ‖ Значение «{0}» должно быть числом. ‖ {0} must be a number.
+{0} kamida {1} bo'lishi kerak. ‖ Значение «{0}» должно быть не меньше {1}. ‖ {0} must be at least {1}.
+{0} ko'pi bilan {1} bo'lishi kerak. ‖ Значение «{0}» должно быть не больше {1}. ‖ {0} must be at most {1}.
+{0} · {1} ‖ {0} · {1} ‖ {0} · {1}
+{0} · {1} · {2} ‖ {0} · {1} · {2} ‖ {0} · {1} · {2}
+{0} · {1} · {2} · {3} ‖ {0} · {1} · {2} · {3} ‖ {0} · {1} · {2} · {3}
+{0} ·  ‖ {0} · ‖ {0} ·
+{0} → {1} ‖ {0} → {1} ‖ {0} → {1}
+{0}, {1} ‖ {0}, {1} ‖ {0}, {1}
+{0}, {1}, {2} ‖ {0}, {1}, {2} ‖ {0}, {1}, {2}
+{0} ({1}) ‖ {0} ({1}) ‖ {0} ({1})
+Fermer: {0} ‖ Фермер: {0} ‖ Farmer: {0}
+Xaridor: {0} ‖ Покупатель: {0} ‖ Buyer: {0}
+Hammasi ({0}) ‖ Все ({0}) ‖ All ({0})
+Faol ({0}) ‖ Активные ({0}) ‖ Active ({0})
+Kutilmoqda ({0}) ‖ Ожидают ({0}) ‖ Pending ({0})
+Tasdiqlangan ({0}) ‖ Подтверждены ({0}) ‖ Approved ({0})
+Rad etilgan ({0}) ‖ Отклонены ({0}) ‖ Rejected ({0})
+Bekor qilingan ({0}) ‖ Отменены ({0}) ‖ Cancelled ({0})
+Yakunlangan ({0}) ‖ Завершённые ({0}) ‖ Completed ({0})
+Escrow'da ({0}) ‖ На эскроу ({0}) ‖ In escrow ({0})
+To'langan ({0}) ‖ Оплачены ({0}) ‖ Paid ({0})
+Qaytarilgan / bekor ({0}) ‖ Возврат / отмена ({0}) ‖ Refunded / cancelled ({0})
+Arxivda ({0}) ‖ В архиве ({0}) ‖ Archived ({0})
+Bron qilingan ({0}) ‖ Забронированные ({0}) ‖ Booked ({0})
+Sotilgan ({0}) ‖ Проданные ({0}) ‖ Sold ({0})
+Bron tasdiqlandi, to'lov kutilmoqda ‖ Бронь подтверждена, ожидается оплата ‖ Booking approved, payment pending
+Quruq ombor A ‖ Сухой склад A ‖ Dry warehouse A
+Sovitkich kamera {0} ‖ Холодильная камера {0} ‖ Cold room {0}
+Ventilyatsiyali ombor ‖ Вентилируемый склад ‖ Ventilated warehouse
+# --- Audit ob'ektlari ---
+user ‖ пользователь ‖ user
+product ‖ объявление ‖ listing
+settings ‖ настройки ‖ settings
+warehouse ‖ склад ‖ warehouse
+payments ‖ платежи ‖ payments
+01 A 123 BC ‖ 01 A 123 BC ‖ 01 A 123 BC
+AB 1234567 ‖ AB 1234567 ‖ AB 1234567
+so'm / kg ‖ сум / кг ‖ UZS / kg
+kg ‖ кг ‖ kg
+so'm ‖ сум ‖ UZS

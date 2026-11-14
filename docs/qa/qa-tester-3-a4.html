@@ -1,0 +1,41 @@
+<!doctype html><html lang="uz"><head><meta charset="utf-8"><title>AgrarGo QA — 3-TESTER (A4)</title><style>
+@page { size: A4 portrait; margin: 8mm; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body { font-family: "Segoe UI", Arial, Helvetica, sans-serif; color: #111; }
+.page { width: 194mm; height: 281mm; page-break-after: always; display: flex; flex-direction: column; gap: 2.2mm; overflow: hidden; }
+.page:last-child { page-break-after: auto; }
+.head { color: #fff; border-radius: 3mm; padding: 2.6mm 5mm; display: flex; justify-content: space-between; align-items: center; }
+.head b { font-size: 19pt; letter-spacing: .5px; } .head small { display: block; font-size: 10pt; font-weight: 600; opacity: .95; margin-top: .4mm; }
+.head .app { text-align: right; font-size: 8.8pt; line-height: 1.35; opacity: .95; }
+.meta { display: flex; gap: 5mm; font-size: 9.5pt; align-items: flex-end; }
+.meta span { flex: 1; border-bottom: .3mm solid #111; padding-bottom: .4mm; white-space: nowrap; }
+.pre { display: flex; gap: 4mm; font-size: 9pt; align-items: center; border: .4mm dashed #555; border-radius: 2mm; padding: 1.2mm 2.5mm; }
+.pre b { font-size: 9pt; } .pre label { display: flex; gap: 1.4mm; align-items: center; white-space: nowrap; }
+.box { flex: 0 0 5mm; width: 5mm; height: 5mm; border: .6mm solid #111; border-radius: 1mm; background: #fff; }
+.body { display: flex; flex-direction: column; gap: 1.8mm; flex: 1 1 auto; min-height: 0; }
+.head, .meta, .pre, .bugs, .foot, .blk { flex-shrink: 0; }
+.blk h3 { color: #fff; font-size: 10.5pt; padding: .8mm 2.5mm; border-radius: 1.4mm; display: flex; justify-content: space-between; }
+.blk h3 em { font-style: normal; font-weight: 400; font-size: 8.5pt; opacity: .9; }
+ul { list-style: none; }
+li { display: flex; align-items: center; gap: 2.4mm; font-size: 10pt; line-height: 1.18; padding: .8mm 0 .8mm 1mm; border-bottom: .2mm dotted #999; }
+li .tx { flex: 1; } li .bug { flex: 0 0 24mm; font-size: 7.6pt; color: #666; border-bottom: .25mm solid #888; height: 4.2mm; }
+.bugs { border: .5mm solid #b91c1c; border-radius: 2.5mm; overflow: hidden; }
+.bugs h4 { background: #b91c1c; color: #fff; font-size: 9pt; padding: .7mm 3mm; }
+table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+th, td { border: .3mm solid #444; height: 5.4mm; font-size: 8.4pt; padding: 0 1mm; }
+th { background: #fee2e2; text-align: left; height: 4.6mm; }
+col.a { width: 15mm; } col.b { width: 34mm; } col.d { width: 28mm; } col.e { width: 13mm; }
+td:first-child { font-weight: 700; } td.ok { text-align: center; } td.ok .box { display: inline-block; width: 3.8mm; height: 3.8mm; margin-top: .8mm; }
+.foot { display: flex; justify-content: space-between; gap: 5mm; font-size: 9.2pt; align-items: flex-end; }
+.foot span { flex: 1; border-top: .3mm solid #111; padding-top: .5mm; }
+.foot b { flex: 0 0 auto; font-size: 11pt; }
+</style></head><body><section class="page">
+ <div class="head" style="background:#c2410c"><div><b>3-TESTER</b><small>MARKET (Bozor) + HUB (Markaz) + ESCROW</small></div><div class="app">AgrarGo · QA test yo'l xaritasi<br>Varaq 3 / 4 · A4</div></div>
+ <div class="meta"><span>Tester: </span><span>Sana: </span><span>Qurilma / brauzer: </span></div>
+ <div class="pre"><b>Tayyorlik:</b><label><span class="box"></span>Sayt (Vercel) ochiladi</label><label><span class="box"></span>API (Render) /health ok</label><label><span class="box"></span>Test hisob</label><label><span class="box"></span>OTP usuli</label></div>
+ <div class="body"><section class="blk"><h3 style="background:#c2410c"><span>1. Auth &amp; OTP</span><em>3 ta band</em></h3><ul><li><span class="box"></span><span class="tx">Market ro&#x27;yxati (kompaniya, viloyat) va login</span><span class="bug">Bug №</span></li><li><span class="box"></span><span class="tx">Hub xodimi (dispetcher): faqat o&#x27;z Hub&#x27;ini ko&#x27;radi</span><span class="bug">Bug №</span></li><li><span class="box"></span><span class="tx">HUB_ADMIN barcha Hub&#x27;larni ko&#x27;radi, boshqa bo&#x27;limlarga kira olmaydi</span><span class="bug">Bug №</span></li></ul></section><section class="blk"><h3 style="background:#c2410c"><span>2. Katalog va Bronlar</span><em>3 ta band</em></h3><ul><li><span class="box"></span><span class="tx">Katalog qidiruv/filtr; narx va qoldiq to&#x27;g&#x27;ri</span><span class="bug">Bug №</span></li><li><span class="box"></span><span class="tx">Bron berish: miqdor, manzil; fermer tasdiqlaydi/rad etadi</span><span class="bug">Bug №</span></li><li><span class="box"></span><span class="tx">Omborxona buyurtmasi (market) va narxlar sahifasi</span><span class="bug">Bug №</span></li></ul></section><section class="blk"><h3 style="background:#c2410c"><span>3. Hub operatsiyalari</span><em>5 ta band</em></h3><ul><li><span class="box"></span><span class="tx">QR Skaner: kamera/qo&#x27;lda kod → partiya ma&#x27;lumoti</span><span class="bug">Bug №</span></li><li><span class="box"></span><span class="tx">«To&#x27;liq qabul» va «Qisman ziyon» (50 dan 5 quti → 45 qabul)</span><span class="bug">Bug №</span></li><li><span class="box"></span><span class="tx">Qadoqlash navbati → «Qadoqlandi»; Ombor qoldig&#x27;i yangilanadi</span><span class="bug">Bug №</span></li><li><span class="box"></span><span class="tx">Rampa jadvali (Gantt): band qilish, kelish, bekor qilish</span><span class="bug">Bug №</span></li><li><span class="box"></span><span class="tx">Chakana buyurtma: qadoqlash → tayyor → kuryer; guruhni bir bosishda</span><span class="bug">Bug №</span></li></ul></section><section class="blk"><h3 style="background:#c2410c"><span>4. ESCROW va CashBack</span><em>6 ta band</em></h3><ul><li><span class="box"></span><span class="tx">To&#x27;lov: Kutilmoqda → HELD; takroriy bosish xavfsiz</span><span class="bug">Bug №</span></li><li><span class="box"></span><span class="tx">Qabul tasdig&#x27;i → RELEASED (fermerga to&#x27;g&#x27;ri summa)</span><span class="bug">Bug №</span></li><li><span class="box"></span><span class="tx">Bekor → REFUNDED; to&#x27;lov tarkibi: mahsulot/yo&#x27;l/komissiya</span><span class="bug">Bug №</span></li><li><span class="box"></span><span class="tx">Chakana 4 ulush: fermer / Hub / kuryer / platforma yig&#x27;indisi = jami</span><span class="bug">Bug №</span></li><li><span class="box"></span><span class="tx">Ziyon: xaridorga qisman refund, fermer ulushi kamayadi</span><span class="bug">Bug №</span></li><li><span class="box"></span><span class="tx">Qadoqlash haqi yopilishda fermer ulushidan Hub&#x27;ga o&#x27;tadi</span><span class="bug">Bug №</span></li></ul></section><section class="blk"><h3 style="background:#c2410c"><span>5. Hub boshqaruvi</span><em>2 ta band</em></h3><ul><li><span class="box"></span><span class="tx">Hub&#x27;ga xodim biriktirish; rampa sozlamalari; qoldiqni tuzatish</span><span class="bug">Bug №</span></li><li><span class="box"></span><span class="tx">Chakana sotuvni yoqish/o&#x27;chirish, narx va eng kam buyurtma</span><span class="bug">Bug №</span></li></ul></section></div>
+ <div class="bugs"><h4>XATOLIKLAR (Bug ID · Qaysi modul · Qisqa xato · Mas'ul) — bandning «Bug №» joyiga ham yozing</h4>
+  <table><colgroup><col class="a"><col class="b"><col><col class="d"><col class="e"></colgroup><tr><th>Bug ID</th><th>Qaysi modul</th><th>Qisqa xato</th><th>Mas'ul</th><th>Hal ✓</th></tr><tr><td>3-1</td><td></td><td></td><td></td><td class="ok"><span class="box"></span></td></tr><tr><td>3-2</td><td></td><td></td><td></td><td class="ok"><span class="box"></span></td></tr><tr><td>3-3</td><td></td><td></td><td></td><td class="ok"><span class="box"></span></td></tr><tr><td>3-4</td><td></td><td></td><td></td><td class="ok"><span class="box"></span></td></tr><tr><td>3-5</td><td></td><td></td><td></td><td class="ok"><span class="box"></span></td></tr></table></div>
+ <div class="foot"><b>Bajarildi: ____ / 19</b><span>Tester imzosi</span><span>Jamoa rahbari ✓</span></div>
+</section></body></html>

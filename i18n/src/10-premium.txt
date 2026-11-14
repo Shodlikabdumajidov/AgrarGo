@@ -1,0 +1,16 @@
+# --- Premium UX II: muqova, filtr chiplari, muvaffaqiyat animatsiyasi ---
+Narx: {0} — {1} ‖ Цена: {0} — {1} ‖ Price: {0} — {1}
+Miqdor: {0} — {1} kg ‖ Количество: {0} — {1} кг ‖ Quantity: {0} — {1} kg
+Bron tasdiqlandi! ‖ Бронь подтверждена! ‖ Booking confirmed!
+Yuk tashish buyurtmasi yaratildi ‖ Заказ на перевозку создан ‖ Transport order created
+To'lov Escrow'ga o'tdi ‖ Платёж поступил в Escrow ‖ Payment moved to Escrow
+Muqovani o'zgartirish ‖ Изменить обложку ‖ Change cover
+Muqova yuklash ‖ Загрузить обложку ‖ Upload cover
+Muqovani olib tashlash ‖ Удалить обложку ‖ Remove cover
+Muqova hajmi 4 MB dan oshmasligi kerak. ‖ Размер обложки не должен превышать 4 МБ. ‖ The cover must not exceed 4 MB.
+Muqovani yuklab bo'lmadi. ‖ Не удалось загрузить обложку. ‖ Could not upload the cover.
+Muqova yangilandi. ‖ Обложка обновлена. ‖ Cover updated.
+Muqova olib tashlandi. ‖ Обложка удалена. ‖ Cover removed.
+Muqova: JPG, PNG yoki WEBP, 4 MB gacha. Tavsiya: keng (3:1) rasm. ‖ Обложка: JPG, PNG или WEBP, до 4 МБ. Рекомендуется широкое (3:1) изображение. ‖ Cover: JPG, PNG or WEBP, up to 4 MB. A wide (3:1) image is recommended.
+Kategoriya ‖ Категория ‖ Category
+Hammasi ‖ Все ‖ All

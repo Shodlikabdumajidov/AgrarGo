@@ -1,0 +1,90 @@
+/* Main (Hero): Interactive Character Showcase — Soft Claymorphism. Urg'u rangi: P1 Sage Mint, P2 Powder Blue, P3 Warm Sand */
+#hero-header, #hero-showcase { --cs-accent: #84A99B; --cs-soft: #E4EEEA; --cs-dark: #3f6b5c; --cs-light: #A3C4B8; }
+#hero-header[data-role="driver"], #hero-showcase[data-role="driver"] { --cs-accent: #9CC3D5; --cs-soft: #E3EEF4; --cs-dark: #4d7a8c; --cs-light: #BBD8E6; }
+#hero-header[data-role="market"], #hero-showcase[data-role="market"] { --cs-accent: #D8C3A5; --cs-soft: #F2EADD; --cs-dark: #8a6d3b; --cs-light: #E8D7BC; }
+#hero-header { transition: background-color .8s ease; position: relative; }
+#hero-header::before { content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none; background: radial-gradient(ellipse 60% 70% at 25% 50%, color-mix(in srgb, var(--cs-accent) 30%, transparent), transparent 70%); transition: background .8s ease; }
+
+.cs { position: relative; width: min(100%, 380px); margin: 0 auto 2.2rem; }
+.cs-blob { position: absolute; inset: 8% -8% -4% -8%; border-radius: 50%; background: var(--cs-accent); opacity: .35; filter: blur(46px); transition: background-color .8s ease; z-index: 0; }
+.cs-stage { position: relative; z-index: 1; aspect-ratio: 3 / 4; border-radius: 1.5rem; isolation: isolate; background: transparent; }
+/* Alpha qo'llanmaydigan brauzer (MP4 zaxira): oq fon yumshoq karta ichiga singdiriladi */
+.cs-noalpha .cs-stage { overflow: hidden; background: var(--cs-soft); box-shadow: 8px 8px 16px #e2dcd5, -8px -8px 16px #ffffff; }
+.cs-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: 50% 100%; pointer-events: none; opacity: 0; transform: scale(.94) translateX(28px); transition: opacity .6s ease, transform .7s cubic-bezier(.22,.8,.3,1); background: transparent; filter: drop-shadow(0 18px 22px color-mix(in srgb, var(--cs-dark) 28%, transparent)); }
+.cs-noalpha .cs-video { mix-blend-mode: multiply; filter: none; }
+.cs[data-dir="back"] .cs-video { transform: scale(.94) translateX(-28px); }
+.cs-video.is-on { opacity: 1; transform: none; }
+.cs-video.is-out { opacity: 0; transform: scale(1.04) translateX(-28px); }
+.cs[data-dir="back"] .cs-video.is-out { transform: scale(1.04) translateX(28px); }
+.cs-video::-webkit-media-controls, .cs-video::-webkit-media-controls-enclosure, .cs-video::-webkit-media-controls-panel { display: none !important; -webkit-appearance: none; }
+.cs-ctrl { position: absolute; left: 0; bottom: -2.9rem; z-index: 4; display: flex; align-items: center; gap: .55rem; }
+.cs-arrow { width: 2.4rem; height: 2.4rem; border-radius: 9999px; display: flex; align-items: center; justify-content: center; color: #2D3436; background: #FBF9F6; box-shadow: 5px 5px 10px #e2dcd5, -5px -5px 10px #ffffff; border: 0; cursor: pointer; transition: transform .2s ease; }
+.cs-arrow:hover { transform: scale(1.08); background: var(--cs-soft); }
+.cs-dots { display: flex; gap: .4rem; }
+.cs-dot { width: .55rem; height: .55rem; padding: 0; border: 0; border-radius: 9999px; background: rgba(99,110,114,.35); cursor: pointer; transition: width .3s ease, background-color .5s ease; }
+.cs-dot.on { width: 1.5rem; background: var(--cs-accent); }
+
+/* Matn va CTA (rolga mos) */
+.cs-tag { display: inline-flex; align-items: center; gap: .5rem; padding: .35rem .95rem; border-radius: 9999px; font-size: .78rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--cs-dark); background: color-mix(in srgb, var(--cs-accent) 22%, transparent); border: 1px solid color-mix(in srgb, var(--cs-accent) 55%, transparent); transition: all .6s ease; }
+.cs-tag i { font-size: .45rem; }
+#hero-header .hero-grad { --tw-gradient-stops: var(--cs-dark), var(--cs-accent) !important; }
+#hero-header .lg\:col-span-7 { transition: opacity .22s ease, transform .22s ease; }
+#hero-header .lg\:col-span-7.cs-swap { opacity: 0; transform: translateY(8px); }
+.cs-cta-row { padding-top: .4rem; }
+.cs-cta { display: inline-flex; align-items: center; gap: .6rem; padding: .85rem 1.7rem; border-radius: 9999px; font-weight: 900; font-size: 1rem; border: 0; cursor: pointer; color: #1f2f2a; background: linear-gradient(135deg, var(--cs-accent), var(--cs-light)); box-shadow: 6px 6px 14px color-mix(in srgb, var(--cs-accent) 45%, transparent), -3px -3px 8px rgba(255,255,255,.6); transition: transform .2s ease, background .6s ease, box-shadow .6s ease; }
+.cs-cta:hover { transform: translateY(-2px); }
+.cs-cta i { transition: transform .2s ease; } .cs-cta:hover i { transform: translateX(3px); }
+
+/* Dark: personaj shaffof, faqat yumshoq urg'u nuri; zaxira (MP4) rejimida toza karta ramkasi */
+html[data-theme="dark"] .cs-noalpha .cs-stage { background: #F4EFE9; box-shadow: 8px 8px 20px rgba(0,0,0,.55), -4px -4px 12px rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.12); }
+html[data-theme="dark"] .cs-noalpha .cs-video { mix-blend-mode: normal; }
+html[data-theme="dark"] .cs-video { filter: drop-shadow(0 18px 22px rgba(0,0,0,.55)); }
+html[data-theme="dark"] .cs-blob { opacity: .22; }
+html[data-theme="dark"] .cs-arrow { background: #1e293b; color: #e2e8f0; box-shadow: 4px 4px 10px rgba(0,0,0,.5), -2px -2px 6px rgba(255,255,255,.05); }
+html[data-theme="dark"] .cs-dot { background: rgba(148,163,184,.4); }
+html[data-theme="dark"] html[data-theme="dark"] .cs-tag, html[data-theme="dark"] #hero-header .hero-grad { color: var(--cs-light); }
+html[data-theme="dark"] #hero-header .hero-grad { --tw-gradient-stops: var(--cs-light), var(--cs-accent) !important; }
+html[data-theme="dark"] .cs-tag { color: var(--cs-light); }
+
+/* Mobil: video tepada, matn pastda; hech narsa ustma-ust tushmaydi */
+@media (max-width: 1023px) {
+    .cs { width: min(78vw, 320px); margin-bottom: 3.6rem; }
+        .cs-ctrl { bottom: -3.2rem; }
+}
+@media (prefers-reduced-motion: reduce) { .cs-video, #hero-header .lg\:col-span-7, .cs-cta { transition: none; } }
+
+/* ===== Mobil (360–640px) va planshet (641–1023px): 2 ustunli ixcham layout — chapda video, o'ngda matn ===== */
+@media (max-width: 1023px) {
+    #hero-header { min-height: 0 !important; align-items: flex-start; padding: 1rem .9rem 1rem !important; touch-action: pan-y; }
+    #hero-header > .grid { grid-template-columns: 43% 57% !important; gap: .7rem !important; align-items: center; }
+    #hero-header > .grid > div { min-width: 0; grid-column: auto !important; }
+    #hero-header > .grid > div:first-child { padding: 0 !important; }
+    .cs { width: 100%; max-width: 195px; margin: 0 auto; }
+    .cs-stage { max-height: 260px; }
+    .cs-video { object-fit: contain; object-position: 50% 100%; }
+    .cs-blob { inset: 10% -4% 0 -4%; filter: blur(30px); }
+    /* O'tkazgich tugmalari va nuqtalar faqat desktopda; mobilda barmoq bilan surish (touch swipe) */
+    .cs-ctrl { display: none !important; }
+    #hero-header .lg\:col-span-7 { text-align: left !important; display: flex; flex-direction: column; align-items: flex-start; gap: .55rem !important; padding: 0 !important; }
+    #hero-header .lg\:col-span-7 > * { margin: 0 !important; }
+    #hero-header .lg\:col-span-7.space-y-6 > * + * { margin-top: 0 !important; }
+    #hero-header .lg\:col-span-7 > div.inline-flex { font-size: .58rem !important; padding: .3rem .65rem !important; letter-spacing: .03em !important; line-height: 1.25; white-space: normal; text-align: left; box-shadow: none !important; }
+    .cs-tag { font-size: .6rem; padding: .25rem .65rem; line-height: 1.2; white-space: normal; }
+    #hero-title { font-size: clamp(1.05rem, 4.9vw, 1.35rem) !important; line-height: 1.18 !important; overflow-wrap: anywhere; word-break: normal; hyphens: manual; }
+    #hero-title br { display: none; }
+    #hero-title .hero-lead, #hero-title .hero-grad { display: block; }
+    #cs-sub { font-size: .78rem !important; line-height: 1.4 !important; max-width: none; }
+    .cs-cta-row { padding-top: .1rem; }
+    .cs-cta { padding: .55rem 1.05rem; font-size: .82rem; }
+}
+@media (min-width: 641px) and (max-width: 1023px) {
+    #hero-header { padding: 1.5rem 1.5rem 1.5rem !important; }
+    .cs { max-width: 225px; }
+    .cs-stage { max-height: 300px; }
+    #hero-header > .grid { gap: 1.25rem !important; }
+    #hero-title { font-size: clamp(1.5rem, 3.6vw, 1.9rem) !important; }
+    #cs-sub { font-size: .98rem !important; }
+    #hero-header .lg\:col-span-7 > div.inline-flex { font-size: .68rem !important; }
+    .cs-tag { font-size: .7rem; }
+    .cs-cta { font-size: .95rem; padding: .7rem 1.4rem; }
+}
