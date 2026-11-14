@@ -1,0 +1,62 @@
+/* Soft Claymorphism / Tactile Neumorphism — faqat YORUG' rejim (Dark rejim o'z holicha qoladi).
+ * Palitra: fon Cream (#F5F0EB / #FAF7F4), kartalar oq-bej (#FBF9F6), matn #2D3436 / #636E72,
+ * aksent: Sage Mint (#84A99B / #A3C4B8) va Powder Blue (#9CC3D5). Ranglarning asosi css/light.css (tools/build-light-theme.py) da. */
+html[data-theme="light"] {
+    --clay-bg: #F5F0EB; --clay-bg2: #FAF7F4; --clay-card: #FBF9F6;
+    --clay-ink: #2D3436; --clay-muted: #636E72;
+    --clay-sage: #84A99B; --clay-mint: #A3C4B8; --clay-blue: #9CC3D5;
+    --clay-out: 8px 8px 16px #e2dcd5, -8px -8px 16px #ffffff;
+    --clay-out-sm: 5px 5px 10px #e2dcd5, -5px -5px 10px #ffffff;
+    --clay-in: inset 4px 4px 8px #e2dcd5, inset -4px -4px 8px #ffffff;
+}
+html[data-theme="light"] body { background: linear-gradient(180deg, #FAF7F4 0%, #F5F0EB 100%) fixed; color: var(--clay-ink); }
+
+/* Kartochkalar: yumaloq (rounded-3xl), tashqi yumshoq 3D soya */
+html[data-theme="light"] .glass, html[data-theme="light"] .lb-card, html[data-theme="light"] .ag-card, html[data-theme="light"] .ag-post,
+html[data-theme="light"] .bd-card, html[data-theme="light"] .dp-card, html[data-theme="light"] .pr-card, html[data-theme="light"] .lc-card,
+html[data-theme="light"] .gd-card, html[data-theme="light"] .wx, html[data-theme="light"] .ct-row, html[data-theme="light"] .kyc-step,
+html[data-theme="light"] .rd-panel, html[data-theme="light"] .earn-card, html[data-theme="light"] .sk-card, html[data-theme="light"] .pb-escrow {
+    background: var(--clay-card); border: 1px solid rgba(255,255,255,.85); border-radius: 1.5rem; box-shadow: var(--clay-out);
+}
+html[data-theme="light"] .glass.rounded-2xl, html[data-theme="light"] .glass.rounded-xl { border-radius: 1.5rem; }
+html[data-theme="light"] .gc-slide { background: var(--clay-card); border: 1px solid rgba(255,255,255,.9); box-shadow: var(--clay-out); backdrop-filter: none; }
+html[data-theme="light"] .gc-slide.is-active::before { background: conic-gradient(from var(--gc-a, 0deg), rgba(132,169,155,0), rgba(132,169,155,.9), rgba(156,195,213,.85), rgba(132,169,155,0) 60%); opacity: .7; }
+html[data-theme="light"] .gc-meta > div { background: var(--clay-bg); border: 0; box-shadow: var(--clay-in); border-radius: 1rem; }
+html[data-theme="light"] .gc-meta b, html[data-theme="light"] .ag-price strong, html[data-theme="light"] .lb-val { color: #3f6b5c; }
+html[data-theme="light"] .gc-btn { background: var(--clay-card); border: 0; box-shadow: var(--clay-out-sm); color: var(--clay-ink); }
+html[data-theme="light"] .gc-dot.on { background: var(--clay-sage); }
+html[data-theme="light"] .gc-detail-in > * { background: var(--clay-bg) !important; box-shadow: var(--clay-in); border: 0 !important; border-radius: 1.25rem; }
+html[data-theme="light"] #auth-modal .auth-card, html[data-theme="light"] #wh-modal .auth-card, html[data-theme="light"] .auth-card { background: var(--clay-card); border: 1px solid rgba(255,255,255,.9); box-shadow: 14px 14px 30px #ddd6ce, -10px -10px 24px #ffffff; }
+
+/* Tab va pill tugmalar: rounded-full, bo'rtib turuvchi; aktiv — Sage Mint */
+html[data-theme="light"] .dash-tab, html[data-theme="light"] .auth-tab, html[data-theme="light"] .role-pill, html[data-theme="light"] .mp-chip, html[data-theme="light"] .dp-pill,
+html[data-theme="light"] .ag-switch button, html[data-theme="light"] .ag-viewtoggle button, html[data-theme="light"] .bdg, html[data-theme="light"] .filter-chip {
+    background: var(--clay-card); border: 1px solid rgba(255,255,255,.9); border-radius: 9999px; box-shadow: var(--clay-out-sm); color: var(--clay-ink);
+}
+html[data-theme="light"] .dash-tab.active, html[data-theme="light"] .auth-tab.active, html[data-theme="light"] .role-pill.active, html[data-theme="light"] .mp-chip.active,
+html[data-theme="light"] .dp-pill.active, html[data-theme="light"] .ag-switch button[aria-checked="true"], html[data-theme="light"] .ag-viewtoggle button[aria-pressed="true"] {
+    background: linear-gradient(135deg, #84A99B, #A3C4B8); color: #1f3a31; border-color: rgba(255,255,255,.6); box-shadow: 6px 6px 12px rgba(132,169,155,.45), -4px -4px 8px #ffffff;
+}
+html[data-theme="light"] .dash-tab:hover:not(.active), html[data-theme="light"] .mp-chip:hover:not(.active), html[data-theme="light"] .dp-pill:hover:not(.active) { background: var(--clay-bg2); }
+html[data-theme="light"] #auth-tabs, html[data-theme="light"] .ag-switch, html[data-theme="light"] .ag-viewtoggle { background: var(--clay-bg); border: 0; box-shadow: var(--clay-in); border-radius: 9999px; }
+html[data-theme="light"] .dash-subnav { background: linear-gradient(180deg, #F5F0EB 70%, rgba(245,240,235,0)); }
+
+/* Asosiy tugmalar: Sage Mint gradient, yumshoq soya */
+html[data-theme="light"] .bg-emerald-500, html[data-theme="light"] .auth-submit, html[data-theme="light"] #auth-modal .auth-submit, html[data-theme="light"] .gc-quick, html[data-theme="light"] .ag-soon {
+    background: linear-gradient(135deg, #84A99B, #A3C4B8) !important; color: #1f3a31 !important; border-color: rgba(255,255,255,.55) !important; box-shadow: 6px 6px 12px #e2dcd5, -6px -6px 12px #ffffff; text-shadow: none;
+}
+html[data-theme="light"] .bg-emerald-500:hover, html[data-theme="light"] .hover\:bg-emerald-400:hover, html[data-theme="light"] .auth-submit:hover:not(:disabled), html[data-theme="light"] .gc-quick:hover { background: linear-gradient(135deg, #93b5a8, #b3d0c5) !important; }
+html[data-theme="light"] .bg-sky-500, html[data-theme="light"] .pb-range { background: linear-gradient(135deg, #9CC3D5, #b7d6e4) !important; color: #24424f !important; }
+html[data-theme="light"] .bg-emerald-500 *, html[data-theme="light"] .auth-submit * { color: inherit; }
+
+/* Maydonlar: ichga botgan (inset) */
+html[data-theme="light"] .auth-input, html[data-theme="light"] #auth-modal .auth-input, html[data-theme="light"] input.auth-input, html[data-theme="light"] select.auth-input, html[data-theme="light"] textarea.auth-input {
+    background: var(--clay-bg); border: 0; border-radius: 1rem; box-shadow: var(--clay-in); color: var(--clay-ink);
+}
+html[data-theme="light"] .auth-input:focus, html[data-theme="light"] #auth-modal .auth-input:focus { box-shadow: var(--clay-in), 0 0 0 3px rgba(156,195,213,.55); outline: none; border: 0; }
+html[data-theme="light"] .otp-box { background: var(--clay-bg); border: 0; box-shadow: var(--clay-in); }
+html[data-theme="light"] .otp-box:focus { box-shadow: var(--clay-in), 0 0 0 3px rgba(156,195,213,.6), 0 0 18px rgba(132,169,155,.45); }
+html[data-theme="light"] #auth-modal .auth-submit { box-shadow: 6px 6px 12px #e2dcd5, -6px -6px 12px #ffffff; }
+html[data-theme="light"] #main-nav, html[data-theme="light"] #top-util { background: var(--clay-bg2) !important; box-shadow: 0 8px 20px -12px #d9d2ca; }
+html[data-theme="light"] *::-webkit-scrollbar-thumb { background: rgba(132,169,155,.5); }
+html[data-theme="light"] ::selection { background: #A3C4B8; color: #1f3a31; }

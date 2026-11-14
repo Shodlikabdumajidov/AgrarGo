@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Mavzu (qorong'i/yorug') sahifa chizilishidan oldin o'rnatiladi: miltillash bo'lmasin -->
-    <script>(function () { var t = 'dark'; try { var v = localStorage.getItem('agrargo_theme'); if (v === 'light' || v === 'dark') t = v; } catch (e) {} document.documentElement.setAttribute('data-theme', t); })();</script>
+    <script>(function () { var t = 'light'; try { var v = localStorage.getItem('agrargo_theme'); if (v === 'light' || v === 'dark') t = v; } catch (e) {} document.documentElement.setAttribute('data-theme', t); })();</script>
     <title>AgrarGo — Smart Agro-Logistics Ecosystem</title>
     <!-- PWA -->
     <link rel="manifest" href="manifest.json">
@@ -1192,6 +1192,8 @@
     <link rel="stylesheet" href="css/agro-store.css">
     <link rel="stylesheet" href="css/glass-carousel.css">
     <link rel="stylesheet" href="css/glassy-auth.css">
+    <link rel="stylesheet" href="css/pricing-bids.css">
+    <link rel="stylesheet" href="css/clay.css">
     <link rel="stylesheet" href="css/perf-layout.css">
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans antialiased selection:bg-emerald-500 selection:text-slate-950">
@@ -2325,20 +2327,21 @@
                     <input id="prod-name" name="name" type="text" maxlength="100" placeholder="Masalan: Pomidor" class="auth-input">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="prod-category">Kategoriyasi</label>
-                    <select id="prod-category" name="category" class="auth-input">
-                        <option value="">Tanlang...</option>
-                        <option value="Sabzavot">Sabzavot</option>
-                        <option value="Meva">Meva</option>
-                        <option value="Poliz">Poliz</option>
-                        <option value="Don">Don</option>
-                        <option value="Boshqa">Boshqa</option>
-                    </select>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="prod-photos">Mahsulot rasmi <span class="text-slate-500 normal-case font-medium">(1–5 ta, haqiqiy holati)</span></label>
+                    <input id="prod-photos" type="file" accept="image/jpeg,image/png,image/webp" multiple class="auth-input">
+                    <div id="prod-photo-previews" class="grid grid-cols-5 gap-2 mt-2"></div>
+                    <p class="text-[11px] text-slate-500 mt-1.5">JPG, PNG yoki WEBP, har biri 4 MB gacha.</p>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="prod-quantity">Vazni (kg)</label>
-                        <input id="prod-quantity" name="quantityKg" type="number" min="0" step="0.01" inputmode="decimal" placeholder="500" class="auth-input">
+                        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="prod-quantity">Hajmi</label>
+                        <div class="flex items-stretch gap-2">
+                            <input id="prod-quantity" name="quantityKg" type="number" min="0" step="0.01" inputmode="decimal" placeholder="500" class="auth-input">
+                            <select id="prod-unit" name="unit" class="auth-input" style="width:6.5rem" aria-label="Birlik">
+                                <option value="kg">kg</option>
+                                <option value="tonna">tonna</option>
+                            </select>
+                        </div>
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="prod-price">Narxi (1 kg, so'm)</label>
@@ -2347,21 +2350,24 @@
                 </div>
                 <div id="prod-rate-hint" class="hidden rate-hint" role="status" aria-live="polite"></div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="prod-harvest">O'rim-yig'im sanasi <span class="text-slate-500 normal-case font-medium">(ixtiyoriy)</span></label>
-                    <input id="prod-harvest" name="harvestDate" type="date" class="auth-input">
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="prod-address">Manzil <span class="text-slate-500 normal-case font-medium">(yuk olib ketiladigan joy)</span></label>
+                    <input id="prod-address" name="address" type="text" maxlength="200" autocomplete="street-address" placeholder="Viloyat, tuman, ko'cha" class="auth-input">
                 </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="prod-payer">Yetkazib berish kimning hisobidan?</label>
+                <!-- Texnik maydonlar yashirin: yangi e'londa standart qiymatlar (Boshqa / Xaridor hisobidan), tahrirlashda mavjud qiymatlar saqlanadi -->
+                <div id="prod-advanced" class="hidden" aria-hidden="true">
+                    <select id="prod-category" name="category" class="auth-input">
+                        <option value="">Tanlang...</option>
+                        <option value="Sabzavot">Sabzavot</option>
+                        <option value="Meva">Meva</option>
+                        <option value="Poliz">Poliz</option>
+                        <option value="Don">Don</option>
+                        <option value="Boshqa">Boshqa</option>
+                    </select>
+                    <input id="prod-harvest" name="harvestDate" type="date" class="auth-input">
                     <select id="prod-payer" name="deliveryPayer" class="auth-input">
                         <option value="BUYER">Xaridor (logistika narxi mahsulot narxiga qo'shiladi)</option>
                         <option value="FARMER">Fermer (logistika narxi sizga to'lanadigan summadan ushlanadi)</option>
                     </select>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5" for="prod-photos">Mahsulot rasmlari <span class="text-slate-500 normal-case font-medium">(1–5 ta, haqiqiy holati)</span></label>
-                    <input id="prod-photos" type="file" accept="image/jpeg,image/png,image/webp" multiple class="auth-input">
-                    <div id="prod-photo-previews" class="grid grid-cols-5 gap-2 mt-2"></div>
-                    <p class="text-[11px] text-slate-500 mt-1.5">JPG, PNG yoki WEBP, har biri 4 MB gacha.</p>
                 </div>
                 <button type="submit" class="auth-submit w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed text-slate-950 font-extrabold py-3.5 rounded-2xl transition duration-200 shadow-xl shadow-emerald-500/30 flex items-center justify-center gap-2.5">
                     <i class="fa-solid fa-check"></i> <span>E'lonni joylash</span>
@@ -2928,6 +2934,7 @@
     <script src="js/local-dock.js" defer></script>
     <script src="js/local.js" defer></script>
     <script src="js/agro-supplier.js" defer></script>
+    <script src="js/pricing-bids.js" defer></script>
     <script src="js/hub-ops.js" defer></script>
     <script src="js/finance.js" defer></script>
     <script src="js/ebol.js" defer></script>

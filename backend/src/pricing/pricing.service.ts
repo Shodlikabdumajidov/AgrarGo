@@ -8,7 +8,7 @@ import { DeliveryFormula, PricingConfig, Quote, deliveryFormula, quote } from '.
 export class PricingService {
   readonly cfg: PricingConfig;
   constructor(@Inject(APP_ENV) env: AppEnv) {
-    this.cfg = { deliveryBase: env.DELIVERY_BASE_FEE, deliveryPerKm: env.DELIVERY_FEE_PER_KM, deliveryPerTonKm: env.DELIVERY_FEE_PER_TON_KM, servicePercent: env.SERVICE_FEE_PERCENT };
+    this.cfg = { deliveryBase: env.DELIVERY_BASE_FEE, deliveryPerKm: env.DELIVERY_FEE_PER_KM, deliveryPerTonKm: env.DELIVERY_FEE_PER_TON_KM, servicePercent: env.SERVICE_FEE_PERCENT, serviceCap: env.SERVICE_FEE_CAP };
   }
 
   formula(distanceKm: number, weightKg: Prisma.Decimal.Value, storedFee?: Prisma.Decimal.Value): DeliveryFormula {

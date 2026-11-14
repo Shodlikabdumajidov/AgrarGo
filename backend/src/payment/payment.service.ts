@@ -245,6 +245,32 @@ export class PaymentService {
     return row.id;
   }
 
+  /**
+   * Haydovchi taklifi (bidding) qabul qilinganda escrow'dagi yo'l haqini kamaytiradi. Farq:
+   *  - yetkazish XARIDOR hisobidan: farq xaridorga qaytariladi (refund);
+   *  - yetkazish FERMER hisobidan: farq fermer sof summasiga qo'shiladi (market jami o'zgarmaydi).
+   * Faqat escrow'dagi (HELD) to'lov; chaqiruvchining tranzaksiyasi ichida ishlaydi.
+   */
+  async reduceDeliveryFee(tx: Prisma.TransactionClient, paymentId: string, newFee: Prisma.Decimal.Value, actor: string) {
+    await tx.$queryRaw`SELECT id FROM "Payment" WHERE id = ${paymentId} FOR UPDATE`;
+    const row = await tx.payment.findUnique({ where: { id: paymentId } });
+    if (!row) throw new NotFoundException("To'lov topilmadi");
+    if (row.status !== PaymentStatus.HELD) throw new ConflictException("Faqat escrow'dagi (HELD) to'lov yo'l haqi o'zgaradi");
+    const fee = new Prisma.Decimal(newFee);
+    const diff = row.deliveryFee.sub(fee);
+    if (diff.lt(0)) throw new ConflictException("Taklif escrow'dagi yo'l haqidan yuqori bo'lishi mumkin emas");
+    if (diff.eq(0)) return { diff, refunded: new Prisma.Decimal(0) };
+    const farmerPays = row.deliveryPayer === 'FARMER';
+    await tx.payment.update({
+      where: { id: paymentId },
+      data: { deliveryFee: fee, ...(farmerPays ? { amount: { increment: diff } } : { refundedAmount: { increment: diff } }) },
+    });
+    let ref = '';
+    if (!farmerPays) ref = (await this.callProvider("Mablag' qaytarilmadi", () => this.provider.refund({ paymentId: `${paymentId}:bid`, amount: diff.toFixed(2), currency: row.currency }))).ref;
+    await this.event(tx, paymentId, PaymentStatus.HELD, actor, `Haydovchi taklifi qabul qilindi: yo'l haqi ${row.deliveryFee.toFixed(2)} -> ${fee.toFixed(2)}. ` + (farmerPays ? `Farq (${diff.toFixed(2)}) fermer sof summasiga qo'shildi` : `Xaridorga ${diff.toFixed(2)} qaytarildi (${ref})`));
+    return { diff, refunded: farmerPays ? new Prisma.Decimal(0) : diff };
+  }
+
   /** Haydovchiga yetkazib berish haqi o'tkaziladi (yuk yetkazilgach, fermer ulushi bilan birga) */
   private async payDriver(row: { id: string; deliveryFee: Prisma.Decimal; currency: string }, driverId: string | null | undefined) {
     if (!driverId || row.deliveryFee.lte(0)) return null;

@@ -182,9 +182,10 @@ export class AgroStoreService {
   }
 
   async createProduct(userId: string, dto: ProductDto) {
+    if (dto.acceptOffer !== true) throw new BadRequestException("Post joylash uchun ommaviy oferta va mahsulot sifatiga shaxsiy javobgarlik roziligini tasdiqlang");
     const s = await this.mineRow(userId);
     const p = await this.prisma.agroProduct.create({
-      data: { supplierId: s.id, name: dto.name, category: dto.category, mode: dto.mode ?? AgroMode.CROP, description: dto.description ?? '', usage: dto.usage ?? '', price: dto.price, unit: dto.unit ?? 'kg', stockQty: dto.stockQty ?? 0 },
+      data: { supplierId: s.id, name: dto.name, category: dto.category, mode: dto.mode ?? AgroMode.CROP, description: dto.description ?? '', usage: dto.usage ?? '', price: dto.price, unit: dto.unit ?? 'kg', stockQty: dto.stockQty ?? 0, offerAcceptedAt: new Date() },
     });
     return this.presentProduct(p, s.verification === AgroVerification.VERIFIED);
   }

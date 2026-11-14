@@ -41,7 +41,7 @@ describe("Agro-Store sotuvchilari: yaratish, verifikatsiya, postlar (e2e)", () =
     const admin = await createAdmin(t, 'ADMIN'), disp = await createAdmin(t, 'DISPATCHER'), farmer = await registerFarmer(t.http);
     const sup = (await create(admin, 'PHARMACY')).body;
     const s = (await login(sup.phone)).accessToken;
-    const post = await t.http().post('/agro-store/me/products').set('Authorization', bearer(s)).send({ name: 'Fungitsid Test-X', category: 'Fungitsid', price: 185000, unit: 'litr', usage: "1 gektarga 0,4 litr", description: "Zamburug'ga qarshi", stockQty: 120 });
+    const post = await t.http().post('/agro-store/me/products').set('Authorization', bearer(s)).send({ acceptOffer: true, name: 'Fungitsid Test-X', category: 'Fungitsid', price: 185000, unit: 'litr', usage: "1 gektarga 0,4 litr", description: "Zamburug'ga qarshi", stockQty: 120 });
     expect(post.status).toBe(201);
     expect(post.body).toMatchObject({ visible: false, stockQty: 120, price: 185000 });
     const hidden = await t.http().get('/agro-store').set('Authorization', bearer(farmer));
@@ -93,12 +93,12 @@ describe("Agro-Store sotuvchilari: yaratish, verifikatsiya, postlar (e2e)", () =
     expect((await t.http().put('/agro-store/me').set('Authorization', bearer(sf)).send({ stir: '12' })).status).toBe(400);
     const upd = await t.http().put('/agro-store/me').set('Authorization', bearer(sf)).send({ stir: '305123456', passportInfo: 'AA1234567' });
     expect(upd.body.missing).toEqual([]);
-    await t.http().post('/agro-store/me/products').set('Authorization', bearer(sf)).send({ name: 'Ammiak selitrasi', category: "O'g'it", price: 8000, mode: 'CROP', stockQty: 5000 });
+    await t.http().post('/agro-store/me/products').set('Authorization', bearer(sf)).send({ acceptOffer: true, name: 'Ammiak selitrasi', category: "O'g'it", price: 8000, mode: 'CROP', stockQty: 5000 });
     expect((await t.http().get('/agro-store').set('Authorization', bearer(farmer))).body.products.some((p: any) => p.name.uz === 'Ammiak selitrasi')).toBe(false);
     expect((await t.http().patch(`/agro-store/suppliers/${fe.id}/verify`).set('Authorization', bearer(admin))).status).toBe(200);
     expect((await t.http().get('/agro-store').set('Authorization', bearer(farmer))).body.products.some((p: any) => p.name.uz === 'Ammiak selitrasi')).toBe(true);
     // chorva rejimi: LIVESTOCK mahsulot faqat shu rejimda
-    await t.http().post('/agro-store/me/products').set('Authorization', bearer(sf)).send({ name: 'Briket Test', category: 'Briket', price: 5000, mode: 'LIVESTOCK', stockQty: 10 });
+    await t.http().post('/agro-store/me/products').set('Authorization', bearer(sf)).send({ acceptOffer: true, name: 'Briket Test', category: 'Briket', price: 5000, mode: 'LIVESTOCK', stockQty: 10 });
     expect((await t.http().get('/agro-store?mode=livestock').set('Authorization', bearer(farmer))).body.products.some((p: any) => p.name.uz === 'Briket Test')).toBe(true);
     expect((await t.http().get('/agro-store').set('Authorization', bearer(farmer))).body.products.some((p: any) => p.name.uz === 'Briket Test')).toBe(false);
   });
@@ -110,10 +110,24 @@ describe("Agro-Store sotuvchilari: yaratish, verifikatsiya, postlar (e2e)", () =
     }
     const a = (await create(admin, 'FERTILIZER')).body, b = (await create(admin, 'FERTILIZER')).body;
     const sa = (await login(a.phone)).accessToken, sb = (await login(b.phone)).accessToken;
-    const p = (await t.http().post('/agro-store/me/products').set('Authorization', bearer(sa)).send({ name: 'Mahsulot A', category: "O'g'it", price: 1000 })).body;
+    const p = (await t.http().post('/agro-store/me/products').set('Authorization', bearer(sa)).send({ acceptOffer: true, name: 'Mahsulot A', category: "O'g'it", price: 1000 })).body;
     expect((await t.http().put(`/agro-store/me/products/${p.id}`).set('Authorization', bearer(sb)).send({ price: 1 })).status).toBe(404);
     expect((await t.http().delete(`/agro-store/me/products/${p.id}`).set('Authorization', bearer(sb))).status).toBe(404);
     expect((await t.http().get('/agro-store/me/documents/license').set('Authorization', bearer(sb))).status).toBe(404);
-    expect((await t.http().post('/agro-store/me/products').set('Authorization', bearer(sa)).send({ name: 'X', category: 'Y', price: 0 })).status).toBe(400);
+    expect((await t.http().post('/agro-store/me/products').set('Authorization', bearer(sa)).send({ acceptOffer: true, name: 'X', category: 'Y', price: 0 })).status).toBe(400);
+  });
+
+  it("post joylashdan oldin ommaviy oferta roziligi majburiy: rozilik yo'q yoki false bo'lsa 400, rozilik vaqti saqlanadi", async () => {
+    const admin = await createAdmin(t, 'ADMIN');
+    const sup = (await create(admin, 'FERTILIZER')).body;
+    const tok = (await login(sup.phone)).accessToken;
+    const base = { name: 'Oferta Test', category: "O'g'it", price: 5000 };
+    const post = (b: Record<string, unknown>) => t.http().post('/agro-store/me/products').set('Authorization', bearer(tok)).send(b);
+    expect((await post(base)).status).toBe(400);
+    expect((await post({ ...base, acceptOffer: false })).status).toBe(400);
+    expect((await post({ ...base, acceptOffer: 'true' })).status).toBe(400);
+    const ok = await post({ ...base, acceptOffer: true });
+    expect(ok.status).toBe(201);
+    expect(ok.body.offerAcceptedAt).toBeTruthy();
   });
 });

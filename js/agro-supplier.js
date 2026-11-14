@@ -183,10 +183,22 @@ function openAgroPostForm(p, done) {
     box.appendChild(agsField(T("Dozasi / ishlatish yo'riqnomasi"), usage));
     box.appendChild(agsField(T('Qisqa tavsif'), desc));
     box.appendChild(agsField(T('Mahsulot rasmi'), file));
+    // Ommaviy oferta: yangi post joylashdan oldin majburiy rozilik (tahrirlashda qayta so'ralmaydi)
+    let offer = null;
+    if (!p) {
+        const lab = el('label', 'flex items-start gap-3 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-100 cursor-pointer'); lab.dataset.offer = '1';
+        offer = el('input'); offer.type = 'checkbox'; offer.id = 'asp-offer'; offer.required = true; offer.className = 'mt-1 accent-emerald-500';
+        lab.appendChild(offer);
+        lab.appendChild(el('span', '', "Ommaviy oferta shartlariga roziman va mahsulot sifati, xavfsizligi hamda yorlig'idagi ma'lumotlarning to'g'riligi uchun sotuvchi sifatida shaxsan javobgarligimni tasdiqlayman."));
+        box.appendChild(lab);
+    }
     const submit = actionBtn('fa-floppy-disk', 'Saqlash', true, function () {}); submit.type = 'submit'; box.appendChild(submit);
     box.addEventListener('submit', async function (e) {
-        e.preventDefault(); submit.disabled = true;
+        e.preventDefault();
+        if (offer && !offer.checked) return showToast(T("Post joylash uchun ommaviy oferta va javobgarlik roziligini tasdiqlang."), 4500, 'error');
+        submit.disabled = true;
         const body = { name: name.value, category: cat.value, mode: mode.value, price: Number(price.value), unit: unit.value, stockQty: Number(stock.value || 0), usage: usage.value, description: desc.value };
+        if (!p) body.acceptOffer = true;
         try {
             const row = p ? await authed('PUT', '/agro-store/me/products/' + p.id, body) : await authed('POST', '/agro-store/me/products', body);
             if (file.files && file.files[0]) await agsUpload('/agro-store/me/products/' + row.id + '/photo', file.files[0]);

@@ -126,6 +126,7 @@ model Driver {
   region          String
   licenseNumber   String?
   shipments       Shipment[]
+  bids            ShipmentBid[]
   locationLogs    LocationLog[]
   warehouseOrders WarehouseOrder[]
   posts           DriverPost[]
@@ -279,6 +280,30 @@ enum ShipmentStatus {
   CANCELLED // buyurtma bekor qilingan (to'lov qaytarilgan yoki to'lanmagan)
 }
 
+enum BidStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+/// Haydovchining ochiq yukka narx taklifi (counter-offer): yuk egasi yoki dispetcher qabul qilsa haydovchi biriktiriladi
+model ShipmentBid {
+  id         String    @id @default(uuid())
+  shipmentId String
+  shipment   Shipment  @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  driverId   String
+  driver     Driver    @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  price      Decimal   @db.Decimal(14, 2)
+  note       String?
+  status     BidStatus @default(PENDING)
+  decidedAt  DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@unique([shipmentId, driverId])
+  @@index([shipmentId, status])
+}
+
 model Shipment {
   id               String          @id @default(uuid())
   // Yuk manbai: yoki bron (fermer -> market), yoki ombor buyurtmasi (omborxona -> market). Aynan bittasi to'ldirilgan (CHECK).
@@ -326,6 +351,12 @@ model Shipment {
   bolNo                 Int           @unique @default(autoincrement())
   // PIN-kod elektron imzolari (BOL imzo bloki): yuklashda fermer haydovchi PIN'ini kiritgan va topshirishda haydovchi market PIN'ini kiritgan vaqt
   pickupPinVerifiedAt   DateTime?
+  // Haydovchi narx taklifi (bidding): qabul qilingan taklif bo'yicha kelishilgan yo'l haqi; nizo (Dispute): sifatsiz yuk / rad etish
+  agreedDeliveryFee     Decimal?        @db.Decimal(14, 2)
+  disputedAt            DateTime?
+  disputeReason         String?
+  disputedByRole        Role?
+  bids                  ShipmentBid[]
   deliveryPinVerifiedAt DateTime?
   pickupPin             String?
   deliveryPin           String?
@@ -1442,6 +1473,8 @@ model AgroProduct {
   stockQty    Decimal      @db.Decimal(14, 2) @default(0)
   imageUrl    String?
   isActive    Boolean      @default(true)
+  /// Ommaviy oferta va mahsulot sifatiga shaxsiy javobgarlik roziligi vaqti (post joylashdan oldin majburiy)
+  offerAcceptedAt DateTime?
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   supplier    AgroSupplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)

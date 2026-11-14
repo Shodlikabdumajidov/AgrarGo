@@ -14,11 +14,59 @@ import { LocationService } from './tracking/location.service';
 import { ConfirmPinDto } from './dto/confirm-pin.dto';
 import { AcknowledgeRiskDto, AssignDriverDto, AvailableDriversQuery, AvailableShipmentsFilterQuery, ListShipmentsQuery } from './dto/list-shipments.query';
 import { ShipmentService } from './shipment.service';
+import { BidService } from './bid.service';
+import { AcceptBidDto, OpenDisputeDto, PlaceBidDto } from './dto/bid.dto';
 
 @Controller('shipments')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class ShipmentController {
-  constructor(private readonly shipments: ShipmentService, private readonly locations: LocationService) {}
+  constructor(private readonly shipments: ShipmentService, private readonly locations: LocationService, private readonly bids: BidService) {}
+
+  private viewer(user: any) {
+    return { role: user.role as Role, driverId: user.driver?.id, farmerId: user.farmer?.id, marketId: user.market?.id };
+  }
+
+  // --- Narx taklifi (Counter-Offer / Bidding) ---
+  /** Haydovchi ochiq yukka o'z narxini taklif qiladi */
+  @Post(':id/bids')
+  @HttpCode(200)
+  @Roles(Role.DRIVER)
+  @ThrottleProfile('booking')
+  placeBid(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string, @Body() dto: PlaceBidDto) {
+    return this.bids.place(this.viewer(user), id, dto.price, dto.note);
+  }
+
+  /** Takliflar ro'yxati (egalar va dispetcher — hammasi; haydovchi — faqat o'zinikini) */
+  @Get(':id/bids')
+  @Roles(Role.DRIVER, Role.FARMER, Role.MARKET, Role.DISPATCHER, Role.ADMIN)
+  @Header('Cache-Control', 'no-store')
+  listBids(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string) {
+    return this.bids.list(this.viewer(user), id);
+  }
+
+  /** Taklifni qabul qilish: haydovchi biriktiriladi, yo'l haqi kamayadi */
+  @Post(':id/bids/:bidId/accept')
+  @HttpCode(200)
+  @Roles(Role.FARMER, Role.MARKET, Role.DISPATCHER, Role.ADMIN)
+  acceptBid(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string, @Param('bidId', ParseUUIDPipe) bidId: string, @Body() dto: AcceptBidDto) {
+    return this.bids.accept(this.viewer(user), id, bidId, dto.acknowledgeRisk);
+  }
+
+  // --- Nizo (Dispute): sifatsiz yuk / rad etish ---
+  @Post(':id/dispute')
+  @HttpCode(200)
+  @Roles(Role.DRIVER, Role.MARKET)
+  @ThrottleProfile('booking')
+  openDispute(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string, @Body() dto: OpenDisputeDto) {
+    return this.shipments.openDispute(this.viewer(user), id, dto.reason);
+  }
+
+  @Post(':id/dispute/resolve')
+  @HttpCode(200)
+  @Roles(Role.DISPATCHER, Role.ADMIN)
+  resolveDispute(@Param('id', ParseUUIDPipe) id: string) {
+    return this.shipments.resolveDispute(id);
+  }
 
   // --- Dispetcher / administrator ---
   /** Hali haydovchisiz ochiq yuklar */

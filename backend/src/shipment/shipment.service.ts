@@ -144,6 +144,35 @@ export class ShipmentService {
     return this.shape(row, 'staff', undefined, await this.warehouseContact([row]));
   }
 
+  /** Narx taklifi (bid) qabul qilinganda: tashqi tranzaksiya ichida haydovchini biriktiradi (OPEN -> LOADING) */
+  async assignInTx(tx: Prisma.TransactionClient, driverId: string, id: string, acknowledgeRisk?: boolean) {
+    const driver = await tx.driver.findUnique({ where: { id: driverId }, select: { id: true, userId: true, capacityKg: true, user: { select: { isActive: true, penaltyPoints: true } } } });
+    if (!driver || !driver.user.isActive) throw new NotFoundException('Haydovchi topilmadi');
+    assertRiskAcknowledged(driver.user.penaltyPoints, acknowledgeRisk);
+    await this.acceptTx(tx, driver, id);
+  }
+
+  /** Nizo (Dispute): sifatsiz yuk / rad etish. Nizo ochiq turganda topshirish (PIN) bloklanadi, escrow dispetcher qaroriga qadar saqlanadi. */
+  async openDispute(viewer: { role: Role; driverId?: string; marketId?: string }, id: string, reason: string) {
+    const s = await this.prisma.shipment.findUnique({ where: { id }, select: { status: true, driverId: true, marketId: true, disputedAt: true } });
+    if (!s) throw new NotFoundException('Yuk topilmadi');
+    const mine = (viewer.role === Role.DRIVER && !!viewer.driverId && s.driverId === viewer.driverId) || (viewer.role === Role.MARKET && !!viewer.marketId && s.marketId === viewer.marketId);
+    if (!mine) throw new ForbiddenException("Bu yuk bo'yicha nizo ochish huquqingiz yo'q");
+    if (s.status !== ShipmentStatus.IN_TRANSIT) throw new ConflictException("Nizo faqat yo'ldagi (topshirilayotgan) yuk uchun ochiladi");
+    if (s.disputedAt) throw new ConflictException('Bu yuk bo\'yicha nizo allaqachon ochilgan');
+    await this.prisma.shipment.update({ where: { id }, data: { disputedAt: new Date(), disputeReason: reason.trim(), disputedByRole: viewer.role } });
+    return this.reload(id, viewer.role === Role.DRIVER ? 'driver-own' : 'market');
+  }
+
+  /** Dispetcher/admin nizoni yopadi (yuk topshirilishi yoki OS&D bo'yicha qayta hisoblash davom etadi) */
+  async resolveDispute(id: string) {
+    const s = await this.prisma.shipment.findUnique({ where: { id }, select: { disputedAt: true } });
+    if (!s) throw new NotFoundException('Yuk topilmadi');
+    if (!s.disputedAt) throw new ConflictException('Bu yuk bo\'yicha ochiq nizo yo\'q');
+    await this.prisma.shipment.update({ where: { id }, data: { disputedAt: null, disputeReason: null, disputedByRole: null } });
+    return this.reload(id, 'staff');
+  }
+
   /** Yukni o'ziga biriktirish: OPEN -> LOADING */
   async accept(driver: { id: string; capacityKg: Prisma.Decimal }, id: string, acknowledgeRisk?: boolean) {
     await this.assertPartnersSafe(id, acknowledgeRisk);
@@ -307,8 +336,9 @@ export class ShipmentService {
   /** Topshirish: HAYDOVCHI marketning 4 xonali PIN-kodini kiritadi -> DELIVERED va escrow avtomatik chiqariladi */
   async confirmDelivery(driverId: string, id: string, pin: string) {
     const ok = await this.prisma.$transaction(async (tx) => {
-      const s = await tx.shipment.findFirst({ where: { id, driverId }, select: { status: true, deliveryPin: true, deliveryPinAttempts: true, bookingId: true } });
+      const s = await tx.shipment.findFirst({ where: { id, driverId }, select: { status: true, deliveryPin: true, deliveryPinAttempts: true, bookingId: true, disputedAt: true } });
       if (!s) throw new NotFoundException('Yuk topilmadi');
+      if (s.disputedAt) throw new ConflictException("Bu yuk bo'yicha nizo ochilgan: dispetcher qaroriga qadar topshirib bo'lmaydi");
       if (!s.bookingId || !s.deliveryPin) throw new ConflictException("Bu yuk uchun PIN-kod tasdiqlash mavjud emas");
       if (s.status !== ShipmentStatus.IN_TRANSIT) throw new ConflictException("PIN-kod faqat yo'ldagi yuk uchun kiritiladi");
       if (!(await this.checkPin(tx, id, 'delivery', pin, s.deliveryPin, s.deliveryPinAttempts))) return false;
@@ -592,6 +622,9 @@ export class ShipmentService {
       // Qizil yulduzcha (penalty) ballari: hamkor tanlashda ogohlantirish uchun (2+ — red-flag)
       penalty: { farmer: s.farmer?.user?.penaltyPoints ?? 0, market: s.market?.user?.penaltyPoints ?? 0, driver: s.driver?.user?.penaltyPoints ?? 0 },
       isSigned: s.isSigned,
+      // Nizo (Dispute) va kelishilgan yo'l haqi (haydovchi taklifi qabul qilingan bo'lsa)
+      dispute: s.disputedAt ? { at: s.disputedAt, reason: s.disputeReason, by: s.disputedByRole } : null,
+      agreedDeliveryFee: s.agreedDeliveryFee ? Number(s.agreedDeliveryFee) : null,
       // PIN-kod: haydovchi (yuklash) va market (topshirish) o'z kodini ko'radi; fermer kiritadigan joyini, haydovchi kiritadigan joyini biladi
       pin: s.pickupPin ? {
         enforced: this.env.PIN_ENFORCE,

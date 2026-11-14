@@ -1,6 +1,6 @@
 import { AgroMode, AgroSupplierType, AgroVerification } from '@prisma/client';
 import { Transform, Type } from 'class-transformer';
-import { IsEnum, IsIn, IsNumber, IsOptional, IsString, Matches, Max, MaxLength, Min, MinLength } from 'class-validator';
+import { IsBoolean, IsEnum, IsIn, IsNumber, IsOptional, IsString, Matches, Max, MaxLength, Min, MinLength } from 'class-validator';
 import { IsStrongPassword } from '../auth/password/password-policy';
 
 const trim = ({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value);
@@ -48,6 +48,10 @@ export class UpdateSupplierProfileDto {
 }
 
 export class ProductDto {
+  /** Ommaviy oferta va mahsulot sifatiga sotuvchi shaxsan javobgarligi roziligi: post joylashdan oldin majburiy */
+  @IsBoolean({ message: "Ommaviy oferta va javobgarlik roziligini tasdiqlang" })
+  acceptOffer!: boolean;
+
   @Transform(trim) @IsString() @MinLength(2) @MaxLength(120)
   name!: string;
 

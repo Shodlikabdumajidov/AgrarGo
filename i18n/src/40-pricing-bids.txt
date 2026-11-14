@@ -1,0 +1,46 @@
+# --- Soddalashtirilgan e'lon formasi, yo'l haqi kalkulyatori, narx taklifi, nizo, escrow 20/80, oferta ---
+Hajmi ‖ Объём ‖ Volume
+tonna ‖ тонна ‖ tonne
+Manzil ‖ Адрес ‖ Address
+(yuk olib ketiladigan joy) ‖ (место загрузки) ‖ (pickup location)
+Viloyat, tuman, ko'cha ‖ Область, район, улица ‖ Region, district, street
+Manzilni to'liq kiriting. ‖ Укажите адрес полностью. ‖ Enter the full address.
+Yo'l haqi kalkulyatori ‖ Калькулятор стоимости доставки ‖ Delivery fee calculator
+Yoqilg'i turi ‖ Тип топлива ‖ Fuel type
+Yuk turi ‖ Тип груза ‖ Cargo type
+Metan ‖ Метан ‖ Methane
+Propan ‖ Пропан ‖ Propane
+Dizel ‖ Дизель ‖ Diesel
+Standart ‖ Стандартный ‖ Standard
+Nozik ‖ Хрупкий ‖ Fragile
+Refrijerator ‖ Рефрижератор ‖ Refrigerated
+Tavsiya etilgan narx oralig'i ‖ Рекомендуемый диапазон цены ‖ Recommended price range
+Tavsiya: {0} ‖ Рекомендуется: {0} ‖ Recommended: {0}
+O'z narxingizni taklif qiling ‖ Предложите свою цену ‖ Offer your own price
+Taklif yuborish ‖ Отправить предложение ‖ Send offer
+Taklif narxi ‖ Цена предложения ‖ Offer price
+Taklif oralig'i: {0} – {1}. Yuk egasi qabul qilsa, siz biriktirilasiz va yo'l haqi shu narxga tushadi. ‖ Диапазон предложения: {0} – {1}. Если владелец груза примет, вы будете назначены, а стоимость доставки снизится до этой цены. ‖ Offer range: {0} – {1}. If the cargo owner accepts, you are assigned and the delivery fee drops to this price.
+Taklifingiz: {0} — {1} ‖ Ваше предложение: {0} — {1} ‖ Your offer: {0} — {1}
+qabul qilindi ‖ принято ‖ accepted
+rad etildi ‖ отклонено ‖ rejected
+javob kutilmoqda ‖ ожидает ответа ‖ awaiting reply
+Taklif {0} dan {1} so'mgacha bo'lishi kerak. ‖ Предложение должно быть от {0} до {1} сум. ‖ The offer must be between {0} and {1} UZS.
+Taklif yuborildi. Yuk egasi javobini kuting. ‖ Предложение отправлено. Ожидайте ответа владельца груза. ‖ Offer sent. Wait for the cargo owner's reply.
+Haydovchilar takliflari ‖ Предложения водителей ‖ Driver offers
+Takliflarni ko'rish ‖ Посмотреть предложения ‖ View offers
+Hozircha takliflar yo'q. ‖ Пока предложений нет. ‖ No offers yet.
+Taklif qabul qilindi: haydovchi biriktirildi. ‖ Предложение принято: водитель назначен. ‖ Offer accepted: driver assigned.
+Sifatsiz yuk / Rad etish (Dispute) ‖ Некачественный груз / Отказ (спор) ‖ Poor-quality cargo / Reject (Dispute)
+Yuk sifatsiz yoki qabul qilib bo'lmasa, sababni yozing. Nizo ochiq turganda topshirish bloklanadi va pul escrow'da saqlanadi — dispetcher qaror chiqaradi. ‖ Если груз некачественный или его нельзя принять, укажите причину. Пока спор открыт, выдача блокируется, а деньги остаются в эскроу — решение выносит диспетчер. ‖ If the cargo is poor quality or cannot be accepted, state the reason. While a dispute is open, handover is blocked and the money stays in escrow — the dispatcher decides.
+Masalan: 30% mahsulot chirigan ‖ Например: 30% товара испорчено ‖ E.g. 30% of the goods are spoiled
+Nizo ochish ‖ Открыть спор ‖ Open dispute
+Sababni yozing (kamida 5 ta belgi). ‖ Укажите причину (минимум 5 символов). ‖ State the reason (at least 5 characters).
+Nizo ochildi. Dispetcher ko'rib chiqadi. ‖ Спор открыт. Диспетчер рассмотрит. ‖ Dispute opened. The dispatcher will review it.
+Nizo ochilgan ‖ Спор открыт ‖ Dispute opened
+Topshirish bloklangan, pul escrow'da saqlanmoqda. Dispetcher qaror chiqaradi. ‖ Выдача заблокирована, деньги хранятся в эскроу. Решение вынесет диспетчер. ‖ Handover is blocked and the money is held in escrow. The dispatcher will decide.
+Kafolat (Escrow): jami summaning 20% band qilinadi ‖ Гарантия (эскроу): резервируется 20% общей суммы ‖ Guarantee (escrow): 20% of the total is reserved
+Kafolat (band): {0} ‖ Гарантия (резерв): {0} ‖ Guarantee (reserved): {0}
+Qolgan 80%: {0} ‖ Остальные 80%: {0} ‖ Remaining 80%: {0}
+Platforma xizmat haqi (1.5%, maks. 300 000 so'm) ‖ Сервисный сбор платформы (1,5%, макс. 300 000 сум) ‖ Platform service fee (1.5%, max 300,000 UZS)
+Ommaviy oferta shartlariga roziman va mahsulot sifati, xavfsizligi hamda yorlig'idagi ma'lumotlarning to'g'riligi uchun sotuvchi sifatida shaxsan javobgarligimni tasdiqlayman. ‖ Я принимаю условия публичной оферты и как продавец лично отвечаю за качество, безопасность товара и достоверность данных на этикетке. ‖ I accept the public offer and confirm my personal responsibility as the seller for product quality, safety and the accuracy of label information.
+Post joylash uchun ommaviy oferta va javobgarlik roziligini tasdiqlang. ‖ Для публикации подтвердите согласие с публичной офертой и ответственностью. ‖ To post, confirm your agreement to the public offer and responsibility.

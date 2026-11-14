@@ -43,7 +43,7 @@ const call=async(path,body,tok,method='POST')=>{const r=await fetch(API+path,{me
   ok(await pg.locator('#ag-banner').innerText().then(t=>/СКОРО/.test(t)),'RU: banner "СКОРО"');
   ok(/Карбамид/.test(await pg.locator('#ag-grid').innerText()),'RU: product names in Russian');
   ok(/инструкция по применению/i.test(await pg.locator('.ag-card').first().innerText()),'RU: UI labels translated');
-  const bg=await pg.locator('.ag-card').first().evaluate(e=>getComputedStyle(e).backgroundColor); ok(bg==='rgb(255, 255, 255)','light mode: white card ('+bg+')');
+  const bg=await pg.locator('.ag-card').first().evaluate(e=>getComputedStyle(e).backgroundColor); ok(bg==='rgb(251, 249, 246)','light mode: white card ('+bg+')');
   ok(await pg.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1),'mobile: no horizontal scroll');
   await pg.screenshot({path:'ag-ru-light-mobile.png'}); await pg.context().close();
   await b0.close();

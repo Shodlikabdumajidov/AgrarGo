@@ -1,6 +1,42 @@
-import { computeDeliveryFee, computeServiceFee, quote, breakdownOf, paymentBreakdown, PricingConfig } from './pricing';
+import { CARGO_FACTOR, FUEL_FACTOR, computeDeliveryFee, computeServiceFee, quote, breakdownOf, paymentBreakdown, recommendedRange, PricingConfig } from './pricing';
 
 const cfg: PricingConfig = { deliveryBase: 20000, deliveryPerKm: 400, deliveryPerTonKm: 150, servicePercent: 1 };
+
+describe('xizmat haqi: faqat xaridordan 1.5%, maksimal 300 000 so\'m (cap)', () => {
+  const c: PricingConfig = { ...cfg, servicePercent: 1.5, serviceCap: 300_000 };
+  it("1.5% (100 so'mga yaxlitlanadi)", () => {
+    expect(computeServiceFee(c, 890_400, 120_000).toNumber()).toBe(15_200); // 1 010 400 x 1.5% = 15 156 -> 15 200
+  });
+  it("bitim summasi qancha katta bo'lmasin, komissiya 300 000 dan oshmaydi", () => {
+    expect(computeServiceFee(c, 100_000_000, 500_000).toNumber()).toBe(300_000); // 1.5% = 1 507 500 -> cap
+    expect(computeServiceFee(c, 20_000_000, 0).toNumber()).toBe(300_000); // aynan chegarada
+    expect(computeServiceFee(c, 19_000_000, 0).toNumber()).toBe(285_000); // chegaradan past: cap ta'sir qilmaydi
+    expect(computeServiceFee(c, 5_000_000_000, 0).toNumber()).toBe(300_000);
+  });
+  it("cap berilmasa — cheklovsiz; 0% da 0", () => {
+    expect(computeServiceFee({ ...cfg, servicePercent: 1.5 }, 100_000_000, 0).toNumber()).toBe(1_500_000);
+    expect(computeServiceFee({ ...c, servicePercent: 0 }, 100_000_000, 0).toNumber()).toBe(0);
+  });
+});
+
+describe('yo\'l haqi kalkulyatori: yoqilg\'i va yuk turi bo\'yicha tavsiya oralig\'i', () => {
+  it("koeffitsientlar: yuk — standart x1.0, nozik x1.15, refrijerator x1.30; yoqilg'i — metan < propan < dizel", () => {
+    expect(CARGO_FACTOR).toEqual({ STANDARD: 1.0, FRAGILE: 1.15, REFRIGERATED: 1.3 });
+    expect(FUEL_FACTOR.METHANE).toBeLessThan(FUEL_FACTOR.PROPANE);
+    expect(FUEL_FACTOR.PROPANE).toBeLessThan(FUEL_FACTOR.DIESEL);
+  });
+  it('tavsiya narx = baza x yoqilg\'i x yuk (1000 ga yaxlitlanadi); oraliq ±10%', () => {
+    const std = recommendedRange(100_000, 'PROPANE', 'STANDARD');
+    expect(std).toMatchObject({ recommended: 100_000, min: 90_000, max: 110_000, fuelFactor: 1, cargoFactor: 1 });
+    expect(recommendedRange(100_000, 'PROPANE', 'FRAGILE').recommended).toBe(115_000);
+    expect(recommendedRange(100_000, 'PROPANE', 'REFRIGERATED').recommended).toBe(130_000);
+    expect(recommendedRange(100_000, 'DIESEL', 'REFRIGERATED').recommended).toBe(143_000);
+    expect(recommendedRange(100_000, 'METHANE', 'STANDARD').recommended).toBe(90_000);
+    const r = recommendedRange(250_000, 'DIESEL', 'FRAGILE');
+    expect(r.min).toBeLessThan(r.recommended);
+    expect(r.max).toBeGreaterThan(r.recommended);
+  });
+});
 
 describe('pricing', () => {
   it("yetkazib berish haqi: boshlang'ich + km + og'irlik, 1000 ga yuqoriga yaxlitlanadi", () => {

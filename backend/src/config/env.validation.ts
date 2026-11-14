@@ -25,6 +25,7 @@ export interface AppEnv {
   DELIVERY_FEE_PER_KM: number;
   DELIVERY_FEE_PER_TON_KM: number;
   SERVICE_FEE_PERCENT: number;
+  SERVICE_FEE_CAP: number;
   LOCAL_HUB_FEE_PERCENT: number;
   LOCAL_HUB_FEE_MIN: number;
   LOCAL_COURIER_FEE: number;
@@ -87,6 +88,17 @@ const WEAK_SECRETS = [
 ];
 
 export const MIN_PROD_SECRET_LENGTH = 32;
+
+/** O'nli son (masalan 1.5 foiz) */
+const numInRange = (raw: unknown, name: string, def: number, min: number, max: number, errors: string[]) => {
+  if (raw === undefined || raw === '') return def;
+  const n = Number(raw);
+  if (!Number.isFinite(n) || n < min || n > max) {
+    errors.push(`${name} ${min} dan ${max} gacha son bo'lishi kerak (hozir: "${raw}")`);
+    return def;
+  }
+  return n;
+};
 
 const intInRange = (raw: unknown, name: string, def: number, min: number, max: number, errors: string[]) => {
   if (raw === undefined || raw === '') return def;
@@ -269,12 +281,14 @@ export function validateEnv(raw: Record<string, unknown>): AppEnv & Record<strin
     PAYMENT_ALLOW_SIMULATION: allowSimulation,
     // Yetkazilgandan keyin xaridor tasdiqlamasa, fermer pulni shu soatdan keyin o'zi chiqarib ola oladi
     // Omborxona xizmat haqi (foiz): ombor buyurtmasi yetkazilganda fermer o'rniga omborxona hisobiga o'tadi
-    WAREHOUSE_FEE_PERCENT: intInRange(raw.WAREHOUSE_FEE_PERCENT, 'WAREHOUSE_FEE_PERCENT', 2, 0, 30, errors),
+    WAREHOUSE_FEE_PERCENT: intInRange(raw.WAREHOUSE_FEE_PERCENT, 'WAREHOUSE_FEE_PERCENT', 0, 0, 30, errors),
     // To'lov tarkibi: yetkazib berish haqi (haydovchiga) va platforma xizmat haqi
     DELIVERY_BASE_FEE: intInRange(raw.DELIVERY_BASE_FEE, 'DELIVERY_BASE_FEE', 20000, 0, 10_000_000, errors),
     DELIVERY_FEE_PER_KM: intInRange(raw.DELIVERY_FEE_PER_KM, 'DELIVERY_FEE_PER_KM', 400, 0, 100_000, errors),
     DELIVERY_FEE_PER_TON_KM: intInRange(raw.DELIVERY_FEE_PER_TON_KM, 'DELIVERY_FEE_PER_TON_KM', 150, 0, 100_000, errors),
-    SERVICE_FEE_PERCENT: intInRange(raw.SERVICE_FEE_PERCENT, 'SERVICE_FEE_PERCENT', 1, 0, 30, errors),
+    // Komissiya faqat xaridordan: 1.5% (maksimal SERVICE_FEE_CAP so'm). Fermerdan komissiya olinmaydi.
+    SERVICE_FEE_PERCENT: numInRange(raw.SERVICE_FEE_PERCENT, 'SERVICE_FEE_PERCENT', 1.5, 0, 30, errors),
+    SERVICE_FEE_CAP: intInRange(raw.SERVICE_FEE_CAP, 'SERVICE_FEE_CAP', 300000, 0, 1_000_000_000, errors),
     // Chakana (Hub) savdo: Hub saqlash/qadoqlash haqi, shahar ichi kuryer haqi va platforma komissiyasi (hammasi xaridorga ochiq ko'rsatiladi)
     LOCAL_HUB_FEE_PERCENT: intInRange(raw.LOCAL_HUB_FEE_PERCENT, 'LOCAL_HUB_FEE_PERCENT', 5, 0, 30, errors),
     LOCAL_HUB_FEE_MIN: intInRange(raw.LOCAL_HUB_FEE_MIN, 'LOCAL_HUB_FEE_MIN', 2000, 0, 1_000_000, errors),

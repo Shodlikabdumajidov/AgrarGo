@@ -5,7 +5,7 @@ import { CurrentUser } from '../common/current-user.decorator';
 import { Roles } from '../common/roles.decorator';
 import { RolesGuard } from '../common/roles.guard';
 import { PrismaService } from '../prisma/prisma.service';
-import { paymentBreakdown } from './pricing';
+import { CARGO_CLASSES, CargoClass, FUEL_TYPES, FuelType, paymentBreakdown, recommendedRange } from './pricing';
 import { RatesService } from '../rates/rates.service';
 import { PricingService } from './pricing.service';
 
@@ -13,6 +13,21 @@ import { PricingService } from './pricing.service';
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class PricingController {
   constructor(private readonly pricing: PricingService, private readonly prisma: PrismaService, private readonly rates: RatesService) {}
+
+  /**
+   * Yo'l haqi kalkulyatori: marshrut, og'irlik, yoqilg'i turi (metan/propan/dizel) va yuk turi (standart x1.0, nozik x1.15, refrijerator x1.30)
+   * bo'yicha tavsiya etilgan narx va narx oralig'i (Price Range, ±10%). Mijozdan narx qabul qilinmaydi: hammasi serverda hisoblanadi.
+   */
+  @Get('road-fee')
+  @Roles(Role.FARMER, Role.MARKET, Role.DRIVER, Role.DISPATCHER, Role.ADMIN)
+  roadFee(@Query('originRegion') origin?: string, @Query('destRegion') dest?: string, @Query('weightKg') weight?: string, @Query('fuel') fuel = 'PROPANE', @Query('cargo') cargo = 'STANDARD') {
+    const w = Number(weight);
+    if (!origin || !dest || !(w > 0) || w > 1_000_000) throw new BadRequestException('originRegion, destRegion va weightKg (0 dan katta) kerak');
+    if (!(FUEL_TYPES as readonly string[]).includes(fuel)) throw new BadRequestException("fuel: METHANE, PROPANE yoki DIESEL bo'lishi kerak");
+    if (!(CARGO_CLASSES as readonly string[]).includes(cargo)) throw new BadRequestException("cargo: STANDARD, FRAGILE yoki REFRIGERATED bo'lishi kerak");
+    const q = this.pricing.quote(origin, dest, 0, w);
+    return { distanceKm: q.distanceKm, fuel, cargo, ...recommendedRange(q.deliveryFee, fuel as FuelType, cargo as CargoClass), formula: this.pricing.formula(q.distanceKm, w, q.deliveryFee) };
+  }
 
   /** Bron qilishdan oldin taxminiy to'lov tarkibi (haydovchi yo'l haqi formulasi bilan). Faqat market. */
   @Get('estimate')

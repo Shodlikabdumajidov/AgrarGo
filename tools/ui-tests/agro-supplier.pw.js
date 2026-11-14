@@ -61,6 +61,7 @@ const PNG=Buffer.from('89504e470d0a1a0a0000000d494844520000000100000001080600000
   await f.locator('input').nth(0).fill(UNI); await f.locator('input[type=number]').nth(0).fill('185000'); await f.locator('input[type=number]').nth(1).fill('120');
   await f.locator('textarea').nth(0).fill('1 gektarga 0,4 litr'); await f.locator('select').nth(2).selectOption('litr');
   await f.locator('input[type=file]').setInputFiles({name:'p.png',mimeType:'image/png',buffer:PNG});
+  await f.locator('#asp-offer').check(); // ommaviy oferta roziligi (majburiy)
   await f.locator('button[type=submit]').click(); await pg.waitForTimeout(2000);
   ok(await pg.locator('.gc .gc-slide').count()===1,'supplier post appears in Glassy Carousel');
   const card=await pg.locator('.gc .gc-slide.is-active').innerText();
@@ -122,7 +123,7 @@ const PNG=Buffer.from('89504e470d0a1a0a0000000d494844520000000100000001080600000
   pg=await open(fph,{width:1280,height:900},'light','uz');
   await pg.evaluate(()=>{document.getElementById('dashboard-view') && closeDashboard && closeDashboard();}).catch(()=>{});
   await pg.evaluate(()=>document.getElementById('leaderboard').scrollIntoView()); await pg.waitForTimeout(1500);
-  const lbBg=await pg.locator('#lb-grid .lb-card').first().evaluate(e=>getComputedStyle(e).backgroundColor); ok(lbBg==='rgb(255, 255, 255)','Monthly ranking card background is white in light mode ('+lbBg+')');
+  const lbBg=await pg.locator('#lb-grid .lb-card').first().evaluate(e=>getComputedStyle(e).backgroundColor); ok(lbBg==='rgb(251, 249, 246)','Monthly ranking card background is white in light mode ('+lbBg+')');
   await lumAudit(pg,'#leaderboard','Monthly ranking (light)');
   await pg.evaluate(()=>openDashboard('agrostore')); await waitFor(pg,'#ag-carousel .gc'); await pg.waitForTimeout(800);
   await lumAudit(pg,'#dash-content','Agro-Store carousel (light)');
@@ -146,7 +147,7 @@ const PNG=Buffer.from('89504e470d0a1a0a0000000d494844520000000100000001080600000
     await pg.waitForTimeout(500);
     const mm=await pg.evaluate(()=>Object.keys(window.I18N_MISSES||{})); const body=await pg.locator('body').innerText();
     ok(!/[А-Яа-я]{3,}/.test(await pg.locator('#dash-content').innerText())||lang==='ru','['+lang+'] no Cyrillic in EN UI');
-    const NOISE=/^(AgrarGo|Urgut|Chilonzor|Siyob|Samarqand|grar|GPS|LTL|Telegram|01A777AA yoki 70777AAA)$|days left|^⏳/; const DATA=/hectare|thrips|Aziz Karimov|Agro Dorixona UI|Fungitsid|1 gektarga|Fermer AS|\+998/; const UZ=/[oOgG][\u0027\u2018\u2019\u02bb]|\b(va|uchun|yoki|bilan)\b/; const own=mm.filter(x=>!NOISE.test(x)&&!DATA.test(x)&&(lang==='ru'||UZ.test(x)));
+    const NOISE=/^(AgrarGo|Urgut|Chilonzor|Siyob|Samarqand|grar|GPS|LTL|Telegram|01A777AA yoki 70777AAA)$|days left|^⏳/; const DATA=/Sabzi|Bodring|Pomidor|Agro [A-Z]{2}\b|Fermer [A-Z]{2}\b|hectare|thrips|Aziz Karimov|Agro Dorixona UI|Fungitsid|1 gektarga|Fermer AS|\+998/; const UZ=/[oOgG][\u0027\u2018\u2019\u02bb]|\b(va|uchun|yoki|bilan)\b/; const own=mm.filter(x=>!NOISE.test(x)&&!DATA.test(x)&&(lang==='ru'||UZ.test(x)));
     ok(own.length===0,'['+lang+'] no untranslated strings in new screens '+JSON.stringify(own.slice(0,10)));
     if(lang==='ru'){ await pg.screenshot({path:'as-ru.png'}); ok(/Мои посты/.test(await pg.locator('.dash-tab').first().innerText()),'RU: supplier menu translated'); }
     await pg.context().close();

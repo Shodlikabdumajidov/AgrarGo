@@ -855,7 +855,10 @@
                 const pool = IMAGES.filter(function (src) { return ok[src] !== false && src !== shown[i] && src !== shown[1 - i]; });
                 return pool.length ? pool[Math.floor(Math.random() * pool.length)] : null;
             };
+            // Yorug' (Light) rejimda aylanuvchi fon rasmlari butunlay o'chiq: rasmlar yuklanmaydi ham
+            const isLight = function () { return document.documentElement.getAttribute('data-theme') === 'light'; };
             const swap = async function (i) {
+                if (isLight()) return;
                 const src = pick(i);
                 if (!src || !(await preload(src))) return;
                 const layers = panes[i].querySelectorAll('.hero-layer');
@@ -876,6 +879,7 @@
             const stop = function () { timers.forEach(function (t) { clearInterval(t); clearTimeout(t); }); timers = []; };
             document.addEventListener('visibilitychange', function () { document.hidden ? stop() : start(); });
             swap(0).then(function () { return swap(1); }).then(start);
+            document.addEventListener('theme:change', function () { if (!isLight()) swap(0).then(function () { return swap(1); }); }); // qorong'i rejimga qaytilganda fon yana ko'rinadi
         })();
 
         const PHONE_ERR = "Telefon raqamni to'liq kiriting (9 ta raqam).";
@@ -1061,12 +1065,21 @@
                 f.category.value = product.category;
                 // Ro'yxatda yo'q kategoriya (eski ma'lumot) bo'lsa "Boshqa" tanlanadi
                 if (f.category.value !== product.category) f.category.value = 'Boshqa';
-                f.quantityKg.value = Number(product.quantityKg);
+                // Katta hajm (butun tonna) tonnada ko'rsatiladi
+                const q = Number(product.quantityKg);
+                if (q >= 1000 && q % 1000 === 0) { f.unit.value = 'tonna'; f.quantityKg.value = q / 1000; } else { f.unit.value = 'kg'; f.quantityKg.value = q; }
                 f.pricePerKg.value = Number(product.pricePerKg);
                 f.harvestDate.value = product.harvestDate ? product.harvestDate.slice(0, 10) : '';
                 f.deliveryPayer.value = product.deliveryPayer || 'BUYER';
             }
             renderProdPhotoPreviews();
+            // Manzil: fermer profilidagi manzil oldindan to'ldiriladi (o'zgartirilsa profilga saqlanadi)
+            f.address.value = ''; f.address.dataset.orig = '';
+            authed('GET', '/profile').then(function (u) {
+                const ad = (u && u.farmer && u.farmer.address) || '';
+                if (!f.address.value) f.address.value = ad;
+                f.address.dataset.orig = ad;
+            }).catch(function () {});
             document.getElementById('product-title').innerText = product ? "E'lonni tahrirlash" : "Yangi e'lon qo'shish";
             document.getElementById('product-subtitle').innerText = product
                 ? "Ma'lumotlarni o'zgartirib, saqlang."
@@ -1109,10 +1122,10 @@
             const f = productForm;
             const payload = {
                 name: f.elements['name'].value.trim(),
-                category: f.category.value,
-                quantityKg: Number(f.quantityKg.value),
+                category: f.category.value || 'Boshqa', // soddalashtirilgan forma: toifa yashirin, standart qiymat
+                quantityKg: Number(f.quantityKg.value) * (f.unit.value === 'tonna' ? 1000 : 1),
                 pricePerKg: Number(f.pricePerKg.value),
-                deliveryPayer: f.deliveryPayer.value
+                deliveryPayer: f.deliveryPayer.value || 'BUYER'
             };
             // Tahrirlashda sana tozalansa null yuboriladi (server sanani o'chiradi)
             if (f.harvestDate.value) payload.harvestDate = f.harvestDate.value;
@@ -1120,9 +1133,10 @@
 
             const errors = [];
             if (payload.name.length < 2) errors.push('Mahsulot nomini kiriting.');
-            if (!payload.category) errors.push('Kategoriyani tanlang.');
             if (!(payload.quantityKg > 0)) errors.push("Vaznni kiriting (0 dan katta bo'lsin).");
             if (!(payload.pricePerKg > 0)) errors.push("Narxni kiriting (0 dan katta bo'lsin).");
+            const addr = f.address.value.trim();
+            if (addr && addr.length < 3) errors.push("Manzilni to'liq kiriting.");
             if (prodPhotos.existing.length + prodPhotos.pending.length < 1) errors.push("Kamida 1 ta rasm yuklang (mahsulotning haqiqiy holati).");
             if (errors.length) return showAuthAlert(errors, 'error', productAlert);
 
@@ -1140,6 +1154,8 @@
                     const orig = (editing.photos || []).slice(); const gone = orig.filter(function (u) { return prodPhotos.existing.indexOf(u) === -1; });
                     for (let gi = gone.length - 1; gi >= 0; gi--) await apiRequest('DELETE', '/products/' + editing.id + '/photos/' + orig.indexOf(gone[gi]), undefined, token);
                 }
+                // Manzil o'zgargan bo'lsa fermer profiliga saqlanadi (yuk olib ketish manzili)
+                if (addr && addr !== f.address.dataset.orig) await apiRequest('PATCH', '/profile', { address: addr }, token).catch(function () {});
                 if (!editing) editingProduct = saved; // rasm yuklash xato bo'lsa qayta urinish dublikat e'lon yaratmasin
                 for (const file of prodPhotos.pending.slice()) { await uploadProductPhoto(saved.id, file, token); prodPhotos.pending.shift(); }
                 showAuthAlert(editing ? "E'lon yangilandi!" : "E'lon muvaffaqiyatli joylandi!", 'success', productAlert);
@@ -4818,7 +4834,7 @@
             b.appendChild(el('div', 'text-3xl font-black tracking-[.3em] text-white', pin));
             return b;
         }
-        function pinEntryBox(title, btnLabel, onSubmit) {
+        function pinEntryBox(title, btnLabel, onSubmit, extra) {
             const b = el('form', 'w-full rounded-xl border border-sky-500/40 bg-sky-500/10 px-4 py-3 space-y-2');
             b.dataset.pinEntry = '1'; b.noValidate = true;
             b.appendChild(el('div', 'text-[11px] font-bold uppercase tracking-wider text-sky-300', title));
@@ -4829,6 +4845,7 @@
             const go = el('button', 'flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-extrabold border bg-sky-500 border-sky-500 text-slate-950 hover:bg-sky-400 disabled:opacity-50'); go.type = 'submit';
             go.appendChild(el('i', 'fa-solid fa-key')); go.appendChild(el('span', '', btnLabel));
             row.appendChild(inp); row.appendChild(go); b.appendChild(row);
+            if (extra) b.appendChild(extra); // masalan: «Sifatsiz yuk / Rad etish (Dispute)» tugmasi — «Tasdiqlash (PIN)» yonida
             b.addEventListener('submit', async function (e) {
                 e.preventDefault();
                 if (!/^\d{4}$/.test(inp.value)) return showToast(T('PIN-kod 4 ta raqamdan iborat bo\'lishi kerak.'), 3500, 'error');
@@ -4928,6 +4945,7 @@
                     people.appendChild(warn);
                 }
             }
+            if (typeof pbDisputeBanner === 'function') { const db = pbDisputeBanner(s); if (db) card.appendChild(db); }
             if (people.childNodes.length) card.appendChild(people);
             if (s.deliveredAt) card.appendChild(el('p', 'text-xs text-emerald-400 font-semibold', 'Yetkazib berilgan: ' + formatDateTime(s.deliveredAt)));
 
@@ -4944,6 +4962,8 @@
                 const take = btn('fa-hand', 'Yukni olish', 'bg-emerald-500 border-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-lg shadow-emerald-500/25', 'accept');
                 if (s.fitsCapacity === false || s.paymentStatus !== 'HELD') take.disabled = true;
                 actions.appendChild(take);
+                const bidForm = typeof pbBidInput === 'function' && s.fitsCapacity !== false ? pbBidInput(s) : null; // Counter-Offer: o'z narxini taklif qilish
+                if (bidForm) actions.appendChild(bidForm);
             } else if (viewer === 'driver-own' && s.status === 'LOADING') {
                 if (s.source === 'WAREHOUSE') {
                     const note = el('p', 'w-full rounded-xl border border-teal-500/30 bg-teal-500/10 px-4 py-2.5 text-xs font-semibold text-teal-200 flex items-start gap-2');
@@ -4968,7 +4988,7 @@
                     stopTracker('');
                     celebrateDelivery(r && r.rewards, T('Yuk topshirildi!'), r && r.paymentReleased ? T("To'lov fermer va haydovchiga o'tkazildi") : '');
                     selectDashTab(dashTab);
-                }));
+                }, typeof pbDisputeButton === 'function' && !s.dispute ? pbDisputeButton(s, function () { selectDashTab(dashTab); }, true) : null));
             } else if (viewer === 'driver-own' && s.status === 'IN_TRANSIT') {
                 actions.appendChild(btn('fa-circle-check', 'Yetkazib berdim', 'bg-emerald-500 border-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-lg shadow-emerald-500/25', 'advance'));
             }
@@ -4984,6 +5004,8 @@
             if (viewer === 'market' && s.pin && s.pin.delivery && (s.status === 'LOADING' || s.status === 'IN_TRANSIT')) {
                 actions.appendChild(pinShowBox(T('Qabul PIN-kodingiz'), s.pin.delivery, T("Yuk yetib kelganda shu kodni haydovchiga ayting. Boshqa hech kimga bermang.")));
             }
+            if (viewer === 'market' && s.status === 'IN_TRANSIT' && !s.dispute && typeof pbDisputeButton === 'function') actions.appendChild(pbDisputeButton(s, function () { selectDashTab(dashTab); }, true));
+            if ((viewer === 'farmer' || viewer === 'market') && typeof pbBidsPanel === 'function') { const bp = pbBidsPanel(s, function () { selectDashTab(dashTab); }); if (bp) actions.appendChild(bp); }
             if ((viewer === 'farmer' || viewer === 'dispatcher') && s.status === 'OPEN' && !s.driver) {
                 actions.appendChild(btn('fa-user-plus', 'Haydovchiga biriktirish', 'border-sky-500/40 bg-sky-500/10 text-sky-200 hover:bg-sky-500/20', 'assign'));
             }
@@ -5332,6 +5354,7 @@
                 rows.push(el('div', 'text-xs font-bold text-amber-300', '🪙 − ' + formatNumber(usable) + ' ' + cur + ' (' + T('keshbek') + ')'));
             }
             rows.push(el('div', 'text-3xl font-black text-emerald-400', formatNumber(pay) + ' ' + cur));
+            if (typeof pbEscrowIndicator === 'function') rows.push(pbEscrowIndicator(pay)); // Escrow 20/80 indikatori
             document.getElementById('payment-summary').replaceChildren.apply(document.getElementById('payment-summary'), rows);
             document.getElementById('payment-submit').querySelector('span').innerText = "To'lash — " + formatNumber(pay) + " so'm";
         }
@@ -6005,8 +6028,9 @@
                     box.replaceChildren.apply(box, [
                         row('🚚 ' + (r.deliveryPayer === 'FARMER' ? T("Yo'l haqi ({0} km) — fermer hisobidan, jamiga kirmaydi", formatNumber(r.distanceKm)) : T("Taxminiy yo'l haqi ({0} km)", formatNumber(r.distanceKm))), bdMoney(r.deliveryFee), formulaButton(r.formula)),
                         r.marketRate ? el('div', 'text-xs font-semibold ' + (r.marketRate.verdict === 'HOT' ? 'text-orange-300' : 'text-slate-400'), T("Stavka: {0} so'm/km — {1}", formatNumber(r.marketRate.ratePerKm), r.marketRate.verdict === 'FAIR' ? T('bozor o\'rtachasiga mos') : r.marketRate.diffPercent > 0 ? T('bozor o\'rtachasidan {0} baland', pctText(r.marketRate.diffPercent)) : T('bozor o\'rtachasidan {0} past', pctText(r.marketRate.diffPercent)))) : null,
-                        row('🧾 ' + T('Platforma xizmat haqi'), bdMoney(r.serviceFee)),
-                        row('💳 ' + T('Taxminiy jami'), bdMoney(r.totalPrice))
+                        row('🧾 ' + T('Platforma xizmat haqi (1.5%, maks. 300 000 so\'m)'), bdMoney(r.serviceFee)),
+                        row('💳 ' + T('Taxminiy jami'), bdMoney(r.totalPrice)),
+                        typeof pbEscrowIndicator === 'function' ? pbEscrowIndicator(r.totalPrice) : null
                     ].filter(Boolean));
                     box.classList.remove('hidden');
                 } catch (e) { if (seq === bookingEstSeq) box.classList.add('hidden'); }
@@ -10082,6 +10106,7 @@
             tot.appendChild(el('span', '', '= ' + T('Jami')));
             tot.appendChild(el('span', '', bdMoney(f.total)));
             pop.appendChild(tot);
+            if (typeof pbCalculator === 'function') pop.appendChild(pbCalculator(f)); // yoqilg'i va yuk turi bo'yicha tavsiya etilgan narx oralig'i
             pop.appendChild(el('p', 'mt-3 text-xs leading-relaxed text-slate-400', "Ushbu narx joriy yoqilg'i xarajatlari va masofa uchun adolatli o'rtacha bozor stavkasi bo'yicha hisoblangan."));
             document.body.appendChild(pop);
             const r = anchor.getBoundingClientRect(), w = pop.offsetWidth, hgt = pop.offsetHeight;
@@ -11263,7 +11288,7 @@
             if (btn) { btn.setAttribute('aria-pressed', String(t === 'light')); btn.setAttribute('aria-label', T(t === 'light' ? "Qorong'i rejimga o'tish" : "Yorug' rejimga o'tish")); btn.title = btn.getAttribute('aria-label'); }
             if (icon) icon.className = 'fa-solid text-lg ' + (t === 'light' ? 'fa-moon' : 'fa-sun');
             const meta = document.querySelector('meta[name="theme-color"]');
-            if (meta) meta.setAttribute('content', t === 'light' ? '#E8EDD8' : '#064E3B');
+            if (meta) meta.setAttribute('content', t === 'light' ? '#F5F0EB' : '#064E3B');
             document.dispatchEvent(new CustomEvent('theme:change', { detail: { theme: t } }));
         }
         document.addEventListener('theme:change', function () { // diagrammalar yangi ranglar bilan qayta chiziladi

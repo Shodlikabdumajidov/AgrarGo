@@ -3,7 +3,7 @@
   1) index.html dagi <style> bloki (qo'lda yozilgan klasslar) — har bir rang xususiyat roliga qarab (matn / fon / chegara / soya) ochiq palitraga o'tkaziladi;
   2) index.html va js/*.js da ishlatilgan Tailwind rang klasslari (bg-slate-900, text-white, border-white/10, ...) uchun moslashtirilgan qoidalar;
   3) css/light.extra.css — qo'lda yozilgan qo'shimchalar.
-Palitra AgrarGo logotipidan: chuqur o'rmon yashili, barg yashili, tuproq/qum ranglari. Sof oq (#FFF) ishlatilmaydi.
+Palitra: Soft Claymorphism — qaymoqrang fon (#F5F0EB/#FAF7F4), oq-bej kartalar (#FBF9F6), to'q kulrang-ko'mir matn (#2D3436 / #636E72), Sage Mint (#84A99B/#A3C4B8) va Powder Blue (#9CC3D5) aksentlari.
 Ishga tushirish:  python3 tools/build-light-theme.py
 """
 import colorsys, glob, os, re, sys
@@ -13,14 +13,14 @@ ROOT = os.path.join(os.path.dirname(__file__), '..')
 SCOPE = 'html[data-theme="light"]'
 
 # ---------- Palitra ----------
-PAGE = (232, 237, 216)    # sahifa foni: juda och qum-yashil
-CARD = (243, 242, 228)    # kartochka: och qum (oq emas)
-CARD2 = (230, 234, 212)
-INK = (18, 48, 31)        # asosiy matn: chuqur o'rmon yashili
-INK2 = (40, 66, 48)
-MUTED = (74, 102, 80)     # ikkilamchi matn
-GREEN_TXT = (9, 95, 47)  # yashil matn (sarlavha/aksent) — och fonda kontrastli
-LINE = (20, 80, 40)       # chiziq/chegara tusi
+PAGE = (245, 240, 235)    # sahifa foni: issiq qaymoqrang (Cream #F5F0EB)
+CARD = (251, 249, 246)    # kartochka: yumshoq oq-bej (#FBF9F6)
+CARD2 = (240, 234, 227)
+INK = (45, 52, 54)        # asosiy matn: to'q kulrang-ko'mir (#2D3436)
+INK2 = (59, 66, 68)
+MUTED = (99, 110, 114)    # ikkilamchi matn (#636E72)
+GREEN_TXT = (63, 107, 92)  # Sage Mint matn varianti (och fonda kontrastli, ~5.4:1)
+LINE = (120, 100, 80)     # chiziq/chegara tusi (iliq)
 
 def lum(r, g, b):
     f = lambda c: (c / 255) / 12.92 if c / 255 <= 0.03928 else (((c / 255) + 0.055) / 1.055) ** 2.4
@@ -74,21 +74,21 @@ def map_surface(r, g, b, a, role):
     """role: 'bg' | 'border' | 'shadow'"""
     L = lum(r, g, b); h, s, l = hsl(r, g, b)
     if role == 'shadow':
-        if s > 0.3 and 90 <= h <= 175: return rgba((10, 110, 55), a * 0.6)
-        return rgba((30, 60, 35), a * 0.4)
+        if s > 0.3 and 90 <= h <= 175: return rgba((120, 100, 80), a * 0.6)
+        return rgba((120, 100, 80), a * 0.4)
     if L < 0.02 and s < 0.35:                       # qora / deyarli qora
-        return rgba((26, 54, 34), a * 0.55) if (role == 'bg' and a < 1) else rgba(PAGE if role == 'bg' else LINE, 1 if role == 'bg' else .3)
+        return rgba((90, 76, 62), a * 0.55) if (role == 'bg' and a < 1) else rgba(PAGE if role == 'bg' else LINE, 1 if role == 'bg' else .3)
     if L < 0.06 and 140 <= h <= 175 and s > 0.2:      # to'q yashil (emerald-900/950) sirtlar -> och yashil tus
-        return rgba(LINE, min(.5, a + .05)) if role == 'border' else rgba((200, 224, 184), a)
+        return rgba(LINE, min(.5, a + .05)) if role == 'border' else rgba((226, 219, 210), a)
     if L < 0.06 or (L < 0.14 and s < 0.55):          # to'q slate / navy sirtlar
         if role == 'border': return rgba(LINE, min(.5, a * 1.0 + .05))
         c = PAGE if L < 0.004 else CARD2 if L > 0.05 else CARD
         return rgba(c, a)
     if L > 0.75 and s < 0.3:                          # oq / oqish
-        if role == 'border': return rgba(LINE, min(.55, a * 1.3 + .04)) if a < 1 else rgba((201, 211, 180), 1)
+        if role == 'border': return rgba(LINE, min(.55, a * 1.3 + .04)) if a < 1 else rgba((222, 214, 205), 1)
         return rgba(LINE, a * 0.7) if a < 1 else rgba(CARD, 1)
     if s < 0.25:                                      # kulrang / och slate fon-chiziqlar
-        return rgba(LINE, min(.5, a * .8)) if (role == 'border' or a < 1) else rgba((190, 202, 170), 1)
+        return rgba(LINE, min(.5, a * .8)) if (role == 'border' or a < 1) else rgba((214, 206, 197), 1)
     # to'yingan (zumrad, amber, ko'k, qizil...)
     if role == 'border':
         rr, gg, bb = colorsys.hls_to_rgb(h / 360, 0.32, min(0.8, s))
@@ -173,13 +173,13 @@ def process_rules(rules, depth=0):
     return out
 
 # ---------- Tailwind klasslari ----------
-SLATE_BG = {950: PAGE, 900: CARD, 800: CARD2, 700: (211, 220, 188), 600: (180, 194, 159), 500: (141, 162, 131), 400: (164, 181, 154), 300: (223, 230, 204), 200: (234, 238, 217), 100: (243, 244, 228), 50: CARD}
-SLATE_TXT = {950: (10, 36, 20), 900: (14, 42, 24), 800: (20, 53, 33), 700: (28, 69, 41), 600: (44, 90, 56), 500: (64, 90, 70), 400: (66, 93, 72), 300: (50, 77, 58), 200: (40, 67, 47), 100: (26, 53, 35), 50: INK}
-HUE_TXT = {'emerald': (10, 100, 50), 'green': (21, 112, 52), 'teal': (15, 118, 110), 'amber': (146, 74, 8), 'orange': (176, 62, 14), 'rose': (178, 24, 58), 'red': (176, 28, 28),
-           'sky': (3, 98, 150), 'blue': (30, 78, 184), 'indigo': (67, 56, 202), 'violet': (109, 40, 217), 'purple': (126, 34, 190), 'yellow': (133, 90, 8), 'lime': (63, 108, 8), 'cyan': (14, 116, 144), 'pink': (190, 24, 93)}
-HUE_RGB = {'emerald': (16, 150, 80), 'green': (22, 150, 70), 'teal': (15, 140, 125), 'amber': (200, 130, 10), 'orange': (220, 100, 30), 'rose': (210, 50, 90), 'red': (210, 50, 50),
-           'sky': (14, 130, 190), 'blue': (50, 100, 220), 'indigo': (80, 70, 220), 'violet': (120, 70, 230), 'purple': (150, 70, 210), 'yellow': (200, 150, 10), 'lime': (101, 160, 20), 'cyan': (20, 150, 180), 'pink': (220, 60, 130)}
-EMERALD_DARK_BG = {950: (176, 208, 160), 900: (186, 214, 168), 800: (196, 220, 176)}
+SLATE_BG = {950: PAGE, 900: CARD, 800: CARD2, 700: (211, 220, 188), 600: (180, 194, 159), 500: (176, 168, 158), 400: (164, 181, 154), 300: (223, 230, 204), 200: (234, 238, 217), 100: (243, 244, 228), 50: CARD}
+SLATE_TXT = {950: (35, 41, 43), 900: (40, 46, 48), 800: (47, 54, 56), 700: (58, 65, 67), 600: (79, 88, 91), 500: (99, 110, 114), 400: (99, 110, 114), 300: (74, 82, 85), 200: (60, 67, 69), 100: (45, 52, 54), 50: INK}
+HUE_TXT = {'emerald': (63, 107, 92), 'green': (70, 112, 80), 'teal': (62, 112, 108), 'amber': (146, 74, 8), 'orange': (176, 62, 14), 'rose': (178, 24, 58), 'red': (176, 28, 28),
+           'sky': (61, 110, 140), 'blue': (60, 100, 150), 'indigo': (67, 56, 202), 'violet': (109, 40, 217), 'purple': (126, 34, 190), 'yellow': (133, 90, 8), 'lime': (63, 108, 8), 'cyan': (14, 116, 144), 'pink': (190, 24, 93)}
+HUE_RGB = {'emerald': (132, 169, 155), 'green': (140, 175, 150), 'teal': (130, 170, 165), 'amber': (200, 130, 10), 'orange': (220, 100, 30), 'rose': (210, 50, 90), 'red': (210, 50, 50),
+           'sky': (156, 195, 213), 'blue': (156, 195, 213), 'indigo': (80, 70, 220), 'violet': (120, 70, 230), 'purple': (150, 70, 210), 'yellow': (200, 150, 10), 'lime': (101, 160, 20), 'cyan': (20, 150, 180), 'pink': (220, 60, 130)}
+EMERALD_DARK_BG = {950: (222, 232, 226), 900: (228, 236, 231), 800: (234, 240, 236)}
 
 TOKEN = re.compile(r'^((?:[a-z0-9\-]+:)*)(!?)(bg|text|border|from|via|to|placeholder|fill|stroke|divide)-([a-z]+(?:-\d{2,3})?|white|black|transparent|current)(?:/(\d{1,3}))?$')
 
@@ -193,14 +193,14 @@ def tw_color(util, color, alpha):
     if name == 'white':
         if util in ('text', 'fill', 'stroke', 'placeholder'): return rgba(INK, max(a, .85) if alpha else 1)
         if isbg: return rgba(CARD, 1) if alpha is None else rgba(LINE, a * 0.7)
-        return rgba((201, 211, 180), 1) if alpha is None else rgba(LINE, min(.55, a * 1.25 + .04))
+        return rgba((222, 214, 205), 1) if alpha is None else rgba(LINE, min(.55, a * 1.25 + .04))
     if name == 'black':
         if util in ('text', 'fill', 'stroke'): return None
-        return rgba((26, 54, 34), a * 0.55 if alpha else 1) if isbg else rgba(LINE, min(.6, a * .8 + .1))
+        return rgba((90, 76, 62), a * 0.55 if alpha else 1) if isbg else rgba(LINE, min(.6, a * .8 + .1))
     if name in ('slate', 'gray', 'zinc', 'neutral', 'stone'):
         if util in ('text', 'fill', 'stroke', 'placeholder'): return rgba(SLATE_TXT.get(shade, MUTED), max(a, .9))
         if isbg: return rgba(SLATE_BG.get(shade, CARD), a)
-        return rgba(LINE, min(.6, a * 0.9 + .1)) if shade and shade <= 700 else rgba((141, 162, 131), a)   # border
+        return rgba(LINE, min(.6, a * 0.9 + .1)) if shade and shade <= 700 else rgba((176, 168, 158), a)   # border
     if name in HUE_TXT:
         if util in ('text', 'fill', 'stroke', 'placeholder'):
             return rgba(HUE_TXT[name], max(a, .9)) if shade is None or shade <= 500 else None
@@ -268,7 +268,7 @@ def main():
     tw = [r for r in (tw_rule(t) for t in collect_tokens()) if r]
     extra_path = os.path.join(ROOT, 'css', 'light.extra.css')
     extra = open(extra_path, encoding='utf8').read() if os.path.exists(extra_path) else ''
-    sand = rgba((246, 243, 228), 1)
+    sand = rgba((251, 249, 246), 1)
     solid = [f'{SCOPE} .text-white.bg-{b}, {SCOPE} .bg-{b} .text-white {{ color: {sand}; }}' for b in SOLID_BG]
     header = '/* AVTOMATIK YARATILGAN: python3 tools/build-light-theme.py (qo\'lda tahrirlamang; o\'zgarishlar css/light.extra.css ga) */\n'
     css = header + f'\n/* ===== index.html <style> bloki -> yorug\' mavzu ({len(custom)} qoida) ===== */\n' + '\n'.join(custom) + \

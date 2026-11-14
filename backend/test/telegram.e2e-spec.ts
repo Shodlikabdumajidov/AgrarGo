@@ -289,7 +289,7 @@ describe('Telegram bot va xabarnomalar (e2e)', () => {
       const order = (await wh('post', market, '/warehouse/orders', { itemId: it.id, quantityKg: 100 })).body;
       await notify.flush();
       expect(sent.map((s) => s.chatId).sort()).toEqual(['1', '2']);
-      expect(textsTo('1')[0]).toContain('392 000'); // fermer sof ulushi (xizmat haqi ayirilgan)
+      expect(textsTo('1')[0]).toContain('400 000'); // fermer ulushi: platforma komissiyasi 0% (to'liq summa)
       expect(textsTo('2')[0]).toContain('400 000');
 
       await wh('patch', staff, `/warehouse/orders/${order.id}/picking`);
