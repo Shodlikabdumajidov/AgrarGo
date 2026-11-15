@@ -49,6 +49,9 @@ export interface AppEnv {
   OTP_TTL_SECONDS: number;
   OTP_LENGTH: number;
   REGISTER_OTP_ENFORCE: boolean;
+  /** Yangiliklar uchun AI xulosa (ixtiyoriy): kalit bo'lmasa aqlli shablon ishlatiladi */
+  ANTHROPIC_API_KEY?: string;
+  NEWS_AI_MODEL: string;
   OTP_MAX_ATTEMPTS: number;
   OTP_RESEND_COOLDOWN_SECONDS: number;
   RESET_TOKEN_TTL_SECONDS: number;
@@ -263,6 +266,8 @@ export function validateEnv(raw: Record<string, unknown>): AppEnv & Record<strin
     PIN_ENFORCE: pinEnforceRaw === 'true',
     OTP_LENGTH: intInRange(raw.OTP_LENGTH, 'OTP_LENGTH', 4, 4, 8, errors),
     REGISTER_OTP_ENFORCE: regOtpRaw === 'true',
+    ANTHROPIC_API_KEY: raw.ANTHROPIC_API_KEY ? String(raw.ANTHROPIC_API_KEY).trim() || undefined : undefined,
+    NEWS_AI_MODEL: String(raw.NEWS_AI_MODEL || 'claude-haiku-5-5'),
     OTP_TTL_SECONDS: intInRange(raw.OTP_TTL_SECONDS, 'OTP_TTL_SECONDS', 300, 60, 900, errors),
     OTP_MAX_ATTEMPTS: intInRange(raw.OTP_MAX_ATTEMPTS, 'OTP_MAX_ATTEMPTS', 5, 1, 10, errors),
     OTP_RESEND_COOLDOWN_SECONDS: intInRange(raw.OTP_RESEND_COOLDOWN_SECONDS, 'OTP_RESEND_COOLDOWN_SECONDS', 60, 5, 600, errors),

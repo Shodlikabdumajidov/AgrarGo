@@ -282,6 +282,7 @@
 
         function updateAuthButton() {
             const user = currentUser();
+            document.dispatchEvent(new CustomEvent('auth:change', { detail: { role: user ? user.role : null } }));
             const avatarBox = document.getElementById('auth-nav-avatar');
             document.getElementById('auth-nav-label').innerText = user ? user.fullName : 'Kabinetga Kirish';
             document.getElementById('auth-nav-caret').classList.toggle('hidden', !user);
@@ -1667,20 +1668,20 @@
         const DASH_TABS = {
             // Fermer: 5 ta asosiy bo'lim. Qolgan ekranlar (Hub, Omborxona, Yuk tashish, Keshbek, Obuna, Badjlar, Qo'llanma) DASH_GROUPS orqali ichki bo'limlar sifatida ochiladi
             FARMER: [['overview', 'fa-gauge', 'Bosh sahifa'], ['products', 'fa-seedling', "Mening e'lonlarim"], ['bookings', 'fa-truck-ramp-box', 'Zakazlar / Yuk tashish'],
-                     ['agrostore', 'fa-flask-vial', "Agro-Store (Dori & O'g'itlar)"], ['payments', 'fa-wallet', "Moliya va To'lovlar"], ['profile', 'fa-id-card', 'Profil va Sozlamalar']],
+                     ['agrostore', 'fa-flask-vial', "Agro-Store (Dori & O'g'itlar)"], ['news', 'fa-newspaper', 'Yangiliklar va AI Tahlil'], ['payments', 'fa-wallet', "Moliya va To'lovlar"], ['profile', 'fa-id-card', 'Profil va Sozlamalar']],
             // Market: 4 ta asosiy bo'lim (Haydovchilar, Postlar va Omborxona olib tashlandi — market haydovchi qidirmaydi, sotib oladi va yetkazilishini kuzatadi)
-            MARKET: [['overview', 'fa-store', 'Katalog / Bosh sahifa'], ['bookings', 'fa-clipboard-list', 'Mening buyurtmalarim'],
+            MARKET: [['overview', 'fa-store', 'Katalog / Bosh sahifa'], ['bookings', 'fa-clipboard-list', 'Mening buyurtmalarim'], ['news', 'fa-newspaper', 'Yangiliklar va AI Tahlil'],
                      ['payments', 'fa-wallet', "Moliya va To'lovlar"], ['profile', 'fa-id-card', 'Profil va Sozlamalar']],
             // Haydovchi: 4 ta asosiy ekran (ELD, boshqa haydovchilar ro'yxati va Bozor narxlari olib tashlandi)
-            DRIVER: [['loads', 'fa-boxes-packing', 'Mavjud yuklar'], ['myloads', 'fa-truck-fast', "Mening zakazlarim / Yo'lim"], ['agrodriver', 'fa-flask-vial', "Dori & O'g'itlar", 'soon'], ['dfinance', 'fa-wallet', 'Balans va Moliya'], ['profile', 'fa-id-card', 'Profil']],
+            DRIVER: [['loads', 'fa-boxes-packing', 'Mavjud yuklar'], ['myloads', 'fa-truck-fast', "Mening zakazlarim / Yo'lim"], ['agrodriver', 'fa-flask-vial', "Dori & O'g'itlar", 'soon'], ['dfinance', 'fa-wallet', 'Balans va Moliya'], ['news', 'fa-newspaper', 'Yangiliklar va AI Tahlil'], ['profile', 'fa-id-card', 'Profil']],
             // Agro-Store sotuvchisi (dorixona / o'g'it sotuvchi): postlar karuseli va verifikatsiya
             AGRO_SUPPLIER: [['asposts', 'fa-flask-vial', 'Postlarim'], ['asprofile', 'fa-shield-halved', 'Verifikatsiya va profil']],
             CONSUMER: [['lmarket', 'fa-basket-shopping', 'Mahalliy bozor'], ['lcart', 'fa-cart-shopping', 'Savatcha'], ['lorders', 'fa-box', 'Buyurtmalarim'], ['cashback', 'fa-coins', 'Mening keshbeklarim'], ['guide', 'fa-book-open', "Qo'llanma"], ['profile', 'fa-id-card', 'Profil']],
-            DISPATCHER: [['dispatch', 'fa-user-plus', 'Dispetcher paneli'], ['agrosuppliers', 'fa-flask-vial', 'Agro-Store sotuvchilari'], ['admcomplaints', 'fa-flag', 'Shikoyatlar / Spam'], ['hubscan', 'fa-qrcode', 'QR Skaner (qabul qilish)'], ['hubpack', 'fa-box-archive', "Qadoqlanishi kerak bo'lganlar"], ['hubosd', 'fa-file-circle-exclamation', 'OS&D hisobotlari'], ['hubops', 'fa-warehouse', 'Hub: chakana savdo'], ['hubdocks', 'fa-door-open', 'Rampalar'], ['whboard', 'fa-table-columns', 'Zonalar'], ['whunits', 'fa-temperature-half', 'Kameralar'],
+            DISPATCHER: [['dispatch', 'fa-user-plus', 'Dispetcher paneli'], ['agrosuppliers', 'fa-flask-vial', 'Agro-Store sotuvchilari'], ['news', 'fa-newspaper', 'Yangiliklar va AI Tahlil'], ['admcomplaints', 'fa-flag', 'Shikoyatlar / Spam'], ['hubscan', 'fa-qrcode', 'QR Skaner (qabul qilish)'], ['hubpack', 'fa-box-archive', "Qadoqlanishi kerak bo'lganlar"], ['hubosd', 'fa-file-circle-exclamation', 'OS&D hisobotlari'], ['hubops', 'fa-warehouse', 'Hub: chakana savdo'], ['hubdocks', 'fa-door-open', 'Rampalar'], ['whboard', 'fa-table-columns', 'Zonalar'], ['whunits', 'fa-temperature-half', 'Kameralar'],
                      ['whorders', 'fa-clipboard-list', 'Buyurtmalar'], ['whinventory', 'fa-chart-pie', 'Inventarizatsiya'], ['guide', 'fa-book-open', "Qo'llanma"], ['drivers', 'fa-truck-field', 'Haydovchilar'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'], ['profile', 'fa-id-card', 'Profil']]
         };
         const ADMIN_TABS_ALL = [['adm-dashboard', 'fa-chart-line', 'Boshqaruv paneli'], ['finance', 'fa-scale-balanced', 'Moliya paneli'], ['adm-hubs', 'fa-warehouse', "Hub omborlar"], ['hubscan', 'fa-qrcode', 'QR Skaner (qabul qilish)'], ['hubosd', 'fa-file-circle-exclamation', 'OS&D hisobotlari'], ['hubstock', 'fa-warehouse', 'Ombor qoldiqlari'], ['hubpack', 'fa-box-archive', "Qadoqlanishi kerak bo'lganlar"], ['hubops', 'fa-basket-shopping', 'Hub: chakana savdo'], ['hubdocks', 'fa-door-open', 'Rampalar'], ['adm-users', 'fa-users', 'Foydalanuvchilar'],
-                     ['adm-products', 'fa-boxes-stacked', "E'lonlar"], ['adm-shipments', 'fa-truck-fast', 'Yuk tashish'], ['dispatch', 'fa-user-plus', 'Dispetcher paneli'], ['agrosuppliers', 'fa-flask-vial', 'Agro-Store sotuvchilari'], ['admcomplaints', 'fa-flag', 'Shikoyatlar / Spam'], ['adm-payments', 'fa-wallet', "To'lovlar"],
+                     ['adm-products', 'fa-boxes-stacked', "E'lonlar"], ['adm-shipments', 'fa-truck-fast', 'Yuk tashish'], ['dispatch', 'fa-user-plus', 'Dispetcher paneli'], ['agrosuppliers', 'fa-flask-vial', 'Agro-Store sotuvchilari'], ['news', 'fa-newspaper', 'Yangiliklar va AI Tahlil'], ['admcomplaints', 'fa-flag', 'Shikoyatlar / Spam'], ['adm-payments', 'fa-wallet', "To'lovlar"],
                      ['whboard', 'fa-warehouse', 'Ombor: zonalar'], ['whunits', 'fa-temperature-half', 'Kameralar'], ['whorders', 'fa-clipboard-list', 'Ombor buyurtmalari'],
                      ['whinventory', 'fa-chart-pie', 'Inventarizatsiya'], ['adm-reviews', 'fa-star', 'Sharhlar'], ['adm-kyc', 'fa-user-check', 'KYC arizalari'], ['safety', 'fa-shield-halved', 'Safety: e-BOL va tasdiqlash'], ['adm-settings', 'fa-gear', 'Sayt sozlamalari'], ['adm-audit', 'fa-list-check', 'Audit jurnali'], ['guide', 'fa-book-open', "Qo'llanma"], ['drivers', 'fa-truck-field', 'Haydovchilar'], ['prices', 'fa-arrow-trend-up', 'Bozor narxlari'],
                      ['profile', 'fa-id-card', 'Profil']];

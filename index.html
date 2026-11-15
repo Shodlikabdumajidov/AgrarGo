@@ -1212,6 +1212,7 @@
     <link rel="stylesheet" href="css/pricing-bids.css">
     <link rel="stylesheet" href="css/clay.css">
     <link rel="stylesheet" href="css/hero-showcase.css">
+    <link rel="stylesheet" href="css/news.css">
     <link rel="stylesheet" href="css/perf-layout.css">
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans antialiased selection:bg-emerald-500 selection:text-slate-950">
@@ -1513,6 +1514,20 @@
             <button type="button" onclick="openCatalog()" class="cta-ghost" id="lb-catalog-btn"><i class="fa-solid fa-store"></i><span>Katalogni ochish</span></button>
         </div>
     </section>
+
+    <!-- AGRO-LOGISTIKA YANGILIKLARI: kategoriya filtrlari; AI maslahat faqat tizimga kirganlarga (mehmonga yopiq) -->
+    <section id="news" class="sec-anchor py-16 px-6 max-w-7xl mx-auto scroll-mt-40 nw-wrap" aria-labelledby="news-title">
+        <div class="text-center mb-8 space-y-3">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-semibold uppercase tracking-widest">
+                <i class="fa-solid fa-newspaper"></i> Yangiliklar
+            </div>
+            <h2 id="news-title" class="text-3xl sm:text-5xl font-extrabold tracking-tight">Agro-Logistika Yangiliklari</h2>
+            <p class="text-slate-300 text-base sm:text-lg max-w-2xl mx-auto">Yo'llar, qishloq xo'jaligi, bozorlar va yuk tashish bo'yicha so'nggi xabarlar hamda rolingizga mos AI maslahat</p>
+        </div>
+        <div id="news-filters" class="nw-filters" role="group" aria-label="Kategoriya bo'yicha filtr"></div>
+        <div id="news-grid" class="nw-grid" aria-live="polite"></div>
+    </section>
+
 
     <!-- ECOSYSTEM CARDS SECTION -->
     <section id="hub" class="sec-anchor py-24 px-6 max-w-7xl mx-auto relative">
@@ -2939,6 +2954,7 @@
     <script src="js/local-dock.js" defer></script>
     <script src="js/local.js" defer></script>
     <script src="js/agro-supplier.js" defer></script>
+    <script src="js/agro-news.js" defer></script>
     <script src="js/pricing-bids.js" defer></script>
     <script src="js/hero-showcase.js" defer></script>
     <script src="js/hub-ops.js" defer></script>

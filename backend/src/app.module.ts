@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { BookingModule } from './booking/booking.module';
 import { ComplaintModule } from './complaint/complaint.module';
 import { LeaderboardModule } from './leaderboard/leaderboard.module';
+import { NewsModule } from './news/news.module';
 import { APP_ENV, AppEnvModule } from './config/app-env.module';
 import { AppEnv } from './config/env.validation';
 import { HealthController } from './health/health.controller';
@@ -64,6 +65,7 @@ import { WarehouseModule } from './warehouse/warehouse.module';
     BookingModule,
     ComplaintModule,
     LeaderboardModule,
+    NewsModule,
     ShipmentModule,
     PaymentModule,
     SubscriptionModule,

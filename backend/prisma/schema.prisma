@@ -1502,3 +1502,44 @@ model PhoneVerification {
   @@index([phone, createdAt])
   @@index([createdAt])
 }
+
+enum NewsCategory {
+  ROADS // Yo'llar / tirbandlik
+  AGRO // Qishloq xo'jaligi
+  MARKET // Bozorlar va narxlar
+  LOGISTICS // Yuk tashish
+}
+
+/// Agro-logistika yangiliklari. ai_insight_* — faqat tizimga kirgan foydalanuvchilarga (rolga mos) qaytariladi; mehmonga hech qachon.
+model AgroNews {
+  id         String       @id @default(uuid())
+  titleUz    String
+  titleRu    String
+  titleEn    String
+  summaryUz  String
+  summaryRu  String
+  summaryEn  String
+  category   NewsCategory
+  region     String       @default("Respublika")
+
+  aiInsightFarmerUz String
+  aiInsightFarmerRu String
+  aiInsightFarmerEn String
+  aiInsightDriverUz String
+  aiInsightDriverRu String
+  aiInsightDriverEn String
+  aiInsightMarketUz String
+  aiInsightMarketRu String
+  aiInsightMarketEn String
+  /// Xulosa manbai: 'llm' (AI API) yoki 'template' (zaxira shablon)
+  aiSource   String       @default("template")
+
+  publishedAt DateTime @default(now())
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isActive, publishedAt])
+  @@index([category])
+  @@index([region])
+}

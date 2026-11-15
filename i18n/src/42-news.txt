@@ -1,0 +1,37 @@
+# --- Agro-Logistika Yangiliklari va rolga mos AI maslahat ---
+Yangiliklar ‖ Новости ‖ News
+Agro-Logistika Yangiliklari ‖ Агро-логистические новости ‖ Agro-Logistics News
+AGRO-LOGISTIKA YANGILIKLARI ‖ АГРО-ЛОГИСТИЧЕСКИЕ НОВОСТИ ‖ AGRO-LOGISTICS NEWS
+Yo'llar, qishloq xo'jaligi, bozorlar va yuk tashish bo'yicha so'nggi xabarlar hamda rolingizga mos AI maslahat ‖ Последние новости о дорогах, сельском хозяйстве, рынках и грузоперевозках и ИИ-совет для вашей роли ‖ The latest on roads, farming, markets and freight, plus AI advice tailored to your role
+Barchasi ‖ Все ‖ All
+Yo'llar ‖ Дороги ‖ Roads
+Qishloq xo'jaligi ‖ Сельское хозяйство ‖ Agriculture
+Bozorlar ‖ Рынки ‖ Markets
+Yo'llar / Tirbandlik ‖ Дороги / Пробки ‖ Roads / Traffic
+Bozorlar va narxlar ‖ Рынки и цены ‖ Markets & prices
+Kategoriya bo'yicha filtr ‖ Фильтр по категории ‖ Filter by category
+✨ AI Agro-Tahlil va Maslahat ‖ ✨ ИИ агро-анализ и совет ‖ ✨ AI Agro-Analysis & Advice
+Rolingizga mos AI ogohlantirish va yo'l tavsiyalarini ko'rish uchun tizimga kiring ‖ Войдите, чтобы увидеть ИИ-предупреждения и рекомендации по маршрутам для вашей роли ‖ Sign in to see AI warnings and route recommendations for your role
+✨ AI Maslahat ({0} uchun) ‖ ✨ ИИ-совет (для роли: {0}) ‖ ✨ AI Advice (for {0})
+Yangiliklar yuklanmoqda... ‖ Загрузка новостей... ‖ Loading news...
+Hozircha yangiliklar yo'q ‖ Пока нет новостей ‖ No news yet
+Bu filtr bo'yicha yangilik topilmadi ‖ По этому фильтру новостей не найдено ‖ No news found for this filter
+Yangiliklarni yuklab bo'lmadi ‖ Не удалось загрузить новости ‖ Could not load the news
+Yangiliklar va AI Tahlil ‖ Новости и ИИ-анализ ‖ News & AI Analysis
+Hudud va kategoriya bo'yicha yangiliklar, ostida esa rolingizga mos to'liq AI xulosa ‖ Новости по региону и категории, а под каждой — полный ИИ-вывод для вашей роли ‖ News by region and category, with the full AI summary for your role under each item
+Barcha hududlar ‖ Все регионы ‖ All regions
+Hudud ‖ Регион ‖ Region
+Respublika ‖ Республика ‖ Nationwide
+Yangilik qo'shish ‖ Добавить новость ‖ Add news
+Sarlavha (o'zbekcha) ‖ Заголовок (на узбекском) ‖ Title (Uzbek)
+Qisqa matn (o'zbekcha) ‖ Краткий текст (на узбекском) ‖ Summary (Uzbek)
+Saqlash va AI xulosa yaratish ‖ Сохранить и создать ИИ-вывод ‖ Save & generate AI summary
+Yangilik qo'shildi, AI xulosalar avtomatik yaratildi. ‖ Новость добавлена, ИИ-выводы созданы автоматически. ‖ News added, AI summaries generated automatically.
+Sarlavha va qisqa matnni to'ldiring ‖ Заполните заголовок и краткий текст ‖ Fill in the title and summary
+Yashirish ‖ Скрыть ‖ Hide
+Ko'rsatish ‖ Показать ‖ Show
+Yangilik o'chirilsinmi? ‖ Удалить новость? ‖ Delete this news item?
+AI xulosa: shablon ‖ ИИ-вывод: шаблон ‖ AI summary: template
+AI xulosa: AI API ‖ ИИ-вывод: ИИ API ‖ AI summary: AI API
+AI xulosa: tayyor ‖ ИИ-вывод: готов ‖ AI summary: ready-made
+Yangiliklar bo'limi ‖ Раздел новостей ‖ News section
