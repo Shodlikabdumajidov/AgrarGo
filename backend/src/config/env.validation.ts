@@ -52,6 +52,17 @@ export interface AppEnv {
   /** Yangiliklar uchun AI xulosa (ixtiyoriy): kalit bo'lmasa aqlli shablon ishlatiladi */
   ANTHROPIC_API_KEY?: string;
   NEWS_AI_MODEL: string;
+  /** Bepul AI: Google AI Studio (Gemini) birinchi, Groq zaxira; ikkalasi ham bo'lmasa — shablon */
+  GEMINI_API_KEY?: string;
+  GEMINI_MODEL: string;
+  GROQ_API_KEY?: string;
+  GROQ_MODEL: string;
+  /** RSS yangiliklarni avtomatik tortish (har NEWS_INGEST_INTERVAL_MIN daqiqada) */
+  NEWS_INGEST_ENABLED: boolean;
+  NEWS_INGEST_INTERVAL_MIN: number;
+  NEWS_FEEDS?: string;
+  /** Ishga tushganda prisma migratsiyalarini avtomatik qo'llash */
+  AUTO_MIGRATE: boolean;
   OTP_MAX_ATTEMPTS: number;
   OTP_RESEND_COOLDOWN_SECONDS: number;
   RESET_TOKEN_TTL_SECONDS: number;
@@ -268,6 +279,14 @@ export function validateEnv(raw: Record<string, unknown>): AppEnv & Record<strin
     REGISTER_OTP_ENFORCE: regOtpRaw === 'true',
     ANTHROPIC_API_KEY: raw.ANTHROPIC_API_KEY ? String(raw.ANTHROPIC_API_KEY).trim() || undefined : undefined,
     NEWS_AI_MODEL: String(raw.NEWS_AI_MODEL || 'claude-haiku-5-5'),
+    GEMINI_API_KEY: raw.GEMINI_API_KEY ? String(raw.GEMINI_API_KEY).trim() || undefined : undefined,
+    GEMINI_MODEL: String(raw.GEMINI_MODEL || 'gemini-2.5-flash'),
+    GROQ_API_KEY: raw.GROQ_API_KEY ? String(raw.GROQ_API_KEY).trim() || undefined : undefined,
+    GROQ_MODEL: String(raw.GROQ_MODEL || 'llama-3.3-70b-versatile'),
+    NEWS_INGEST_ENABLED: String(raw.NEWS_INGEST_ENABLED ?? 'true').toLowerCase() !== 'false',
+    NEWS_INGEST_INTERVAL_MIN: intInRange(raw.NEWS_INGEST_INTERVAL_MIN, 'NEWS_INGEST_INTERVAL_MIN', 120, 10, 1440, errors),
+    NEWS_FEEDS: raw.NEWS_FEEDS ? String(raw.NEWS_FEEDS).trim() || undefined : undefined,
+    AUTO_MIGRATE: String(raw.AUTO_MIGRATE ?? 'true').toLowerCase() !== 'false',
     OTP_TTL_SECONDS: intInRange(raw.OTP_TTL_SECONDS, 'OTP_TTL_SECONDS', 300, 60, 900, errors),
     OTP_MAX_ATTEMPTS: intInRange(raw.OTP_MAX_ATTEMPTS, 'OTP_MAX_ATTEMPTS', 5, 1, 10, errors),
     OTP_RESEND_COOLDOWN_SECONDS: intInRange(raw.OTP_RESEND_COOLDOWN_SECONDS, 'OTP_RESEND_COOLDOWN_SECONDS', 60, 5, 600, errors),

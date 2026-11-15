@@ -7,6 +7,7 @@ import { CurrentUser } from '../common/current-user.decorator';
 import { Roles } from '../common/roles.decorator';
 import { RolesGuard } from '../common/roles.guard';
 import { CreateNewsDto, ListNewsQuery, UpdateNewsDto } from './dto/news.dto';
+import { NewsIngestorService } from './news-ingestor.service';
 import { NewsService } from './news.service';
 
 /**
@@ -17,7 +18,7 @@ import { NewsService } from './news.service';
  */
 @Controller(['news', 'api/news'])
 export class NewsController {
-  constructor(private readonly news: NewsService) {}
+  constructor(private readonly news: NewsService, private readonly ingestor: NewsIngestorService) {}
 
   @Get()
   @UseGuards(OptionalJwtAuthGuard)
@@ -30,6 +31,14 @@ export class NewsController {
   @UseInterceptors(StaffAuditInterceptor)
   @Roles(Role.ADMIN, Role.DISPATCHER)
   create(@CurrentUser() user: any, @Body() dto: CreateNewsDto) { return this.news.create(dto, user); }
+
+  /** «Yangiliklarni hozir yangilash»: RSS tasmalarini darhol o'qiydi (kalit so'z filtri + AI tahlil), natija statistikasini qaytaradi */
+  @Post('refresh')
+  @HttpCode(200)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseInterceptors(StaffAuditInterceptor)
+  @Roles(Role.ADMIN, Role.DISPATCHER)
+  refresh() { return this.ingestor.run(); }
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)

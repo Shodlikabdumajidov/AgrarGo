@@ -3,9 +3,12 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { configureApp } from './app.setup';
 import { APP_ENV } from './config/app-env.module';
-import { AppEnv } from './config/env.validation';
+import { AppEnv, validateEnv } from './config/env.validation';
+import { autoMigrate } from './prisma/auto-migrate';
 
 async function bootstrap() {
+  // Migratsiyalar server ko'tarilishidan oldin qo'llanadi (yangi ustun/jadval yo'qligidan 500 xato bo'lmasligi uchun)
+  try { await autoMigrate(validateEnv(process.env)); } catch { /* validateEnv xatosini NestFactory aniq ko'rsatadi */ }
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   configureApp(app);
   // YANGI:

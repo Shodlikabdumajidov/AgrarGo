@@ -14,7 +14,19 @@ const NW_ROLE_NAMES = { FARMER: 'Fermer', DRIVER: 'Haydovchi', MARKET: 'Market',
 const NW_STAFF = ['ADMIN', 'DISPATCHER'];
 const NW_REGIONS = ['Respublika', 'Toshkent', 'Toshkent viloyati', 'Samarqand', "Farg'ona", 'Andijon', 'Namangan', 'Buxoro', 'Navoiy', 'Jizzax', 'Sirdaryo', 'Qashqadaryo', 'Surxondaryo', 'Xorazm', "Qoraqalpog'iston"];
 
-const nwState = { home: { items: [], cat: '', loaded: false, failed: false }, cab: { items: [], regions: [], cat: '', region: '', loaded: false } };
+const nwState = { home: { items: [], cat: '', loaded: false, failed: false, fallback: false, retrying: false }, cab: { items: [], regions: [], cat: '', region: '', loaded: false, fallback: false } };
+const NW_RETRY_DELAYS = [2500, 6000]; // Render cold start: 2 marta qayta urinish
+const nwSleep = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
+function nwFallbackItems() { return (window.NEWS_FALLBACK || []).map(function (n) { return Object.assign({}, n); }); }
+/** Server uyg'onayotgan/vaqtincha javob bermayotgan bo'lsa: avtomatik 2 marta qayta urinadi; muvaffaqiyatsiz bo'lsa Error tashlaydi */
+async function nwFetchNews(path, token, onAttemptFail) {
+    let lastErr;
+    for (let i = 0; i <= NW_RETRY_DELAYS.length; i++) {
+        try { return await apiRequest('GET', path, undefined, token || undefined, { noQueue: true }); }
+        catch (e) { lastErr = e; if (e && (e.status === 401 || e.status === 403)) throw e; if (onAttemptFail) onAttemptFail(i); if (i < NW_RETRY_DELAYS.length) await nwSleep(NW_RETRY_DELAYS[i]); }
+    }
+    throw lastErr;
+}
 
 function nwLang() { const l = (window.I18N && I18N.lang) || 'uz'; return l === 'ru' || l === 'en' ? l : 'uz'; }
 function nwPick(obj, base) { const L = nwLang(); const k = base + L[0].toUpperCase() + L.slice(1); return obj[k] || obj[base + 'Uz'] || ''; }
@@ -53,6 +65,15 @@ function nwAiLocked() {
     return box;
 }
 
+/** Zaxira (server javob bermagan) rejimida kirgan foydalanuvchiga: xulosa serverdan keladi */
+function nwAiPending() {
+    const box = el('div', 'nw-ai');
+    box.appendChild(el('div', 'nw-ai-h', T('✨ AI Agro-Tahlil va Maslahat')));
+    box.appendChild(el('p', 'nw-ai-t', T("AI maslahat server bilan aloqa tiklangach ko'rinadi")));
+    return box;
+}
+function nwSafeUrl(u) { try { const x = new URL(u); return x.protocol === 'https:' || x.protocol === 'http:' ? x.href : null; } catch (e) { return null; } }
+
 function nwCard(n, opts) {
     opts = opts || {};
     const card = el('article', 'nw-card'); card.dataset.id = n.id; card.dataset.cat = n.category;
@@ -69,6 +90,14 @@ function nwCard(n, opts) {
     if (n.aiInsight && n.aiInsight.role) card.appendChild(nwAiOpen(n.aiInsight.role, n.aiInsight));
     else if (n.aiInsights) ['farmer', 'driver', 'market'].forEach(function (r) { card.appendChild(nwAiOpen(r.toUpperCase(), n.aiInsights[r])); });
     else if (!opts.authed) card.appendChild(nwAiLocked());
+    else if (n.fallback) card.appendChild(nwAiPending());
+    const su = n.sourceUrl && nwSafeUrl(n.sourceUrl);
+    if (n.sourceName) {
+        const src = el('div', 'nw-src'); src.appendChild(el('i', 'fa-solid fa-link'));
+        if (su) { const a = el('a', '', T('Manba: {0}', n.sourceName)); a.href = su; a.target = '_blank'; a.rel = 'noopener noreferrer nofollow'; src.appendChild(a); }
+        else src.appendChild(el('span', '', T('Manba: {0}', n.sourceName)));
+        card.appendChild(src);
+    }
     if (opts.staff) {
         const a = el('div', 'nw-actions');
         const tg = el('button', 'nw-mini', n.isActive === false ? T("Ko'rsatish") : T('Yashirish')); tg.type = 'button';
@@ -100,19 +129,27 @@ function nwRenderHome() {
     const st = nwState.home, user = currentUser();
     nwChips(chips, st.cat, function (c) { st.cat = c; nwRenderHome(); });
     if (!st.loaded) { grid.replaceChildren(el('div', 'nw-skel'), el('div', 'nw-skel'), el('div', 'nw-skel')); return; }
-    if (st.failed) { grid.replaceChildren(el('div', 'nw-empty', T('Yangiliklarni yuklab bo\'lmadi'))); return; }
     const items = st.items.filter(function (n) { return !st.cat || n.category === st.cat; });
     if (!items.length) { grid.replaceChildren(el('div', 'nw-empty', T(st.items.length ? 'Bu filtr bo\'yicha yangilik topilmadi' : 'Hozircha yangiliklar yo\'q'))); return; }
-    grid.replaceChildren.apply(grid, items.slice(0, 9).map(function (n) { return nwCard(n, { authed: !!user }); }));
+    const cards = items.slice(0, 9).map(function (n) { return nwCard(n, { authed: !!user }); });
+    if (st.fallback) { const note = el('div', 'nw-note'); note.id = 'news-note'; note.appendChild(el('i', 'fa-solid ' + (st.retrying ? 'fa-spinner fa-spin' : 'fa-circle-info'))); note.appendChild(el('span', '', T(st.retrying ? "Server uyg'onmoqda, yangiliklar qayta yuklanmoqda..." : "Server vaqtincha javob bermayapti — zaxira yangiliklar ko'rsatilmoqda"))); cards.unshift(note); }
+    grid.replaceChildren.apply(grid, cards);
 }
 async function nwLoadHome() {
     const st = nwState.home;
     try {
-        const token = storageGet(TOKEN_KEY);
-        const r = await apiRequest('GET', '/news?limit=12', undefined, token || undefined, { noQueue: true });
-        st.items = r.items || []; st.failed = false;
-    } catch (e) { st.failed = true; }
+        const r = await nwFetchNews('/news?limit=12', storageGet(TOKEN_KEY), function () {
+            // birinchi muvaffaqiyatsizlikdayoq bo'sh qoldirmay, zaxira yangiliklarni ko'rsatamiz; qayta urinish fonda davom etadi
+            if (!st.items.length || !st.loaded) { st.items = nwFallbackItems(); st.fallback = true; st.retrying = true; st.loaded = true; nwRenderHome(); }
+        });
+        st.items = r.items || []; st.fallback = false; st.failed = false; st.retrying = false;
+        if (!st.items.length) { st.items = nwFallbackItems(); st.fallback = true; } // baza bo'sh bo'lsa ham bo'sh ko'rinmasin
+    } catch (e) {
+        st.failed = true; st.retrying = false;
+        if (!st.items.length || !st.fallback) { st.items = nwFallbackItems(); st.fallback = true; }
+    }
     st.loaded = true; nwRenderHome();
+    if (st.fallback) { clearTimeout(nwState.retryTimer); nwState.retryTimer = setTimeout(nwLoadHome, 60000); } // zaxira rejimida har daqiqada qayta urinadi
 }
 
 /* ---------- Kabinet: «Yangiliklar va AI Tahlil» ---------- */
@@ -122,10 +159,15 @@ async function nwLoadCab(force) {
     if (force || !st.loaded) host.replaceChildren(el('div', 'nw-skel'), el('div', 'nw-skel'));
     try {
         const qs = ['limit=50'].concat(st.cat ? ['category=' + st.cat] : [], st.region ? ['region=' + encodeURIComponent(st.region)] : [], NW_STAFF.indexOf(currentUser().role) !== -1 ? ['includeInactive=true'] : []).join('&');
-        const r = await authed('GET', '/news?' + qs);
-        st.items = r.items || []; st.regions = r.regions || []; st.loaded = true;
-    } catch (e) { host.replaceChildren(el('div', 'nw-empty', T("Yangiliklarni yuklab bo'lmadi"))); return; }
-    nwRenderCab();
+        const r = await nwFetchNews('/news?' + qs, storageGet(TOKEN_KEY));
+        st.items = r.items || []; st.regions = r.regions || []; st.fallback = false;
+        if (!st.items.length && !st.cat && !st.region) { st.items = nwFallbackItems(); st.fallback = true; }
+    } catch (e) {
+        if (e && e.status === 401) return; // sessiya tugagan: authed() boshqaradi
+        st.fallback = true;
+        st.items = nwFallbackItems().filter(function (n) { return (!st.cat || n.category === st.cat) && (!st.region || n.region === st.region); });
+    }
+    st.loaded = true; nwRenderCab();
 }
 function nwRenderCab() {
     const host = document.getElementById('nw-cab-list'), chips = document.getElementById('nw-cab-chips'), sel = document.getElementById('nw-cab-region');
@@ -138,8 +180,12 @@ function nwRenderCab() {
         regs.forEach(function (r) { sel.appendChild(Object.assign(el('option', '', nwRegionLabel(r)), { value: r })); });
         sel.value = st.region;
     }
+    const cabNote = st.fallback ? el('div', 'nw-note') : null;
+    if (cabNote) { cabNote.appendChild(el('i', 'fa-solid fa-circle-info')); cabNote.appendChild(el('span', '', T("Server vaqtincha javob bermayapti — zaxira yangiliklar ko'rsatilmoqda"))); }
     if (!st.items.length) { host.replaceChildren(el('div', 'nw-empty', T(st.cat || st.region ? "Bu filtr bo'yicha yangilik topilmadi" : "Hozircha yangiliklar yo'q"))); return; }
-    host.replaceChildren.apply(host, st.items.map(function (n) { return nwCard(n, { authed: true, staff: NW_STAFF.indexOf(user.role) !== -1 }); }));
+    const cards = st.items.map(function (n) { return nwCard(n, { authed: true, staff: !st.fallback && NW_STAFF.indexOf(user.role) !== -1 }); });
+    if (cabNote) cards.unshift(cabNote);
+    host.replaceChildren.apply(host, cards);
 }
 function nwAdminForm() {
     const f = el('form', 'nw-form'); f.id = 'nw-form'; f.noValidate = true;
@@ -177,7 +223,22 @@ function renderNewsTab(user) {
     const chips = el('div', 'nw-filters'); chips.id = 'nw-cab-chips'; chips.style.margin = '0';
     bar.appendChild(chips);
     wrap.appendChild(bar);
-    if (NW_STAFF.indexOf(user.role) !== -1) wrap.appendChild(nwAdminForm());
+    if (NW_STAFF.indexOf(user.role) !== -1) {
+        const rb = el('button', 'nw-login'); rb.type = 'button'; rb.id = 'nw-refresh';
+        rb.appendChild(el('i', 'fa-solid fa-rotate')); rb.appendChild(el('span', '', T('Yangiliklarni hozir yangilash')));
+        const rm = el('span', 'text-sm font-semibold'); rm.id = 'nw-refresh-msg';
+        rb.addEventListener('click', async function () {
+            rb.disabled = true; rm.textContent = T('RSS tasmalari o\'qilmoqda...');
+            try {
+                const r = await authed('POST', '/news/refresh');
+                rm.textContent = r.running ? T('Yangilash allaqachon davom etmoqda') : T('{0} ta yangi yangilik qo\'shildi', r.created) + (r.failedFeeds && r.failedFeeds.length ? ' · ' + T('Ochilmagan manbalar: {0}', r.failedFeeds.join(', ')) : '');
+                nwState.home.loaded = false; nwLoadHome(); nwLoadCab(true);
+            } catch (err) { rm.textContent = (err.messages && err.messages[0]) || 'Xatolik'; }
+            rb.disabled = false;
+        });
+        const rrow = el('div', 'nw-bar'); rrow.appendChild(rb); rrow.appendChild(rm); wrap.appendChild(rrow);
+        wrap.appendChild(nwAdminForm());
+    }
     const list = el('div', 'nw-grid'); list.id = 'nw-cab-list'; wrap.appendChild(list);
     nodes.push(wrap);
     dashContent.replaceChildren.apply(dashContent, nodes);

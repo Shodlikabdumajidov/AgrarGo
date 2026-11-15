@@ -35,3 +35,12 @@ AI xulosa: shablon ‖ ИИ-вывод: шаблон ‖ AI summary: template
 AI xulosa: AI API ‖ ИИ-вывод: ИИ API ‖ AI summary: AI API
 AI xulosa: tayyor ‖ ИИ-вывод: готов ‖ AI summary: ready-made
 Yangiliklar bo'limi ‖ Раздел новостей ‖ News section
+Manba: {0} ‖ Источник: {0} ‖ Source: {0}
+Server uyg'onmoqda, yangiliklar qayta yuklanmoqda... ‖ Сервер просыпается, новости загружаются повторно... ‖ The server is waking up, reloading the news...
+Server vaqtincha javob bermayapti — zaxira yangiliklar ko'rsatilmoqda ‖ Сервер временно не отвечает — показаны резервные новости ‖ The server is temporarily unavailable — showing backup news
+AI maslahat server bilan aloqa tiklangach ko'rinadi ‖ ИИ-совет появится, когда связь с сервером восстановится ‖ AI advice will appear once the connection to the server is restored
+Yangiliklarni hozir yangilash ‖ Обновить новости сейчас ‖ Refresh news now
+RSS tasmalari o'qilmoqda... ‖ Читаются RSS-ленты... ‖ Reading the RSS feeds...
+Yangilash allaqachon davom etmoqda ‖ Обновление уже выполняется ‖ A refresh is already in progress
+{0} ta yangi yangilik qo'shildi ‖ Добавлено новостей: {0} ‖ {0} new news items added
+Ochilmagan manbalar: {0} ‖ Недоступные источники: {0} ‖ Unreachable sources: {0}

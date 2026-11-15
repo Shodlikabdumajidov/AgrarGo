@@ -49,6 +49,12 @@ html[data-theme="dark"] .nw-login { box-shadow: 0 8px 18px -8px rgba(16,185,129,
 .nw-skel { height: 15rem; border-radius: 1.4rem; background: var(--nw-chip); animation: nwPulse 1.3s ease-in-out infinite; }
 @keyframes nwPulse { 50% { opacity: .55; } }
 
+/* Manba (Kun.uz, Daryo.uz ...) va zaxira rejimi eslatmasi */
+.nw-src { display: flex; align-items: center; gap: .4rem; font-size: .72rem; font-weight: 700; color: var(--nw-muted); }
+.nw-src a { color: var(--nw-ai-head); text-decoration: underline; text-underline-offset: 2px; overflow-wrap: anywhere; }
+.nw-src a:hover { text-decoration-thickness: 2px; }
+.nw-note { grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; gap: .5rem; padding: .6rem .9rem; border-radius: 9999px; font-size: .8rem; font-weight: 700; color: var(--nw-ai-ink); background: var(--nw-ai-bg); border: 1px solid var(--nw-ai-border); text-align: center; }
+
 /* Kabinet: filtr paneli va admin shakli */
 .nw-bar { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; }
 .nw-sel { min-height: 2.5rem; padding: .45rem 2rem .45rem .9rem; border-radius: 9999px; font-weight: 700; font-size: .85rem; color: var(--nw-ink); background-color: var(--nw-chip); border: 1px solid var(--nw-border); }

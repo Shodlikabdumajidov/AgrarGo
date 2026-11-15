@@ -247,3 +247,21 @@ Xaridor to'lovdan oldin aniq taqsimotni ko'radi (`GET /local/quote`); to'lov `HE
 - **Ishlatilishi:** `useCashback: true` (`POST /payments/init`, `POST /local/orders`, `POST /local/orders/checkout-bulk`). Keshbek **faqat platforma xizmat haqini** qoplaydi (≤ `CASHBACK_MAX_SPEND_PERCENT`% va balans): fermer/Hub/kuryer ulushlari hech qachon kamaymaydi; xaridordan yechiladigan summa = jami − keshbek, PLATFORM ulushi shuncha kamayadi, ulushlar yig'indisi = yechilgan summa. Savatda keshbek buyurtmalar o'rtasida xizmat haqiga mutanosib bo'linadi. Balansdan atomik ayriladi (`WHERE balance >= x`), DB CHECK: balans ≥ 0, `cashbackUsed ≤ serviceFee`.
 - **Bekor qilish:** to'lov qaytariladi (sof summa) va ishlatilgan keshbek balansga qaytadi (`REFUNDED`).
 - Cheklov: ombor buyurtmasida (WarehouseOrder) keshbek faqat yoziladi, ishlatilmaydi.
+
+
+## Yangiliklar (RSS) va bepul AI
+
+Server ishga tushganda `AUTO_MIGRATE` (standart `true`) bo'yicha migratsiyalar avtomatik qo'llanadi (`prisma migrate deploy`, CLI bo'lmasa ichki zaxira usul) va `AgroNews` bo'sh bo'lsa 5 ta boshlang'ich yangilik seed qilinadi.
+
+`NewsIngestorService` har `NEWS_INGEST_INTERVAL_MIN` (standart 120) daqiqada Kun.uz, Daryo.uz va Gazeta.uz RSS tasmalarini o'qiydi (admin panelda «Yangiliklarni hozir yangilash» = `POST /news/refresh`), faqat agro/logistika kalit so'zlari bor yangiliklarni oladi va `sourceUrl` bo'yicha dublikatsiz saqlaydi.
+
+AI zanjiri (barchasi ixtiyoriy, kalit bo'lmasa aqlli shablon): `GEMINI_API_KEY` (Google AI Studio, bepul, `GEMINI_MODEL=gemini-2.5-flash`) → `GROQ_API_KEY` (`GROQ_MODEL`) → `ANTHROPIC_API_KEY` → shablon.
+
+| O'zgaruvchi | Standart | Izoh |
+|---|---|---|
+| `GEMINI_API_KEY` | — | https://aistudio.google.com/apikey |
+| `GROQ_API_KEY` | — | https://console.groq.com/keys |
+| `NEWS_INGEST_ENABLED` | `true` | `false` — avtomatik RSS o'chiriladi |
+| `NEWS_INGEST_INTERVAL_MIN` | `120` | 10–1440 |
+| `NEWS_FEEDS` | 3 ta manba | `Nomi\|https://url,Nomi2\|https://url2` |
+| `AUTO_MIGRATE` | `true` | `false` — avto-migratsiya o'chiriladi |

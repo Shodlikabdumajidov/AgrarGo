@@ -13,13 +13,14 @@ const CYR=/[А-Яа-яЁё]/;
   const tokens={}; for(const [k,p] of [['FARMER',fph],['MARKET',mph],['DRIVER',dph],['ADMIN',aph]]) tokens[k]=(await call('/auth/login',{phone:p,password:PW})).body.accessToken;
   const apiNews=async(role)=>(await call('/news?limit=50',null,tokens[role]||null,'GET')).body;
   const b=await chromium.launch({executablePath:'/opt/pw-browsers/chromium-1194/chrome-linux/chrome'}); const css=fs.readFileSync('tw.css','utf8');
-  const open=async(vw,vh,theme,phone,lang)=>{const ctx=await b.newContext({locale:'uz-UZ',viewport:{width:vw,height:vh},serviceWorkers:'block',hasTouch:vw<1000,isMobile:vw<700});
+  const open=async(vw,vh,theme,phone,lang,pre)=>{const ctx=await b.newContext({locale:'uz-UZ',viewport:{width:vw,height:vh},serviceWorkers:'block',hasTouch:vw<1000,isMobile:vw<700});
     await ctx.route('https://agrargo-backend.onrender.com/**',async r=>{const q=r.request();const resp=await fetch(q.url().replace('https://agrargo-backend.onrender.com','http://localhost:3000'),{method:q.method(),headers:q.headers(),body:q.postDataBuffer()||undefined});r.fulfill({status:resp.status,headers:Object.fromEntries(resp.headers),body:Buffer.from(await resp.arrayBuffer())});});
     const pg=await ctx.newPage(); pg.errs=[]; pg.on('pageerror',e=>pg.errs.push(e.message)); pg.on('dialog',d=>d.accept()); pg.ctx=ctx; pg.news=[];
     pg.on('response',async r=>{ if(/\/news(\?|$)/.test(r.url())&&r.request().method()==='GET'){ try{pg.news.push({auth:!!r.request().headers()['authorization'],text:await r.text()});}catch(e){} } });
     await pg.addInitScript(([t,l])=>{window.tailwind=window.tailwind||{}; try{localStorage.setItem('agrargo_theme',t); if(l) localStorage.setItem('agrargo_lang',l);}catch(e){} const o=Storage.prototype.getItem;Storage.prototype.getItem=function(k){return String(k).startsWith('agrargo_tour_v1_')?'1':o.call(this,k);};},[theme||'light',lang||null]);
     await pg.route('https://cdn.tailwindcss.com/**',r=>r.fulfill({contentType:'application/javascript',body:"var s=document.createElement('style');s.textContent="+JSON.stringify(css)+";document.head.appendChild(s);"}));
     await pg.route('https://unpkg.com/aos**',r=>r.fulfill({contentType:'application/javascript',body:'window.AOS={init(){}}'}));
+    if(pre) await pre(pg);
     await pg.goto('http://localhost:8080/index.html'); await pg.waitForTimeout(3300);
     if(phone){ await pg.evaluate(()=>{}); await pg.click('#auth-nav-btn'); await pg.fill('#login-phone',phone.slice(4)); await pg.fill('#login-password',PW); await pg.click('#login-form .auth-submit'); await pg.waitForTimeout(2000); }
     return pg;};
@@ -125,6 +126,42 @@ const CYR=/[А-Яа-яЁё]/;
     await pg.locator('#nw-cab-list .nw-card',{hasText:title}).locator('.nw-mini').nth(1).click(); await pg.waitForTimeout(1500);
     ok(!(await prisma.agroNews.findFirst({where:{titleUz:title}})),L+' delete works');
     await contrast(pg,'#dash-content',L+' admin news','light'); await pg.screenshot({path:'nw-admin.png'});
+    ok(pg.errs.length===0,L+' no page errors '+pg.errs.join('|')); await pg.ctx.close(); }
+
+  // ===== Manba nomi (RSS) =====
+  { const L='[source]'; const row=await prisma.agroNews.create({data:{titleUz:"Daryo: Termiz yo'lida yuk mashinalari navbati",titleRu:'Daryo: очередь грузовиков на дороге в Термез',titleEn:'Daryo: truck queue on the Termez road',summaryUz:'Chegara yo\'lida yuk mashinalari navbati qisqardi.',summaryRu:'Очередь грузовиков сократилась.',summaryEn:'The truck queue has shortened.',category:'LOGISTICS',region:'Surxondaryo',sourceUrl:'https://daryo.uz/2026/11/15/nw-test-'+Date.now(),sourceName:'Daryo.uz',aiSource:'gemini',aiInsightFarmerUz:'farmer uz '.repeat(5),aiInsightFarmerRu:'farmer ru '.repeat(5),aiInsightFarmerEn:'farmer en '.repeat(5),aiInsightDriverUz:'driver uz '.repeat(5),aiInsightDriverRu:'driver ru '.repeat(5),aiInsightDriverEn:'driver en '.repeat(5),aiInsightMarketUz:'market uz '.repeat(5),aiInsightMarketRu:'market ru '.repeat(5),aiInsightMarketEn:'market en '.repeat(5)}});
+    const pg=await open(1280,900,'light'); await pg.evaluate(()=>document.getElementById('news').scrollIntoView()); await pg.waitForTimeout(800);
+    const c=pg.locator('#news-grid .nw-card[data-id="'+row.id+'"]'); ok(await c.count()===1,L+' RSS news card is listed');
+    const a=c.locator('.nw-src a'); ok((await a.innerText()).trim()==='Manba: Daryo.uz'&&(await a.getAttribute('href'))===row.sourceUrl&&(await a.getAttribute('target'))==='_blank'&&/noopener/.test(await a.getAttribute('rel')),L+' card shows "Manba: Daryo.uz" linking to the original article');
+    await pg.evaluate(()=>I18N.setLang('ru')); await pg.waitForTimeout(500); ok(/Источник: Daryo\.uz/.test(await c.locator('.nw-src').innerText()),L+' RU: "Источник: Daryo.uz"');
+    await pg.evaluate(()=>I18N.setLang('en')); await pg.waitForTimeout(500); ok(/Source: Daryo\.uz/.test(await c.locator('.nw-src').innerText()),L+' EN: "Source: Daryo.uz"');
+    ok(!(await c.locator('.nw-ai.open').count()),L+' guest still sees no AI text on RSS news'); await contrast(pg,'#news',L+' source line','light'); await pg.ctx.close();
+    await prisma.agroNews.delete({where:{id:row.id}}); }
+
+  // ===== Cold start: 2 marta qayta urinish + zaxira yangiliklar =====
+  for(const mode of ['down','recovers']) { const L='[cold start '+mode+']'; let n=0;
+    const pg=await open(375,812,'light',null,null,async p=>{ await p.route(/\/news(\?|$)/,async r=>{ n++; if(mode==='down'||n<=2) return r.fulfill({status:503,contentType:'text/plain',body:'Service Unavailable'}); return r.fallback(); }); });
+    await pg.evaluate(()=>document.getElementById('news').scrollIntoView()); await pg.waitForTimeout(1200);
+    let s=await pg.evaluate(()=>({cards:document.querySelectorAll('#news-grid .nw-card').length,fb:document.querySelectorAll('#news-grid .nw-card[data-id^="fb-"]').length,note:(document.getElementById('news-note')||{}).textContent,err:/yuklab bo'lmadi/.test(document.getElementById('news-grid').innerText),open:document.querySelectorAll('#news-grid .nw-ai.open').length,locked:document.querySelectorAll('#news-grid .nw-ai.locked').length}));
+    ok(s.cards>=4&&s.fb===s.cards&&!s.err,L+' after the first failure the section is NOT empty: '+s.cards+' fallback news, no error text');
+    ok(/qayta yuklanmoqda/.test(s.note||''),L+' note: "'+(s.note||'').trim()+'"'); ok(s.open===0&&s.locked===s.cards,L+' fallback cards carry no AI text (guest: locked)');
+    await pg.waitForTimeout(10500);
+    s=await pg.evaluate(()=>({fb:document.querySelectorAll('#news-grid .nw-card[data-id^="fb-"]').length,real:document.querySelectorAll('#news-grid .nw-card:not([data-id^="fb-"])').length,note:(document.getElementById('news-note')||{}).textContent||''}));
+    if(mode==='down'){ ok(n===3&&s.fb>=4&&s.real===0,L+' exactly 1 request + 2 retries ('+n+' requests), fallback stays visible'); ok(/vaqtincha javob bermayapti/.test(s.note),L+' note switches to "temporarily unavailable"'); }
+    else { ok(n===3&&s.real>=4&&s.fb===0&&s.note==='',L+' third attempt succeeds ('+n+' requests): real news replace the fallback and the note disappears'); }
+    ok(pg.errs.length===0,L+' no page errors '+pg.errs.join('|')); await pg.ctx.close(); }
+  { const L='[cold start / cabinet]'; const pg=await open(1280,900,'light',fph,null,async p=>{ await p.route(/\/news(\?|$)/,r=>r.request().headers()['authorization']&&r.request().url().includes('limit=50')?r.fulfill({status:502,body:'Bad gateway'}):r.fallback()); });
+    await pg.evaluate(()=>openDashboard('news')); await pg.waitForTimeout(1500);
+    let c=await pg.evaluate(()=>({n:document.querySelectorAll('#nw-cab-list .nw-card').length,note:!!document.querySelector('#nw-cab-list .nw-note')})); ok(c.n===0,L+' (loading state while retrying)'); await pg.waitForTimeout(10500);
+    c=await pg.evaluate(()=>({n:document.querySelectorAll('#nw-cab-list .nw-card').length,note:!!document.querySelector('#nw-cab-list .nw-note'),err:/yuklab bo'lmadi/.test(document.getElementById('nw-cab-list').innerText)})); ok(c.n>=4&&c.note&&!c.err,L+' cabinet shows '+c.n+' fallback news with a note instead of an error'); await pg.ctx.close(); }
+
+  // ===== Admin: «Yangiliklarni hozir yangilash» =====
+  { const L='[admin refresh]'; const pg=await open(1280,900,'light',aph); await pg.evaluate(()=>openDashboard('news')); await pg.waitForTimeout(1800);
+    ok(await pg.locator('#nw-refresh').count()===1,L+' button "Yangiliklarni hozir yangilash" exists');
+    const reqs=[]; pg.on('request',q=>{ if(q.url().includes('/news/refresh')) reqs.push(q.method()); });
+    await pg.click('#nw-refresh'); await pg.waitForFunction(()=>/qo'shildi|davom|Xatolik|[Xx]ato/.test(document.getElementById('nw-refresh-msg').textContent),null,{timeout:60000}); const m=await pg.locator('#nw-refresh-msg').innerText();
+    ok(reqs[0]==='POST'&&/^0 ta yangi yangilik qo'shildi/.test(m),L+' POST /news/refresh -> "'+m+'"'); ok(await pg.locator('#nw-refresh').isEnabled(),L+' button re-enabled');
+    await pg.evaluate(()=>I18N.setLang('en')); await pg.waitForTimeout(400); ok(/Refresh news now/.test(await pg.locator('#nw-refresh').innerText()),L+' EN label'); await contrast(pg,'#dash-content',L+' admin','light');
     ok(pg.errs.length===0,L+' no page errors '+pg.errs.join('|')); await pg.ctx.close(); }
   await prisma.$disconnect(); await b.close();
 })();

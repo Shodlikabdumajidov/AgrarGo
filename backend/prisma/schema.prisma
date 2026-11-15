@@ -1531,8 +1531,11 @@ model AgroNews {
   aiInsightMarketUz String
   aiInsightMarketRu String
   aiInsightMarketEn String
-  /// Xulosa manbai: 'llm' (AI API) yoki 'template' (zaxira shablon)
+  /// Xulosa manbai: 'gemini' | 'groq' | 'llm' (Anthropic) | 'template' (zaxira shablon) | 'seed'
   aiSource   String       @default("template")
+  /// RSS orqali olingan yangilik: asl maqola havolasi (dublikatlarni oldini oladi) va manba nomi (Kun.uz, Daryo.uz ...)
+  sourceUrl  String?      @unique
+  sourceName String?
 
   publishedAt DateTime @default(now())
   isActive    Boolean  @default(true)
