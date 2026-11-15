@@ -1,7 +1,7 @@
 /* Main (Hero): Interactive Character Showcase — Soft Claymorphism. Urg'u rangi: P1 Sage Mint, P2 Powder Blue, P3 Warm Sand */
-#hero-header, #hero-showcase { --cs-accent: #84A99B; --cs-soft: #E4EEEA; --cs-dark: #3f6b5c; --cs-light: #A3C4B8; }
-#hero-header[data-role="driver"], #hero-showcase[data-role="driver"] { --cs-accent: #9CC3D5; --cs-soft: #E3EEF4; --cs-dark: #4d7a8c; --cs-light: #BBD8E6; }
-#hero-header[data-role="market"], #hero-showcase[data-role="market"] { --cs-accent: #D8C3A5; --cs-soft: #F2EADD; --cs-dark: #8a6d3b; --cs-light: #E8D7BC; }
+#hero-header, #hero-showcase { --cs-ink: #2B6A58; --cs-accent: #84A99B; --cs-soft: #E4EEEA; --cs-dark: #3f6b5c; --cs-light: #A3C4B8; }
+#hero-header[data-role="driver"], #hero-showcase[data-role="driver"] { --cs-ink: #2C5E7A; --cs-accent: #9CC3D5; --cs-soft: #E3EEF4; --cs-dark: #4d7a8c; --cs-light: #BBD8E6; }
+#hero-header[data-role="market"], #hero-showcase[data-role="market"] { --cs-ink: #7C532C; --cs-accent: #D8C3A5; --cs-soft: #F2EADD; --cs-dark: #8a6d3b; --cs-light: #E8D7BC; }
 #hero-header { transition: background-color .8s ease; position: relative; }
 #hero-header::before { content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none; background: radial-gradient(ellipse 60% 70% at 25% 50%, color-mix(in srgb, var(--cs-accent) 30%, transparent), transparent 70%); transition: background .8s ease; }
 
@@ -56,9 +56,9 @@ html[data-theme="dark"] .cs-tag { color: var(--cs-light); }
 /* ===== Mobil (360–640px) va planshet (641–1023px): 2 ustunli ixcham layout — chapda video, o'ngda matn ===== */
 @media (max-width: 1023px) {
     #hero-header { min-height: 0 !important; align-items: flex-start; padding: 1rem .9rem 1rem !important; touch-action: pan-y; }
-    #hero-header > .grid { grid-template-columns: 43% 57% !important; gap: .7rem !important; align-items: center; }
+    #hero-header > .grid { grid-template-columns: minmax(0, 43fr) minmax(0, 57fr) !important; gap: .7rem !important; align-items: center; }
     #hero-header > .grid > div { min-width: 0; grid-column: auto !important; }
-    #hero-header > .grid > div:first-child { padding: 0 !important; }
+    #hero-header > .grid > div.cs-col { padding: 0 !important; }
     .cs { width: 100%; max-width: 195px; margin: 0 auto; }
     .cs-stage { max-height: 260px; }
     .cs-video { object-fit: contain; object-position: 50% 100%; }
@@ -68,23 +68,46 @@ html[data-theme="dark"] .cs-tag { color: var(--cs-light); }
     #hero-header .lg\:col-span-7 { text-align: left !important; display: flex; flex-direction: column; align-items: flex-start; gap: .55rem !important; padding: 0 !important; }
     #hero-header .lg\:col-span-7 > * { margin: 0 !important; }
     #hero-header .lg\:col-span-7.space-y-6 > * + * { margin-top: 0 !important; }
-    #hero-header .lg\:col-span-7 > div.inline-flex { font-size: .58rem !important; padding: .3rem .65rem !important; letter-spacing: .03em !important; line-height: 1.25; white-space: normal; text-align: left; box-shadow: none !important; }
-    .cs-tag { font-size: .6rem; padding: .25rem .65rem; line-height: 1.2; white-space: normal; }
-    #hero-title { font-size: clamp(1.05rem, 4.9vw, 1.35rem) !important; line-height: 1.18 !important; overflow-wrap: anywhere; word-break: normal; hyphens: manual; }
     #hero-title br { display: none; }
     #hero-title .hero-lead, #hero-title .hero-grad { display: block; }
-    #cs-sub { font-size: .78rem !important; line-height: 1.4 !important; max-width: none; }
     .cs-cta-row { padding-top: .1rem; }
-    .cs-cta { padding: .55rem 1.05rem; font-size: .82rem; }
 }
 @media (min-width: 641px) and (max-width: 1023px) {
     #hero-header { padding: 1.5rem 1.5rem 1.5rem !important; }
     .cs { max-width: 225px; }
     .cs-stage { max-height: 300px; }
     #hero-header > .grid { gap: 1.25rem !important; }
-    #hero-title { font-size: clamp(1.5rem, 3.6vw, 1.9rem) !important; }
-    #cs-sub { font-size: .98rem !important; }
-    #hero-header .lg\:col-span-7 > div.inline-flex { font-size: .68rem !important; }
-    .cs-tag { font-size: .7rem; }
-    .cs-cta { font-size: .95rem; padding: .7rem 1.4rem; }
 }
+
+/* ===== Tipografik tartib (Soft Claymorphism): eyebrow → sarlavha → tavsif → CTA ===== */
+#hero-header { --cs-sub: #4A5568; --cs-hl: var(--cs-ink); }
+html[data-theme="dark"] #hero-header { --cs-sub: #cbd5e1; --cs-hl: var(--cs-light); }
+
+/* 1) Eyebrow: ramkasiz — rangli nuqta + 11px/700 uppercase */
+.cs-tag { padding: 0 !important; border: 0 !important; background: none !important; border-radius: 0; font-size: 11px !important; font-weight: 700 !important; letter-spacing: .08em !important; line-height: 1.3; color: var(--cs-hl) !important; gap: .45rem; white-space: normal; }
+.cs-tag i { font-size: 8px; color: var(--cs-accent); }
+
+/* 2) Sarlavha */
+#hero-title { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; letter-spacing: -0.025em; line-height: 1.12 !important; font-size: clamp(2.25rem, 3.8vw, 3.4rem) !important; }
+#hero-header .hero-grad { background: none !important; background-image: none !important; -webkit-text-fill-color: var(--cs-hl) !important; color: var(--cs-hl) !important; }
+
+/* 3) Tavsif */
+#cs-sub { font-family: 'Inter', sans-serif; font-size: 1.125rem !important; line-height: 1.5 !important; font-weight: 500; color: var(--cs-sub) !important; max-width: 38ch !important; text-wrap: balance; }
+
+/* 4) CTA: yumshoq clay soya, aniq kontrast */
+.cs-cta-row { padding-top: 14px !important; }
+.cs-cta { padding: 10px 20px !important; font-weight: 700 !important; font-size: .95rem; color: #1b2a25; box-shadow: 6px 6px 14px color-mix(in srgb, var(--cs-accent) 50%, transparent), -4px -4px 10px rgba(255,255,255,.75), inset 0 1px 0 rgba(255,255,255,.55); }
+
+/* Umumiy shior: mobil/planshetda tepada markazlashgan ixcham qator, desktopda o'ng ustun ichida */
+.hero-slogan-m { display: none; }
+@media (max-width: 1023px) {
+    .hero-slogan-d { display: none !important; }
+    #hero-header > .grid > .hero-slogan-m { display: flex; grid-column: 1 / -1 !important; justify-content: center; align-items: center; gap: .4rem; text-align: center; font-size: clamp(.56rem, 2.45vw, .72rem); font-weight: 800; letter-spacing: .05em; line-height: 1.3; text-transform: uppercase; color: var(--cs-hl); text-wrap: balance; padding: 0 .1rem; }
+    .hero-slogan-m i { font-size: .8em; color: var(--cs-accent); }
+    #hero-header > .grid { align-items: center; row-gap: .8rem !important; }
+    #hero-header > .grid > div.cs-col { align-self: center; }
+    #hero-title { font-size: clamp(1.25rem, 5vw, 1.65rem) !important; overflow-wrap: anywhere; }
+    #cs-sub { font-size: 13px !important; line-height: 1.45 !important; }
+    .cs-cta { font-size: .8125rem; }
+}
+@media (min-width: 641px) and (max-width: 1023px) { #cs-sub { font-size: .95rem !important; } .cs-cta { font-size: .95rem; } }

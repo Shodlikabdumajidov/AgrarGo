@@ -47,7 +47,10 @@
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Plus Jakarta Sans (sarlavhalar: 600/700/800) + Inter (matn: 400/500/600); latin + cyrillic subsetlari Google CSS orqali (unicode-range) -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600&display=swap&subset=latin,cyrillic" rel="stylesheet">
     <!-- AOS Animation Library CSS -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <script src="js/tailwind-config.js"></script>
@@ -781,6 +784,9 @@
             #nav-search #market-search-btn { padding: .65rem 1rem; font-size: 1rem; }
             #custom-dropdown-menu { width: min(16rem, calc(100vw - 1.5rem)); }
         }
+        /* ===== Tipografika: sarlavhalar — Plus Jakarta Sans 800 (tight), matn — Inter ===== */
+        body, body.font-sans, button, input, select, textarea { font-family: 'Inter', 'Plus Jakarta Sans', system-ui, sans-serif; }
+        h1, h2, .hero-title { font-family: 'Plus Jakarta Sans', sans-serif !important; letter-spacing: -0.025em !important; line-height: 1.12 !important; font-weight: 800 !important; }
         /* ===== Yuqori axborot lentasi (infinite marquee) ===== */
         #top-util { overflow: hidden; padding: .15rem 0; }
         .tu-track { display: flex; width: max-content; animation: tu-scroll var(--tu-dur, 40s) linear infinite; will-change: transform; }
@@ -1447,9 +1453,12 @@
     <header id="hero-header" data-role="farmer" class="relative min-h-[80vh] flex items-center justify-center pt-16 pb-20 px-6 sm:px-12 overflow-hidden">
         <!-- Orqa fon: chap va o'ng bloklar (kontent ostida) -->
                 <div class="relative z-10 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            <!-- Umumiy shior (mobil/planshet): ustunlar ustida markazlashgan ixcham qator -->
+            <div class="hero-slogan hero-slogan-m"><i class="fa-solid fa-seedling"></i> <span>O'zbekistondagi Birinchi Raqamli Agro-Logistika Zanjiri</span></div>
+
             
             <!-- LEFT SIDE: Interactive Character Showcase (P1 fermer, P2 haydovchi, P3 market) -->
-            <div class="lg:col-span-5 flex flex-col items-center justify-center">
+            <div class="cs-col lg:col-span-5 flex flex-col items-center justify-center">
                 <div id="hero-showcase" class="cs" data-role="farmer" aria-roledescription="carousel" aria-label="Personajlar">
                     <div class="cs-blob" aria-hidden="true"></div>
                     <div class="cs-stage">
@@ -1468,7 +1477,7 @@
 
             <!-- RIGHT SIDE: Text Content Aligned to Right/Center -->
             <div class="lg:col-span-7 text-center lg:text-left space-y-6" data-aos="fade-left" data-aos-duration="1000">
-                <div class="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm font-bold uppercase tracking-widest shadow-xl">
+                <div class="hero-slogan-d inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm font-bold uppercase tracking-widest shadow-xl">
                     <i class="fa-solid fa-seedling"></i> O'zbekistondagi Birinchi Raqamli Agro-Logistika Zanjiri
                 </div>
                 <p class="cs-tag" id="cs-tag"><i class="fa-solid fa-circle"></i> <span>Dehqon va bog'bonlar uchun</span></p>

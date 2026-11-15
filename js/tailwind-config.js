@@ -8,7 +8,8 @@ tailwind.config = {
                 earthBrown: '#78350F',
             },
             fontFamily: {
-                sans: ['Plus Jakarta Sans', 'sans-serif'],
+                sans: ['Inter', 'Plus Jakarta Sans', 'sans-serif'],
+                display: ['Plus Jakarta Sans', 'sans-serif'],
             }
         }
     }
