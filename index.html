@@ -754,9 +754,6 @@
             .toast-stack { bottom: calc(4.9rem + env(safe-area-inset-bottom, 0px)); }
             .oq-pill { bottom: calc(4.9rem + env(safe-area-inset-bottom, 0px)); }
             /* Yuqori yordamchi panel */
-            #top-util { padding: .4rem .75rem; gap: .5rem; font-size: .78rem; }
-            #top-util .overflow-x-auto { display: none; }
-            #top-util button { padding: .3rem .7rem; font-size: .76rem; }
             /* Asosiy header: bitta ixcham qator */
             #main-nav { padding: .45rem .75rem; box-shadow: 0 10px 30px -18px rgba(0,0,0,.9); }
             #main-nav > div { flex-direction: row; flex-wrap: wrap; align-items: center; gap: .5rem; }
@@ -784,6 +781,38 @@
             #nav-search #market-search-btn { padding: .65rem 1rem; font-size: 1rem; }
             #custom-dropdown-menu { width: min(16rem, calc(100vw - 1.5rem)); }
         }
+        /* ===== Yuqori axborot lentasi (infinite marquee) ===== */
+        #top-util { overflow: hidden; padding: .15rem 0; }
+        .tu-track { display: flex; width: max-content; animation: tu-scroll var(--tu-dur, 40s) linear infinite; will-change: transform; }
+        .tu-set { display: flex; align-items: center; gap: 2.75rem; padding-right: 2.75rem; flex: none; }
+        .tu-set > * { flex: none; }
+        #top-util:hover .tu-track, #top-util:focus-within .tu-track { animation-play-state: paused; }
+        @keyframes tu-scroll { to { transform: translateX(calc(-1 * var(--tu-w, 50%))); } }
+        @media (prefers-reduced-motion: reduce) { .tu-track { animation: none; } #top-util { overflow-x: auto; } }
+        @media (max-width: 1023px) { #top-util { display: none; } } /* mobil/planshet: qo'shimcha yuqori qator yo'q */
+        /* Mobil header: UZ + Tema + Qidiruv + Profil bitta ixcham qatorda */
+        @media (max-width: 1023px) {
+            #lang-btn { height: 2.75rem; padding: 0 .6rem; border-radius: .9rem; font-size: .85rem; }
+            #theme-toggle { width: 2.75rem; height: 2.75rem; border-radius: .9rem; }
+        }
+        .nav-post-ad { display: none; }
+        .nav-wide-label, .nav-wide-chev { display: none; }
+        .nav-wide-chev { display: none; }
+        @media (min-width: 1024px) { .nav-post-ad { display: flex; } .sb-post { display: none; } }
+        @media (min-width: 1536px) { .nav-wide-label { display: inline; } .nav-post-ad { padding: 0 1.25rem; } }
+        @media (min-width: 640px) { .nav-wide-chev { display: inline; } }
+        @media (max-width: 430px) {
+            #main-nav { padding-left: .55rem; padding-right: .55rem; }
+            #main-nav > div { gap: .35rem; }
+            #nav-left, #nav-left > div { gap: .35rem !important; }
+            #nav-left button { width: 2.4rem; height: 2.4rem; padding: 0 !important; display: inline-flex; align-items: center; justify-content: center; }
+            #nav-left img { height: 1.85rem !important; padding: .1rem !important; }
+            #nav-right { gap: .3rem !important; }
+            #lang-btn { height: 2.4rem !important; padding: 0 .5rem !important; gap: .25rem; }
+            #theme-toggle, #nav-search-toggle, #auth-nav-btn { width: 2.4rem !important; height: 2.4rem !important; border-radius: .8rem !important; }
+        }
+        /* "OYLIK REYTING (TOP-3)": mobilda bir qatorda */
+        @media (max-width: 639px) { #lb-title { font-size: clamp(1.25rem, 5.2vw, 2.25rem); white-space: nowrap; } }
         @keyframes navSearchIn { from { opacity: 0; transform: translateY(-6px); } }
         @media (prefers-reduced-motion: reduce) { #main-nav.search-open #nav-search { animation: none; } }
 
@@ -1204,34 +1233,21 @@
     <!-- SIDEBAR BACKDROP OVERLAY -->
     <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"></div>
 
-    <!-- TOP UTILITY BAR -->
-    <div id="top-util" class="bg-slate-900 border-b border-white/10 text-sm text-slate-200 px-6 sm:px-10 py-3 flex flex-wrap justify-between items-center gap-4">
-        <div class="flex items-center gap-6 font-semibold overflow-x-auto py-1 min-w-0">
-            <a href="#hub" data-scroll="#hub" class="top-link hidden md:inline-block">AgrarGo B2B Hub</a>
-            <a href="#contact" data-scroll="#contact" class="top-link hidden md:inline-block">Hamkorlik / Aloqa</a>
-            <a href="#tariffs" data-scroll="#tariffs" class="top-link hidden md:inline-block">Logistika Tariflari</a>
-            <a href="#chain" data-scroll="#chain" class="top-link hidden md:inline-block">Market.uz Zanjiri</a>
-            <button type="button" onclick="openWarehouse()" class="top-link transition whitespace-nowrap text-emerald-300 font-bold hidden sm:inline-block"><i class="fa-solid fa-warehouse mr-1.5"></i>Omborxona</button>
-        </div>
-        <div class="flex items-center gap-3 sm:gap-6 ml-auto">
-            <a id="site-telegram" href="https://t.me/agrargobot" target="_blank" rel="noopener noreferrer" class="hidden sm:flex items-center gap-2 hover:text-emerald-400 transition whitespace-nowrap font-medium">
-                <i class="fa-brands fa-telegram text-emerald-400 text-base"></i> <span id="site-telegram-text" translate="no">@agrargobot</span>
-            </a>
-            <a id="site-phone" href="tel:+998781400909" class="hidden md:flex items-center gap-2 whitespace-nowrap font-medium hover:text-emerald-400 transition">
-                <i class="fa-solid fa-phone text-emerald-400 text-base"></i> <span id="site-phone-text" translate="no">+998 78 140 09 09</span>
-            </a>
-            <button onclick="onPostAdClick()" class="bg-emerald-500/10 text-emerald-400 px-3 sm:px-4 py-1.5 rounded-full border border-emerald-500/30 font-bold hover:bg-emerald-500/20 hover:scale-105 transition whitespace-nowrap text-sm shadow-sm">
-                <i class="fa-solid fa-plus mr-1.5"></i> E'lon Joylash
-            </button>
-            <div class="relative" style="z-index:35" id="lang-switch">
-                <button type="button" id="lang-btn" aria-haspopup="listbox" aria-expanded="false" aria-label="Til / Language" class="flex items-center gap-1.5 cursor-pointer hover:text-emerald-400 font-bold whitespace-nowrap transition">
-                    <i class="fa-solid fa-globe"></i> <span id="lang-current" translate="no">UZ</span> <i class="fa-solid fa-chevron-down text-xs"></i>
-                </button>
-                <ul id="lang-menu" role="listbox" translate="no" class="hidden absolute right-0 top-full mt-3 w-44 bg-slate-900/95 backdrop-blur-2xl border border-emerald-500/25 rounded-2xl shadow-2xl shadow-emerald-500/10 overflow-hidden">
-                    <li><button type="button" role="option" data-lang="uz" class="w-full flex items-center gap-3 px-4 py-3 text-left text-slate-200 hover:bg-white/10 font-semibold transition"><span aria-hidden="true">🇺🇿</span> O'zbekcha</button></li>
-                    <li><button type="button" role="option" data-lang="ru" class="w-full flex items-center gap-3 px-4 py-3 text-left text-slate-200 hover:bg-white/10 font-semibold border-t border-white/5 transition"><span aria-hidden="true">🇷🇺</span> Русский</button></li>
-                    <li><button type="button" role="option" data-lang="en" class="w-full flex items-center gap-3 px-4 py-3 text-left text-slate-200 hover:bg-white/10 font-semibold border-t border-white/5 transition"><span aria-hidden="true">🇬🇧</span> English</button></li>
-                </ul>
+    <!-- TOP UTILITY BAR: uzluksiz harakatlanuvchi lenta (infinite marquee); sichqoncha ustida to'xtaydi. Nusxalar js/app.js (syncMarquee) tomonidan yaratiladi -->
+    <div id="top-util" class="bg-slate-900 border-b border-white/10 text-sm text-slate-200" role="region" aria-label="AgrarGo">
+        <div class="tu-track">
+            <div class="tu-set">
+                <a href="#hub" data-scroll="#hub" class="top-link">AgrarGo B2B Hub</a>
+                <a href="#contact" data-scroll="#contact" class="top-link">Hamkorlik / Aloqa</a>
+                <a href="#tariffs" data-scroll="#tariffs" class="top-link">Logistika Tariflari</a>
+                <a href="#chain" data-scroll="#chain" class="top-link">Market.uz Zanjiri</a>
+                <button type="button" onclick="openWarehouse()" class="top-link transition whitespace-nowrap text-emerald-300 font-bold"><i class="fa-solid fa-warehouse mr-1.5"></i>Omborxona</button>
+                <a id="site-telegram" href="https://t.me/agrargobot" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 hover:text-emerald-400 transition whitespace-nowrap font-medium">
+                    <i class="fa-brands fa-telegram text-emerald-400 text-base"></i> <span id="site-telegram-text" translate="no">@agrargobot</span>
+                </a>
+                <a id="site-phone" href="tel:+998781400909" class="flex items-center gap-2 whitespace-nowrap font-medium hover:text-emerald-400 transition">
+                    <i class="fa-solid fa-phone text-emerald-400 text-base"></i> <span id="site-phone-text" translate="no">+998 78 140 09 09</span>
+                </a>
             </div>
         </div>
     </div>
@@ -1286,13 +1302,26 @@
                 </div>
             </div>
 
-            <div id="nav-right" class="flex items-center gap-4 w-full xl:w-auto justify-end">
+            <div id="nav-right" class="flex items-center gap-2 sm:gap-3 2xl:gap-4 w-full xl:w-auto justify-end">
+                <div class="relative" style="z-index:35" id="lang-switch">
+                    <button type="button" id="lang-btn" aria-haspopup="listbox" aria-expanded="false" aria-label="Til / Language" class="flex items-center justify-center gap-1.5 h-12 sm:h-14 px-3 sm:px-4 rounded-2xl bg-slate-900 hover:bg-slate-800 text-slate-100 border border-white/20 hover:border-emerald-500/50 cursor-pointer font-bold whitespace-nowrap transition active:scale-95 shrink-0">
+                        <i class="fa-solid fa-globe text-emerald-400"></i> <span id="lang-current" translate="no">UZ</span> <i class="fa-solid fa-chevron-down text-[10px] nav-wide-chev"></i>
+                    </button>
+                    <ul id="lang-menu" role="listbox" translate="no" class="hidden absolute right-0 top-full mt-3 w-44 bg-slate-900/95 backdrop-blur-2xl border border-emerald-500/25 rounded-2xl shadow-2xl shadow-emerald-500/10 overflow-hidden">
+                        <li><button type="button" role="option" data-lang="uz" class="w-full flex items-center gap-3 px-4 py-3 text-left text-slate-200 hover:bg-white/10 font-semibold transition"><span aria-hidden="true">🇺🇿</span> O'zbekcha</button></li>
+                        <li><button type="button" role="option" data-lang="ru" class="w-full flex items-center gap-3 px-4 py-3 text-left text-slate-200 hover:bg-white/10 font-semibold border-t border-white/5 transition"><span aria-hidden="true">🇷🇺</span> Русский</button></li>
+                        <li><button type="button" role="option" data-lang="en" class="w-full flex items-center gap-3 px-4 py-3 text-left text-slate-200 hover:bg-white/10 font-semibold border-t border-white/5 transition"><span aria-hidden="true">🇬🇧</span> English</button></li>
+                    </ul>
+                </div>
                 <button type="button" id="theme-toggle" aria-label="Yorug' rejimga o'tish" aria-pressed="false" class="flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-slate-900 hover:bg-slate-800 text-amber-300 border border-white/20 hover:border-emerald-500/50 transition active:scale-95 shrink-0">
                     <i class="fa-solid fa-sun text-lg" id="theme-icon"></i>
                 </button>
                 <button type="button" id="nav-search-toggle" aria-label="Qidiruv" aria-controls="nav-search" aria-expanded="false"><i class="fa-solid fa-magnifying-glass"></i></button>
-                <button type="button" onclick="scrollToMarket(true)" class="hidden sm:flex items-center gap-2.5 bg-slate-900 hover:bg-slate-800 text-slate-100 px-5 py-4 rounded-2xl text-base font-semibold border border-white/20 hover:border-emerald-500 transition duration-300 shadow">
-                    <i class="fa-solid fa-sliders text-sm text-emerald-400"></i> Filtrlar
+                <button type="button" onclick="scrollToMarket(true)" class="hidden sm:flex items-center gap-2.5 bg-slate-900 hover:bg-slate-800 text-slate-100 px-4 2xl:px-5 py-4 rounded-2xl text-base font-semibold border border-white/20 hover:border-emerald-500 transition duration-300 shadow">
+                    <i class="fa-solid fa-sliders text-sm text-emerald-400"></i> <span class="nav-wide-label">Filtrlar</span>
+                </button>
+                <button type="button" id="nav-post-ad" onclick="onPostAdClick()" title="E'lon Joylash" aria-label="E'lon Joylash" class="nav-post-ad items-center justify-center gap-2 h-14 px-4 rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold hover:bg-emerald-500/20 transition whitespace-nowrap text-base shrink-0">
+                    <i class="fa-solid fa-plus"></i> <span class="nav-wide-label">E'lon Joylash</span>
                 </button>
                 <div class="relative">
                     <button id="auth-nav-btn" onclick="onAuthButtonClick(event)" aria-haspopup="menu" class="bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-extrabold px-8 py-4 rounded-2xl text-base transition duration-200 shadow-xl shadow-emerald-500/30 flex items-center gap-2.5">
@@ -1345,6 +1374,9 @@
             </button>
         </div>
         <div class="flex-1 overflow-y-auto divide-y divide-white/5">
+            <div class="sb-post p-4 bg-slate-950/30">
+                <button type="button" id="sb-post-ad" onclick="toggleSidebar(); onPostAdClick()" class="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold shadow-lg transition active:scale-95"><i class="fa-solid fa-plus"></i> E'lon Joylash</button>
+            </div>
             <p class="px-5 py-3 text-xs text-slate-400 font-semibold leading-relaxed bg-slate-950/30">Rolingizni tanlang. Bitta telefon raqam faqat bitta rolda ro'yxatdan o'ta oladi.</p>
             <a href="#" onclick="openRolePage('FARMER'); return false;" class="flex justify-between items-center p-5 hover:bg-white/10 transition group">
                 <span class="text-base font-semibold text-slate-200 group-hover:text-emerald-400">AgrarGo Farm (Fermer)</span>

@@ -180,9 +180,7 @@
 
     function detect() {
         try { var s = localStorage.getItem(STORAGE_KEY); if (s && LANGS[s]) return s; } catch (e) {}
-        var nav = (navigator.languages && navigator.languages[0]) || navigator.language || 'uz';
-        nav = String(nav).slice(0, 2).toLowerCase();
-        return LANGS[nav] ? nav : 'uz';
+        return 'uz'; // birinchi tashrifda sukut til — O'zbekcha (brauzer tili hisobga olinmaydi)
     }
 
     function paintSwitcher() {

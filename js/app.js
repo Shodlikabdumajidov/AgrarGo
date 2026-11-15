@@ -6324,6 +6324,30 @@
         const SOCIAL_ICONS = { telegramUrl: ['fa-telegram', 'Telegram'], instagramUrl: ['fa-instagram', 'Instagram'], facebookUrl: ['fa-facebook', 'Facebook'], youtubeUrl: ['fa-youtube', 'YouTube'] };
         const safeHttps = function (u) { try { const x = new URL(u); return x.protocol === 'https:' ? x.href : null; } catch (e) { return null; } };
 
+        // Yuqori axborot lentasi: birinchi to'plam (.tu-set) nusxalanadi, lenta uzluksiz va uzilishsiz aylanadi
+        function syncMarquee() {
+            const track = document.querySelector('#top-util .tu-track');
+            if (!track) return;
+            const sets = track.querySelectorAll('.tu-set');
+            const base = sets[0];
+            if (!base) return;
+            for (let i = sets.length - 1; i > 0; i--) sets[i].remove();
+            const w = base.getBoundingClientRect().width;
+            if (!w) return; // yashirin (mobil) — kerak emas
+            const copies = Math.max(1, Math.ceil(window.innerWidth / w)) + 1;
+            for (let i = 0; i < copies; i++) {
+                const c = base.cloneNode(true);
+                c.setAttribute('aria-hidden', 'true');
+                c.querySelectorAll('[id]').forEach(function (n) { n.removeAttribute('id'); });
+                c.querySelectorAll('a,button').forEach(function (n) { n.setAttribute('tabindex', '-1'); n.classList.remove('active'); });
+                track.appendChild(c);
+            }
+            track.style.setProperty('--tu-w', w + 'px');
+            track.style.setProperty('--tu-dur', Math.max(20, Math.round(w / 45)) + 's'); // ~45 px/s — sekin va silliq
+        }
+        let mqTimer = null;
+        window.addEventListener('resize', function () { clearTimeout(mqTimer); mqTimer = setTimeout(syncMarquee, 200); });
+
         function applySiteSettings(st) {
             if (!st) return;
             siteSettings = st;
@@ -6339,6 +6363,7 @@
             const ph = document.getElementById('site-phone');
             ph.style.display = phones.length ? '' : 'none';
             if (phones.length) { ph.href = 'tel:' + phones[0].replace(/[^\d+]/g, ''); set('site-phone-text', phones[0]); }
+            syncMarquee();
             // Footer
             const box = document.getElementById('site-phones');
             box.replaceChildren();
@@ -6404,9 +6429,10 @@
             document.addEventListener('click', close);
             document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
         })();
-        document.addEventListener('i18n:change', function () { applySiteSettings(siteSettings); });
+        document.addEventListener('i18n:change', function () { applySiteSettings(siteSettings); if (typeof renderLeaderboard === 'function' && lbData) renderLeaderboard(lbData); });
 
         I18N.init();
+        syncMarquee();
         loadSiteSettings();
         updateAuthButton();
         refreshSession();
@@ -7025,7 +7051,7 @@
 
         // Yuqori menyuda hozirgi bo'lim ajratib ko'rsatiladi
         (function () {
-            const links = Array.prototype.slice.call(document.querySelectorAll('.top-link[data-scroll]'));
+            const links = Array.prototype.slice.call(document.querySelectorAll('.tu-set:first-child .top-link[data-scroll]'));
             if (!links.length || !('IntersectionObserver' in window)) return;
             const map = {};
             links.forEach(function (l) { map[l.getAttribute('data-scroll')] = l; });
@@ -7872,7 +7898,9 @@
             farmers: { unit: 't', fmt: function (r) { return [formatNumber(r.value), T('tonna')]; } },
             markets: { unit: 't', fmt: function (r) { return [formatNumber(r.value), T('tonna') + ' · ' + T('{0} ta zakaz', r.orders)]; } }
         };
+        let lbData = null;
         function renderLeaderboard(d) {
+            lbData = d;
             ['drivers', 'farmers', 'markets'].forEach(function (k) {
                 const ol = document.getElementById('lb-' + k);
                 if (!ol) return;
