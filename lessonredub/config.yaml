@@ -1,0 +1,127 @@
+# ------------------------------------------------------------------
+# lessonredub configuration.  Every key has a default here; your own
+# file passed with --config is deep-merged on top of this one.
+# ------------------------------------------------------------------
+paths:
+  work_dir: work          # per-file working folders live here: work/<file stem>/
+  output_dir: output      # final <stem>_uz.wav / .mp3
+  cache_dir: cache        # API results cached by content hash (reruns cost nothing)
+  ffmpeg: ffmpeg          # or full path, e.g. C:/ffmpeg/bin/ffmpeg.exe
+  ffprobe: ffprobe
+
+# Switch mock -> real by editing ONLY this block (+ .env for keys).
+providers:
+  asr: local              # local | openai | mock
+  translate: mock         # claude | openai | mock
+  tts: mock               # elevenlabs | azure | mock
+
+# Offline fixtures for mock providers (list of {start,end,lang,text}); null = alternate ru/en.
+mock:
+  asr_fixture: null
+
+# ---------------- step 2: segmentation ----------------
+segmentation:
+  backend: auto           # auto (silero -> faster_whisper -> energy) | silero | faster_whisper | energy
+  threshold: 0.5          # silero speech probability threshold
+  min_speech_s: 0.20      # drop blips shorter than this
+  min_silence_s: 0.25     # VAD-level silence needed to end a segment
+  merge_gap_s: 0.30       # merge segments separated by less than this
+  max_segment_s: 20.0     # longer segments are split at the quietest point
+  pad_s: 0.06             # region padding around VAD speech (clamped to half of the gap to neighbours)
+  energy:                 # fallback / test VAD
+    margin_db: 14.0       # speech = frame energy > noise floor + margin
+    floor_db: -55.0       # ...and above this absolute level
+
+# ---------------- step 3: language ID + transcription ----------------
+asr:
+  candidates: [ru, en]    # language ID is restricted to these two
+  device: auto            # auto | cuda | cpu
+  compute_type: auto      # auto -> float16 on cuda, int8 on cpu
+  model_gpu: large-v3
+  model_cpu: small        # medium is better but slow on CPU
+  beam_size: 5
+  context_pad_s: 0.15     # extra audio around each segment sent to ASR
+  min_margin: 0.25        # |p(ru)-p(en)| below this => uncertain
+  script_threshold: 0.70  # transcript is "Cyrillic" / "Latin" if that share of letters is reached
+  mixed_ratio: 0.15       # minority-script share that triggers a MIXED note
+  openai_model: whisper-1
+  requests_per_minute: 50
+  retries: 5
+  uncertain_policy: keep  # keep | replace : what to do with uncertain ru segments
+
+# ---------------- step 4: translation ----------------
+translate:
+  batch_size: 25
+  uz_chars_per_s: 13.0    # speaking rate used to compute the max_chars hint for each slot
+  context_segments: 2     # neighbouring segments (either language) sent as context
+  apostrophe: "\u02bb"    # o'/g' character in Uzbek Latin output (U+02BB). Use "'" if your TTS prefers it.
+  claude_model: claude-sonnet-5-5   # >>> set the model you want
+  openai_model: gpt-4.1-mini        # >>> set the model you want
+  max_tokens: 4096
+  temperature: null       # null = provider default
+  requests_per_minute: 40
+  retries: 5
+
+# ---------------- step 5: TTS ----------------
+tts:
+  requests_per_minute: 60
+  retries: 5
+  elevenlabs:
+    model_id: eleven_v3            # >>> check which model supports Uzbek on your plan
+    output_format: mp3_44100_128   # pcm_* formats need higher plans
+    stability: 0.5
+    similarity_boost: 0.75
+    style: 0.0
+    use_speaker_boost: true
+    speed: 1.0                     # 0.7 .. 1.2
+  azure:
+    voice: uz-UZ-MadinaNeural      # or uz-UZ-SardorNeural
+    output_format: riff-24khz-16bit-mono-pcm
+    rate: "+0%"
+  mock:
+    chars_per_s: 14.0
+    lead_silence_s: 0.08
+    tail_silence_s: 0.08
+    shorten_factor: 0.85           # how much the mock translator shortens per retry
+
+# ---------------- step 6: time fitting ----------------
+fitting:
+  max_stretch: 1.15          # max pitch-preserving speed-up
+  max_retries: 2             # "make it shorter" re-translations
+  stretch_backend: auto      # auto (ffmpeg rubberband -> pyrubberband -> wsola) | ffmpeg | pyrubberband | wsola
+  slot_margin_ms: 20         # keep this much of the slot free at the end
+  trim_threshold_db: -45     # TTS leading/trailing silence trim, relative to clip peak
+  trim_keep_ms: 8
+  allow_overflow: true       # allow spilling into the following silence
+  overflow_min_gap_s: 0.60   # silence that must remain before the next segment
+  failed_fit_action: keep_original   # keep_original | truncate
+  min_replace_s: 0.20        # Russian "segments" shorter than this are treated as noise and left alone
+
+# ---------------- loudness ----------------
+loudness:
+  match: true
+  max_gain_db: 15.0
+  peak_limit: 0.97           # never exceed this peak (linear, full scale = 1.0)
+
+# ---------------- step 7: assembly / export ----------------
+assemble:
+  fade_ms: 15                # clip fades and original-edge crossfade
+  mp3: true
+  mp3_bitrate: 192k
+
+# ---------------- cost estimator (edit to match your current price lists!) ----------------
+pricing:
+  openai_whisper_per_min: 0.006          # USD / audio minute
+  elevenlabs_per_1k_chars: 0.20          # depends heavily on your plan: check your own $/1k chars
+  azure_per_1m_chars: 16.0               # neural voices, pay-as-you-go
+  claude_per_mtok: {in: 3.0, out: 15.0}  # USD per 1M tokens for the model you configured
+  openai_per_mtok: {in: 0.4, out: 1.6}
+estimate:                                # used only when a lesson has not been transcribed yet
+  ru_speech_fraction: 0.25               # share of total duration that is Russian narration
+  ru_chars_per_s: 13.0
+  uz_chars_per_s: 14.0
+  retry_overhead: 1.15                   # extra TTS chars for re-translated (shortened) segments
+  context_factor: 2.5                    # translation input tokens multiplier for context lines
+  prompt_tokens_per_batch: 450
+  chars_per_token_ru: 2.5
+  chars_per_token_uz: 3.0

@@ -1,0 +1,22 @@
+# Core (needed for mock mode + tests)
+numpy>=1.24
+scipy>=1.10
+soundfile>=0.12
+PyYAML>=6.0
+tqdm>=4.65
+requests>=2.31
+pytest>=7.4
+
+# Loudness matching (BS.1770). Optional: falls back to RMS if missing.
+pyloudnorm>=0.1.1
+
+# Local ASR + VAD (needed for providers.asr: local)
+faster-whisper>=1.0.3
+# Silero VAD (optional; faster-whisper ships its own copy of Silero VAD as a fallback)
+silero-vad>=5.1
+# torch is required by silero-vad. Install the build matching your hardware, see README.
+# torch>=2.1
+
+# Optional pitch-preserving time-stretch backend (needs the `rubberband` CLI binary).
+# The default backend uses ffmpeg's built-in rubberband filter and does NOT need this.
+# pyrubberband>=0.3.0
